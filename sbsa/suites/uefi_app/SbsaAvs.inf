@@ -1,0 +1,108 @@
+## @file
+#  Copyright (c) 2016, ARM Limited or its affiliates. All rights reserved.
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+# 
+#   http://www.apache.org/licenses/LICENSE-2.0
+# 
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+##
+
+
+[Defines]
+  INF_VERSION                    = 0x00010006
+  BASE_NAME                      = Sbsa
+  FILE_GUID                      = a912f198-7f0e-4803-b908-b757b806ec83
+  MODULE_TYPE                    = UEFI_APPLICATION
+  VERSION_STRING                 = 0.1
+  ENTRY_POINT                    = ShellCEntryLib
+
+#
+#  VALID_ARCHITECTURES           = AARCH64
+#
+
+[Sources.AARCH64]
+  SbsaAvsMain.c
+  test_pool/secure/test_s001.c
+  test_pool/secure/test_s002.c
+  test_pool/secure/test_s003.c
+  test_pool/pe/test_c001.c
+  test_pool/pe/test_c002.c
+  test_pool/pe/test_c003.c
+  test_pool/pe/test_c004.c
+  test_pool/pe/test_c005.c
+  test_pool/pe/test_c006.c
+  test_pool/pe/test_c007.c
+  test_pool/pe/test_c008.c
+  test_pool/pe/test_c009.c
+  test_pool/pe/test_c010.c
+  test_pool/pe/test_c011.c
+  test_pool/pe/test_c012.c
+  test_pool/pe/test_c013.c
+  test_pool/pe/test_c014.c
+  test_pool/pe/test_c015.c
+  test_pool/pe/test_c016.c
+  test_pool/pe/test_c017.c
+  test_pool/pe/test_c018.c
+  test_pool/gic/test_g001.c
+  test_pool/gic/test_g005.c
+  test_pool/gic/test_g006.c
+  test_pool/timer_wd/test_t001.c
+  test_pool/timer_wd/test_t002.c
+  test_pool/timer_wd/test_t003.c
+  test_pool/timer_wd/test_t004.c
+  test_pool/timer_wd/test_t005.c
+  test_pool/timer_wd/test_t006.c
+  test_pool/timer_wd/test_t007.c
+  test_pool/timer_wd/test_w001.c
+  test_pool/timer_wd/test_w002.c
+  test_pool/pcie/test_p001.c
+  test_pool/pcie/test_p002.c
+  test_pool/pcie/test_p003.c
+  test_pool/pcie/test_p004.c
+  test_pool/io_virt/test_i001.c
+  test_pool/io_virt/test_i002.c
+  test_pool/io_virt/test_i003.c
+  test_pool/io_virt/test_i004.c
+  test_pool/power_wakeup/test_u001.c
+  test_pool/peripherals/test_d001.c
+  test_pool/peripherals/test_d002.c
+  test_pool/peripherals/test_d003.c
+  test_pool/peripherals/test_m001.c
+
+[Packages]
+  EmbeddedPkg/EmbeddedPkg.dec
+  MdePkg/MdePkg.dec
+  MdeModulePkg/MdeModulePkg.dec
+  ShellPkg/ShellPkg.dec
+  EdkCompatibilityPkg/EdkCompatibilityPkg.dec
+
+[LibraryClasses]
+  SbsaValLib
+  SbsaPalLib
+  UefiLib
+  ShellLib
+  DebugLib
+  BaseMemoryLib
+  ShellCEntryLib
+  UefiBootServicesTableLib
+  UefiRuntimeServicesTableLib
+
+[Protocols]
+  gEfiAcpiTableProtocolGuid                     ## CONSUMES
+  gHardwareInterruptProtocolGuid                ## CONSUMES
+  gEfiCpuArchProtocolGuid                       ## CONSUMES
+  gEfiPciIoProtocolGuid                         ## CONSUMES
+
+[Guids]
+  gEfiAcpi20TableGuid
+  gEfiAcpiTableGuid
+
+[BuildOptions]
+  GCC:*_*_*_ASM_FLAGS  =  -march=armv8.1-a

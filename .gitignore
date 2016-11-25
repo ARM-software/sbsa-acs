@@ -1,0 +1,10 @@
+# Ignore miscellaneous files
+cscope.*
+*.swp
+*.patch
+*~
+.project
+.cproject
+
+#Ignore build directory
+build/
