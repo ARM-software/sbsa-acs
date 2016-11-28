@@ -186,7 +186,7 @@ sbsa_acs_el3_phy_timer()
 }
 
 void
-payload();
+uart_compliance_test();
 
 /**
   @brief   This API calls payload which will verify Secure UART functionality
@@ -195,7 +195,7 @@ int
 sbsa_acs_secure_uart()
 {
 
-    payload();
+    uart_compliance_test();
     return 0;
 }
 

@@ -110,17 +110,13 @@ payload()
 
   /* Skip the test if no un-populated memory is found */
   val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
-  while (loop_var > 0)
-  {
-      if (val_memory_get_info(addr, &attr) == MEM_TYPE_NOT_POPULATED)
-      {
+  while (loop_var > 0) {
+      if (val_memory_get_info(addr, &attr) == MEM_TYPE_NOT_POPULATED) {
          /* Set the loop_var to 0, to exit the while loop */
          loop_var = 0;
 
          generate_pmbirq(addr);
-      }
-      else
-      {
+      } else {
           addr += 0x1000000;   //check at 16MB hops
           loop_var --;
       }

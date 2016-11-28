@@ -48,10 +48,8 @@ payload()
       return;
   }
 
-  while (num_smmu--)
-  {
-      if (val_smmu_get_info(SMMU_CTRL_ARCH_MAJOR_REV, num_smmu) == 2)
-      {
+  while (num_smmu--) {
+      if (val_smmu_get_info(SMMU_CTRL_ARCH_MAJOR_REV, num_smmu) == 2) {
           val_print(AVS_PRINT_WARN, "\n        Not Valid for SMMU v2       ", 0);
           val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
           return;

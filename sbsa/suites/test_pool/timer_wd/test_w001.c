@@ -33,7 +33,7 @@ payload()
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
   uint32_t data;
 
-  val_print(AVS_PRINT_DEBUG, "\n Found %d watchdogs in ACPI table ", wd_num);
+  val_print(AVS_PRINT_DEBUG, "\n       Found %d watchdogs in ACPI table ", wd_num);
 
   if (wd_num == 0) {
       //no watchdogs in the system. Fail this test and return 
@@ -42,8 +42,7 @@ payload()
       return;
   }
     
-  do
-  {
+  do {
       wd_num--; //array index starts from 0, so subtract 1 from count
 
       if (val_wd_get_info(wd_num, WD_INFO_ISSECURE))
@@ -56,20 +55,18 @@ payload()
 
       data = val_mmio_read(ctrl_base);
       //Control register bits 31:4 are reserved 0
-      if(data >> 4)
-      {
+      if(data >> 4) {
           val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
           return;
       }
 
       data = val_mmio_read(refresh_base);
       //refresh frame offset 0 must return 0 on reads.
-      if(data)
-      {
+      if(data) {
           val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 03));
           return;
       }
-  }while(wd_num);
+  } while(wd_num);
 
   val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
 

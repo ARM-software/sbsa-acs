@@ -20,17 +20,21 @@ SBSA **Architecture compliance tests** are self-checking, portable C-based tests
 3. Install GCC 5.3 or later toolchain for Linux from [here](https://releases.linaro.org/components/toolchain/binaries/)
 4. Install the Build pre-requisite packages from [here](https://community.arm.com/docs/DOC-10804)
 
+## Additional Reading
+1. For more details on the Design of the SBSA ACS, refer to the [Validation Methodology Document](docs/validation-methodology.md)
+2. For details on the test coverage, the scenarios implemented in the present release of the ACS and the scenarios planned in the future release, refer to the [Testcase checklist.md file](docs/testcase-checklist.md)
+
 ### ACS Build steps
 
-1.  git clone <acs github path>
-2.  cd avs
-3.  source tools/scripts/avssetup.sh <acs_path> <edk2 path>
-4.  cd <edk2_path>
+1.  git clone https://github.com/ARM-software/arm-enterprise-acs
+2.  cd arm-enterprise-acs/sbsa
+3.  source tools/scripts/avssetup.sh <local acs path> <local edk2 path>
+4.  cd local_edk2_path
 5.  Add the following to the [LibraryClasses.common] section in ShellPkg/ShellPkg.dsc
     Add  SbsaValLib|AppPkg/Applications/Sbsa/val/SbsaValLib.inf
     Add  SbsaPalLib|AppPkg/Applications/Sbsa/pal/SbsaPalLib.inf
 6.  Add AppPkg/Applications/Sbsa/SbsaAvs.inf in the [components] section of ShellPkg/ShellPkg.dsc
-7.  export GCC49_AARCH64_PREFIX=<GCC5.3 toolchain path>/bin/aarch64-linux-gnu-
+7.  export GCC49_AARCH64_PREFIX= GCC5.3 toolchain path /bin/aarch64-linux-gnu-
 8.  source edksetup.sh
 9.  make -C BaseTools/Source/C
 10. source AppPkg/Applications/Sbsa/avsbuild.sh
@@ -38,7 +42,7 @@ SBSA **Architecture compliance tests** are self-checking, portable C-based tests
 ### Build Output
 
 The EFI executable file is generated at 
-<edk2_path>Build/Shell/DEBUG_GCC49/AARCH64/Sbsa.efi
+edk2_path /Build/Shell/DEBUG_GCC49/AARCH64/Sbsa.efi
 
 
 ## Test Suite Execution

@@ -37,7 +37,7 @@ isr_failsafe()
 {
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
   val_timer_set_phy_el1(0);
-  val_print(AVS_PRINT_INFO, "\n Received Failsafe interrupt      ", 0);
+  val_print(AVS_PRINT_INFO, "\n       Received Failsafe interrupt      ", 0);
   val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
 }
 
@@ -47,7 +47,7 @@ isr1()
 {
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
   val_timer_set_phy_el1(0);
-  val_print(AVS_PRINT_INFO, "\n Received EL1 PHY interrupt       ", 0);
+  val_print(AVS_PRINT_INFO, "\n       Received EL1 PHY interrupt       ", 0);
   val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
 }
 
@@ -59,7 +59,7 @@ isr2()
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
   /* We received our interrupt, so disable timer from generating further interrupts */
   val_timer_set_vir_el1(0);
-  val_print(AVS_PRINT_INFO, "\n Received EL1 VIRT interrupt      ", 0);
+  val_print(AVS_PRINT_INFO, "\n       Received EL1 VIRT interrupt      ", 0);
   val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM2, 01));
 }
 
@@ -70,7 +70,7 @@ isr3()
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
   /* We received our interrupt, so disable timer from generating further interrupts */
   val_timer_set_phy_el2(0);
-  val_print(AVS_PRINT_INFO, "\n Received EL2 Physical interrupt  ", 0);
+  val_print(AVS_PRINT_INFO, "\n       Received EL2 Physical interrupt  ", 0);
   val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM3, 01));
 }
 
@@ -87,7 +87,7 @@ isr4()
 //    val_set_wd_ws0(wd_num, 0);
 
   val_wd_set_ws0(0, 0);
-  val_print(AVS_PRINT_INFO, "\n Received WS0 interrupt           ", 0);
+  val_print(AVS_PRINT_INFO, "\n       Received WS0 interrupt           ", 0);
   val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM4, 01));
 }
 
@@ -174,8 +174,7 @@ payload4()
 
   val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM4, 01));
 
-  if (val_wd_get_info(0, WD_INFO_COUNT))
-  { 
+  if (val_wd_get_info(0, WD_INFO_COUNT)) { 
       intid = val_wd_get_info(0, WD_INFO_GSIV);
       status = val_gic_install_isr(intid, isr4);
       if (status == 0) {

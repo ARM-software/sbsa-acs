@@ -30,16 +30,14 @@ payload()
 
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
 
-  if (val_timer_get_info(TIMER_INFO_NUM_PLATFORM_TIMERS) == 0)
-  {
+  if (val_timer_get_info(TIMER_INFO_NUM_PLATFORM_TIMERS) == 0) {
       //val_print(AVS_PRINT_ERR, "\n %x  \n", val_timer_get_info(TIMER_INFO_PHY_EL1_FLAGS));
       //val_print(AVS_PRINT_ERR, "\n %x  \n", val_timer_get_info(TIMER_INFO_PHY_EL2_FLAGS));
       //val_print(AVS_PRINT_ERR, "\n %x  \n", val_timer_get_info(TIMER_INFO_VIR_EL1_FLAGS));
 
       if((val_timer_get_info(TIMER_INFO_PHY_EL1_FLAGS) & SBSA_TIMER_FLAG_ALWAYS_ON) &&
         (val_timer_get_info(TIMER_INFO_PHY_EL2_FLAGS) & SBSA_TIMER_FLAG_ALWAYS_ON) &&
-        (val_timer_get_info(TIMER_INFO_VIR_EL1_FLAGS) & SBSA_TIMER_FLAG_ALWAYS_ON))
-      {
+        (val_timer_get_info(TIMER_INFO_VIR_EL1_FLAGS) & SBSA_TIMER_FLAG_ALWAYS_ON)) {
           val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
       } else {
           val_print(AVS_PRINT_ERR, "\n       PE Timers are not always-on.       ", 0);

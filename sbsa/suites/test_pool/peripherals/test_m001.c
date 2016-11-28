@@ -40,7 +40,7 @@ esr()
   /* Update the ELR to point to next instrcution */
   val_pe_increment_elr(4);
 
-  val_print(AVS_PRINT_INFO, "\n Received SERR ", 0);
+  val_print(AVS_PRINT_INFO, "\n       Received SERR           ", 0);
   val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
 }
 
@@ -59,10 +59,8 @@ payload()
 
   /* If we don't find a single un-populated address, mark this test as skipped */
   val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
-  while (loop_var > 0)
-  {
-      if (val_memory_get_info(addr, &attr) == MEM_TYPE_NOT_POPULATED)
-      {
+  while (loop_var > 0) {
+      if (val_memory_get_info(addr, &attr) == MEM_TYPE_NOT_POPULATED) {
          /* default value of FAIL, Pass is set in the exception handler */
           val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
 

@@ -59,8 +59,7 @@ payload()
       return;
   }
     
-  do
-  {
+  do {
       wd_num--;         //array index starts from 0, so subtract 1 from count
 
       if (val_wd_get_info(wd_num, WD_INFO_ISSECURE))
@@ -81,7 +80,7 @@ payload()
           return;
       }
 
-  }while(wd_num);
+  } while(wd_num);
 
 }
 

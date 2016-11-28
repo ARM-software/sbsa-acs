@@ -107,33 +107,27 @@ validate_register_readonly(uint32_t offset, uint32_t width)
   uint32_t data = 0;
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
 
-  if (width & WIDTH_BIT8)
-  {
+  if (width & WIDTH_BIT8) {
       data = uart_reg_read(offset, WIDTH_BIT8);
       uart_reg_write(offset, WIDTH_BIT8, 0xF);
-      if (data != uart_reg_read(offset, WIDTH_BIT8))
-      {
+      if (data != uart_reg_read(offset, WIDTH_BIT8)) {
           val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, offset));
           return AVS_STATUS_ERR;
       }
   }
-  if (width & WIDTH_BIT16)
-  {
+  if (width & WIDTH_BIT16) {
       data = uart_reg_read(offset, WIDTH_BIT16);
       uart_reg_write(offset, WIDTH_BIT16, 0xF);
-      if (data != uart_reg_read(offset, WIDTH_BIT16))
-      {
+      if (data != uart_reg_read(offset, WIDTH_BIT16)) {
           val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, offset));
           return AVS_STATUS_ERR;
       }
 
   }
-  if (width & WIDTH_BIT32)
-  {
+  if (width & WIDTH_BIT32) {
       data = uart_reg_read(offset, WIDTH_BIT32);
       uart_reg_write(offset, WIDTH_BIT32, 0xF);
-      if (data != uart_reg_read(offset, WIDTH_BIT32))
-      {
+      if (data != uart_reg_read(offset, WIDTH_BIT32)) {
           val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, offset));
           return AVS_STATUS_ERR;
       }
@@ -157,8 +151,7 @@ payload()
       return;
   }
 
-  while (count != 0)
-  {
+  while (count != 0) {
 
       l_uart_base = val_peripheral_get_info(UART_BASE0, count - 1);
       if (l_uart_base == 0) {
@@ -181,8 +174,7 @@ payload()
       data = uart_reg_read(SBSA_UARTDR, WIDTH_BIT32);
       uart_reg_write(SBSA_UARTDR, WIDTH_BIT32, data | 0x0F00);
       data = (data >> 8) & 0x0F;
-      if (data != ((uart_reg_read(SBSA_UARTDR, WIDTH_BIT32)>>8) & 0x0F))
-      {
+      if (data != ((uart_reg_read(SBSA_UARTDR, WIDTH_BIT32)>>8) & 0x0F)) {
           val_print(AVS_PRINT_ERR, "\n     UARTDR Bits 11:8 are not Read Only", 0);
           val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, SBSA_UARTDR));
           return;
@@ -208,14 +200,12 @@ payload1()
       return;
   }
 
-  while (count != 0)
-  {
+  while (count != 0) {
 
       int_id    = val_peripheral_get_info(UART_GSIV, count - 1);
 
       /* If Interrupt ID is available, check for interrupt generation */
-      if (int_id != 0x0)
-      {
+      if (int_id != 0x0) {
           /* PASS will be set from ISR */
           val_set_status(index, RESULT_PENDING(g_sbsa_level, TEST_NUM2));
           val_gic_install_isr(int_id, isr);
@@ -250,8 +240,7 @@ d003_entry(uint32_t num_pe)
   /* get the result from all PE and check for failure */
   status = val_check_for_error(TEST_NUM, num_pe);
 
-  if (!status)
-  {
+  if (!status) {
       status = val_initialize_test(TEST_NUM2, TEST_DESC1, val_pe_get_num(), g_sbsa_level);
       if (status != AVS_STATUS_SKIP)
           val_run_test_payload(TEST_NUM2, num_pe, payload1, 0);

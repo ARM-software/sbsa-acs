@@ -129,7 +129,7 @@ val_memory_get_info(addr_t addr, uint64_t *attr)
           return g_memory_info_table->info[index].type;
        }
        index++;
-      val_print(AVS_PRINT_INFO," .", 0);
+      // val_print(AVS_PRINT_INFO," .", 0);
   }
 
   return MEM_TYPE_NOT_POPULATED;

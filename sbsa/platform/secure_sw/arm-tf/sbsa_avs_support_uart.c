@@ -161,7 +161,7 @@ validate_register_readonly(uint32_t offset, uint32_t width)
   @brief   This API will verify secure UART functionality
 **/
 void
-payload()
+uart_compliance_test()
 {
         volatile uint32_t timeout = 0x5;
 	uint32_t int_id;

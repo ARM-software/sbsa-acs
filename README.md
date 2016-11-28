@@ -1,5 +1,11 @@
 # ARM Enterprise - Architecture Compliance Suite (ACS)
 
+## Release Status
+1. Test suite Quality - Alpha.
+2. There are gaps in the test coverage. Refer to the SBSA_ACS_Checklist.xlsx for details.
+3. The result (Pass / Fail) of a test should not be taken as a true indication of compliance.
+   There is a probability of a false positive or a false negetive.
+
 ## Overview 
 
 This test suite is a collection of tests which validate an implementation against
@@ -8,12 +14,12 @@ the various ARM System Architecture specifications.
 In the current release, an implementation is checked for compliance against the
 following specifications:
   - Server Base System Architecture (SBSA) 
-    ~ For details on how to Build and Run SBSA ACS, refer to the [SBSA ACS README](sbsa/README.md)
+    ~ For details on SBSA ACS design and implementation, refer to the [SBSA ACS README](sbsa/README.md)
   - Server Base Boot Requirement specifications (SBBR).
-    ~ For details on how to Build and Run SBBR ACS, refer to the [SBBR ACS README](sbbr/README.md)
+    ~ For details on SBBR ACS design and implementation, refer to the [SBBR ACS README](sbbr/README.md)
 
-##Pre-requisites
-  1. Operating system - Ubuntu 16.xx and above
+## Pre-requisites
+  1. Operating system - Ubuntu 15.xx and above
   2. Linaro GCC 5.3 or above tool chain.
 
 ## Dependencies
@@ -42,9 +48,9 @@ following specifications:
 
   1. git clone https://github.com/ARM-software/arm-enterprise-acs
   2. cd arm-enterprise-acs
-  3. ./scripts/acs_sync.sh
-      - Download the luvOS repository and apply the patches
-  4. ./build_luvos.sh
+  3. ./package/acs_sync.sh
+      - Download the luvOS repository, UEFI EDK2 repository and apply the patches
+  4. ./package/build_luvos.sh
       - Build SBSA binaries, SBBR (including UEFI-SCT and FWTS binaries) and will create a luv-live-image.img
 
 ### Build only SBSA ACS UEFI Application

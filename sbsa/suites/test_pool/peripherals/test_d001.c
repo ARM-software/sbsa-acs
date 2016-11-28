@@ -38,14 +38,12 @@ payload()
       return;
   }
 
-  while (count != 0)
-  {
+  while (count != 0) {
 
       bdf = val_peripheral_get_info(USB_BDF, count - 1);
       interface = val_pcie_read_cfg(bdf, 0x8);
       interface = (interface >> 8) & 0xFF;
-      if ((interface < 0x20) || (interface == 0xFF))
-      {
+      if ((interface < 0x20) || (interface == 0xFF)) {
           val_print(AVS_PRINT_ERR, "\n       Detected USB CTRL not EHCI/XHCI     ", 0);
           val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
           return;

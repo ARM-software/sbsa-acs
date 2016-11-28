@@ -31,20 +31,17 @@ payload()
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
 
   data = val_pe_reg_read(ID_AA64MMFR0_EL1);
-  if(data & MMFR0_BIGEND)
+  if(data & MMFR0_BIGEND) {
   // mixed endian support present, check whether both endianness is present
   // based on functional check
-  {
       data = TEST_DATA;
       if(1 == (val_pe_bigend_check(&data)))
           val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
       else
           val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
-  }
-  else
+  } else {
   // single endian only, the current endian should be little endian,
   // check SCTLR.EE
-  {
       data = val_pe_reg_read(SCTLR_EL2);
       if (((data >> 25) & 1) == 0) //Bit 25 must be 0
           val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 02));
@@ -53,7 +50,6 @@ payload()
   }
 
   return;
-
 }
 
 uint32_t
@@ -72,4 +68,3 @@ c008_entry(uint32_t num_pe)
 
   return status;
 }
-
