@@ -69,5 +69,3 @@
 [BuildOptions]
   GCC:*_*_*_ASM_FLAGS  =  -march=armv8.1-a
 
-[BuildOptions]
-  GCC:*_*_*_ASM_FLAGS  =  -march=armv8.1-a

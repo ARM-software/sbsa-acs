@@ -297,7 +297,7 @@ ShellAppMain (
   g_sbsa_tests_fail  = 0;
 
   Print(L"\n\n SBSA Compliance Suite \n");
-  Print(L"    Version 0.3  \n");
+  Print(L"    Version %d.%d  \n", SBSA_ACS_MAJOR_VER, SBSA_ACS_MINOR_VER);
 
 
   Print(L"\n Starting Compliance verification for Level %2d (Print level is %2d)\n\n", g_sbsa_level, g_print_level);
@@ -329,7 +329,7 @@ ShellAppMain (
   Status = val_pe_execute_tests(g_sbsa_level, val_pe_get_num());
 
   Print(L"\n      ***  Starting GIC tests ***  \n");
-  Status = val_gic_execute_tests(g_sbsa_level, val_pe_get_num());
+  Status |= val_gic_execute_tests(g_sbsa_level, val_pe_get_num());
   
   Print(L"\n      *** Starting Timer tests ***  \n");
   Status |= val_timer_execute_tests(g_sbsa_level, val_pe_get_num());

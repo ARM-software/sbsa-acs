@@ -28,8 +28,9 @@ The present release implements a UEFI shell application to execute these tests f
 4. Install the Build pre-requisite packages from [here](https://community.arm.com/docs/DOC-10804)
 
 ## Additional Reading
-1. For more details on the Design of the SBSA ACS, refer to the [Validation Methodology Document](docs/validation-methodology.md)
-2. For details on the test coverage, the scenarios implemented in the present release of the ACS and the scenarios planned in the future release, refer to the [Testcase checklist](docs/testcase-checklist.md)
+1. For details on the SBSA ACS UEFI Shell Application, refer to the [SBSA ACS User Guide](docs/SBSA_ACS_UEFI_App_User_Guide.pdf)
+2. For more details on the Design of the SBSA ACS, refer to the [Validation Methodology Document](docs/SBSA_Val_Methodolgy.pdf)
+3. For details on the test coverage, the scenarios implemented in the present release of the ACS and the scenarios planned in the future release, refer to the [Testcase checklist](docs/testcase-checklist.md)
 
 ### ACS Build steps
 
@@ -68,6 +69,7 @@ On a system where a USB port is available and functional, follow the below steps
 4. Execute “map –r” command to determine the file system number of the plugged in USB drive
 5. Type “fs<x>” where <x> is replaced by the number determined in the step above
 6. Run the executable “Sbsa.efi” with the appropriate parameters to start the compliance tests
+   a. for details on the parameters, refer to [SBSA ACS User Guide](docs/SBSA_ACS_UEFI_App_User_Guide.pdf)
 7. Copy the UART console output to a log file for analysis and certification
 
 
@@ -84,6 +86,7 @@ On a system where a USB port is available and functional, follow the below steps
 4. Execute “map –r” command to determine the file system number of the plugged in USB drive.
 5. Type “fs<x>” where <x> is replaced by the number determined in the step above.
 6. Run the executable “Sbsa.efi” to start the compliance tests.
+   a. for details on the parameters, refer to [SBSA ACS User Guide](docs/SBSA_ACS_UEFI_App_User_Guide.pdf)
 7. Copy the UART console output to a log file for analysis and certification
 
 ### Emulation environment without secondary storage
@@ -96,6 +99,7 @@ On an Emulation platform where secondary storage is not available.
 2. Build UEFI image including the UEFI Shell.
 3. Boot the system to UEFI shell.
 4. Run the executable “Sbsa.efi” to start the compliance tests.
+   a. for details on the parameters, refer to [SBSA ACS User Guide](docs/SBSA_ACS_UEFI_App_User_Guide.pdf)
 5. Copy the UART console output to a log file for analysis and certification.
 
 ## License

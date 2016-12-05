@@ -24,7 +24,7 @@
 //Juno 0x7FF80000
 #define PLATFORM_GENERIC_UART_BASE       0
 
-//Juno - 115  //Ashbrook - 147
+//Juno - 115
 #define PLATFORM_GENERIC_UART_INTID      0
 
 /* Change OVERRIDE to 1 and define the Timer values to be used */

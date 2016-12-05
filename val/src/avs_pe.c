@@ -122,11 +122,11 @@ val_pe_execute_tests(uint32_t level, uint32_t num_pe)
       status |= c016_entry(num_pe);
       status |= c017_entry(num_pe);
   }
-
+/* v8.2 SPE extension
   if (level > 1) {
       status |= c018_entry(num_pe);
   }
-
+*/
   if (status != AVS_STATUS_PASS)
       val_print(AVS_PRINT_TEST, "\n      *** One or more PE tests have failed... *** \n", 0);
   else
@@ -517,35 +517,6 @@ val_pe_install_esr(uint32_t exception_type, void (*esr)())
   pal_pe_install_esr(exception_type, esr);
 
   return 0;
-}
-
-/**
-  @brief   This API will call an assembly sequence with interval
-           as argument over which an SPE event is exected to be generated.
-           1. Caller       -  Test Suite
-           2. Prerequisite -  None
-  @param   interval - The interval after completion of which SPE event 
-                      would be generated
-  @param   address  - Address on which to trigger the SPE
-  @return  None.
-**/
-void
-val_pe_spe_program_under_profiling(uint64_t interval, addr_t address)
-{
-  SpeProgramUnderProfiling(interval, address);
-}
-
-/**
-  @brief   This API disables the SPE interrupt generation logic.
-           1. Caller       -  Test Suite
-           2. Prerequisite -  None
-  @param   None
-  @return  None
-**/
-void
-val_pe_spe_disable(void)
-{ 
-  DisableSpe();
 }
 
 /**
