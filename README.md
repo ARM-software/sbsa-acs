@@ -10,8 +10,9 @@ For more information, download the [SBSA specification](http://infocenter.arm.co
 
 ## SBSA - Architecture Compliance Suite (ACS)
 
-SBSA **Architecture compliance tests** are self-checking, portable C-based tests with directed stimulus.
-The present release implements a UEFI shell application to execute these tests from a UEFI Shell.
+SBSA **Architecture compliance suite** is a collection of self-checking, portable C-based tests.
+These tests check an implementation for compliance against SBSA specification version 3.0.
+The present release implements a UEFI shell application to execute these tests from UEFI Shell.
 
 
 ## Release Details
@@ -25,7 +26,9 @@ The present release implements a UEFI shell application to execute these tests f
 1. Any mainstream Linux based OS distribution
 2. git clone [EDK2 tree](https://github.com/tianocore/edk2)
 3. Install GCC 5.3 or later toolchain for Linux from [here](https://releases.linaro.org/components/toolchain/binaries/)
-4. Install the Build pre-requisite packages from [here](https://community.arm.com/docs/DOC-10804)
+4. Install the Build pre-requisite packages to build EDK2. The details are beyond the scope of this document.
+
+5. NOTE - Windows OS Build environment support will be added in future releases.
 
 ## Additional Reading
 1. For details on the SBSA ACS UEFI Shell Application, refer to the [SBSA ACS User Guide](docs/SBSA_ACS_UEFI_App_User_Guide.pdf)
@@ -39,8 +42,8 @@ The present release implements a UEFI shell application to execute these tests f
 3.  source tools/scripts/avssetup.sh [local acs path] [local_edk2_path]
 4.  cd local_edk2_path
 5.  Add the following to the [LibraryClasses.common] section in ShellPkg/ShellPkg.dsc
-    Add  SbsaValLib|AppPkg/Applications/Sbsa/val/SbsaValLib.inf
-    Add  SbsaPalLib|AppPkg/Applications/Sbsa/pal/SbsaPalLib.inf
+   - Add  SbsaValLib|AppPkg/Applications/Sbsa/val/SbsaValLib.inf
+   - Add  SbsaPalLib|AppPkg/Applications/Sbsa/pal/SbsaPalLib.inf
 6.  Add AppPkg/Applications/Sbsa/SbsaAvs.inf in the [components] section of ShellPkg/ShellPkg.dsc
 7.  export GCC49_AARCH64_PREFIX= GCC5.3 toolchain path /bin/aarch64-linux-gnu-
 8.  source edksetup.sh
@@ -69,24 +72,23 @@ On a system where a USB port is available and functional, follow the below steps
 4. Execute “map –r” command to determine the file system number of the plugged in USB drive
 5. Type “fs<x>” where <x> is replaced by the number determined in the step above
 6. Run the executable “Sbsa.efi” with the appropriate parameters to start the compliance tests
-   a. for details on the parameters, refer to [SBSA ACS User Guide](docs/SBSA_ACS_UEFI_App_User_Guide.pdf)
+   - for details on the parameters, refer to [SBSA ACS User Guide](docs/SBSA_ACS_UEFI_App_User_Guide.pdf)
 7. Copy the UART console output to a log file for analysis and certification
 
 
 ### Emulation environment with secondary storage
 
-1. Create an Image file which contains the Sbsa.efi file.
-    a. For Example:
-    b. mkfs.vfat -C -n HD0 hda.img 2097152
-    c. sudo mount -o rw,loop=/dev/loop0,uid=`whoami`,gid=`whoami` hda.img /mnt/sbsa
-    d. cp  <path to application>/Sbsa.efi /mnt/sbsa/
-    e. sudo umount /mnt/sbsa
+1. Create an Image file which contains the Sbsa.efi file. For Example:
+  - mkfs.vfat -C -n HD0 hda.img 2097152
+  - sudo mount -o rw,loop=/dev/loop0,uid=`whoami`,gid=`whoami` hda.img /mnt/sbsa
+  - cp  "<path to application>/Sbsa.efi" /mnt/sbsa/
+  - sudo umount /mnt/sbsa
 2. Load the image file to the secondary storage using a backdoor. The steps to do this is Emulation environment specific and beyond the scope of this documentation. 
 3. Boot the system to UEFI shell.
-4. Execute “map –r” command to determine the file system number of the plugged in USB drive.
+4. Execute “map –r” command to determine the file system number of the secondary storage.
 5. Type “fs<x>” where <x> is replaced by the number determined in the step above.
 6. Run the executable “Sbsa.efi” to start the compliance tests.
-   a. for details on the parameters, refer to [SBSA ACS User Guide](docs/SBSA_ACS_UEFI_App_User_Guide.pdf)
+    - for details on the parameters, refer to [SBSA ACS User Guide](docs/SBSA_ACS_UEFI_App_User_Guide.pdf)
 7. Copy the UART console output to a log file for analysis and certification
 
 ### Emulation environment without secondary storage
@@ -94,12 +96,12 @@ On a system where a USB port is available and functional, follow the below steps
 On an Emulation platform where secondary storage is not available.
 
 1. Add the Sbsa.efi file as part of the UEFI FD file.
-    a. Add Sbsa.efi as a binary to the UefiShellCommandLib
-    b. Or add the SbsaAvsMain.inf to the UefiShellCommandLib.inf
+    - Add Sbsa.efi as a binary to the UefiShellCommandLib
+    - Or add the SbsaAvsMain.inf to the UefiShellCommandLib.inf
 2. Build UEFI image including the UEFI Shell.
 3. Boot the system to UEFI shell.
 4. Run the executable “Sbsa.efi” to start the compliance tests.
-   a. for details on the parameters, refer to [SBSA ACS User Guide](docs/SBSA_ACS_UEFI_App_User_Guide.pdf)
+    - for details on the parameters, refer to [SBSA ACS User Guide](docs/SBSA_ACS_UEFI_App_User_Guide.pdf)
 5. Copy the UART console output to a log file for analysis and certification.
 
 ## License
