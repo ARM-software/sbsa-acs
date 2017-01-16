@@ -23,12 +23,10 @@ The present release implements a UEFI shell application to execute these tests f
 
 ### Prerequisites
 
-1. Any mainstream Linux based OS distribution
-2. git clone [EDK2 tree](https://github.com/tianocore/edk2)
-3. Install GCC 5.3 or later toolchain for Linux from [here](https://releases.linaro.org/components/toolchain/binaries/)
-4. Install the Build pre-requisite packages to build EDK2. The details are beyond the scope of this document.
+1. EDK2 source tree. git clone [EDK2 tree](https://github.com/tianocore/edk2)
+2. Install GCC 5.3 or later toolchain from [here](https://releases.linaro.org/components/toolchain/binaries/)
+3. Install the Build pre-requisite packages to build EDK2. The details are beyond the scope of this document.
 
-5. NOTE - Windows OS Build environment support will be added in future releases.
 
 ## Additional Reading
 1. For details on the SBSA ACS UEFI Shell Application, refer to the [SBSA ACS User Guide](docs/SBSA_ACS_UEFI_App_User_Guide.pdf)
@@ -37,23 +35,27 @@ The present release implements a UEFI shell application to execute these tests f
 
 ### ACS Build steps
 
-1.  git clone https://github.com/ARM-software/sbsa-acs
-2.  cd sbsa-acs
-3.  source tools/scripts/avssetup.sh [local acs path] [local_edk2_path]
-4.  cd local_edk2_path
-5.  Add the following to the [LibraryClasses.common] section in ShellPkg/ShellPkg.dsc
+1.  cd local_edk2_path
+2.  git clone https://github.com/ARM-software/sbsa-acs AppPkg/Applications/Sbsa
+3.  Add the following to the [LibraryClasses.common] section in ShellPkg/ShellPkg.dsc
    - Add  SbsaValLib|AppPkg/Applications/Sbsa/val/SbsaValLib.inf
-   - Add  SbsaPalLib|AppPkg/Applications/Sbsa/pal/SbsaPalLib.inf
-6.  Add AppPkg/Applications/Sbsa/SbsaAvs.inf in the [components] section of ShellPkg/ShellPkg.dsc
-7.  export GCC49_AARCH64_PREFIX= GCC5.3 toolchain path /bin/aarch64-linux-gnu-
-8.  source edksetup.sh
-9.  make -C BaseTools/Source/C
-10. source AppPkg/Applications/Sbsa/avsbuild.sh
+   - Add  SbsaPalLib|AppPkg/Applications/Sbsa/platform/pal_uefi/SbsaPalLib.inf
+4.  Add AppPkg/Applications/Sbsa/uefi_app/SbsaAvs.inf in the [components] section of ShellPkg/ShellPkg.dsc
+
+#### Linux
+1.  export GCC49_AARCH64_PREFIX= GCC5.3 toolchain path /bin/aarch64-linux-gnu-
+2.  source edksetup.sh
+3.  make -C BaseTools/Source/C
+4.  source AppPkg/Applications/Sbsa/avsbuild.sh
+
+#### Windows
+- To be added
+
 
 ### Build Output
 
 The EFI executable file is generated at 
-edk2_path /Build/Shell/DEBUG_GCC49/AARCH64/Sbsa.efi
+edk2_path/Build/Shell/DEBUG_GCC49/AARCH64/Sbsa.efi
 
 
 ## Test Suite Execution

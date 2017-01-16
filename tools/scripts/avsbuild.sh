@@ -6,5 +6,5 @@ then
     return 0
 fi
 
-build -a AARCH64 -t GCC49 -p ShellPkg/ShellPkg.dsc -m AppPkg/Applications/Sbsa/SbsaAvs.inf
+build -a AARCH64 -t GCC49 -p ShellPkg/ShellPkg.dsc -m AppPkg/Applications/Sbsa/uefi_app/SbsaAvs.inf
 
