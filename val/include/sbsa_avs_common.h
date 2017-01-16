@@ -95,7 +95,7 @@ uint32_t
 val_check_for_error(uint32_t test_num, uint32_t num_pe);
 
 void
-val_run_test_payload(uint32_t test_num, uint32_t num_pe, void (*payload)(), uint64_t test_input);
+val_run_test_payload(uint32_t test_num, uint32_t num_pe, void (*payload)(void), uint64_t test_input);
 
 void
 val_data_cache_ci_va(addr_t addr);

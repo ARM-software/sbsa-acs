@@ -33,7 +33,7 @@ TIMER_INFO_TABLE  *g_timer_info_table;
 uint32_t
 val_timer_execute_tests(uint32_t level, uint32_t num_pe)
 {
-  uint32_t status;
+  uint32_t status, status_sys_timer;
 
   if (g_skip_test_num == AVS_TIMER_TEST_NUM_BASE) {
       val_print(AVS_PRINT_TEST, "      USER Override - Skipping all Timer tests \n", 0);
@@ -46,7 +46,14 @@ val_timer_execute_tests(uint32_t level, uint32_t num_pe)
   status |= t004_entry(num_pe);
   status |= t005_entry(num_pe);
   status |= t006_entry(num_pe);
-  status |= t007_entry(num_pe);
+  status_sys_timer = t007_entry(num_pe);
+  if (status_sys_timer != AVS_STATUS_PASS)
+      val_print(AVS_PRINT_WARN, "\n     *** Skipping remaining System timer tests *** \n", 0);
+  else{
+      status_sys_timer |= t008_entry(num_pe);
+  }
+
+  status |= status_sys_timer;
 
   if (status != 0)
     val_print(AVS_PRINT_TEST, "\n      *** One or more tests have Failed/Skipped.*** \n", 0);
@@ -266,4 +273,59 @@ void
 val_timer_free_info_table()
 {
   pal_mem_free((void *)g_timer_info_table);
+}
+
+/**
+  @brief  This API will program and start the counter
+**/
+void
+val_timer_set_system_timer(addr_t cnt_base_n, uint32_t timeout)
+{
+  /* Start the System timer */
+  val_mmio_write(cnt_base_n + 0x28, timeout);
+
+  /* enable System timer */
+  val_mmio_write(cnt_base_n + 0x2C, 1);
+
+}
+
+/**
+  @brief  This API will stop the counter
+**/
+void
+val_timer_disable_system_timer(addr_t cnt_base_n)
+{
+
+  /* stop System timer */
+  val_mmio_write(cnt_base_n + 0x2C, 0);
+}
+
+/**
+  @brief  This API will read CNTACR (from CNTCTLBase) to determine whether
+          access permission from NS state is permitted
+**/
+uint32_t
+val_timer_skip_if_cntbase_access_not_allowed()
+{
+  uint64_t cnt_ctl_base;
+  uint32_t data;
+
+  cnt_ctl_base = val_timer_get_info(TIMER_INFO_SYS_CNTL_BASE);
+  if(cnt_ctl_base){
+      data = val_mmio_read(cnt_ctl_base + 0x40);
+      if((data & 0x1) == 0x1)
+          return 0;
+      else{
+          data |= 0x1;
+          val_mmio_write(cnt_ctl_base + 0x40, data);
+          data = val_mmio_read(cnt_ctl_base + 0x40);
+          if((data & 0x1) == 1)
+              return 0;
+          else
+              return AVS_STATUS_SKIP;
+      }
+  }
+  else
+      return AVS_STATUS_SKIP;
+
 }

@@ -26,6 +26,7 @@
 #define TEST_DESC1 "Check GENERIC UART Interrupt      "
 
 uint64_t l_uart_base;
+static uint32_t int_id;
 
 uint32_t
 uart_reg_read(uint32_t offset, uint32_t width_mask)
@@ -96,6 +97,7 @@ isr()
   uart_disable_txintr();
   val_print(AVS_PRINT_DEBUG, "\n      Received interrupt      ", 0);
   val_set_status(0, RESULT_PASS(g_sbsa_level, TEST_NUM, 0x01));
+  val_gic_end_of_interrupt(int_id);
 }
 
 
@@ -191,7 +193,6 @@ static
 void
 payload1()
 {
-  uint32_t int_id;
   uint32_t count = val_peripheral_get_info(NUM_UART, 0);
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
 

@@ -15,65 +15,67 @@
  **/
 
 #include "val/include/sbsa_avs_val.h"
+#include "val/include/sbsa_avs_common.h"
 #include "val/include/val_interface.h"
 
-#include "val/include/sbsa_avs_timer.h"
+#include "val/include/sbsa_avs_gic.h"
+#include "val/include/sbsa_avs_gic_support.h"
 
-#define TEST_NUM   (AVS_TIMER_TEST_NUM_BASE + 3)
-#define TEST_DESC  "Check EL0-Virtual timer interrupt "
+#define TEST_NUM   (AVS_GIC_TEST_NUM_BASE + 4)
+#define TEST_DESC  "GIC Maintenance Interrupt         "
 
-static uint32_t intid;
+static uint32_t int_id = 25;
 
 static
 void
 isr()
 {
+  uint32_t data;
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
-  /* We received our interrupt, so disable timer from generating further interrupts */
-  val_timer_set_vir_el1(0);
-  val_print(AVS_PRINT_INFO, "\n       Received interrupt    ", 0);
+
+  /* We received our interrupt, so disable Maintenance interrupt from generating further interrupts */
+  data = val_gic_reg_read(ICH_HCR_EL2);
+  data &= ~0x7;
+  val_gic_reg_write(ICH_HCR_EL2, data);
+
   val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
-  val_gic_end_of_interrupt(intid);
+  val_print(AVS_PRINT_INFO, "\n       Received GIC maintenance interrupt ", 0);
+  val_gic_end_of_interrupt(int_id);
+
+  return;
 }
-
-
-
 static
 void
 payload()
 {
 
+  uint32_t data;
   uint32_t timeout = 0x100000;
-  uint64_t timer_expire_val = 10000;
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
 
-  intid = val_timer_get_info(TIMER_INFO_VIR_EL1_INTID);
-  /* For SBSA level 2 and above, the PPI has to be a specific value.*/
-  if (g_sbsa_level > 1) {
-      if (intid != 27) {
-          val_print(AVS_PRINT_ERR, "\n       Incorrect PPI value %d   ", intid);
-          val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
-      }
-  }
+  val_gic_install_isr(int_id, isr);
 
-  val_gic_install_isr(intid, isr);
-
-  val_timer_set_vir_el1(timer_expire_val);
+  // Write to GIC registers which will generate Maintenance interrupt
+  data = val_gic_reg_read(ICH_HCR_EL2);
+  data |= 0x7;
+  val_gic_reg_write(ICH_HCR_EL2, data);
 
   while ((--timeout > 0) && (IS_RESULT_PENDING(val_get_status(index))));
 
-  if (timeout == 0)
-    val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
-
+  if(timeout == 0){
+      val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
+      return;
+  }
+  return;
 }
 
 uint32_t
-t003_entry(uint32_t num_pe)
+g004_entry(uint32_t num_pe)
 {
 
   uint32_t status = AVS_STATUS_FAIL;
 
-  num_pe = 1;  //This Timer test is run on single processor
+  num_pe = 1;  //This GIC test is run on single processor
 
   status = val_initialize_test(TEST_NUM, TEST_DESC, num_pe, g_sbsa_level);
   if (status != AVS_STATUS_SKIP)

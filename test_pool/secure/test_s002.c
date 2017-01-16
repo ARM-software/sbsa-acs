@@ -19,10 +19,25 @@
 
 #include "val/include/sbsa_avs_wd.h"
 #include "val/include/sbsa_avs_secure.h"
+#include "val/include/sbsa_avs_pe.h"
 
 #define TEST_NUM   (AVS_SECURE_TEST_NUM_BASE + 2)
 #define TEST_DESC  "Check System Genric Counter       "
 
+static void *branch_to_test;
+
+static
+void
+esr()
+{
+  uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
+
+  /* Update the ELR to return to test specified address */
+  val_pe_update_elr((uint64_t)branch_to_test);
+
+  val_print(AVS_PRINT_INFO, "\n       Received exception           ", 0);
+  val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
+}
 
 static
 void
@@ -30,12 +45,11 @@ payload()
 {
 
   uint32_t timeout = 2;
-  //uint64_t cnt_control_base = 0;
+  uint64_t data = 0;
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
 
   SBSA_SMC_t  smc;
 
-    
   if (!val_is_el3_enabled())
   {
       val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
@@ -43,13 +57,13 @@ payload()
   }
 
   smc.test_index = SBSA_SECURE_TEST_SYS_COUNTER;
-  
+
   val_secure_call_smc(&smc);
 
   switch (val_secure_get_result(&smc, timeout))
   {
       case AVS_STATUS_PASS:
-	  val_print(AVS_PRINT_DEBUG, "\n       Secure CNT base is   0x%x   ", smc.test_arg02);
+          val_print(AVS_PRINT_DEBUG, "\n       Secure CNT base is   0x%x   ", smc.test_arg02);
           val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
           break;
       case AVS_STATUS_SKIP:
@@ -61,7 +75,24 @@ payload()
       default:
           val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
   }
-  
+
+  /* Install both sync and async handlers, so that the test could handle
+     either of these exceptions.*/
+  val_pe_install_esr(EXCEPT_AARCH64_SYNCHRONOUS_EXCEPTIONS, esr);
+  val_pe_install_esr(EXCEPT_AARCH64_SERROR, esr);
+
+  branch_to_test = &&exception_taken;
+  data = *(uint64_t *)smc.test_arg02;
+
+exception_taken:
+  if(IS_TEST_FAIL(val_get_status(index)))
+      return;
+
+  if (data == smc.test_arg03)
+      val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 03));
+  else
+      val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 02));
+
 }
 
 uint32_t

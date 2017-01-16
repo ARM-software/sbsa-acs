@@ -67,7 +67,7 @@ createGicInfoTable (
   UINT64     *GicInfoTable;
 
   Status = gBS->AllocatePool (EfiBootServicesData,
-                               1024,
+                               2048,
                                (VOID **) &GicInfoTable);
 
   if (EFI_ERROR(Status))
@@ -91,7 +91,7 @@ createTimerInfoTable(
   EFI_STATUS Status;
 
   Status = gBS->AllocatePool (EfiBootServicesData,
-                              1024, 
+                              1024,
                               (VOID **) &TimerInfoTable);
 
   if (EFI_ERROR(Status))
@@ -112,7 +112,7 @@ createWatchdogInfoTable(
   EFI_STATUS Status;
 
   Status = gBS->AllocatePool (EfiBootServicesData,
-                              512, 
+                              512,
                               (VOID **) &WdInfoTable);
 
   if (EFI_ERROR(Status))
@@ -157,7 +157,7 @@ createPcieVirtInfoTable(
     return Status;
   }
   val_smmu_create_info_table(IoVirtInfoTable);
-  
+
   return Status;
 }
 
@@ -184,9 +184,9 @@ createPeripheralInfoTable(
   Status = gBS->AllocatePool (EfiBootServicesData,
                               4096,
                               (VOID **) &MemoryInfoTable);
-  
+
   if (EFI_ERROR(Status))
-  { 
+  {
     Print(L"Allocate Pool failed %x \n", Status);
     return Status;
   }
@@ -224,7 +224,7 @@ STATIC CONST SHELL_PARAM_ITEM ParamList[] = {
 /***
   SBSA Compliance Suite Entry Point.
 
-  Call the Entry points of individual modules. 
+  Call the Entry points of individual modules.
 
   @retval  0         The application exited normally.
   @retval  Other     An error occurred.
@@ -302,10 +302,10 @@ ShellAppMain (
 
   Print(L"\n Starting Compliance verification for Level %2d (Print level is %2d)\n\n", g_sbsa_level, g_print_level);
 
-    
+
   Print(L" Creating Platform Information Tables \n");
   Status = createPeInfoTable();
-  if (Status) 
+  if (Status)
     return Status;
 
   Status = createGicInfoTable();
@@ -330,7 +330,7 @@ ShellAppMain (
 
   Print(L"\n      ***  Starting GIC tests ***  \n");
   Status |= val_gic_execute_tests(g_sbsa_level, val_pe_get_num());
-  
+
   Print(L"\n      *** Starting Timer tests ***  \n");
   Status |= val_timer_execute_tests(g_sbsa_level, val_pe_get_num());
 

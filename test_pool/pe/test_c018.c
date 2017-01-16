@@ -25,6 +25,9 @@
 #define PMBLIMITR_VALUE(val) (val + 0x10000 + 1)
 
 uint64_t mem_array[2048];
+/* Interrupt ID for PMBIRQ for compliance level > 1 is 22, 
+   the test will be skipped for compliance level <= 1 */
+static uint32_t int_id = 22;
 
 uint64_t
 get_interval_for_pmsirr(void)
@@ -77,6 +80,7 @@ pmbirq_isr()
 
   val_print(AVS_PRINT_INFO, "\n Received PMBIRQ ", 0);
   val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
+  val_gic_end_of_interrupt(int_id);
 
   return;
 }
@@ -87,7 +91,6 @@ void
 payload()
 {
 
-  uint32_t int_id;
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
   addr_t addr = 0x3200000;  //50 MB - randomly chosen.
   uint64_t attr,data;
@@ -101,10 +104,6 @@ payload()
     val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
     return;
   }
-
-  /* Interrupt ID for PMBIRQ for compliance level > 1 is 22, 
-     the test will be skipped for compliance level <= 1 */
-  int_id = 22;
 
   val_gic_install_isr(int_id, pmbirq_isr);
 

@@ -22,7 +22,7 @@
 PCIE_INFO_TABLE *g_pcie_info_table;
 
 uint64_t
-pal_get_mcfg_ptr();
+pal_get_mcfg_ptr(void);
 
 /**
   @brief   This API reads 32-bit data from PCIe config space pointed by Bus,
@@ -141,7 +141,6 @@ val_pcie_execute_tests(uint32_t level, uint32_t num_pe)
 
   status |= p002_entry(num_pe);
   status |= p003_entry(num_pe);
-  status |= p004_entry(num_pe);
 
   if (status != AVS_STATUS_PASS) {
       val_print(AVS_PRINT_ERR, "\n     One or more PCIe tests have failed.... \n", status);
@@ -173,7 +172,7 @@ val_pcie_create_info_table(uint64_t *pcie_info_table)
 
   pal_pcie_create_info_table(g_pcie_info_table);
   
-  val_print(AVS_PRINT_TEST, " PCIE_INFO: PCIE ECAM value           :    %x \n", val_pcie_get_info(PCIE_INFO_ECAM));
+  val_print(AVS_PRINT_TEST, " PCIE_INFO: PCIE ECAM value           :    %lx \n", val_pcie_get_info(PCIE_INFO_ECAM));
 }
 
 /**

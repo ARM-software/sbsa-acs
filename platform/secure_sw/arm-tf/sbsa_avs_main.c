@@ -29,6 +29,7 @@
 uint64_t g_sbsa_test_index;
 uint64_t g_sbsa_acs_result;
 uint64_t g_sbsa_acs_return_data;
+uint64_t g_sbsa_acs_return_data2;
 
 /**
   @brief   This API is the basic handler which handles SMC call
@@ -96,7 +97,10 @@ sbsa_acs_system_counter_entry()
 
     /* check CNTControlBase is mapped within the secure range */
     /* return data back to non-secure side to verify it is not accessible from there */
-    sbsa_acs_set_status(ACS_STATUS_PASS, SBSA_CNTControlBase);
+    data = 0xDEADBEEF;
+    sbsa_acs_mmio_write(SBSA_CNTControlBase + 0x8, data);
+    sbsa_acs_set_status(ACS_STATUS_PASS, SBSA_CNTControlBase + 0x8);
+    g_sbsa_acs_return_data2 = data;
     return 0;
 }
 
@@ -215,6 +219,23 @@ sbsa_acs_smc_init(int arg01)
     return 0;
 }
 /**
+  @brief   This API returns platform-specific secure address
+**/
+int
+sbsa_acs_secure_platform_address(int arg01)
+{
+    uint64_t addr_array[] = {SBSA_TRUSTED_SRAM_BASE1, SBSA_TRUSTED_SRAM_BASE2, SBSA_TRUSTED_SRAM_BASE3, SBSA_TRUSTED_SRAM_BASE4};
+    uint64_t address;
+    if(arg01 > 3){
+        sbsa_acs_set_status(ACS_STATUS_FAIL, 0xFF);
+        return 0;
+    }
+    address = addr_array[arg01];
+    sbsa_acs_set_status(ACS_STATUS_PASS, address);
+    g_sbsa_acs_return_data2 = *(uint64_t *)address;
+    return 0;
+}
+/**
   @brief   This API is SBSA AVS top level handler for servicing SMCs
 **/
 uint64_t sbsa_smc_handler(uint32_t smc_fid,
@@ -226,6 +247,7 @@ uint64_t sbsa_smc_handler(uint32_t smc_fid,
                           void *handle,
                           uint64_t flags)
 {
+
     if (is_caller_secure(flags))
         SMC_RET1(handle, SMC_UNK);
 
@@ -235,6 +257,7 @@ uint64_t sbsa_smc_handler(uint32_t smc_fid,
         /* result and Data are updated by the test handlers */
         g_sbsa_acs_result = ACS_STATUS_PENDING;
         g_sbsa_acs_return_data = 0;
+        g_sbsa_acs_return_data2 = 0;
     }
 
     acs_printf("SBSA SM handler entry %x %x \n", (int)x1, (int)x2);
@@ -253,17 +276,21 @@ uint64_t sbsa_smc_handler(uint32_t smc_fid,
             SMC_RET1(handle, sbsa_acs_el3_phy_timer());
 
         case SBSA_SECURE_TEST_SEC_UART:
-            SMC_RET1(handle, sbsa_acs_secure_uart()); 
+            SMC_RET1(handle, sbsa_acs_secure_uart());
 
         case SBSA_SECURE_GET_RESULT:
-            SMC_RET3(handle, g_sbsa_test_index, g_sbsa_acs_result, g_sbsa_acs_return_data);
+            SMC_RET4(handle, g_sbsa_test_index, g_sbsa_acs_result, g_sbsa_acs_return_data, g_sbsa_acs_return_data2);
 
         case SBSA_SECURE_INFRA_INIT:
             SMC_RET1(handle, sbsa_acs_smc_init(x2));
 
+        case SBSA_SECURE_PLATFORM_ADDRESS:
+            SMC_RET1(handle, sbsa_acs_secure_platform_address(x2));
+
         default:
             g_sbsa_acs_result = ACS_STATUS_SKIP;
             g_sbsa_acs_return_data = 0;
+            g_sbsa_acs_return_data2 = 0;
             break;
     }
 

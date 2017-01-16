@@ -36,21 +36,22 @@ The present release implements a UEFI shell application to execute these tests f
 ### ACS Build steps
 
 1.  cd local_edk2_path
-2.  git clone https://github.com/ARM-software/sbsa-acs AppPkg/Applications/Sbsa
+2.  git clone https://github.com/ARM-software/sbsa-acs AppPkg/Applications/sbsa-acs
 3.  Add the following to the [LibraryClasses.common] section in ShellPkg/ShellPkg.dsc
-   - Add  SbsaValLib|AppPkg/Applications/Sbsa/val/SbsaValLib.inf
-   - Add  SbsaPalLib|AppPkg/Applications/Sbsa/platform/pal_uefi/SbsaPalLib.inf
-4.  Add AppPkg/Applications/Sbsa/uefi_app/SbsaAvs.inf in the [components] section of ShellPkg/ShellPkg.dsc
+   - Add  SbsaValLib|AppPkg/Applications/sbsa-acs/val/SbsaValLib.inf
+   - Add  SbsaPalLib|AppPkg/Applications/sbsa-acs/platform/pal_uefi/SbsaPalLib.inf
+4.  Add AppPkg/Applications/sbsa-acs/uefi_app/SbsaAvs.inf in the [components] section of ShellPkg/ShellPkg.dsc
 
 #### Linux
-1.  export GCC49_AARCH64_PREFIX= GCC5.3 toolchain path /bin/aarch64-linux-gnu-
+1.  export GCC49_AARCH64_PREFIX= "GCC5.3 toolchain path"/bin/aarch64-linux-gnu-
 2.  source edksetup.sh
 3.  make -C BaseTools/Source/C
-4.  source AppPkg/Applications/Sbsa/avsbuild.sh
+4.  source AppPkg/Applications/sbsa-acs/tools/scripts/avsbuild.sh
 
 #### Windows
-- To be added
-
+1.  Set the toolchain path to GCC53.
+2.  set up the environment for AARCH64 - edk2 build.
+3.  Build the Sbsa Shell application. example:  build -a AARCH64 -t GCC49 -p ShellPkg/ShellPkg.dsc -m AppPkg/Applications/sbsa-acs/uefi_app/SbsaAvs.inf
 
 ### Build Output
 
@@ -98,8 +99,8 @@ On a system where a USB port is available and functional, follow the below steps
 On an Emulation platform where secondary storage is not available.
 
 1. Add the Sbsa.efi file as part of the UEFI FD file.
-    - Add Sbsa.efi as a binary to the UefiShellCommandLib
-    - Or add the SbsaAvsMain.inf to the UefiShellCommandLib.inf
+    - Add SbsaAvs.inf and the dependant VAL and PAL inf files to the Platform dsc and fdf files.
+    - Or add the SbsaAvs.inf and the dependant VAL and PAL inf files to the UefiShellCommandLib.inf
 2. Build UEFI image including the UEFI Shell.
 3. Boot the system to UEFI shell.
 4. Run the executable “Sbsa.efi” to start the compliance tests.

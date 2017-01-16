@@ -34,8 +34,8 @@
 #define AVS_STATUS_PASS 0x0
 
 /* GENERIC VAL APIs */
-void val_allocate_shared_mem();
-void val_free_shared_mem();
+void val_allocate_shared_mem(void);
+void val_free_shared_mem(void);
 void val_print(uint32_t level, char8_t *string, uint64_t data);
 void val_set_test_data(uint32_t index, uint64_t addr, uint64_t test_data);
 void val_get_test_data(uint32_t index, uint64_t *data0, uint64_t *data1);
@@ -44,15 +44,15 @@ void val_get_test_data(uint32_t index, uint64_t *data0, uint64_t *data1);
 /* VAL PE APIs */
 uint32_t val_pe_execute_tests(uint32_t level, uint32_t num_pe);
 uint32_t val_pe_create_info_table(uint64_t *pe_info_table);
-void     val_pe_free_info_table();
-uint32_t val_pe_get_num();
+void     val_pe_free_info_table(void);
+uint32_t val_pe_get_num(void);
 uint64_t val_pe_get_mpid_index(uint32_t index);
 uint32_t val_pe_get_pmu_gsiv(uint32_t index);
-uint64_t val_pe_get_mpid();
+uint64_t val_pe_get_mpid(void);
 uint32_t val_pe_get_index_mpid(uint64_t mpid);
-uint32_t val_pe_install_esr(uint32_t exception_type, void (*esr)());
+uint32_t val_pe_install_esr(uint32_t exception_type, void (*esr)(void));
 
-void     val_execute_on_pe(uint32_t index, void (*paylod)(), uint64_t args);
+void     val_execute_on_pe(uint32_t index, void (*payload)(void), uint64_t args);
 void     val_suspend_pe(uint32_t power_state, uint64_t entry, uint32_t context_id);
 
 /* GIC VAL APIs */
@@ -67,12 +67,13 @@ typedef enum {
   GIC_INFO_NUM_ITS,
   GIC_INFO_ITS_BASE
 }GIC_INFO_e;
-  
+
 uint32_t
 val_gic_get_info(GIC_INFO_e type);
-void     val_gic_free_info_table();
+void     val_gic_free_info_table(void);
 uint32_t val_gic_execute_tests(uint32_t level, uint32_t num_pe);
-uint32_t val_gic_install_isr(uint32_t int_id, void (*isr)());
+uint32_t val_gic_install_isr(uint32_t int_id, void (*isr)(void));
+uint32_t val_gic_end_of_interrupt(uint32_t int_id);
 
 
 /*TIMER VAL APIs */
@@ -80,7 +81,7 @@ typedef enum {
   TIMER_INFO_CNTFREQ = 1,
   TIMER_INFO_PHY_EL1_INTID,
   TIMER_INFO_PHY_EL1_FLAGS,
-  TIMER_INFO_VIR_EL1_INTID, 
+  TIMER_INFO_VIR_EL1_INTID,
   TIMER_INFO_VIR_EL1_FLAGS,
   TIMER_INFO_PHY_EL2_INTID,
   TIMER_INFO_PHY_EL2_FLAGS,
@@ -95,13 +96,16 @@ typedef enum {
 #define SBSA_TIMER_FLAG_ALWAYS_ON 0x4
 
 void     val_timer_create_info_table(uint64_t *timer_info_table);
-void     val_timer_free_info_table();
+void     val_timer_free_info_table(void);
 uint32_t val_timer_execute_tests(uint32_t level, uint32_t num_pe);
 uint64_t val_timer_get_info(TIMER_INFO_e info_type);
 void     val_timer_set_phy_el1(uint64_t timeout);
 void     val_timer_set_vir_el1(uint64_t timeout);
 void     val_timer_set_phy_el2(uint64_t timeout);
 void     val_timer_set_vir_el2(uint64_t timeout);
+void     val_timer_set_system_timer(addr_t cnt_base_n, uint32_t timeout);
+void     val_timer_disable_system_timer(addr_t cnt_base_n);
+uint32_t val_timer_skip_if_cntbase_access_not_allowed(void);
 
 /* Watchdog VAL APIs */
 typedef enum {
@@ -113,7 +117,7 @@ typedef enum {
 }WD_INFO_TYPE_e;
 
 void     val_wd_create_info_table(uint64_t *wd_info_table);
-void     val_wd_free_info_table();
+void     val_wd_free_info_table(void);
 uint32_t val_wd_execute_tests(uint32_t level, uint32_t num_pe);
 uint64_t val_wd_get_info(uint32_t index, uint32_t info_type);
 void     val_wd_set_ws0(uint32_t index, uint32_t timeout);
@@ -121,7 +125,7 @@ void     val_wd_set_ws0(uint32_t index, uint32_t timeout);
 
 /* PCIE VAL APIs */
 void     val_pcie_create_info_table(uint64_t *pcie_info_table);
-void     val_pcie_free_info_table();
+void     val_pcie_free_info_table(void);
 uint32_t val_pcie_execute_tests(uint32_t level, uint32_t num_pe);
 
 /* IO-VIRT APIs */
@@ -132,7 +136,7 @@ typedef enum {
 }SMMU_INFO_e;
 
 void     val_smmu_create_info_table(uint64_t *smmu_info_table);
-void     val_smmu_free_info_table();
+void     val_smmu_free_info_table(void);
 uint32_t val_smmu_execute_tests(uint32_t level, uint32_t num_pe);
 uint64_t val_smmu_get_info(SMMU_INFO_e, uint32_t index);
 
@@ -171,7 +175,7 @@ typedef enum {
 }PERIPHERAL_INFO_e;
 
 void     val_peripheral_create_info_table(uint64_t *peripheral_info_table);
-void     val_peripheral_free_info_table();
+void     val_peripheral_free_info_table(void);
 uint32_t val_peripheral_execute_tests(uint32_t level, uint32_t num_pe);
 uint64_t val_peripheral_get_info(PERIPHERAL_INFO_e info_type, uint32_t index);
 
@@ -188,7 +192,7 @@ typedef enum {
 #define MEM_ATTR_CACHED    0x1000
 
 void     val_memory_create_info_table(uint64_t *memory_info_table);
-void     val_memory_free_info_table();
+void     val_memory_free_info_table(void);
 uint32_t val_memory_execute_tests(uint32_t level, uint32_t num_pe);
 uint64_t val_memory_get_info(addr_t addr, uint64_t *attr);
 
@@ -199,6 +203,7 @@ typedef struct {
   uint64_t   test_index;
   uint64_t   test_arg01;
   uint64_t   test_arg02;
+  uint64_t   test_arg03;
 } SBSA_SMC_t;
 
 void     val_secure_call_smc(SBSA_SMC_t *smc);

@@ -22,6 +22,7 @@
 
 #include <Protocol/AcpiTable.h>
 #include "Include/IndustryStandard/Acpi61.h"
+#include "Include/IndustryStandard/SerialPortConsoleRedirectionTable.h"
 
 #include "include/pal_uefi.h"
 #include "include/sbsa_pcie_enum.h"
@@ -33,12 +34,16 @@
 #define BAR1            1
 #define BAR2            2
 
+UINT64
+pal_get_spcr_ptr();
+
 VOID
 pal_peripheral_create_info_table(PERIPHERAL_INFO_TABLE *peripheralInfoTable)
 {
   UINT32   DeviceBdf = 0;
   UINT32   StartBdf  = 0;
   PERIPHERAL_INFO_BLOCK *per_info;
+  EFI_ACPI_SERIAL_PORT_CONSOLE_REDIRECTION_TABLE *spcr;
 
 
   per_info = peripheralInfoTable->info;
@@ -78,9 +83,20 @@ pal_peripheral_create_info_table(PERIPHERAL_INFO_TABLE *peripheralInfoTable)
           per_info++;
           //Increment and check if we have more controllers
           StartBdf = incrementBusDev(DeviceBdf);
-       } 
-       
+       }
+
   } while (DeviceBdf != 0);
+
+  /* Search for a SPCR table in the system to get the UART details */
+  spcr = (EFI_ACPI_SERIAL_PORT_CONSOLE_REDIRECTION_TABLE *)pal_get_spcr_ptr();
+
+  if (spcr) {
+    peripheralInfoTable->header.num_uart++;
+    per_info->base0 = spcr->BaseAddress.Address;
+    per_info->irq   = spcr->Irq;
+    per_info->type  = PERIPHERAL_TYPE_UART;
+    per_info++;
+  }
 
   if (PLATFORM_GENERIC_UART_BASE) {
     peripheralInfoTable->header.num_uart++;

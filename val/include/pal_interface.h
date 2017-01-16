@@ -73,7 +73,7 @@ typedef struct {
 
 void pal_pe_call_smc(ARM_SMC_ARGS *args);
 void pal_pe_execute_payload(ARM_SMC_ARGS *args);
-uint32_t pal_pe_install_esr(uint32_t exception_type, void (*esr)());
+uint32_t pal_pe_install_esr(uint32_t exception_type, void (*esr)(void));
 /* ********** PE INFO END **********/
 
 
@@ -105,7 +105,7 @@ typedef struct {
 }GIC_INFO_ENTRY;
 
 /**
-  @brief  GIC Information Table 
+  @brief  GIC Information Table
 **/
 typedef struct {
   GIC_INFO_HDR   header;
@@ -113,7 +113,8 @@ typedef struct {
 }GIC_INFO_TABLE;
 
 void     pal_gic_create_info_table(GIC_INFO_TABLE *gic_info_table);
-uint32_t pal_gic_install_isr(uint32_t int_id, void (*isr)());
+uint32_t pal_gic_install_isr(uint32_t int_id, void (*isr)(void));
+uint32_t pal_gic_end_of_interrupt(uint32_t int_id);
 
 
 /** Timer tests related definitions **/
@@ -202,14 +203,14 @@ typedef struct {
   uint32_t max_bus_num; ///< Maximum Bus number
 }PCIE_INFO_TABLE;
 
-uint64_t pal_pcie_get_mcfg_ecam();
+uint64_t pal_pcie_get_mcfg_ecam(void);
 void     pal_pcie_create_info_table(PCIE_INFO_TABLE *PcieTable);
 
 /**
-  @brief  Instance of SMMU INFO block 
+  @brief  Instance of SMMU INFO block
 **/
 typedef struct {
-  uint32_t arch_major_rev;  ///< Version 1 or 2 or 3 
+  uint32_t arch_major_rev;  ///< Version 1 or 2 or 3
   addr_t base;              ///< SMMU Controller base address
 }SMMU_INFO_BLOCK;
 
@@ -294,13 +295,13 @@ void     *pal_mem_alloc(uint32_t size);
 void     pal_mem_free(void *buffer);
 
 void     pal_mem_allocate_shared(uint32_t num_pe, uint32_t sizeofentry);
-void     pal_mem_free_shared();
-uint64_t pal_mem_get_shared_addr();
+void     pal_mem_free_shared(void);
+uint64_t pal_mem_get_shared_addr(void);
 
 uint32_t pal_mmio_read(uint64_t addr);
 void     pal_mmio_write(uint64_t addr, uint32_t data);
 
-void     pal_pe_increment_elr(uint64_t offset);
+void     pal_pe_update_elr(uint64_t offset);
 void     pal_pe_data_cache_ci_va(uint64_t addr);
 #endif
 

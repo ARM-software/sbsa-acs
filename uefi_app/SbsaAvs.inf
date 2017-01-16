@@ -51,8 +51,9 @@
   ../test_pool/pe/test_c016.c
   ../test_pool/pe/test_c017.c
   ../test_pool/gic/test_g001.c
-  ../test_pool/gic/test_g005.c
-  ../test_pool/gic/test_g006.c
+  ../test_pool/gic/test_g002.c
+  ../test_pool/gic/test_g003.c
+  ../test_pool/gic/test_g004.c
   ../test_pool/timer_wd/test_t001.c
   ../test_pool/timer_wd/test_t002.c
   ../test_pool/timer_wd/test_t003.c
@@ -60,6 +61,7 @@
   ../test_pool/timer_wd/test_t005.c
   ../test_pool/timer_wd/test_t006.c
   ../test_pool/timer_wd/test_t007.c
+  ../test_pool/timer_wd/test_t008.c
   ../test_pool/timer_wd/test_w001.c
   ../test_pool/timer_wd/test_w002.c
   ../test_pool/pcie/test_p001.c
@@ -75,6 +77,7 @@
   ../test_pool/peripherals/test_d002.c
   ../test_pool/peripherals/test_d003.c
   ../test_pool/peripherals/test_m001.c
+  ../test_pool/peripherals/test_m002.c
 
 [Packages]
   EmbeddedPkg/EmbeddedPkg.dec

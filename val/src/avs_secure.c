@@ -19,6 +19,7 @@
 #include "include/sbsa_avs_secure.h"
 #include "include/sbsa_avs_common.h"
 #include "include/sbsa_std_smc.h"
+#include "include/sbsa_avs_peripherals.h"
 
 
 /**
@@ -37,6 +38,7 @@ val_secure_execute_tests(uint32_t level, uint32_t num_pe)
   //status = s001_entry(num_pe);
   status = s002_entry(num_pe);
   status |= s003_entry(num_pe);
+  status |= m002_entry(num_pe);
 
   return status;
 }
@@ -87,6 +89,7 @@ val_secure_get_result(SBSA_SMC_t *smc, uint32_t timeout)
   /* Arg2 and Arg3 are the actual return data */
   smc->test_arg01 = l_smc_args.Arg1;
   smc->test_arg02 = l_smc_args.Arg2;
+  smc->test_arg03 = l_smc_args.Arg3;
 
   val_print(AVS_PRINT_INFO, "return data 1 is %x \n", smc->test_index);
   val_print(AVS_PRINT_INFO, "return data 2 is %x \n", smc->test_arg01);

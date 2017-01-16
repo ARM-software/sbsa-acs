@@ -24,7 +24,7 @@
 
 static
 void
-payload()
+payload(void)
 {
 
   uint64_t ecam_base;

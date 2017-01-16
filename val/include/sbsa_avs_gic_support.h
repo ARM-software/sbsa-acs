@@ -12,43 +12,23 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- **/
+**/
 
-#ifndef __SBSA_AVS_VAL_H__
-#define __SBSA_AVS_VAL_H__
+#ifndef __GIC_SYS_REGS_H__
+#define __GIC_SYS_REGS_H__
 
-#include "val_interface.h"
-#include "pal_interface.h"
-#include "sbsa_avs_cfg.h"
-#include "sbsa_avs_common.h"
+typedef enum {
+  ICH_HCR_EL2 = 0,
+  ICH_MISR_EL2
+}SBSA_AVS_GIC_REGS;
+
+uint64_t val_gic_reg_read(uint32_t reg_id);
+void     val_gic_reg_write(uint32_t reg_id, uint64_t write_data);
+
+uint64_t GicReadIchHcr(void);
+uint64_t GicReadIchMisr(void);
+
+void GicWriteIchHcr(uint64_t write_data);
 
 
-typedef struct {
-  uint64_t    data0;
-  uint64_t    data1;
-  uint32_t     status;
-}VAL_SHARED_MEM_t;
-
-uint64_t
-val_pe_reg_read(uint32_t reg_id);
-
-void
-val_pe_reg_write(uint32_t reg_id, uint64_t write_data);
-
-uint8_t
-val_is_el3_enabled(void);
-
-uint8_t
-val_is_el2_enabled(void);
-
-void
-val_report_status(uint32_t id, uint32_t status);
-
-void
-val_set_status(uint32_t index, uint32_t status);
-
-uint32_t
-val_get_status(uint32_t id);
-
-#endif
-
+#endif // __GIC_SYS_REGS_H__

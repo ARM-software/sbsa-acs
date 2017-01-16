@@ -39,5 +39,6 @@ uint32_t d003_entry(uint32_t num_pe);
 
 
 uint32_t m001_entry(uint32_t num_pe);
+uint32_t m002_entry(uint32_t num_pe);
 
 #endif // __SBSA_AVS_PERIPHERAL_H__

@@ -103,9 +103,9 @@
   for both input and output values.
 
 **/
-VOID
+void
 ArmCallSmc (
-  IN OUT ARM_SMC_ARGS *Args
+  ARM_SMC_ARGS *Args
   );
 
 

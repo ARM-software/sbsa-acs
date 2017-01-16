@@ -20,12 +20,14 @@
 #include "val/include/sbsa_avs_peripherals.h"
 #include "val/include/sbsa_avs_pe.h"
 
-#define TEST_NUM   85
+#define TEST_NUM   (AVS_PER_TEST_NUM_BASE + 5)
 #define TEST_DESC  "Memory Access to Un-Populated addr"
 
 #define START_ADDR 0x4200000       // 66 MB - Randomly chosen
 #define LOOP_VAR   3               // Number of Addresses to check
 #define STEP_SIZE  0x1000000       // Step size to increment address
+
+static void *branch_to_test;
 
 static
 void
@@ -38,9 +40,9 @@ esr()
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
 
   /* Update the ELR to point to next instrcution */
-  val_pe_increment_elr(4);
+  val_pe_update_elr((uint64_t)branch_to_test);
 
-  val_print(AVS_PRINT_INFO, "\n       Received SERR           ", 0);
+  val_print(AVS_PRINT_INFO, "\n       Received DAbort Exception ", 0);
   val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
 }
 
@@ -50,7 +52,7 @@ payload()
 {
   addr_t addr = START_ADDR;
   uint64_t attr;
-  uint32_t loop_var = LOOP_VAR;      //Increase to 2048 times to increase coverage 
+  uint32_t loop_var = LOOP_VAR;      //Increase to 2048 times to increase coverage
                               //of all unpopulated regions
 
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
@@ -64,14 +66,16 @@ payload()
          /* default value of FAIL, Pass is set in the exception handler */
           val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
 
-          *((volatile uint64_t*)addr) = 0x100;
+          branch_to_test = &&exception_taken;
 
+          *((volatile uint64_t*)addr) = 0x100;
+exception_taken:
           /* if the access did not go to our exception handler, fail and exit */
           if (IS_TEST_FAIL(val_get_status(index))) {
               val_print(AVS_PRINT_ERR, "\n      Memory access check fails at address = 0x%llx ", addr);
               return;
           }
-          
+
       }
       addr += STEP_SIZE;   //check at 16MB hops
       loop_var --;

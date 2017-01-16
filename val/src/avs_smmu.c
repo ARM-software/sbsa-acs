@@ -22,10 +22,10 @@
 SMMU_INFO_TABLE *g_smmu_info_table;
 
 uint64_t
-pal_get_iort_ptr();
+pal_get_iort_ptr(void);
 
 /**
-  @brief  This API reads 32-bit data from a register of an SMMU controller 
+  @brief  This API reads 32-bit data from a register of an SMMU controller
           specifed by index
   @param offset   32-bit register offset
   @param index    when multiple SMMU controllers are present in the system.

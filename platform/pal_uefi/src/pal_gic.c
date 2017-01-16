@@ -124,8 +124,8 @@ pal_gic_create_info_table(GIC_INFO_TABLE *GicTable)
 	GicTable->header.num_its++;
         GicEntry++;
     }
-    Entry = (EFI_ACPI_6_1_GIC_STRUCTURE *) ((UINT8 *)Entry + (Entry->Length));
     Length += Entry->Length;
+    Entry = (EFI_ACPI_6_1_GIC_STRUCTURE *) ((UINT8 *)Entry + (Entry->Length));
 
 
   } while(Length < TableLength);
@@ -135,7 +135,7 @@ pal_gic_create_info_table(GIC_INFO_TABLE *GicTable)
 }
 
 /**
-  @brief  Enable the interrupt in the GIC Distributor and GIC CPU Interface and hook 
+  @brief  Enable the interrupt in the GIC Distributor and GIC CPU Interface and hook
           the interrupt service routine for the IRQ to the UEFI Framework
 
   @param  int_id  Interrupt ID which needs to be enabled and service routine installed for
@@ -169,8 +169,34 @@ pal_gic_install_isr(UINT32 int_id,  VOID (*isr)())
     Status = gInterrupt->RegisterInterruptSource (gInterrupt, int_id, isr);  //register our Handler.
     //Even if this fails. there is nothing we can do in UEFI mode
   }
-  // Enable the Interrupt
-  gInterrupt->EnableInterruptSource(gInterrupt, int_id);
+
+  return 0;
+}
+
+/**
+  @brief  Indicate that processing of interrupt is complete by writing to
+          End of interrupt register in the GIC CPU Interface
+
+  @param  int_id  Interrupt ID which needs to be acknowledged that it is complete
+
+  @return Status of the operation
+**/
+UINT32
+pal_gic_end_of_interrupt(UINT32 int_id)
+{
+
+  EFI_STATUS  Status;
+
+ // Find the interrupt controller protocol.
+  Status = gBS->LocateProtocol (&gHardwareInterruptProtocolGuid, NULL, (VOID **)&gInterrupt);
+  if (EFI_ERROR(Status)) {
+    return 0xFFFFFFFF;
+  }
+
+  //
+  //EndOfInterrupt.
+  //
+  gInterrupt->EndOfInterrupt(gInterrupt, int_id);
 
   return 0;
 }

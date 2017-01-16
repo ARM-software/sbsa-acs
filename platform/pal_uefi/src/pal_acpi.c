@@ -157,3 +157,35 @@ pal_get_mcfg_ptr()
 
 }
 
+/**
+  @brief  Iterate through the tables pointed by XSDT and return MCFG Table address
+
+  @param  None
+
+  @return 64-bit SPCR address
+**/
+UINT64
+pal_get_spcr_ptr()
+{
+  EFI_ACPI_DESCRIPTION_HEADER   *Xsdt;
+  UINT64                        *Entry64;
+  UINT32                        Entry64Num;
+  UINT32                        Idx;
+
+  Xsdt = (EFI_ACPI_DESCRIPTION_HEADER *) pal_get_xsdt_ptr();
+  if (Xsdt == NULL) {
+      Print(L"XSDT not found \n");
+      return 0;
+  }
+
+  Entry64  = (UINT64 *)(Xsdt + 1);
+  Entry64Num = (Xsdt->Length - sizeof(EFI_ACPI_DESCRIPTION_HEADER)) >> 3;
+  for (Idx = 0; Idx < Entry64Num; Idx++) {
+    if (*(UINT32 *)(UINTN)(Entry64[Idx]) == EFI_ACPI_2_0_SERIAL_PORT_CONSOLE_REDIRECTION_TABLE_SIGNATURE) {
+        return(UINT64)(Entry64[Idx]);
+    }
+  }
+
+  return 0;
+
+}

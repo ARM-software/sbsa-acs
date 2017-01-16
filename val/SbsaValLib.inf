@@ -26,9 +26,12 @@
   src/AArch64/PeRegSysSupport.S
   src/AArch64/PeTestSupport.S
   src/AArch64/ArchTimerSupport.S
+  src/AArch64/GicSupport.S
   src/avs_status.c
   src/avs_pe.c
+  src/avs_pe_infra.c
   src/avs_gic.c
+  src/avs_gic_support.c
   src/avs_pcie.c
   src/avs_smmu.c
   src/avs_test_infra.c

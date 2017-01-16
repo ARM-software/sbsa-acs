@@ -31,6 +31,7 @@ payload()
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
 
   gic_version = val_gic_get_info(GIC_INFO_VERSION);
+  val_print(AVS_PRINT_INFO, "\n       Received GIC version = %4d      ", gic_version);
 
   if (g_sbsa_level < 2) {
       if (gic_version < 2) {

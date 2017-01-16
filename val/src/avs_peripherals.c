@@ -67,7 +67,7 @@ val_peripheral_execute_tests(uint32_t level, uint32_t num_pe)
 uint32_t
 val_peripheral_get_entry_index(uint32_t type, uint32_t instance)
 {
-  uint32_t  i;
+  uint32_t  i = 0;
 
   while (g_peripheral_info_table->info[i].type != 0xFF) {
       if (g_peripheral_info_table->info[i].type == type) {

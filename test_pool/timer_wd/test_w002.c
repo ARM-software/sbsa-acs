@@ -23,6 +23,8 @@
 #define TEST_NUM   (AVS_WD_TEST_NUM_BASE + 2)
 #define TEST_DESC  "Check Watchdog WS0 interrupt      "
 
+static uint32_t int_id;
+
 static
 void
 isr()
@@ -38,6 +40,7 @@ isr()
   val_wd_set_ws0(0, 0);
   val_print(AVS_PRINT_DEBUG, "\n Received WS0 interrupt            ", 0);
   val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
+  val_gic_end_of_interrupt(int_id);
 }
 
 
@@ -47,7 +50,6 @@ payload()
 {
 
   uint64_t wd_num = 1; //val_wd_get_info(0, INFO_WD_COUNT);
-  uint32_t int_id;
   uint32_t timeout = 0x1000000;
   uint64_t timer_expire_ticks = 10000;
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());

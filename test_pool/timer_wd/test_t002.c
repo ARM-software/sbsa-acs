@@ -22,6 +22,7 @@
 #define TEST_NUM   (AVS_TIMER_TEST_NUM_BASE + 2)
 #define TEST_DESC  "Check EL0-Phy timer interrupt     "
 
+static uint32_t intid;
 
 static
 void
@@ -30,6 +31,7 @@ isr()
   val_timer_set_phy_el1(0);
   val_print(AVS_PRINT_INFO, "\n       Received interrupt   ", 0);
   val_set_status(0, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
+  val_gic_end_of_interrupt(intid);
 }
 
 
@@ -38,15 +40,11 @@ void
 payload()
 {
 
-  uint32_t intid;
   uint32_t timeout = 0x100000;
   uint32_t timer_expire_val = 10000;
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
 
   intid = val_timer_get_info(TIMER_INFO_PHY_EL1_INTID);
-
-  val_print(AVS_PRINT_DEBUG, "\n      Interrupt id is %x     ", intid);
-
   /* For SBSA level 2 and above, the PPI has to be a specific value. */
   if (g_sbsa_level > 1) {
       if (intid != 30) {

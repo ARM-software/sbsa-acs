@@ -42,8 +42,6 @@ ASM_PFX(UpdateElr):
   // <EDK2_PATH>/ArmPkg/Library/ArmExceptionLib/AArch64/ExceptionSupport.S
 
   add   x1, x28, #FP_CONTEXT_SIZE
-  ldr   x2, [x1]    // Load the stacked ELR into x2
-  add   x2, x2, x0  // Add the offset provided by test to x2
-  str   x2, [x1]    // Update the stacked location with offet added ELR
+  str   x0, [x1]    // Update the stacked location with user address
 
   ret

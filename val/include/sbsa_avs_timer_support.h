@@ -128,12 +128,12 @@ void ArmWriteCntvOff (uint64_t   Val);
 
 uint64_t ArmReadCnthpCtl (void);
 void ArmWriteCnthpCtl (uint64_t Val);
-uint64_t ArmReadCnthpTval ();
+uint64_t ArmReadCnthpTval (void);
 void ArmWriteCnthpTval (uint64_t Val);
 
 uint64_t ArmReadCnthvCtl (void);
 void ArmWriteCnthvCtl (uint64_t Val);
-uint64_t ArmReadCnthvTval ();
+uint64_t ArmReadCnthvTval (void);
 void ArmWriteCnthvTval (uint64_t Val);
 
 #endif // __ARM_ARCH_TIMER_H__

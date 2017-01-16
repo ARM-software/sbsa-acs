@@ -120,10 +120,10 @@ pal_pe_create_info_table(PE_INFO_TABLE *PeTable)
       PeTable->header.num_of_pe++;
     }
 
-    Entry = (EFI_ACPI_6_1_GIC_STRUCTURE *) ((UINT8 *)Entry + (Entry->Length));
     Length += Entry->Length;
+    Entry = (EFI_ACPI_6_1_GIC_STRUCTURE *) ((UINT8 *)Entry + (Entry->Length));
 
-  }while(Length < TableLength); 
+  }while(Length < TableLength);
 
   pal_pe_data_cache_ci_va((UINT64)PeTable);
   PalAllocateSecondaryStack(PeTable->header.num_of_pe);
@@ -219,7 +219,7 @@ UpdateElr(UINT64 offset);
 
 
 VOID
-pal_pe_increment_elr(UINT64 offset)
+pal_pe_update_elr(UINT64 offset)
 {
   UpdateElr(offset);
 }

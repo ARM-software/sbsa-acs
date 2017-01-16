@@ -48,9 +48,10 @@ val_gic_execute_tests(uint32_t level, uint32_t num_pe)
 
   if (level > 1) {
     status |= g002_entry(num_pe);
-  }
-  if (level > 2) {
-    status |= g003_entry(num_pe);
+    if (level > 2) {
+      status |= g003_entry(num_pe);
+    }
+    status |= g004_entry(num_pe);
   }
 
 
@@ -110,7 +111,7 @@ val_gic_free_info_table()
   @return  Address of GIC Distributor
 **/
 addr_t
-val_get_gicd_base()
+val_get_gicd_base(void)
 {
 
   GIC_INFO_ENTRY  *gic_entry;
@@ -172,22 +173,21 @@ val_gic_get_info(uint32_t type)
 }
 
 /**
-  @brief   This API returns the max interrupt ID supported by the GIC Distributor 
+  @brief   This API returns the max interrupt ID supported by the GIC Distributor
            1. Caller       -  VAL
            2. Prerequisite -  val_gic_create_info_table
   @param   None
   @return  Maximum Interrupt ID
 **/
 uint32_t
-val_get_max_intid (
-  )
+val_get_max_intid(void)
 {
   return 32 * ((val_mmio_read(val_get_gicd_base() + 0x004) & 0x1F) + 1);
 }
 
 /**
   @brief   This function is installs the ISR pointed by the function pointer
-           the input Interrupt ID. 
+           the input Interrupt ID.
            1. Caller       -  Test Suite
            2. Prerequisite -  val_gic_create_info_table
   @param   int_id Interrupt ID to install the ISR
@@ -195,7 +195,7 @@ val_get_max_intid (
   @return  status
 **/
 uint32_t
-val_gic_install_isr(uint32_t int_id, void (*isr)())
+val_gic_install_isr(uint32_t int_id, void (*isr)(void))
 {
   uint32_t      reg_offset = int_id / 32;
   uint32_t      reg_shift  = int_id % 32;
@@ -206,11 +206,26 @@ val_gic_install_isr(uint32_t int_id, void (*isr)())
 
   pal_gic_install_isr(int_id, isr);
 
-  if (int_id > 63) {
+  if (int_id > 31) {
       /**** UEFI GIC code is not enabling interrupt in the Distributor ***/
       /**** So, do this here as a fail-safe. Remove if PAL guarantees this ***/
       val_mmio_write(val_get_gicd_base() + 0x100 + (4 * reg_offset), 1 << reg_shift);
   }
+
+  return 0;
+}
+
+/**
+  @brief   This function writes to end of interrupt register for relevant
+           interrupt group.
+           1. Caller       -  Test Suite
+           2. Prerequisite -  val_gic_create_info_table
+  @param   int_id Interrupt ID for which to disable the interrupt
+  @return  status
+**/
+uint32_t val_gic_end_of_interrupt(uint32_t int_id)
+{
+  pal_gic_end_of_interrupt(int_id);
 
   return 0;
 }

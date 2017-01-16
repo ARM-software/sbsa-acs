@@ -37,5 +37,7 @@ uint32_t
 g002_entry(uint32_t num_pe);
 uint32_t
 g003_entry(uint32_t num_pe);
+uint32_t
+g004_entry(uint32_t num_pe);
 
 #endif

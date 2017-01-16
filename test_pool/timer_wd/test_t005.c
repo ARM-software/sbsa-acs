@@ -23,6 +23,7 @@
 #define TEST_NUM   (AVS_TIMER_TEST_NUM_BASE + 5)
 #define TEST_DESC  "Check EL2-Virtual timer interrupt "
 
+static uint32_t intid;
 
 static
 void
@@ -33,6 +34,7 @@ isr()
   val_timer_set_vir_el2(0);
   val_print(AVS_PRINT_INFO, "\n       Received interrupt    ", 0);
   val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
+  val_gic_end_of_interrupt(intid);
 }
 
 
@@ -42,7 +44,6 @@ void
 payload()
 {
 
-  uint32_t intid;
   uint32_t timeout = 0x100000;
   uint64_t timer_expire_val = 10000;
   uint64_t data = 0;
@@ -58,7 +59,6 @@ payload()
   }
  
   intid = val_timer_get_info(TIMER_INFO_VIR_EL2_INTID);
-
   /* For SBSA level 2 and above, the PPI has to be a specific value.*/
   if (g_sbsa_level > 1) {
       if (intid != 28) {

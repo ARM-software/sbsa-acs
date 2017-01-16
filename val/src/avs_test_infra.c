@@ -261,7 +261,7 @@ val_wait_for_test_completion(uint32_t test_num, uint32_t num_pe, uint32_t timeou
   @return        None
  **/
 void
-val_run_test_payload(uint32_t test_num, uint32_t num_pe, void (*payload)(), uint64_t test_input)
+val_run_test_payload(uint32_t test_num, uint32_t num_pe, void (*payload)(void), uint64_t test_input)
 {
 
   uint32_t my_index = val_pe_get_index_mpid(val_pe_get_mpid());
@@ -294,7 +294,7 @@ uint32_t
 val_check_for_error(uint32_t test_num, uint32_t num_pe)
 {
   uint32_t i;
-  uint32_t status;
+  uint32_t status = 0;
   uint32_t error_flag = 0;
   uint32_t my_index = val_pe_get_index_mpid(val_pe_get_mpid());
 
@@ -353,7 +353,7 @@ val_data_cache_ci_va(addr_t addr)
   @brief  Update ELR based on the offset provided
 **/
 void
-val_pe_increment_elr(uint32_t offset)
+val_pe_update_elr(uint32_t offset)
 {
-    pal_pe_increment_elr(offset);
+    pal_pe_update_elr(offset);
 }

@@ -21,6 +21,8 @@
 #define TEST_NUM   (AVS_PE_TEST_NUM_BASE  +  11)
 #define TEST_DESC  "Check PMU Overflow signal         "
 
+static uint32_t int_id;
+
 void
 set_pmu_overflow()
 {
@@ -44,6 +46,7 @@ isr()
   val_pe_reg_write(PMOVSCLR_EL0, 0x1);
   val_print(AVS_PRINT_INFO, "\n Received PMUIRQ ", 0);
   val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
+  val_gic_end_of_interrupt(int_id);
 
   return;
 }
@@ -53,7 +56,6 @@ static
 void
 payload()
 {
-  uint32_t int_id;
   uint32_t timeout = 0x100000;
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
 

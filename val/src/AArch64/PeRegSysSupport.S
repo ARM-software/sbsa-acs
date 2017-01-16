@@ -99,6 +99,7 @@ GCC_ASM_EXPORT (AA64WritePmscr2)
 GCC_ASM_EXPORT (AA64WritePmsfcr)
 GCC_ASM_EXPORT (AA64WritePmbptr)
 GCC_ASM_EXPORT (AA64WritePmblimitr)
+GCC_ASM_EXPORT (AA64ReadEsr2)
 
 ASM_PFX(ArmReadMpidr):
   mrs   x0, mpidr_el1           // read EL1 MPIDR
@@ -350,5 +351,9 @@ ASM_PFX(AA64WritePmbptr):
 ASM_PFX(AA64WritePmblimitr):
   //mrs   pmblimitr_el1,x0
   isb
+  ret
+
+ASM_PFX(AA64ReadEsr2):
+  mrs   x0, esr_el2
   ret
 
