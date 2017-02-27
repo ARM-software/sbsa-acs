@@ -41,9 +41,11 @@ val_pcie_read_cfg(uint32_t bdf, uint32_t offset)
   uint32_t dev     = PCIE_EXTRACT_BDF_DEV(bdf);
   uint32_t func    = PCIE_EXTRACT_BDF_FUNC(bdf);
   uint32_t cfg_addr;
+  addr_t   ecam_base = 0;
+  uint32_t i = 0;
 
   if ((bus >= PCIE_MAX_BUS) || (dev >= PCIE_MAX_DEV) || (func >= PCIE_MAX_FUNC)) {
-     val_print(AVS_PRINT_ERR, "Invalid Bus/Dev/Func  %x \n", bdf);  
+     val_print(AVS_PRINT_ERR, "Invalid Bus/Dev/Func  %x \n", bdf);
      return 0;
   }
 
@@ -51,18 +53,30 @@ val_pcie_read_cfg(uint32_t bdf, uint32_t offset)
       val_print(AVS_PRINT_ERR, "\n    Read_PCIe_CFG: PCIE info table is not created", 0);
       return 0;
   }
-  if (g_pcie_info_table->ecam_base == 0) {
-      val_print(AVS_PRINT_ERR, "\n    Read PCIe_CFG: ECAM Base is zero ", 0);
-      return 0;
+
+  while (i < val_pcie_get_info(PCIE_INFO_NUM_ECAM, 0))
+  {
+
+      if ((bus >= val_pcie_get_info(PCIE_INFO_START_BUS, i)) &&
+           (bus <= val_pcie_get_info(PCIE_INFO_END_BUS, i))) {
+          ecam_base = val_pcie_get_info(PCIE_INFO_ECAM, i);
+
+          if (ecam_base == 0) {
+              val_print(AVS_PRINT_ERR, "\n    Read PCIe_CFG: ECAM Base is zero ", 0);
+              return 0;
+          }
+          break;
+      }
+      i++;
   }
 
   /* There are 8 functions / device, 32 devices / Bus and each has a 4KB config space */
   cfg_addr = (bus * PCIE_MAX_DEV * PCIE_MAX_FUNC * 4096) + \
                (dev * PCIE_MAX_FUNC * 4096) + func;
 
-  val_print(AVS_PRINT_DEBUG, "   calculated config address is %x \n", cfg_addr);
+  val_print(AVS_PRINT_INFO, "   calculated config address is %x \n", ecam_base + cfg_addr + offset);
 
-  return *(volatile uint32_t *)(g_pcie_info_table->ecam_base + cfg_addr + offset);
+  return pal_mmio_read(ecam_base + cfg_addr + offset);
 
 }
 
@@ -84,10 +98,12 @@ val_pcie_write_cfg(uint32_t bdf, uint32_t offset, uint32_t data)
   uint32_t dev      = PCIE_EXTRACT_BDF_DEV(bdf);
   uint32_t func     = PCIE_EXTRACT_BDF_FUNC(bdf);
   uint32_t cfg_addr;
+  addr_t   ecam_base = 0;
+  uint32_t i = 0;
 
 
   if ((bus >= PCIE_MAX_BUS) || (dev >= PCIE_MAX_DEV) || (func >= PCIE_MAX_FUNC)) {
-     val_print(AVS_PRINT_ERR, "Invalid Bus/Dev/Func  %x \n", bdf);  
+     val_print(AVS_PRINT_ERR, "Invalid Bus/Dev/Func  %x \n", bdf);
      return;
   }
 
@@ -95,16 +111,28 @@ val_pcie_write_cfg(uint32_t bdf, uint32_t offset, uint32_t data)
       val_print(AVS_PRINT_ERR, "\n Write PCIe_CFG: PCIE info table is not created", 0);
       return;
   }
-  if (g_pcie_info_table->ecam_base == 0) {
-      val_print(AVS_PRINT_ERR, "\n Write PCIe_CFG: ECAM Base is zero ", 0);
-      return;
+
+  while (i < val_pcie_get_info(PCIE_INFO_NUM_ECAM, 0))
+  {
+
+      if ((bus >= val_pcie_get_info(PCIE_INFO_START_BUS, i)) &&
+           (bus <= val_pcie_get_info(PCIE_INFO_END_BUS, i))) {
+          ecam_base = val_pcie_get_info(PCIE_INFO_ECAM, i);
+
+          if (ecam_base == 0) {
+              val_print(AVS_PRINT_ERR, "\n    Read PCIe_CFG: ECAM Base is zero ", 0);
+              return;
+          }
+          break;
+      }
+      i++;
   }
 
   /* There are 8 functions / device, 32 devices / Bus and each has a 4KB config space */
   cfg_addr = (bus * PCIE_MAX_DEV * PCIE_MAX_FUNC * 4096) + \
                (dev * PCIE_MAX_FUNC * 4096) + func;
 
-  *(volatile uint32_t *)(g_pcie_info_table->ecam_base + cfg_addr + offset) = data;
+  pal_mmio_write(ecam_base + cfg_addr + offset, data);
 }
 
 
@@ -171,8 +199,8 @@ val_pcie_create_info_table(uint64_t *pcie_info_table)
   g_pcie_info_table = (PCIE_INFO_TABLE *)pcie_info_table;
 
   pal_pcie_create_info_table(g_pcie_info_table);
-  
-  val_print(AVS_PRINT_TEST, " PCIE_INFO: PCIE ECAM value           :    %lx \n", val_pcie_get_info(PCIE_INFO_ECAM));
+
+  val_print(AVS_PRINT_TEST, " PCIE_INFO: Number of ECAM regions    :    %lx \n", val_pcie_get_info(PCIE_INFO_NUM_ECAM, 0));
 }
 
 /**
@@ -190,11 +218,12 @@ val_pcie_free_info_table()
            1. Caller       -  Test Suite
            2. Prerequisite -  val_pcie_create_info_table
   @param   info_type  - Type of the information to be returned
+  @param   index      - The index of the Ecam region whose information is returned
 
   @return  64-bit data pertaining to the requested input type
 **/
 uint64_t
-val_pcie_get_info(PCIE_INFO_e type)
+val_pcie_get_info(PCIE_INFO_e type, uint32_t index)
 {
 
   if (g_pcie_info_table == NULL) {
@@ -202,13 +231,24 @@ val_pcie_get_info(PCIE_INFO_e type)
       return 0;
   }
 
-  switch (type) {
-      case PCIE_INFO_ECAM:
-          return g_pcie_info_table->ecam_base;
+  if (index >= g_pcie_info_table->num_entries) {
+      val_print(AVS_PRINT_ERR, "Invalid index %d > num of entries \n", index);
+      return 0;
+  }
 
+  switch (type) {
+      case PCIE_INFO_NUM_ECAM:
+          return g_pcie_info_table->num_entries;
       case PCIE_INFO_MCFG_ECAM:
           return pal_pcie_get_mcfg_ecam();
-
+      case PCIE_INFO_ECAM:
+          return g_pcie_info_table->block[index].ecam_base;
+      case PCIE_INFO_START_BUS:
+          return g_pcie_info_table->block[index].start_bus_num;
+      case PCIE_INFO_END_BUS:
+          return g_pcie_info_table->block[index].end_bus_num;
+      case PCIE_INFO_SEGMENT:
+          return g_pcie_info_table->block[index].segment_num;
       default:
           val_print(AVS_PRINT_ERR, "This PCIE info option not supported %d \n", type);
           break;

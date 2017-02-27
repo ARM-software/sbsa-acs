@@ -32,7 +32,7 @@ payload()
   uint32_t num_smmu;
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
 
-  data = val_pcie_get_info(PCIE_INFO_ECAM);
+  data = val_pcie_get_info(PCIE_INFO_NUM_ECAM, 0);
 
   if (data == 0) {
       val_print(AVS_PRINT_WARN, "\n      PCIe Subsystem not  discovered        ", 0);

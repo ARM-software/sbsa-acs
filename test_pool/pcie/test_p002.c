@@ -30,7 +30,7 @@ payload(void)
   uint64_t ecam_base;
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
 
-  ecam_base = val_pcie_get_info(PCIE_INFO_MCFG_ECAM);
+  ecam_base = val_pcie_get_info(PCIE_INFO_MCFG_ECAM, 0);
 
   if (ecam_base == 0) {
       val_print(AVS_PRINT_ERR, "\n      ECAM base not in MCFG %4x       ", ecam_base);

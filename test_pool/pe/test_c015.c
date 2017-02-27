@@ -170,7 +170,7 @@ payload(uint32_t num_pe)
   for (i = 0; i < NUM_OF_REGISTERS; i++)
   {
       rd_data_array[i] = return_reg_value(reg_list[i].reg_name, reg_list[i].dependency);
-      val_data_cache_ci_va((addr_t)(rd_data_array + i));
+      val_data_cache_ops_by_va((addr_t)(rd_data_array + i), CLEAN_AND_INVALIDATE);
   }
 
   for (i = 0; i < num_pe; i++)

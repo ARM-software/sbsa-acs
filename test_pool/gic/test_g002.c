@@ -29,12 +29,12 @@ payload()
 {
 
   uint32_t data;
-  uint32_t ecam_base = 0;
+  uint32_t num_ecam = 0;
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
 
-  ecam_base = val_pcie_get_info(PCIE_INFO_ECAM);
+  num_ecam = val_pcie_get_info(PCIE_INFO_NUM_ECAM, 0);
 
-  if (ecam_base != 0) {
+  if (num_ecam != 0) {
       data = val_gic_get_info(GIC_INFO_NUM_ITS);
 
       if (data == 0) {

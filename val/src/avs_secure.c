@@ -35,8 +35,8 @@ val_secure_execute_tests(uint32_t level, uint32_t num_pe)
 {
   uint32_t status;
 
-  //status = s001_entry(num_pe);
-  status = s002_entry(num_pe);
+  status = s001_entry(num_pe);
+  status |= s002_entry(num_pe);
   status |= s003_entry(num_pe);
   status |= m002_entry(num_pe);
 
@@ -91,8 +91,8 @@ val_secure_get_result(SBSA_SMC_t *smc, uint32_t timeout)
   smc->test_arg02 = l_smc_args.Arg2;
   smc->test_arg03 = l_smc_args.Arg3;
 
-  val_print(AVS_PRINT_INFO, "return data 1 is %x \n", smc->test_index);
-  val_print(AVS_PRINT_INFO, "return data 2 is %x \n", smc->test_arg01);
+  val_print(AVS_PRINT_INFO, "\n       return data 1 is %x ", smc->test_index);
+  val_print(AVS_PRINT_INFO, "    return data 2 is %x", smc->test_arg01);
 
   return (uint32_t)l_smc_args.Arg1;
 }

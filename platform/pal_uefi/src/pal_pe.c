@@ -70,7 +70,7 @@ PalAllocateSecondaryStack(UINT32 NumPe)
       if (EFI_ERROR(Status)) {
           Print(L"\n FATAL - Allocation for Seconday stack failed %x \n", Status);
       }
-      pal_pe_data_cache_ci_va((UINT64)&gSecondaryPeStack);
+      pal_pe_data_cache_ops_by_va((UINT64)&gSecondaryPeStack, CLEAN_AND_INVALIDATE);
   }
 
 }
@@ -115,7 +115,7 @@ pal_pe_create_info_table(PE_INFO_TABLE *PeTable)
       Ptr->pe_num   = PeTable->header.num_of_pe;
       Ptr->pmu_gsiv = Entry->PerformanceInterruptGsiv;
       //Print(L"FOUND an entry %x %x \n", Ptr->mpidr, Ptr->pe_num);
-      pal_pe_data_cache_ci_va((UINT64)Ptr);
+      pal_pe_data_cache_ops_by_va((UINT64)Ptr, CLEAN_AND_INVALIDATE);
       Ptr++;
       PeTable->header.num_of_pe++;
     }
@@ -125,7 +125,7 @@ pal_pe_create_info_table(PE_INFO_TABLE *PeTable)
 
   }while(Length < TableLength);
 
-  pal_pe_data_cache_ci_va((UINT64)PeTable);
+  pal_pe_data_cache_ops_by_va((UINT64)PeTable, CLEAN_AND_INVALIDATE);
   PalAllocateSecondaryStack(PeTable->header.num_of_pe);
 
 }
@@ -228,7 +228,26 @@ VOID
 DataCacheCleanInvalidateVA(UINT64 addr);
 
 VOID
-pal_pe_data_cache_ci_va(UINT64 addr)
+DataCacheCleanVA(UINT64 addr);
+
+VOID
+DataCacheInvalidateVA(UINT64 addr);
+
+VOID
+pal_pe_data_cache_ops_by_va(UINT64 addr, UINT32 type)
 {
-  DataCacheCleanInvalidateVA(addr);
+  switch(type){
+      case CLEAN_AND_INVALIDATE:
+          DataCacheCleanInvalidateVA(addr);
+      break;
+      case CLEAN:
+          DataCacheCleanVA(addr);
+      break;
+      case INVALIDATE:
+          DataCacheInvalidateVA(addr);
+      break;
+      default:
+          DataCacheCleanInvalidateVA(addr);
+  }
+
 }

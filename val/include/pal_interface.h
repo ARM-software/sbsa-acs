@@ -199,8 +199,15 @@ void pal_wd_create_info_table(WD_INFO_TABLE  *wd_table);
   @brief PCI Express Info Table
 **/
 typedef struct {
-  addr_t   ecam_base;   ///< ECAM Base address
-  uint32_t max_bus_num; ///< Maximum Bus number
+  addr_t   ecam_base;     ///< ECAM Base address
+  uint32_t segment_num;   ///< Segment number of this ECAM
+  uint32_t start_bus_num; ///< Start Bus number for this ecam space
+  uint32_t end_bus_num;   ///< Last Bus number
+}PCIE_INFO_BLOCK;
+
+typedef struct {
+  uint32_t num_entries;
+  PCIE_INFO_BLOCK  block[];
 }PCIE_INFO_TABLE;
 
 uint64_t pal_pcie_get_mcfg_ecam(void);
@@ -222,7 +229,7 @@ typedef struct {
   SMMU_INFO_BLOCK smmu_block[]; ///< Array of Information blocks - instantiated for each SMMU Controller
 }SMMU_INFO_TABLE;
 
-void     pal_smmu_create_info_table(SMMU_INFO_TABLE *SmmuTable);
+void     pal_smmu_create_info_table(SMMU_INFO_TABLE *smmu_info_table);
 
 /** Peripheral Tests related definitions **/
 
@@ -261,7 +268,39 @@ typedef struct {
   PERIPHERAL_INFO_BLOCK   info[]; ///< Array of Information blocks - instantiated for each peripheral
 }PERIPHERAL_INFO_TABLE;
 
-void  pal_peripheral_create_info_table(PERIPHERAL_INFO_TABLE *peripheralInfoTable);
+void  pal_peripheral_create_info_table(PERIPHERAL_INFO_TABLE *per_info_table);
+
+/**
+  @brief DMA controllers info structure
+**/
+typedef enum {
+  DMA_TYPE_USB  =  0x2000,
+  DMA_TYPE_SATA,
+  DMA_TYPE_OTHER,
+}DMA_INFO_TYPE_e;
+
+typedef struct {
+  DMA_INFO_TYPE_e type;
+  void            *target;   ///< The actual info stored in these pointers is implementation specific.
+  void            *port;
+  void            *host;     // It will be used only by PAL. hence void.
+  uint32_t        flags;
+}DMA_INFO_BLOCK;
+
+typedef struct {
+  uint32_t         num_dma_ctrls;
+  DMA_INFO_BLOCK   info[];    ///< Array of information blocks - per DMA controller
+}DMA_INFO_TABLE;
+
+void pal_dma_create_info_table(DMA_INFO_TABLE *dma_info_table);
+uint32_t pal_dma_start_from_device(void *dma_target_buf, uint32_t length,
+                          void *host, void *dev);
+uint64_t
+pal_dma_mem_alloc(void **buffer, uint32_t length, void *dev, uint32_t flags);
+
+uint32_t pal_dma_start_to_device(void *dma_source_buf, uint32_t length,
+                         void *host, void *target, uint32_t timeout);
+
 
 /* Memory INFO table */
 typedef enum {
@@ -302,6 +341,11 @@ uint32_t pal_mmio_read(uint64_t addr);
 void     pal_mmio_write(uint64_t addr, uint32_t data);
 
 void     pal_pe_update_elr(uint64_t offset);
-void     pal_pe_data_cache_ci_va(uint64_t addr);
+void     pal_pe_data_cache_ops_by_va(uint64_t addr, uint32_t type);
+
+#define CLEAN_AND_INVALIDATE  0x1
+#define CLEAN                 0x2
+#define INVALIDATE            0x3
+
 #endif
 

@@ -27,28 +27,37 @@ void
 payload(void)
 {
 
-  uint64_t ecam_base;
   uint64_t data;
+  uint32_t num_ecam;
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
+  uint32_t bdf = 0;
+  uint32_t bus, segment;
 
-  ecam_base = val_pcie_get_info(PCIE_INFO_ECAM);
+  num_ecam = val_pcie_get_info(PCIE_INFO_NUM_ECAM, 0);
 
-  data = pal_mmio_read(ecam_base);
+  while (num_ecam) {
+      num_ecam--;
+      segment = val_pcie_get_info(PCIE_INFO_SEGMENT, num_ecam);
+      bus = val_pcie_get_info(PCIE_INFO_START_BUS, num_ecam);
 
-  //If this is really PCIe CFG space, Device ID and Vendor ID cannot be 0 or 0xFFFF
-  if ((data == 0) || ((data & 0xFFFF) == 0xFFFF)) {
-      val_print(AVS_PRINT_ERR, "\n      Incorrect data at ECAM Base %4x    ", data);
-      val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
-      return;
-  }
+      bdf = PCIE_CREATE_BDF(segment, bus, 0, 0);
+      data = val_pcie_read_cfg(bdf, 0);
 
-  data = pal_mmio_read(ecam_base + 0xC);
+      //If this is really PCIe CFG space, Device ID and Vendor ID cannot be 0 or 0xFFFF
+      if ((data == 0) || ((data & 0xFFFF) == 0xFFFF)) {
+          val_print(AVS_PRINT_ERR, "\n      Incorrect data at ECAM Base %4x    ", data);
+          val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
+          return;
+      }
 
-  //If this really is PCIe CFG of root bridge, Header type must be 01
-  if (((data >> 16) & 0xFF) != 01) {
-      val_print(AVS_PRINT_ERR, "\n      Incorrect PCIe CFG Hdr type %4x    ", data);
-      val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
-      return;
+      data = val_pcie_read_cfg(bdf, 0xC);
+
+      //If this really is PCIe CFG, Header type must be 01 or 00
+      if (((data >> 16) & 0xFF) > 01) {
+          val_print(AVS_PRINT_ERR, "\n      Incorrect PCIe CFG Hdr type %4x    ", data);
+          val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
+          return;
+      }
   }
 
   val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));

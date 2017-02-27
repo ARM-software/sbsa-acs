@@ -17,6 +17,8 @@
 #ifndef __PAL_UEFI_H__
 #define __PAL_UEFI_H__
 
+extern void* g_sbsa_log_file_handle;
+
 typedef struct {
   UINT64   Arg0;
   UINT64   Arg1;
@@ -48,7 +50,11 @@ typedef struct {
   PE_INFO_ENTRY  pe_info[];
 }PE_INFO_TABLE;
 
-void     pal_pe_data_cache_ci_va(UINT64 addr);
+void     pal_pe_data_cache_ops_by_va(UINT64 addr, UINT32 type);
+
+#define CLEAN_AND_INVALIDATE  0x1
+#define CLEAN                 0x2
+#define INVALIDATE            0x3
 
 typedef struct {
   UINT32   gic_version;
@@ -148,16 +154,23 @@ typedef struct {
   @brief PCI Express Info Table
 **/
 typedef struct {
-  UINT64   ecam_base;   ///< ECAM Base address
-  UINT32   max_bus_num; ///< Maximum Bus number
+  UINT64   ecam_base;     ///< ECAM Base address
+  UINT32   segment_num;   ///< Segment number of this ECAM
+  UINT32   start_bus_num; ///< Start Bus number for this ecam space
+  UINT32   end_bus_num;   ///< Last Bus number
+}PCIE_INFO_BLOCK;
+
+typedef struct {
+  UINT32          num_entries;
+  PCIE_INFO_BLOCK block[];
 }PCIE_INFO_TABLE;
 
 
 /**
-  @brief  Instance of SMMU INFO block 
+  @brief  Instance of SMMU INFO block
 **/
 typedef struct {
-  UINT32 arch_major_rev;  ///< Version 1 or 2 or 3 
+  UINT32 arch_major_rev;  ///< Version 1 or 2 or 3
   UINT64 base;              ///< SMMU Controller base address
 }SMMU_INFO_BLOCK;
 

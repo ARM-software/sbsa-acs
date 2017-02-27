@@ -16,6 +16,7 @@
 
 #include "include/sbsa_avs_val.h"
 #include "include/sbsa_avs_gic.h"
+#include "include/sbsa_avs_gic_support.h"
 #include "include/sbsa_avs_common.h"
 
 GIC_INFO_TABLE  *g_gic_info_table;
@@ -228,4 +229,75 @@ uint32_t val_gic_end_of_interrupt(uint32_t int_id)
   pal_gic_end_of_interrupt(int_id);
 
   return 0;
+}
+
+/**
+  @brief   This function routes interrupt to specific PE.
+           1. Caller       -  Test Suite
+           2. Prerequisite -  val_gic_create_info_table
+  @param   int_id Interrupt ID to be routed
+  @param   mpidr MPIDR_EL1 reg value of the PE to which the interrupt should be routed
+  @return  status
+**/
+uint32_t val_gic_route_interrupt_to_pe(uint32_t int_id, uint64_t mpidr)
+{
+  if (int_id > 31) {
+      mpidr &= 0xF80FFFFFF;
+      val_mmio_write(val_get_gicd_base() + 0x6000 + (8 * int_id), mpidr);
+  }
+  else{
+      val_print(AVS_PRINT_ERR, "\n    Only SPIs can be routed, interrupt with INTID = %d cannot be routed", int_id);
+  }
+
+  return 0;
+}
+
+/**
+  @brief   This function will return '1' if an interrupt is either pending or active.
+           1. Caller       -  Test Suite
+           2. Prerequisite -  val_gic_create_info_table
+  @param   int_id Interrupt ID
+  @return  pending/active status
+**/
+uint32_t val_gic_get_interrupt_state(uint32_t int_id)
+{
+  uint32_t reg_offset = int_id / 32;
+  uint32_t reg_shift  = int_id % 32;
+  uint32_t active, pending;
+
+  pending = val_mmio_read(val_get_gicd_base() + 0x200 + (4 * reg_offset));
+  active = val_mmio_read(val_get_gicd_base() + 0x300 + (4 * reg_offset));
+
+  return ((reg_shift & active) || (reg_shift & pending));
+}
+
+/**
+  @brief   This function will clear an interrupt that is pending or active.
+           1. Caller       -  Test Suite
+           2. Prerequisite -  val_gic_create_info_table
+  @param   int_id Interrupt ID
+  @return  none
+**/
+void val_gic_clear_interrupt(uint32_t int_id)
+{
+  uint32_t reg_offset = int_id / 32;
+  uint32_t reg_shift  = int_id % 32;
+
+  val_mmio_write(val_get_gicd_base() + 0x280 + (4 * reg_offset), reg_shift);
+  val_mmio_write(val_get_gicd_base() + 0x380 + (4 * reg_offset), reg_shift);
+}
+
+/**
+  @brief   This function will initialize CPU interface registers required for interrupt
+           routing to a given PE
+           1. Caller       -  Test Suite
+           2. Prerequisite -  val_gic_create_info_table
+  @param   none
+  @return  none
+**/
+void val_gic_cpuif_init(void)
+{
+  val_gic_reg_write(ICC_IGRPEN1_EL1, 0x1);
+  val_gic_reg_write(ICC_BPR1_EL1, 0x7);
+  val_gic_reg_write(ICC_PMR_EL1, 0xff);
 }

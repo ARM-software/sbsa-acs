@@ -28,7 +28,7 @@ PERIPHERAL_INFO_TABLE  *g_peripheral_info_table;
   @param  level  - level of compliance being tested for
   @param  num_pe - number of PEs to run this test on
 
-  @result  consolidated status of all the tests 
+  @result  consolidated status of all the tests
 **/
 uint32_t
 val_peripheral_execute_tests(uint32_t level, uint32_t num_pe)
@@ -135,9 +135,13 @@ val_peripheral_get_info(PERIPHERAL_INFO_e info_type, uint32_t instance)
           if (i != 0xFF)
               return g_peripheral_info_table->info[i].flags;
       case SATA_BDF:
-          i = val_peripheral_get_entry_index(PERIPHERAL_TYPE_USB, instance);
+          i = val_peripheral_get_entry_index(PERIPHERAL_TYPE_SATA, instance);
           if (i != 0xFF)
               return g_peripheral_info_table->info[i].bdf;
+      case SATA_GSIV:
+          i = val_peripheral_get_entry_index(PERIPHERAL_TYPE_SATA, instance);
+          if (i != 0xFF)
+              return g_peripheral_info_table->info[i].irq;
       case UART_BASE0:
           i = val_peripheral_get_entry_index(PERIPHERAL_TYPE_UART, instance);
           if (i != 0xFF)

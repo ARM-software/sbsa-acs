@@ -19,7 +19,10 @@
 
 typedef enum {
   ICH_HCR_EL2 = 0,
-  ICH_MISR_EL2
+  ICH_MISR_EL2,
+  ICC_IGRPEN1_EL1,
+  ICC_BPR1_EL1,
+  ICC_PMR_EL1
 }SBSA_AVS_GIC_REGS;
 
 uint64_t val_gic_reg_read(uint32_t reg_id);
@@ -29,6 +32,9 @@ uint64_t GicReadIchHcr(void);
 uint64_t GicReadIchMisr(void);
 
 void GicWriteIchHcr(uint64_t write_data);
+void GicWriteIccIgrpen1(uint64_t write_data);
+void GicWriteIccBpr1(uint64_t write_data);
+void GicWriteIccPmr(uint64_t write_data);
 
 
 #endif // __GIC_SYS_REGS_H__

@@ -59,11 +59,40 @@ pal_pcie_get_mcfg_ecam()
 VOID
 pal_pcie_create_info_table(PCIE_INFO_TABLE *PcieTable)
 {
-  if(PLATFORM_OVERRIDE_ECAM_BASE) {
-    PcieTable->ecam_base = PLATFORM_OVERRIDE_ECAM_BASE;
-  } else {
-    PcieTable->ecam_base = pal_pcie_get_mcfg_ecam();
-    PcieTable->max_bus_num = 255;
+
+  EFI_ACPI_MEMORY_MAPPED_ENHANCED_CONFIGURATION_SPACE_BASE_ADDRESS_ALLOCATION_STRUCTURE  *Entry;
+  UINT32 length = sizeof(EFI_ACPI_MEMORY_MAPPED_CONFIGURATION_BASE_ADDRESS_TABLE_HEADER);
+  UINT32 i = 0;
+
+  PcieTable->num_entries = 0;
+
+  gMcfgHdr = (EFI_ACPI_MEMORY_MAPPED_CONFIGURATION_BASE_ADDRESS_TABLE_HEADER *) pal_get_mcfg_ptr();
+
+  if (gMcfgHdr == 0) {
+      if(PLATFORM_OVERRIDE_PCIE_ECAM_BASE) {
+          PcieTable->block[i].ecam_base = PLATFORM_OVERRIDE_PCIE_ECAM_BASE;
+          PcieTable->block[i].start_bus_num = PLATFORM_OVERRIDE_PCIE_START_BUS_NUM;
+          PcieTable->block[i].segment_num = 0;
+          PcieTable->num_entries = 1;
+      }
+    //Print(L"ACPI - MCFG Table not found. Setting ECAM Base to 0. \n");
+    return;
   }
+
+  Entry = (EFI_ACPI_MEMORY_MAPPED_ENHANCED_CONFIGURATION_SPACE_BASE_ADDRESS_ALLOCATION_STRUCTURE *) (gMcfgHdr + 1);
+
+  do{
+      if (Entry == NULL)  //Due to a buggy MCFG - first entry is null, then exit
+          break;
+      PcieTable->block[i].ecam_base     = Entry->BaseAddress;
+      PcieTable->block[i].segment_num   = Entry->PciSegmentGroupNumber;
+      PcieTable->block[i].start_bus_num = Entry->StartBusNumber;
+      PcieTable->block[i].end_bus_num   = Entry->EndBusNumber;
+      length += sizeof(EFI_ACPI_MEMORY_MAPPED_ENHANCED_CONFIGURATION_SPACE_BASE_ADDRESS_ALLOCATION_STRUCTURE);
+      Entry++;
+      i++;
+      PcieTable->num_entries++;
+  } while((length < gMcfgHdr->Header.Length) && (Entry));
+
   return;
 }

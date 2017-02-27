@@ -26,13 +26,13 @@ void
 payload(void)
 {
 
-  uint64_t ecam_base;
+  uint64_t num_ecam;
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
 
-  ecam_base = val_pcie_get_info(PCIE_INFO_ECAM);
+  num_ecam = val_pcie_get_info(PCIE_INFO_NUM_ECAM, 0);
 
-  if (ecam_base == 0) {
-      val_print(AVS_PRINT_ERR, "\n       ECAM base is %4x                 ", ecam_base);
+  if (num_ecam == 0) {
+      val_print(AVS_PRINT_ERR, "\n       No ECAMs discovered              ", 0);
       val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
       return;
   }

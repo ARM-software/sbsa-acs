@@ -55,10 +55,11 @@ payload()
 {
   uint32_t timeout = 2, i;
   SBSA_SMC_t  smc;
-  uint64_t data = 0xDEED;
+  uint64_t data;
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
 
   for(i = 0 ; i < 4 ; i++){
+      data = 0xDEED;
       smc.test_index = SBSA_SECURE_PLATFORM_ADDRESS;
       smc.test_arg01 = i;   // arg01 is used to select one of the 4 addresses
       val_secure_call_smc(&smc);
@@ -81,24 +82,26 @@ payload()
               val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
               return;
       }
-  }
 
-  /* Install both sync and async handlers, so that the test could handle
-     either of these exceptions.*/
-  val_pe_install_esr(EXCEPT_AARCH64_SYNCHRONOUS_EXCEPTIONS, esr);
-  val_pe_install_esr(EXCEPT_AARCH64_SERROR, esr);
+      /* Install both sync and async handlers, so that the test could handle
+         either of these exceptions.*/
+      val_pe_install_esr(EXCEPT_AARCH64_SYNCHRONOUS_EXCEPTIONS, esr);
+      val_pe_install_esr(EXCEPT_AARCH64_SERROR, esr);
 
-  branch_to_test = &&exception_taken;
-  data = *(uint64_t *)smc.test_arg02;
+      branch_to_test = &&exception_taken;
+      data = *(uint64_t *)smc.test_arg02;
 
 exception_taken:
-  if(IS_TEST_FAIL(val_get_status(index)))
-      return;
+      if(IS_TEST_FAIL(val_get_status(index)))
+          return;
 
-  if (data == smc.test_arg03)
-      val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
-  else
-      val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 02));
+      if (data == smc.test_arg03){
+          val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
+          return;
+      }
+      else
+          val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 02));
+  }
 
 }
 

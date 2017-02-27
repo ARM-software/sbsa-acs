@@ -67,12 +67,12 @@
   ../test_pool/pcie/test_p001.c
   ../test_pool/pcie/test_p002.c
   ../test_pool/pcie/test_p003.c
-  ../test_pool/pcie/test_p004.c
   ../test_pool/io_virt/test_i001.c
   ../test_pool/io_virt/test_i002.c
   ../test_pool/io_virt/test_i003.c
   ../test_pool/io_virt/test_i004.c
   ../test_pool/power_wakeup/test_u001.c
+  ../test_pool/power_wakeup/test_u002.c
   ../test_pool/peripherals/test_d001.c
   ../test_pool/peripherals/test_d002.c
   ../test_pool/peripherals/test_d003.c

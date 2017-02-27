@@ -16,6 +16,8 @@
 #include  <Library/ShellCEntryLib.h>
 #include  <Library/UefiBootServicesTableLib.h>
 #include  <Library/UefiLib.h>
+#include  <Library/ShellLib.h>
+#include  <Library/PrintLib.h>
 
 #include "include/pal_uefi.h"
 
@@ -74,7 +76,18 @@ pal_mmio_write(UINT64 addr, UINT32 data)
 VOID
 pal_print(CHAR8 *string, UINT64 data)
 {
-  AsciiPrint(string, data);
+  if(g_sbsa_log_file_handle)
+  {
+    CHAR8 Buffer[1024];
+    UINTN BufferSize = 1;
+    EFI_STATUS Status = 0;
+    BufferSize = AsciiSPrint(Buffer, 1024, string, data);
+    AsciiPrint(Buffer);
+    Status = ShellWriteFile(g_sbsa_log_file_handle, &BufferSize, (VOID*)Buffer);
+    if(EFI_ERROR(Status))
+      Print(L"Error in writing to log file\n");
+  } else
+      AsciiPrint(string, data);
 }
 
 /**
@@ -113,7 +126,7 @@ pal_mem_allocate_shared(UINT32 num_pe, UINT32 sizeofentry)
   if (EFI_ERROR(Status)) {
     Print(L"Allocate Pool shared memory failed %x \n", Status);
   }
-  pal_pe_data_cache_ci_va((UINT64)&gSharedMemory);
+  pal_pe_data_cache_ops_by_va((UINT64)&gSharedMemory, CLEAN_AND_INVALIDATE);
 
   return;
 

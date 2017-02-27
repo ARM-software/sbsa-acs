@@ -26,7 +26,6 @@ typedef enum {
   SBSA_SECURE_TEST_NSWD_WS1=0x1000,
   SBSA_SECURE_TEST_SYS_COUNTER,
   SBSA_SECURE_TEST_WD_WS0,
-  SBSA_SECURE_TEST_WD_WS1,
   SBSA_SECURE_TEST_UART,
   SBSA_SECURE_TEST_CNTBASE,
   SBSA_SECURE_TEST_EL3_PHY,
@@ -39,7 +38,6 @@ typedef enum {
 
 
 #define SBSA_SECURE_GET_RESULT      0x9000
-
 
 uint32_t s001_entry(uint32_t num_pe);
 uint32_t s002_entry(uint32_t num_pe);

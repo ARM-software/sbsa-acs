@@ -98,6 +98,6 @@ void
 val_run_test_payload(uint32_t test_num, uint32_t num_pe, void (*payload)(void), uint64_t test_input);
 
 void
-val_data_cache_ci_va(addr_t addr);
+val_data_cache_ops_by_va(addr_t addr, uint32_t type);
 
 #endif

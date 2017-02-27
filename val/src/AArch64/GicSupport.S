@@ -21,6 +21,9 @@
 GCC_ASM_EXPORT(GicReadIchHcr)
 GCC_ASM_EXPORT(GicWriteIchHcr)
 GCC_ASM_EXPORT(GicReadIchMisr)
+GCC_ASM_EXPORT(GicWriteIccIgrpen1)
+GCC_ASM_EXPORT(GicWriteIccBpr1)
+GCC_ASM_EXPORT(GicWriteIccPmr)
 
 ASM_PFX(GicReadIchHcr):
   //mrs_s   x0, ich_hcr_el2
@@ -36,6 +39,24 @@ ASM_PFX(GicWriteIchHcr):
 ASM_PFX(GicReadIchMisr):
   //mrs   x0, ich_misr_el2
   .inst 0xd53ccb40
+  ret
+
+ASM_PFX(GicWriteIccIgrpen1):
+  //msr   icc_igrpen1_el1, x0
+  .inst 0xd518cce0
+  isb
+  ret
+
+ASM_PFX(GicWriteIccBpr1):
+  //msr   icc_brp1_el1, x0
+  .inst 0xd518cc60
+  isb
+  ret
+
+ASM_PFX(GicWriteIccPmr):
+  //msr   icc_pmr_el1, x0
+  .inst 0xd5184600
+  isb
   ret
 
 

@@ -20,6 +20,12 @@ The present release implements a UEFI shell application to execute these tests f
  - The result of a test should not be taken as a true indication of compliance. There is a possibility of false positives / false negetives.
  - There are gaps in the test coverage. Refer to the [Testcase checklist](docs/testcase-checklist.md) for details.
 
+## Github Branch
+  - To pick up the release version of the code, checkout the release branch.
+  - To get the latest version of the code with bug fixes and new features, use the master branch.
+
+## Target Platforms
+  Any AARCH64 enterprise Platform which boots UEFI.
 
 ### Prerequisites
 

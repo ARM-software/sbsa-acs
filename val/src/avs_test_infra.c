@@ -174,7 +174,7 @@ val_set_test_data(uint32_t index, uint64_t addr, uint64_t test_data)
   mem->data0 = addr;
   mem->data1 = test_data;
 
-  val_data_cache_ci_va((addr_t)mem);
+  val_data_cache_ops_by_va((addr_t)mem, CLEAN_AND_INVALIDATE);
 }
 
 /**
@@ -202,6 +202,8 @@ val_get_test_data(uint32_t index, uint64_t *data0, uint64_t *data1)
 
   mem = (VAL_SHARED_MEM_t *) pal_mem_get_shared_addr();
   mem = mem + index;
+
+  val_data_cache_ops_by_va((addr_t)mem, INVALIDATE);
 
   *data0 = mem->data0;
   *data1 = mem->data1;
@@ -343,9 +345,9 @@ val_check_for_error(uint32_t test_num, uint32_t num_pe)
           the input address tag
 **/
 void 
-val_data_cache_ci_va(addr_t addr)
+val_data_cache_ops_by_va(addr_t addr, uint32_t type)
 {
-  pal_pe_data_cache_ci_va(addr);
+  pal_pe_data_cache_ops_by_va(addr, type);
 
 }
 

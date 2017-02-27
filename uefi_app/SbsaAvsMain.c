@@ -32,6 +32,7 @@ UINT32  g_skip_test_num;
 UINT32  g_sbsa_tests_total;
 UINT32  g_sbsa_tests_pass;
 UINT32  g_sbsa_tests_fail;
+SHELL_FILE_HANDLE g_sbsa_log_file_handle;
 
 EFI_STATUS
 createPeInfoTable (
@@ -215,7 +216,8 @@ freeSbsaAvsMem()
 STATIC CONST SHELL_PARAM_ITEM ParamList[] = {
   {L"-v", TypeValue},    // -v # Verbosity of the Prints. 0 shows all prints, 5 shows Errors
   {L"-l", TypeValue},    // -l # Level of compliance to be tested for.
-  {L"-s", TypeFlag},     // -l # Binary Flag to enable the execution of secure tests.
+  {L"-f", TypeValue},    // -f # Name of the log file to record the test results in.
+  {L"-s", TypeFlag},     // -s # Binary Flag to enable the execution of secure tests.
   {L"-skip", TypeValue}, //test number to skip execution
   {NULL,     TypeMax}
   };
@@ -281,6 +283,20 @@ ShellAppMain (
       g_print_level = G_PRINT_LEVEL;
     }
   }
+
+    // Options with Values
+  CmdLineArg  = ShellCommandLineGetValue (ParamPackage, L"-f");
+  if (CmdLineArg == NULL) {
+    g_sbsa_log_file_handle = NULL;
+  } else {
+    Status = ShellOpenFileByName(CmdLineArg, &g_sbsa_log_file_handle,
+             EFI_FILE_MODE_WRITE | EFI_FILE_MODE_READ | EFI_FILE_MODE_CREATE, 0x0);
+    if(EFI_ERROR(Status)) {
+         Print(L"Failed to open log file %s\n", CmdLineArg);
+	 g_sbsa_log_file_handle = NULL;
+    }
+  }
+
     // Options with Values
   CmdLineArg  = ShellCommandLineGetValue (ParamPackage, L"-skip");
   if (CmdLineArg == NULL) {
@@ -349,11 +365,17 @@ ShellAppMain (
   Print(L"\n      *** Starting Peripheral tests ***  \n");
   Status |= val_peripheral_execute_tests(g_sbsa_level, val_pe_get_num());
 
-  Print(L"\n     ------------------------------------------------------- \n");
-  Print(L"     Total Tests run  = %4d;  Tests Passed  = %4d  Tests Failed = %4d \n",
-             g_sbsa_tests_total, g_sbsa_tests_pass, g_sbsa_tests_fail);
-  Print(L"     --------------------------------------------------------- \n");
+  val_print(AVS_PRINT_TEST, "\n     ------------------------------------------------------- \n", 0);
+  val_print(AVS_PRINT_TEST, "     Total Tests run  = %4d;", g_sbsa_tests_total);
+  val_print(AVS_PRINT_TEST, "  Tests Passed  = %4d", g_sbsa_tests_pass);
+  val_print(AVS_PRINT_TEST, "  Tests Failed = %4d\n", g_sbsa_tests_fail);
+  val_print(AVS_PRINT_TEST, "     --------------------------------------------------------- \n", 0);
+
   freeSbsaAvsMem();
+
+  if(g_sbsa_log_file_handle) {
+    ShellCloseFile(&g_sbsa_log_file_handle);
+  }
 
   Print(L"\n      *** SBSA Compliance Test Complete. Reset the System. *** \n\n");
   return(0);

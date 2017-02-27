@@ -57,6 +57,8 @@ GCC_ASM_EXPORT (AA64ReadCurrentEL)
 GCC_ASM_EXPORT (AA64ReadIdMdrar)
 GCC_ASM_EXPORT (AA64ReadMdcr2)
 GCC_ASM_EXPORT (AA64WriteMdcr2)
+GCC_ASM_EXPORT (AA64ReadVbar2)
+GCC_ASM_EXPORT (AA64WriteVbar2)
 GCC_ASM_EXPORT (AA64WritePmcr)
 GCC_ASM_EXPORT (AA64WritePmovsset)
 GCC_ASM_EXPORT (AA64WritePmintenset)
@@ -172,6 +174,15 @@ ASM_PFX(AA64ReadMdcr2):
 
 ASM_PFX(AA64WriteMdcr2):
   msr   mdcr_el2, x0
+  isb
+  ret
+
+ASM_PFX(AA64ReadVbar2):
+  mrs   x0, vbar_el2
+  ret
+
+ASM_PFX(AA64WriteVbar2):
+  msr   vbar_el2, x0
   isb
   ret
 

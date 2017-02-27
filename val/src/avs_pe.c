@@ -127,6 +127,8 @@ val_pe_reg_read(uint32_t reg_id)
           return AA64ReadCurrentEL();
       case MDCR_EL2:
           return AA64ReadMdcr2();
+      case VBAR_EL2:
+          return AA64ReadVbar2();
       case CCSIDR_EL1:
           return AA64ReadCcsidr();
       case CLIDR_EL1:
@@ -231,6 +233,9 @@ val_pe_reg_write(uint32_t reg_id, uint64_t write_data)
           break;
       case MDCR_EL2:
           AA64WriteMdcr2(write_data);
+          break;
+      case VBAR_EL2:
+          AA64WriteVbar2(write_data);
           break;
       case PMSIRR_EL1:
           AA64WritePmsirr(write_data);
@@ -340,7 +345,7 @@ val_pe_install_esr(uint32_t exception_type, void (*esr)(void))
            as argument over which an SPE event is exected to be generated.
            1. Caller       -  Test Suite
            2. Prerequisite -  None
-  @param   interval - The interval after completion of which SPE event
+  @param   interval - The interval after completion of which SPE event 
                       would be generated
   @param   address  - Address on which to trigger the SPE
   @return  None.

@@ -103,16 +103,17 @@ palPcieGetBdf(UINT32 ClassCode, UINT32 StartBdf)
           if (ThisDev != Dev) {
             continue;
           }
-          //SBSA AsciiPrint ("\n%03d.%02d.%02d", Bus, Dev, Func);
           Status = Pci->Pci.Read (Pci, EfiPciIoWidthUint32, 0, sizeof (PciHeader)/sizeof (UINT32), &PciHeader);
           if (!EFI_ERROR (Status)) {
             Hdr = &PciHeader.Bridge.Hdr;
 
+          /*AsciiPrint ("\n%03d.%02d.%02d class_code = %d %d", Bus, Dev, Index,
+             Hdr->ClassCode[1], Hdr->ClassCode[2]);*/
             if (Hdr->ClassCode[2] == ((ClassCode >> 16) & 0xFF)) {
               if (Hdr->ClassCode[1] == ((ClassCode >> 8) & 0xFF)) {
                  /* Found our device */
                  /* Return the BDF   */
-                 return (UINT32)((Seg << 24) | (Bus << 16) | (Dev << 8) | Func);
+                 return (UINT32)(PCIE_CREATE_BDF(Seg, Bus, Dev, Func));
               }
             }
            }
@@ -120,7 +121,6 @@ palPcieGetBdf(UINT32 ClassCode, UINT32 StartBdf)
        }
      }
    }
-  
   return 0;
 }
 
