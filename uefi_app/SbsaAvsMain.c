@@ -28,7 +28,7 @@
 UINT32  g_sbsa_level;
 UINT32  g_print_level;
 UINT32  g_execute_secure;
-UINT32  g_skip_test_num;
+UINT32  g_skip_test_num[3] = {10000, 10000, 10000};
 UINT32  g_sbsa_tests_total;
 UINT32  g_sbsa_tests_pass;
 UINT32  g_sbsa_tests_fail;
@@ -149,7 +149,7 @@ createPcieVirtInfoTable(
   val_pcie_create_info_table(PcieInfoTable);
 
   Status = gBS->AllocatePool (EfiBootServicesData,
-                              128,
+                              4096,
                               (VOID **) &IoVirtInfoTable);
 
   if (EFI_ERROR(Status))
@@ -157,7 +157,7 @@ createPcieVirtInfoTable(
     Print(L"Allocate Pool failed %x \n", Status);
     return Status;
   }
-  val_smmu_create_info_table(IoVirtInfoTable);
+  val_iovirt_create_info_table(IoVirtInfoTable);
 
   return Status;
 }
@@ -206,20 +206,40 @@ freeSbsaAvsMem()
   val_timer_free_info_table();
   val_wd_free_info_table();
   val_pcie_free_info_table();
-  val_smmu_free_info_table();
+  val_iovirt_free_info_table();
   val_peripheral_free_info_table();
   val_free_shared_mem();
 }
 
-
+VOID
+HelpMsg (
+  VOID
+  )
+{
+  Print (L"\nUsage: Sbsa.efi [-v <n>] | [-l <n>] | [-f <filename>] | [-s] | [-skip <n>]\n"
+         "Options:\n"
+         "-v      Verbosity of the Prints\n"
+         "        1 shows all prints, 5 shows Errors\n"
+         "-l      Level of compliance to be tested for\n"
+         "        As per SBSA spec, 0 to 3\n"
+         "-f      Name of the log file to record the test results in\n"
+         "-s      Enable the execution of secure tests\n"
+         "-skip   Test(s) to be skipped\n"
+         "        Refer to section 4 of SBSA_ACS_UEFI_App_User_Guide\n"
+         "        To skip a module, use Model_ID as mentioned in user guide\n"
+         "        To skip a particular test within a module, use the exact testcase number\n"
+  );
+}
 
 STATIC CONST SHELL_PARAM_ITEM ParamList[] = {
-  {L"-v", TypeValue},    // -v # Verbosity of the Prints. 0 shows all prints, 5 shows Errors
-  {L"-l", TypeValue},    // -l # Level of compliance to be tested for.
-  {L"-f", TypeValue},    // -f # Name of the log file to record the test results in.
-  {L"-s", TypeFlag},     // -s # Binary Flag to enable the execution of secure tests.
-  {L"-skip", TypeValue}, //test number to skip execution
-  {NULL,     TypeMax}
+  {L"-v"    , TypeValue},    // -v    # Verbosity of the Prints. 1 shows all prints, 5 shows Errors
+  {L"-l"    , TypeValue},    // -l    # Level of compliance to be tested for.
+  {L"-f"    , TypeValue},    // -f    # Name of the log file to record the test results in.
+  {L"-s"    , TypeFlag},     // -s    # Binary Flag to enable the execution of secure tests.
+  {L"-skip" , TypeValue},    // -skip # test(s) to skip execution
+  {L"-help" , TypeFlag},     // -help # help : info about commands
+  {L"-h"    , TypeFlag},     // -h    # help : info about commands
+  {NULL     , TypeMax}
   };
 
 
@@ -242,6 +262,7 @@ ShellAppMain (
   LIST_ENTRY         *ParamPackage;
   CONST CHAR16       *CmdLineArg;
   UINT32             Status;
+  UINT32             i,j=0;
 
 
   //
@@ -254,6 +275,22 @@ ShellAppMain (
     return SHELL_INVALID_PARAMETER;
   }
 
+  for (i=1 ; i<Argc ; i++) {
+    if(StrCmp(Argv[i], L"-skip") == 0){
+      CmdLineArg = Argv[i+1];
+      i = 0;
+      break;
+    }
+  }
+
+  if (i == 0){
+    for (i=0 ; i < StrLen(CmdLineArg) ; i++){
+      g_skip_test_num[0] = StrDecimalToUintn((CONST CHAR16 *)(CmdLineArg+0));
+      if(*(CmdLineArg+i) == L','){
+        g_skip_test_num[++j] = StrDecimalToUintn((CONST CHAR16 *)(CmdLineArg+i+1));
+      }
+    }
+  }
 
   if (ShellCommandLineGetFlag (ParamPackage, L"-s")) {
     g_execute_secure = TRUE;
@@ -297,12 +334,11 @@ ShellAppMain (
     }
   }
 
+
     // Options with Values
-  CmdLineArg  = ShellCommandLineGetValue (ParamPackage, L"-skip");
-  if (CmdLineArg == NULL) {
-    g_skip_test_num = 10000;
-  } else {
-    g_skip_test_num = StrDecimalToUintn(CmdLineArg);
+  if ((ShellCommandLineGetFlag (ParamPackage, L"-help")) || (ShellCommandLineGetFlag (ParamPackage, L"-h"))){
+     HelpMsg();
+     return 0;
   }
 
   //

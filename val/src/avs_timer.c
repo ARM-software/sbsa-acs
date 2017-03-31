@@ -33,11 +33,13 @@ TIMER_INFO_TABLE  *g_timer_info_table;
 uint32_t
 val_timer_execute_tests(uint32_t level, uint32_t num_pe)
 {
-  uint32_t status, status_sys_timer;
+  uint32_t status, status_sys_timer, i;
 
-  if (g_skip_test_num == AVS_TIMER_TEST_NUM_BASE) {
-      val_print(AVS_PRINT_TEST, "      USER Override - Skipping all Timer tests \n", 0);
-      return AVS_STATUS_SKIP;
+  for (i=0 ; i<MAX_TEST_SKIP_NUM ; i++){
+      if (g_skip_test_num[i] == AVS_TIMER_TEST_NUM_BASE) {
+          val_print(AVS_PRINT_TEST, "      USER Override - Skipping all Timer tests \n", 0);
+          return AVS_STATUS_SKIP;
+      }
   }
 
   status = t001_entry(num_pe);

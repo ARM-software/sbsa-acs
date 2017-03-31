@@ -21,6 +21,7 @@
 
 MEMORY_INFO_TABLE  *g_memory_info_table;
 
+#ifndef TARGET_LINUX
 /**
   @brief   This API will execute all Memory tests designated for a given compliance level
            1. Caller       -  Application layer.
@@ -44,6 +45,36 @@ val_memory_execute_tests(uint32_t level, uint32_t num_pe)
 }
 
 /**
+  @brief  Free the memory allocated for the Memory Info table
+**/
+void
+val_memory_free_info_table()
+{
+  pal_mem_free((void *)g_memory_info_table);
+}
+
+/**
+  @brief   This function will call PAL layer to fill all relevant peripheral
+           information into the g_peripheral_info_table pointer.
+           1. Caller       - Application layer
+           2. Prerequisite - Memory allocated and passed as argument.
+  @param   memory_info_table - Address where the memory info table is created
+
+  @return  None
+**/
+
+void
+val_memory_create_info_table(uint64_t *memory_info_table)
+{
+
+  g_memory_info_table = (MEMORY_INFO_TABLE *)memory_info_table;
+
+  pal_memory_create_info_table(g_memory_info_table);
+
+}
+#endif
+
+/**
   @brief   Return the Index of the entry in the peripheral info table
            which matches the input type and the input instance number
            Instance number is '0' based
@@ -56,7 +87,7 @@ val_memory_execute_tests(uint32_t level, uint32_t num_pe)
 uint32_t
 val_memory_get_entry_index(uint32_t type, uint32_t instance)
 {
-  uint32_t  i;
+  uint32_t  i = 0;
 
   while (g_memory_info_table->info[i].type != 0xFF) {
       if (g_memory_info_table->info[i].type == type) {
@@ -136,32 +167,14 @@ val_memory_get_info(addr_t addr, uint64_t *attr)
 
 }
 
-/**
-  @brief  Free the memory allocated for the Memory Info table
-**/
-void
-val_memory_free_info_table()
+addr_t
+val_memory_ioremap(void *addr, uint32_t size, uint64_t attr)
 {
-  pal_mem_free((void *)g_memory_info_table);
+  return (pal_memory_ioremap(addr, size, attr));
 }
-
-/**
-  @brief   This function will call PAL layer to fill all relevant peripheral 
-           information into the g_peripheral_info_table pointer.
-           1. Caller       - Application layer
-           2. Prerequisite - Memory allocated and passed as argument.
-  @param   memory_info_table - Address where the memory info table is created
-
-  @return  None
-**/
 
 void
-val_memory_create_info_table(uint64_t *memory_info_table)
-{ 
-
-  g_memory_info_table = (MEMORY_INFO_TABLE *)memory_info_table;
-
-  pal_memory_create_info_table(g_memory_info_table);
-
+val_memory_unmap(void *ptr)
+{
+  pal_memory_unmap(ptr);
 }
-

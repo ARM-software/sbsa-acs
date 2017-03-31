@@ -41,11 +41,13 @@ extern ARM_SMC_ARGS g_smc_args;
 uint32_t
 val_pe_execute_tests(uint32_t level, uint32_t num_pe)
 {
-  uint32_t status;
+  uint32_t status, i;
 
-  if (g_skip_test_num == AVS_PE_TEST_NUM_BASE) {
-      val_print(AVS_PRINT_TEST, "\n USER Override - Skipping all PE tests \n", 0);
-      return AVS_STATUS_SKIP;
+  for (i=0 ; i<MAX_TEST_SKIP_NUM ; i++){
+      if (g_skip_test_num[i] == AVS_PE_TEST_NUM_BASE) {
+          val_print(AVS_PRINT_TEST, "\n USER Override - Skipping all PE tests \n", 0);
+          return AVS_STATUS_SKIP;
+      }
   }
 
   status = c001_entry();
@@ -69,11 +71,11 @@ val_pe_execute_tests(uint32_t level, uint32_t num_pe)
       status |= c016_entry(num_pe);
       status |= c017_entry(num_pe);
   }
-/* ARM 8.2 SPE extensions - will be enabled in Future ACS release
+
   if (level > 1) {
       status |= c018_entry(num_pe);
   }
- */
+
   if (status != AVS_STATUS_PASS)
       val_print(AVS_PRINT_TEST, "\n      *** One or more PE tests have failed... *** \n", 0);
   else

@@ -33,11 +33,13 @@ uint32_t
 val_gic_execute_tests(uint32_t level, uint32_t num_pe)
 {
 
-  uint32_t status;
+  uint32_t status, i;
 
-  if (g_skip_test_num == AVS_GIC_TEST_NUM_BASE) {
-      val_print(AVS_PRINT_TEST, "      USER Override - Skipping all GIC tests \n", 0);
-      return AVS_STATUS_SKIP;
+  for (i=0 ; i<MAX_TEST_SKIP_NUM ; i++){
+      if (g_skip_test_num[i] == AVS_GIC_TEST_NUM_BASE) {
+          val_print(AVS_PRINT_TEST, "      USER Override - Skipping all GIC tests \n", 0);
+          return AVS_STATUS_SKIP;
+      }
   }
 
   status = g001_entry(num_pe);

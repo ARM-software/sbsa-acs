@@ -50,6 +50,7 @@
   ../test_pool/pe/test_c015.c
   ../test_pool/pe/test_c016.c
   ../test_pool/pe/test_c017.c
+  ../test_pool/pe/test_c018.c
   ../test_pool/gic/test_g001.c
   ../test_pool/gic/test_g002.c
   ../test_pool/gic/test_g003.c

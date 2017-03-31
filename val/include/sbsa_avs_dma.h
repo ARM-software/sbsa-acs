@@ -14,12 +14,27 @@
  * limitations under the License.
 **/
 
-#ifndef __SBSA_AVS_MEMORY_H__
-#define __SBSA_AVS_MEMORY_H__
+#ifndef __SBSA_AVS_DMA_H__
+#define __SBSA_AVS_DMA_H__
 
-addr_t val_memory_ioremap(void *addr, uint32_t size, uint64_t attr);
+#define WIDTH_BIT8     0x1
+#define WIDTH_BIT16    0x2
+#define WIDTH_BIT32    0x4
 
-void val_memory_unmap(void *ptr);
+#define DMA_NOT_SUPPORTED  0x0
+#define DMA_COHERENT       0x1
+#define DMA_NOT_COHERENT   0x2
+#define DMA_COHERENT_MASK  0xF
+
+#define IOMMU_ATTACHED      0x10
+#define IOMMU_ATTACHED_MASK 0xF0
+
+#define PCI_EP      0x100
+#define PCI_EP_MASK 0xF00
+
+addr_t val_dma_mem_alloc(void **buffer, uint32_t size, uint32_t dev_index, uint32_t flags);
+
+void val_dma_free_info_table(void);
 
 
-#endif // __SBSA_AVS_PERIPHERAL_H__
+#endif // __SBSA_AVS_DMA_H__

@@ -37,6 +37,7 @@ typedef enum {
 
 
 
+#define SBSA_SMC_INIT_SIGN          0x9abcdef9
 #define SBSA_SECURE_GET_RESULT      0x9000
 
 uint32_t s001_entry(uint32_t num_pe);

@@ -147,16 +147,18 @@ val_pcie_write_cfg(uint32_t bdf, uint32_t offset, uint32_t data)
 uint32_t
 val_pcie_execute_tests(uint32_t level, uint32_t num_pe)
 {
-  uint32_t status;
+  uint32_t status, i;
 
   if (level == 0) {
     val_print(AVS_PRINT_WARN, "PCIe compliance is required  only from Level %d \n", 1);
     return AVS_STATUS_SKIP;
   }
 
-  if (g_skip_test_num == AVS_PCIE_TEST_NUM_BASE) {
-      val_print(AVS_PRINT_TEST, "\n USER Override - Skipping all PCIe tests \n", 0);
-      return AVS_STATUS_SKIP;
+  for (i=0 ; i<MAX_TEST_SKIP_NUM ; i++){
+      if (g_skip_test_num[i] == AVS_PCIE_TEST_NUM_BASE) {
+          val_print(AVS_PRINT_TEST, "\n USER Override - Skipping all PCIe tests \n", 0);
+          return AVS_STATUS_SKIP;
+      }
   }
 
 
@@ -232,7 +234,8 @@ val_pcie_get_info(PCIE_INFO_e type, uint32_t index)
   }
 
   if (index >= g_pcie_info_table->num_entries) {
-      val_print(AVS_PRINT_ERR, "Invalid index %d > num of entries \n", index);
+      if (g_pcie_info_table->num_entries != 0)
+          val_print(AVS_PRINT_ERR, "Invalid index %d > num of entries \n", index);
       return 0;
   }
 

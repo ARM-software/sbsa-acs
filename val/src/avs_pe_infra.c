@@ -221,7 +221,7 @@ val_execute_on_pe(uint32_t index, void (*payload)(void), uint64_t test_input)
       val_print(AVS_PRINT_INFO, "       PSCI status is success  \n", 0);
   else if(g_smc_args.Arg0 == (uint64_t)ARM_SMC_PSCI_RET_ALREADY_ON){
       val_print(AVS_PRINT_INFO, "       PSCI status is already on  \n", 0);
-      val_report_status(index, RESULT_FAIL(g_sbsa_level, 0, 0x124));
+      val_set_status(index, RESULT_FAIL(g_sbsa_level, 0, 0x124));
       return;
   }
 

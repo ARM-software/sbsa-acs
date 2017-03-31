@@ -14,35 +14,20 @@
  * limitations under the License.
  **/
 
-#ifndef __SBSA_AVS_SMMU_H__
-#define __SBSA_AVS_SMMU_H__
 
-#define SMMUv2_IDR0   0x20
-#define SMMUv2_IDR1   0x24
-#define SMMUv2_IDR2   0x28
-#define SMMUv2_IDR3   0x2C
-#define SMMUv2_IDR7   0x3C
+#ifndef __SBSA_APP_LINUX_H__
+#define __SBSA_APP_LINUX_H__
 
-#define SMMUv3_IDR0   0x00
-#define SMMUv3_IDR1   0x04
-#define SMMUv3_IDR5   0x14
-#define SMMUv3_IIDR   0x18
-#define SMMUv3_AIDR   0x1C
 
-uint32_t
-val_smmu_read_cfg(uint32_t offset, uint32_t index);
+#define SBSA_APP_VERSION_MAJOR  0
+#define SBSA_APP_VERSION_MINOR  5
 
-uint64_t
-val_smmu_ops(SMMU_OPS_e ops, uint32_t index, void *param1, void *param2);
+#include "sbsa_drv_intf.h"
 
-uint32_t
-i001_entry(uint32_t num_pe);
-uint32_t
-i002_entry(uint32_t num_pe);
-uint32_t
-i003_entry(uint32_t num_pe);
-uint32_t
-i004_entry(uint32_t num_pe);
+typedef unsigned long int addr_t;
+typedef unsigned char     char8_t;
 
+int
+execute_tests_pcie(int num_pe, int level);
 
 #endif

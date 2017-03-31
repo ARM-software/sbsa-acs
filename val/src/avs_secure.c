@@ -35,6 +35,12 @@ val_secure_execute_tests(uint32_t level, uint32_t num_pe)
 {
   uint32_t status;
 
+  status = val_secure_trusted_firmware_init();
+  if(status != SBSA_SMC_INIT_SIGN){
+      val_print(AVS_PRINT_WARN, "\n   ARM-TF firmware not ported, skipping all secure tests", 0);
+      return AVS_STATUS_SKIP;
+  }
+
   status = s001_entry(num_pe);
   status |= s002_entry(num_pe);
   status |= s003_entry(num_pe);
@@ -43,6 +49,19 @@ val_secure_execute_tests(uint32_t level, uint32_t num_pe)
   return status;
 }
 
+uint32_t
+val_secure_trusted_firmware_init(void)
+{
+  SBSA_SMC_t  smc;
+
+  smc.test_index = SBSA_SECURE_INFRA_INIT;
+  smc.test_arg01 = 0x3;   // Value to be written to MDCR_EL3.NSPB
+  val_secure_call_smc(&smc);
+
+  val_secure_get_result(&smc, 2);
+
+  return smc.test_arg02;
+}
 /**
   @brief   Call PAL layer to initiate an SMC call to jump to Exception Level 3
            1. Caller       - VAL

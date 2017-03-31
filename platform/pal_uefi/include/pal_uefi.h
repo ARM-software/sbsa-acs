@@ -165,7 +165,6 @@ typedef struct {
   PCIE_INFO_BLOCK block[];
 }PCIE_INFO_TABLE;
 
-
 /**
   @brief  Instance of SMMU INFO block
 **/
@@ -173,6 +172,51 @@ typedef struct {
   UINT32 arch_major_rev;  ///< Version 1 or 2 or 3
   UINT64 base;              ///< SMMU Controller base address
 }SMMU_INFO_BLOCK;
+
+typedef enum {
+  IOVIRT_NODE_ITS_GROUP = 0x00,
+  IOVIRT_NODE_NAMED_COMPONENT = 0x01,
+  IOVIRT_NODE_PCI_ROOT_COMPLEX = 0x02,
+  IOVIRT_NODE_SMMU = 0x03,
+  IOVIRT_NODE_SMMU_V3 = 0x04
+}IOVIRT_NODE_TYPE;
+
+typedef struct {
+  UINT32 input_base;
+  UINT32 id_count;
+  UINT32 output_base;
+  UINT32 output_ref;
+}ID_MAP;
+
+typedef union {
+  UINT32 id[4];
+  ID_MAP map;
+}NODE_DATA_MAP;
+
+typedef union {
+  CHAR8 name[16];
+  UINT32 segment;
+  UINT32 its_count;
+  SMMU_INFO_BLOCK smmu;
+}NODE_DATA;
+
+typedef struct {
+  UINT32 type;
+  UINT32 num_data_map;
+  NODE_DATA data;
+  NODE_DATA_MAP data_map[];
+}IOVIRT_BLOCK;
+
+typedef struct {
+  UINT32 num_blocks;
+  UINT32 num_smmus;
+  UINT32 num_pci_rcs;
+  UINT32 num_named_components;
+  UINT32 num_its_groups;
+  IOVIRT_BLOCK blocks[];
+}IOVIRT_INFO_TABLE;
+
+#define IOVIRT_NEXT_BLOCK(b) (IOVIRT_BLOCK *)((UINT8*)(&b->data_map[0]) + b->num_data_map * sizeof(NODE_DATA_MAP))
 
 /**
   @brief SMMU Info Table

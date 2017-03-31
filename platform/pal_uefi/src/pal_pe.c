@@ -26,6 +26,7 @@
 
 static   EFI_ACPI_6_1_MULTIPLE_APIC_DESCRIPTION_TABLE_HEADER *gMadtHdr;
 UINT8   *gSecondaryPeStack;
+UINT64  gMpidrMax;
 
 #define SIZE_STACK_SECONDARY_PE  0x100		//256 bytes per core
 
@@ -51,7 +52,19 @@ PalGetSecondaryStackBase()
 }
 
 /**
-  @brief  Allocate memory region for secondary PE stack use. SIZE of stack for each PE 
+  @brief   Returns the Max MPIDR.
+  @param   None
+  @return  Max MPIDR
+**/
+UINT64
+PalGetMaxMpidr()
+{
+
+  return gMpidrMax;
+}
+
+/**
+  @brief  Allocate memory region for secondary PE stack use. SIZE of stack for each PE
           is a #define
 
   @param  Number of PEs
@@ -59,9 +72,16 @@ PalGetSecondaryStackBase()
   @return  None
 **/
 VOID
-PalAllocateSecondaryStack(UINT32 NumPe)
+PalAllocateSecondaryStack(UINT64 mpidr)
 {
-  EFI_STATUS Status;
+  EFI_STATUS Status, NumPe, Aff0, Aff1, Aff2, Aff3;
+
+  Aff0 = ((mpidr & 0x00000000ff) >>  0);
+  Aff1 = ((mpidr & 0x000000ff00) >>  8);
+  Aff2 = ((mpidr & 0x0000ff0000) >> 16);
+  Aff3 = ((mpidr & 0xff00000000) >> 32);
+
+  NumPe = ((Aff3+1) * (Aff2+1) * (Aff1+1) * (Aff0+1));
 
   if (gSecondaryPeStack == NULL) {
       Status = gBS->AllocatePool ( EfiBootServicesData,
@@ -89,7 +109,8 @@ pal_pe_create_info_table(PE_INFO_TABLE *PeTable)
   EFI_ACPI_6_1_GIC_STRUCTURE    *Entry;
   PE_INFO_ENTRY                 *Ptr = PeTable->pe_info;
   UINT32                        TableLength = 0;
-  UINT32                        Length = 0; 
+  UINT32                        Length = 0;
+  UINT64                        MpidrAff0Max = 0, MpidrAff1Max = 0, MpidrAff2Max = 0, MpidrAff3Max = 0;
 
 
   gMadtHdr = (EFI_ACPI_6_1_MULTIPLE_APIC_DESCRIPTION_TABLE_HEADER *) pal_get_madt_ptr();
@@ -118,6 +139,11 @@ pal_pe_create_info_table(PE_INFO_TABLE *PeTable)
       pal_pe_data_cache_ops_by_va((UINT64)Ptr, CLEAN_AND_INVALIDATE);
       Ptr++;
       PeTable->header.num_of_pe++;
+
+      MpidrAff0Max = ((Entry->MPIDR & 0x000000ff) > (MpidrAff0Max & 0x000000ff))? (Entry->MPIDR & 0x000000ff) : (MpidrAff0Max & 0x000000ff);
+      MpidrAff1Max = ((Entry->MPIDR & 0x0000ff00) > (MpidrAff1Max & 0x0000ff00))? (Entry->MPIDR & 0x0000ff00) : (MpidrAff1Max & 0x0000ff00);
+      MpidrAff2Max = ((Entry->MPIDR & 0x00ff0000) > (MpidrAff2Max & 0x00ff0000))? (Entry->MPIDR & 0x00ff0000) : (MpidrAff2Max & 0x00ff0000);
+      MpidrAff3Max = ((Entry->MPIDR & 0xff00000000) > (MpidrAff3Max & 0xff00000000))? (Entry->MPIDR & 0xff00000000) : (MpidrAff3Max & 0xff00000000);
     }
 
     Length += Entry->Length;
@@ -125,8 +151,9 @@ pal_pe_create_info_table(PE_INFO_TABLE *PeTable)
 
   }while(Length < TableLength);
 
+  gMpidrMax = MpidrAff0Max | MpidrAff1Max | MpidrAff2Max | MpidrAff3Max;
   pal_pe_data_cache_ops_by_va((UINT64)PeTable, CLEAN_AND_INVALIDATE);
-  PalAllocateSecondaryStack(PeTable->header.num_of_pe);
+  PalAllocateSecondaryStack(gMpidrMax);
 
 }
 

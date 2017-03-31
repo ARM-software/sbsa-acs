@@ -138,8 +138,21 @@ typedef enum {
   SMMU_CTRL_ARCH_MAJOR_REV
 }SMMU_INFO_e;
 
-void     val_smmu_create_info_table(uint64_t *smmu_info_table);
-void     val_smmu_free_info_table(void);
+typedef enum {
+  SMMU_CAPABLE     = 1,
+  SMMU_CHECK_DEVICE_IOVA,
+  SMMU_START_MONITOR_DEV,
+  SMMU_STOP_MONITOR_DEV,
+  SMMU_CREATE_MAP,
+  SMMU_UNMAP,
+  SMMU_IOVA_PHYS,
+  SMMU_DEV_DOMAIN,
+  SMMU_GET_ATTR,
+  SMMU_SET_ATTR,
+}SMMU_OPS_e;
+
+void     val_iovirt_create_info_table(uint64_t *iovirt_info_table);
+void     val_iovirt_free_info_table(void);
 uint32_t val_smmu_execute_tests(uint32_t level, uint32_t num_pe);
 uint64_t val_smmu_get_info(SMMU_INFO_e, uint32_t index);
 
@@ -149,13 +162,18 @@ typedef enum {
     DMA_HOST_INFO,
     DMA_PORT_INFO,
     DMA_TARGET_INFO,
-    DMA_HOST_FLAGS
+    DMA_HOST_COHERENT,
+    DMA_HOST_IOMMU_ATTACHED,
+    DMA_HOST_PCI
 } DMA_INFO_e;
 
-void val_dma_create_info_table(uint64_t *dma_info_ptr);
+void     val_dma_create_info_table(uint64_t *dma_info_ptr);
 uint64_t val_dma_get_info(DMA_INFO_e type, uint32_t index);
 uint32_t val_dma_start_from_device(void *buffer, uint32_t length, uint32_t index);
 uint32_t val_dma_start_to_device(void *buffer, uint32_t length, uint32_t index);
+uint32_t val_dma_iommu_check_iova(uint32_t ctrl_index, addr_t dma_addr, addr_t cpu_addr);
+void     val_dma_device_get_dma_addr(uint32_t ctrl_index, void *dma_addr, uint32_t *cpu_len);
+
 
 /* POWER and WAKEUP APIs */
 typedef enum {
@@ -230,5 +248,6 @@ typedef struct {
 void     val_secure_call_smc(SBSA_SMC_t *smc);
 uint32_t val_secure_get_result(SBSA_SMC_t *smc, uint32_t timeout);
 uint32_t val_secure_execute_tests(uint32_t level, uint32_t num_pe);
+uint32_t val_secure_trusted_firmware_init(void);
 
 #endif

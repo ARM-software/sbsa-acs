@@ -105,7 +105,7 @@ pal_timer_create_info_table(TIMER_INFO_TABLE *TimerTable)
   Length         = gGtdtHdr->PlatformTimerOffset;
   Entry          = (EFI_ACPI_6_1_GTDT_GT_BLOCK_STRUCTURE *) ((UINT8 *)gGtdtHdr + Length);
   Length         = sizeof (EFI_ACPI_6_1_GENERIC_TIMER_DESCRIPTION_TABLE);
-  num_of_entries = TimerTable->header.num_platform_timer;
+  num_of_entries = gGtdtHdr->PlatformTimerCount;
 
   //Print(L"CntCtrlBase = %x CntReadBase = %x num of sys timers= %x length= %x \n", TimerTable->header.CntCtrl_base,  TimerTable->header.CntRead_base, TimerTable->header.num_platform_timer, Entry->Type);
 

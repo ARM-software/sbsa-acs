@@ -14,35 +14,38 @@
  * limitations under the License.
  **/
 
-#ifndef __SBSA_AVS_SMMU_H__
-#define __SBSA_AVS_SMMU_H__
 
-#define SMMUv2_IDR0   0x20
-#define SMMUv2_IDR1   0x24
-#define SMMUv2_IDR2   0x28
-#define SMMUv2_IDR3   0x2C
-#define SMMUv2_IDR7   0x3C
+#ifndef __SBSA_DRV_INTF_H__
+#define __SBSA_DRV_INTF_H__
 
-#define SMMUv3_IDR0   0x00
-#define SMMUv3_IDR1   0x04
-#define SMMUv3_IDR5   0x14
-#define SMMUv3_IIDR   0x18
-#define SMMUv3_AIDR   0x1C
 
-uint32_t
-val_smmu_read_cfg(uint32_t offset, uint32_t index);
+/* API NUMBERS to COMMUNICATE with DRIVER */
 
-uint64_t
-val_smmu_ops(SMMU_OPS_e ops, uint32_t index, void *param1, void *param2);
+#define SBSA_CREATE_INFO_TABLES   0x1000
+#define SBSA_EXECUTE_TEST         0x2000
+#define SBSA_FREE_INFO_TABLES     0x9000
 
-uint32_t
-i001_entry(uint32_t num_pe);
-uint32_t
-i002_entry(uint32_t num_pe);
-uint32_t
-i003_entry(uint32_t num_pe);
-uint32_t
-i004_entry(uint32_t num_pe);
 
+/* STATUS MESSAGES */
+#define DRV_STATUS_AVAILABLE     0x10000000
+#define DRV_STATUS_PENDING       0x40000000
+
+
+
+
+/* Function Prototypes */
+
+int
+call_drv_init_test_env();
+
+int
+call_drv_clean_test_env();
+
+int
+call_drv_execute_test(unsigned int test_num, unsigned int num_pe,
+  unsigned int level, unsigned long int test_input);
+
+int
+call_drv_wait_for_completion();
 
 #endif

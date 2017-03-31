@@ -20,6 +20,7 @@
 
 GCC_ASM_IMPORT(ArmReadMpidr)
 GCC_ASM_IMPORT(PalGetSecondaryStackBase)
+GCC_ASM_IMPORT(PalGetMaxMpidr)
 GCC_ASM_EXPORT(ModuleEntryPoint)
 
 StartupAddr:         .8byte ASM_PFX(val_test_entry)
@@ -31,10 +32,30 @@ ASM_PFX(ModuleEntryPoint):
   // Keep a copy of the MpId register value
   mov   x10, x0
 
-  // With this function: CorePos = (ClusterId * 4) + CoreId
+  // With this function: CorePos = (Aff3 x maxAff2 x maxAff1 x maxAff0) +
+  //                                 (Aff2 x maxAff1 x maxAff0) + (Aff1 x maxAff0) + Aff0
   and   x1, x0, 0xFF
-  and   x0, x0, 0xFF00
-  add   x0, x1, x0, LSR #6
+  and   x2, x0, 0xFF00
+  lsr   x2, x2, 8
+  and   x3, x0, 0xFF0000
+  lsr   x3, x3, 16
+  and   x4, x0, 0xFF00000000
+  lsr   x4, x4, 32
+
+  bl    ASM_PFX(PalGetMaxMpidr)
+  and   x5, x0, 0xFF
+  and   x6, x0, 0xFF00
+  lsr   x6, x6, 8
+  and   x7, x0, 0xFF0000
+  lsr   x7, x7, 16
+  and   x8, x0, 0xFF00000000
+  lsr   x8, x8, 32
+
+  madd  x0, x2, x5, x1
+  mul   x5, x5, x6
+  madd  x0, x3, x5, x0
+  mul   x5, x5, x7
+  madd  x0, x4, x5, x0
 
   ldr   x3, StackSize
   mul   x3, x3, x0

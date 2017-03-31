@@ -22,6 +22,7 @@
 #include <runtime_svc.h>
 #include <std_svc.h>
 #include <stdint.h>
+#include <psci.h>
 
 #include "sbsa_avs.h"
 #include "aarch64/sbsa_helpers.h"
@@ -276,6 +277,47 @@ sbsa_acs_el3_phy_timer()
     return 0;
 }
 
+/**
+  @brief   This API checks if an interrupt is able to wake PE up due to secure
+           physical timer interrupt
+**/
+int
+sbsa_acs_secure_timer_wakeup()
+{
+
+    uint32_t ctl = 0;
+    volatile uint32_t timeout = 0x10000;
+    uint32_t int_id;
+
+    acs_printf("Programming Secure PE timer  %lx \n", read_cntps_ctl_el1());
+    write_cntps_tval_el1(10000);
+    set_cntp_ctl_enable(ctl);
+    write_cntps_ctl_el1(ctl);
+
+    acs_printf("Placing the PE to sleep \n");
+    psci_cpu_suspend(0, 0, 0);
+
+    while(--timeout)
+    {
+        int_id = sbsa_acs_get_pending_interrupt_id();
+        if (int_id == 29)
+        {
+            sbsa_acs_acknowledge_interrupt();
+            sbsa_acs_end_of_interrupt(29);
+            g_sbsa_acs_result = ACS_STATUS_PASS;
+            acs_printf("cleared CNTPS interrupt %x \n", sbsa_acs_get_pending_interrupt_id());
+            break;
+        }
+    }
+    write_cntps_ctl_el1(0); //Stop the secure timer
+
+    if (timeout == 0) {
+        g_sbsa_acs_result = ACS_STATUS_FAIL;
+    }
+
+    return 0;
+}
+
 void
 uart_compliance_test();
 
@@ -303,6 +345,8 @@ sbsa_acs_smc_init(int arg01)
     data |= ((arg01 & 0x3) << 12);  // Set MDCR_EL3.NSPB
     write_mdcr_el3(data);
 
+    sbsa_acs_set_status(ACS_STATUS_PASS, SBSA_SMC_INIT_SIGN);
+    g_sbsa_acs_return_data2 = 0;
     return 0;
 }
 /**
@@ -362,6 +406,9 @@ uint64_t sbsa_smc_handler(uint32_t smc_fid,
         case SBSA_SECURE_TEST_EL3_PHY:
             SMC_RET1(handle, sbsa_acs_el3_phy_timer());
 
+        case SBSA_SECURE_TEST_WAKEUP:
+            SMC_RET1(handle, sbsa_acs_secure_timer_wakeup());
+
         case SBSA_SECURE_TEST_SEC_UART:
             SMC_RET1(handle, sbsa_acs_secure_uart());
 
@@ -379,7 +426,7 @@ uint64_t sbsa_smc_handler(uint32_t smc_fid,
             break;
     }
 
-    WARN("Unimplemented Standard Service Call: 0x%x \n", smc_fid);
+    WARN("Unimplemented SBSA Standard Service Call: 0x%x \n", smc_fid);
     return 1;
 
 }

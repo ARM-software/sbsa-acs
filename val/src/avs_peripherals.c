@@ -21,6 +21,7 @@
 
 PERIPHERAL_INFO_TABLE  *g_peripheral_info_table;
 
+#ifndef TARGET_LINUX
 /**
   @brief  Sequentially execute all the peripheral tests
           1. Caller       - Application
@@ -34,11 +35,13 @@ uint32_t
 val_peripheral_execute_tests(uint32_t level, uint32_t num_pe)
 {
 
-  uint32_t status;
+  uint32_t status, i;
 
-  if (g_skip_test_num == AVS_PER_TEST_NUM_BASE) {
-      val_print(AVS_PRINT_TEST, "      USER Override - Skipping all Peripheral tests \n", 0);
-      return AVS_STATUS_SKIP;
+  for (i=0 ; i<MAX_TEST_SKIP_NUM ; i++){
+      if (g_skip_test_num[i] == AVS_PER_TEST_NUM_BASE) {
+          val_print(AVS_PRINT_TEST, "      USER Override - Skipping all Peripheral tests \n", 0);
+          return AVS_STATUS_SKIP;
+      }
   }
 
   status = d001_entry(num_pe);
@@ -51,6 +54,7 @@ val_peripheral_execute_tests(uint32_t level, uint32_t num_pe)
   }
   return status;
 }
+#endif
 
 /**
   @brief  Return the Index of the entry in the peripheral info table

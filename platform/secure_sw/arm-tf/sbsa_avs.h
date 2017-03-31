@@ -62,6 +62,7 @@ typedef enum {
   SBSA_SECURE_PLATFORM_ADDRESS
 }SBSA_SECURE_TEST_INDEX_e;
 
+#define SBSA_SMC_INIT_SIGN          0x9abcdef9
 #define SBSA_SECURE_GET_RESULT      0x9000
 
 #define SBSA_GENERIC             0xA

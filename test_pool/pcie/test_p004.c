@@ -13,46 +13,48 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  **/
-
 #include "val/include/sbsa_avs_val.h"
-#include "val/include/sbsa_avs_pe.h"
+#include "val/include/val_interface.h"
 
-#define TEST_NUM   (AVS_PE_TEST_NUM_BASE  +  06)
-#define TEST_DESC  "Check HW Coherence support        "
+#include "val/include/sbsa_avs_pcie.h"
+#include "val/include/sbsa_avs_memory.h"
+
+/* SBSA-checklist 63 & 64 */
+#define TEST_NUM   (AVS_PCIE_TEST_NUM_BASE + 4)
+#define TEST_DESC  "Check PCIe Unaligned access, Norm mem"
 
 static
 void
-payload()
+payload(void)
 {
-  uint64_t data = 0;
-  uint64_t pfr0, a32_support;
+  uint32_t count = 0;
+  uint64_t base;
+  uint32_t data;
+  char *baseptr;
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
 
-  pfr0 = val_pe_reg_read(ID_AA64PFR0_EL1);
-  a32_support = ((pfr0 & 0xf000) == 0x2000)? 1:((pfr0 & 0xf00) == 0x200)?\
-                1:((pfr0 & 0xf0) == 0x20)? 1:((pfr0 & 0xf) == 0x2)? 1:0;
+  /* Map SATA Controller BARs to a NORMAL memory attribute. check unaligned access */
+  count = val_peripheral_get_info(NUM_SATA, 0);
 
-  if(a32_support == 0){
-      val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
-      return;
+  while (count--) {
+      base = val_peripheral_get_info(SATA_BASE1, count);
+      baseptr = (char *)val_memory_ioremap((void *)base, 1024, 0);
+
+      data = *(uint32_t *)(baseptr+3);
+
+      val_memory_unmap(baseptr);
   }
-
-  data = val_pe_reg_read(ID_MMFR0_EL1);
-
-  if ((((data >> 28) & 0xF) == 1) && (((data >> 12) & 0xF) == 1)) //bits 31:28 and 15:12 should be 1
-      val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
-  else
-      val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
-
-  return;
+   val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 0));
 
 }
 
 uint32_t
-c006_entry(uint32_t num_pe)
+p004_entry(uint32_t num_pe)
 {
 
   uint32_t status = AVS_STATUS_FAIL;
+
+  num_pe = 1;  //This test is run on single processor
 
   status = val_initialize_test(TEST_NUM, TEST_DESC, num_pe, g_sbsa_level);
   if (status != AVS_STATUS_SKIP)
@@ -65,4 +67,3 @@ c006_entry(uint32_t num_pe)
 
   return status;
 }
-
