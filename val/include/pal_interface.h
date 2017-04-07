@@ -392,6 +392,7 @@ void pal_memory_unmap(void *addr);
 
 /* Common Definitions */
 void     pal_print(char8_t *string, uint64_t data);
+void     pal_print_raw(uint64_t addr, char8_t *string, uint64_t data);
 
 void     *pal_mem_alloc(uint32_t size);
 void     pal_mem_free(void *buffer);

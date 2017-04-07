@@ -90,7 +90,7 @@ main (int argc, char **argv)
     execute_tests_pcie(1, g_sbsa_level);
 
 
-    printf("\n      *** SBSA Compliance Test Complete.. *** \n\n");
+    printf("\n   *** SBSA Compliance Test Complete. check dmesg for detailed log. *** \n\n");
 
     cleanup_test_environment();
 

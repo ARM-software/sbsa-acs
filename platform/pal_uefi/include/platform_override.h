@@ -15,9 +15,9 @@
 **/
 
 
-/* THESE values are provided as a HOOK to 
+/* THESE values are provided as a HOOK to
      1. Override a value which is read from ACPI tables
-     2. Fill-in a value which is not provided by any ACPI Table 
+     2. Fill-in a value which is not provided by any ACPI Table
  */
 
 //Vexpress 0x1c090000

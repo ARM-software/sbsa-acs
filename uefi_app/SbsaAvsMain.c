@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016, ARM Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2017, ARM Limited or its affiliates. All rights reserved.
 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -261,6 +261,7 @@ ShellAppMain (
 
   LIST_ENTRY         *ParamPackage;
   CONST CHAR16       *CmdLineArg;
+  CHAR16             *ProbParam;
   UINT32             Status;
   UINT32             i,j=0;
 
@@ -269,9 +270,11 @@ ShellAppMain (
   // Process Command Line arguments
   //
   Status = ShellInitialize();
-  Status = ShellCommandLineParse (ParamList, &ParamPackage, NULL, TRUE);
-  if (EFI_ERROR(Status)) {
-    Print(L"Shell command line parse error %x \n", Status);
+  Status = ShellCommandLineParse (ParamList, &ParamPackage, &ProbParam, TRUE);
+  if (Status) {
+    Print(L"Shell command line parse error %x\n", Status);
+    Print(L"Unrecognized option %s passed\n", ProbParam);
+    HelpMsg();
     return SHELL_INVALID_PARAMETER;
   }
 

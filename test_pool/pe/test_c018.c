@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016, ARM Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2017, ARM Limited or its affiliates. All rights reserved.
 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@
 #define PMBLIMITR_VALUE(val) (val + 0x10000 + 1)
 
 uint64_t mem_array[2048];
-/* Interrupt ID for PMBIRQ for compliance level > 1 is 22, 
+/* Interrupt ID for PMBIRQ for compliance level > 1 is 22,
    the test will be skipped for compliance level <= 1 */
 static uint32_t int_id = 22;
 
@@ -46,12 +46,20 @@ void
 generate_pmbirq(uint64_t fault_addr)
 {
   uint64_t read_data=0, interval;
+  uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
   SBSA_SMC_t  smc;
-  
+
   //SMC call to set MDCR_EL3.NSPB=3
-  smc.test_index = SBSA_SECURE_INFRA_INIT;
+  smc.test_index = SBSA_SECURE_PMBIRQ;
   smc.test_arg01 = 0x3;   // Value to be written to MDCR_EL3.NSPB
   val_secure_call_smc(&smc);
+
+  val_secure_get_result(&smc, 2);
+  if(smc.test_arg02 != SBSA_SMC_INIT_SIGN){
+      val_print(AVS_PRINT_WARN, "\n   ARM-TF firmware not ported, skipping this test", 0);
+      val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 02));
+      return;
+  }
 
   read_data = val_pe_reg_read(MDCR_EL2);
   val_pe_reg_write(MDCR_EL2, read_data & (~0x300));
@@ -111,10 +119,8 @@ payload()
   val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
   while (loop_var > 0) {
       if (val_memory_get_info(addr, &attr) == MEM_TYPE_NOT_POPULATED) {
-         /* Set the loop_var to 0, to exit the while loop */
-         loop_var = 0;
-
-         generate_pmbirq(addr);
+          generate_pmbirq(addr);
+          break;
       } else {
           addr += 0x1000000;   //check at 16MB hops
           loop_var --;

@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016, ARM Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2017, ARM Limited or its affiliates. All rights reserved.
 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -58,7 +58,12 @@ payload(void)
           } else {
               val_print(AVS_PRINT_WARN, "\n      Controller Index = %x is not IO-Coherent. Skipping.. ",
                 target_dev_index);
-              continue;
+              if (target_dev_index)
+                  continue;
+              else {
+                  val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
+                  return;
+              }
           }
       }
       val_smmu_ops(SMMU_START_MONITOR_DEV, 0, &target_dev_index, NULL);

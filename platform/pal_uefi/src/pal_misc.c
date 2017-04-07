@@ -91,6 +91,21 @@ pal_print(CHAR8 *string, UINT64 data)
 }
 
 /**
+  @brief  Sends a string to the output console
+
+  @param  string  An ASCII string
+  @param  data    data for the formatted output
+
+  @return None
+**/
+VOID
+pal_print_raw(UINT64 addr, CHAR8 *string, UINT64 data)
+{
+    UINTN  i = 0;
+    while(string[i] != '\0')
+    *(volatile UINT8 *)addr = string[i++];
+}
+/**
   @brief  Free the memory allocated by UEFI Framework APIs
   @param  Buffer the base address of the memory range to be freed
 

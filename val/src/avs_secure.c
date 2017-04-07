@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016, ARM Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2017, ARM Limited or its affiliates. All rights reserved.
 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,11 +55,9 @@ val_secure_trusted_firmware_init(void)
   SBSA_SMC_t  smc;
 
   smc.test_index = SBSA_SECURE_INFRA_INIT;
-  smc.test_arg01 = 0x3;   // Value to be written to MDCR_EL3.NSPB
   val_secure_call_smc(&smc);
 
   val_secure_get_result(&smc, 2);
-
   return smc.test_arg02;
 }
 /**

@@ -333,18 +333,25 @@ sbsa_acs_secure_uart()
 }
 
 /**
-  @brief   This API contains secure initialization code which SBSA test rely upon
+  @brief   This API sets secure bits required for generating PMBIRQ
 **/
 int
-sbsa_acs_smc_init(int arg01)
+sbsa_acs_pmbirq(int arg01)
 {
     uint64_t data = 0;
-    acs_printf("Initializing code through SMC \n");
 
     data = read_mdcr_el3();
     data |= ((arg01 & 0x3) << 12);  // Set MDCR_EL3.NSPB
     write_mdcr_el3(data);
-
+    sbsa_acs_set_status(ACS_STATUS_PASS, SBSA_SMC_INIT_SIGN);
+    return 0;
+}
+/**
+  @brief   This API contains secure initialization code which SBSA test rely upon
+**/
+int
+sbsa_acs_smc_init(void)
+{
     sbsa_acs_set_status(ACS_STATUS_PASS, SBSA_SMC_INIT_SIGN);
     g_sbsa_acs_return_data2 = 0;
     return 0;
@@ -416,7 +423,10 @@ uint64_t sbsa_smc_handler(uint32_t smc_fid,
             SMC_RET4(handle, g_sbsa_test_index, g_sbsa_acs_result, g_sbsa_acs_return_data, g_sbsa_acs_return_data2);
 
         case SBSA_SECURE_INFRA_INIT:
-            SMC_RET1(handle, sbsa_acs_smc_init(x2));
+            SMC_RET1(handle, sbsa_acs_smc_init());
+
+        case SBSA_SECURE_PMBIRQ:
+            SMC_RET1(handle, sbsa_acs_pmbirq(x2));
 
         case SBSA_SECURE_PLATFORM_ADDRESS:
             SMC_RET1(handle, sbsa_acs_secure_platform_address(x2));
