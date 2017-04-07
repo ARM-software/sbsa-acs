@@ -30,7 +30,7 @@ A few tests are executed by running the SBSA Linux application which in turn dep
   - To get the latest version of the code with bug fixes and new features, use the master branch.
 
 ### Linux kernel module
-  - The Linux kernel module files and the kernel patch file to enable the export of a few kernel APIs needed for the PCIe and IOMMU tests are located at [linu-arm.org/git](linux-arm.org/linux-acs.git).
+  - The Linux kernel module files and the kernel patch file to enable the export of a few kernel APIs needed for the PCIe and IOMMU tests are located at [linux-arm.org/git](www.linux-arm.org/git?p=linux-acs.git).
 
 ## Target platforms
   Any AARCH64 enterprise Platform which boots UEFI and Linux OS.
