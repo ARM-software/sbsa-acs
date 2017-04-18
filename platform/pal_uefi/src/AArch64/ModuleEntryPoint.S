@@ -44,12 +44,16 @@ ASM_PFX(ModuleEntryPoint):
 
   bl    ASM_PFX(PalGetMaxMpidr)
   and   x5, x0, 0xFF
+  add   x5, x5, 1
   and   x6, x0, 0xFF00
   lsr   x6, x6, 8
+  add   x6, x6, 1
   and   x7, x0, 0xFF0000
   lsr   x7, x7, 16
+  add   x7, x7, 1
   and   x8, x0, 0xFF00000000
   lsr   x8, x8, 32
+  add   x8, x8, 1    // x8 has maxAff3, which is reserved for future use
 
   madd  x0, x2, x5, x1
   mul   x5, x5, x6
