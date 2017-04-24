@@ -50,6 +50,7 @@ typedef enum {
   PMINTENCLR_EL1,
   CurrentEL,
   MDCR_EL2,
+  VBAR_EL2,
   CCSIDR_EL1,
   CLIDR_EL1,
   ID_DFR0_EL1,
@@ -124,6 +125,10 @@ uint64_t AA64ReadCurrentEL(void);
 uint64_t AA64ReadMdcr2(void);
 
 void AA64WriteMdcr2(uint64_t write_data);
+
+uint64_t AA64ReadVbar2(void);
+
+void AA64WriteVbar2(uint64_t write_data);
 
 void AA64WritePmcr(uint64_t write_data);
 

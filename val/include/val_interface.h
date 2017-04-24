@@ -37,6 +37,7 @@
 void val_allocate_shared_mem(void);
 void val_free_shared_mem(void);
 void val_print(uint32_t level, char8_t *string, uint64_t data);
+void val_print_raw(uint32_t level, char8_t *string, uint64_t data);
 void val_set_test_data(uint32_t index, uint64_t addr, uint64_t test_data);
 void val_get_test_data(uint32_t index, uint64_t *data0, uint64_t *data1);
 
@@ -74,7 +75,10 @@ void     val_gic_free_info_table(void);
 uint32_t val_gic_execute_tests(uint32_t level, uint32_t num_pe);
 uint32_t val_gic_install_isr(uint32_t int_id, void (*isr)(void));
 uint32_t val_gic_end_of_interrupt(uint32_t int_id);
-
+uint32_t val_gic_route_interrupt_to_pe(uint32_t int_id, uint64_t mpidr);
+uint32_t val_gic_get_interrupt_state(uint32_t int_id);
+void val_gic_clear_interrupt(uint32_t int_id);
+void val_gic_cpuif_init(void);
 
 /*TIMER VAL APIs */
 typedef enum {
@@ -135,10 +139,42 @@ typedef enum {
   SMMU_CTRL_ARCH_MAJOR_REV
 }SMMU_INFO_e;
 
-void     val_smmu_create_info_table(uint64_t *smmu_info_table);
-void     val_smmu_free_info_table(void);
+typedef enum {
+  SMMU_CAPABLE     = 1,
+  SMMU_CHECK_DEVICE_IOVA,
+  SMMU_START_MONITOR_DEV,
+  SMMU_STOP_MONITOR_DEV,
+  SMMU_CREATE_MAP,
+  SMMU_UNMAP,
+  SMMU_IOVA_PHYS,
+  SMMU_DEV_DOMAIN,
+  SMMU_GET_ATTR,
+  SMMU_SET_ATTR,
+}SMMU_OPS_e;
+
+void     val_iovirt_create_info_table(uint64_t *iovirt_info_table);
+void     val_iovirt_free_info_table(void);
 uint32_t val_smmu_execute_tests(uint32_t level, uint32_t num_pe);
 uint64_t val_smmu_get_info(SMMU_INFO_e, uint32_t index);
+
+
+typedef enum {
+    DMA_NUM_CTRL = 1,
+    DMA_HOST_INFO,
+    DMA_PORT_INFO,
+    DMA_TARGET_INFO,
+    DMA_HOST_COHERENT,
+    DMA_HOST_IOMMU_ATTACHED,
+    DMA_HOST_PCI
+} DMA_INFO_e;
+
+void     val_dma_create_info_table(uint64_t *dma_info_ptr);
+uint64_t val_dma_get_info(DMA_INFO_e type, uint32_t index);
+uint32_t val_dma_start_from_device(void *buffer, uint32_t length, uint32_t index);
+uint32_t val_dma_start_to_device(void *buffer, uint32_t length, uint32_t index);
+uint32_t val_dma_iommu_check_iova(uint32_t ctrl_index, addr_t dma_addr, addr_t cpu_addr);
+void     val_dma_device_get_dma_addr(uint32_t ctrl_index, void *dma_addr, uint32_t *cpu_len);
+
 
 /* POWER and WAKEUP APIs */
 typedef enum {
@@ -154,6 +190,10 @@ typedef enum {
 
 uint32_t val_power_enter_semantic(SBSA_POWER_SEM_e semantic);
 uint32_t val_wakeup_execute_tests(uint32_t level, uint32_t num_pe);
+
+typedef enum {
+    PER_FLAG_MSI_ENABLED = 0x2
+}PERIPHERAL_FLAGS_e;
 
 /* Peripheral Tests APIs */
 typedef enum {
@@ -209,5 +249,6 @@ typedef struct {
 void     val_secure_call_smc(SBSA_SMC_t *smc);
 uint32_t val_secure_get_result(SBSA_SMC_t *smc, uint32_t timeout);
 uint32_t val_secure_execute_tests(uint32_t level, uint32_t num_pe);
+uint32_t val_secure_trusted_firmware_init(void);
 
 #endif

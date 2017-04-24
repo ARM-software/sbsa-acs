@@ -22,6 +22,7 @@
 #include <runtime_svc.h>
 #include <std_svc.h>
 #include <stdint.h>
+#include <psci.h>
 
 #include "sbsa_avs.h"
 #include "aarch64/sbsa_helpers.h"
@@ -41,9 +42,37 @@ sbsa_acs_default_handler(int test_index,
 {
     acs_printf("SBSA inside handler %x %x \n", test_index, arg01);
     sbsa_acs_set_status(ACS_STATUS_SKIP, 0xFF);
+    g_sbsa_acs_return_data2 = 0;
     return 0;
 }
+/**
+  @brief   This API checks NS WS1 interrupt is generated
+**/
+int
+sbsa_acs_nswdg_intr(int int_id_expected)
+{
+    uint32_t timeout = 10000, int_id;
 
+    while(--timeout){
+        int_id = sbsa_acs_get_pending_interrupt_id();
+
+        if (int_id == int_id_expected)
+        {
+            sbsa_acs_acknowledge_interrupt();
+            sbsa_acs_end_of_interrupt(int_id_expected);
+            g_sbsa_acs_result = ACS_STATUS_PASS;
+            acs_printf("Received WS1 watchdog with INTID = %d \n", int_id_expected);
+            break;
+        }
+    }
+
+    if (timeout == 0) {
+        g_sbsa_acs_result = ACS_STATUS_FAIL;
+        return 0;
+    }
+
+    return 0;
+}
 /**
   @brief   This API checks System Counter functionality
 **/
@@ -54,32 +83,64 @@ sbsa_acs_system_counter_entry()
     uint32_t data;
 
     /* Basic Check of register offsets for CNTControlBase */
-    data = sbsa_acs_mmio_read(SBSA_CNTControlBase + 0xFD0);
+    // Register name: CounterID0 - ReadOnly Register
+    data = sbsa_acs_mmio_read(SBSA_CNTControlBase + CounterID0);
     if ((data == 0x0) || (data == 0xFFFFFFFF)) {
         sbsa_acs_set_status(ACS_STATUS_FAIL, 0x1);
         return 0;
     }
-    data = sbsa_acs_mmio_read(SBSA_CNTControlBase + 0x4);
-    sbsa_acs_mmio_write(SBSA_CNTControlBase + 0x4, 0xFFFFFFFF);
-
-    if (data !=  sbsa_acs_mmio_read(SBSA_CNTControlBase + 0x4)) {
+    sbsa_acs_mmio_write(SBSA_CNTControlBase + CounterID0, 0xFFFFFFFF);
+    if(data != sbsa_acs_mmio_read(SBSA_CNTControlBase + CounterID0)){
         sbsa_acs_set_status(ACS_STATUS_FAIL, 0x2);
         return 0;
     }
 
+    // Register name: CNTSR - ReadOnly Register
+    data = sbsa_acs_mmio_read(SBSA_CNTControlBase + CNTSR);
+    sbsa_acs_mmio_write(SBSA_CNTControlBase + CNTSR, 0xFFFFFFFF);
+    if (data !=  sbsa_acs_mmio_read(SBSA_CNTControlBase + CNTSR)) {
+        sbsa_acs_set_status(ACS_STATUS_FAIL, 0x3);
+        return 0;
+    }
+
+    // Register name: CNTCR - ReadWrite Register
+    data = 0xFF00FF00;
+    sbsa_acs_mmio_write(SBSA_CNTControlBase + CNTCR, data);
+    if (data !=  sbsa_acs_mmio_read(SBSA_CNTControlBase + CNTCR)) {
+        sbsa_acs_set_status(ACS_STATUS_FAIL, 0x4);
+        return 0;
+    }
+
+    // Register name: CNTCV[31:0] - ReadWrite Register
+    data = 0xA5A5A5A5;
+    sbsa_acs_mmio_write(SBSA_CNTControlBase + CNTCV_LO, data);
+    if (data !=  sbsa_acs_mmio_read(SBSA_CNTControlBase + CNTCV_LO)) {
+        sbsa_acs_set_status(ACS_STATUS_FAIL, 0x5);
+        return 0;
+    }
+
+    // Register name: CNTCV[63:32] - ReadWrite Register
+    data = 0x5A5A5A5A;
+    sbsa_acs_mmio_write(SBSA_CNTControlBase + CNTCV_HI, data);
+    if (data !=  sbsa_acs_mmio_read(SBSA_CNTControlBase + CNTCV_HI)) {
+        sbsa_acs_set_status(ACS_STATUS_FAIL, 0x6);
+        return 0;
+    }
+
+
     /* Check 56 bits rollover for the counter */
     //Halt the counter
-    sbsa_acs_mmio_write(SBSA_CNTControlBase + 0, 0);
+    sbsa_acs_mmio_write(SBSA_CNTControlBase + CNTCR, 0);
     //Program a value close to 56 bits */
-    sbsa_acs_mmio_write(SBSA_CNTControlBase + 0x8, 0xFFFFFFFE);
-    sbsa_acs_mmio_write(SBSA_CNTControlBase + 0xC, 0x00FFFFFF);
+    sbsa_acs_mmio_write(SBSA_CNTControlBase + CNTCV_LO, 0xFFFFFFFE);
+    sbsa_acs_mmio_write(SBSA_CNTControlBase + CNTCV_HI, 0x00FFFFFF);
     //Start the counter
-    sbsa_acs_mmio_write(SBSA_CNTControlBase + 0, 1);
+    sbsa_acs_mmio_write(SBSA_CNTControlBase + CNTCR, 1);
 
     //just make sure atleast 1 cycle goes by
-    sbsa_acs_mmio_read(SBSA_CNTControlBase + 0x8);
-    if (!sbsa_acs_mmio_read(SBSA_CNTControlBase + 0xC)) {
-        sbsa_acs_set_status(ACS_STATUS_FAIL, 0x3);
+    sbsa_acs_mmio_read(SBSA_CNTControlBase + CNTCV_LO);
+    if (!sbsa_acs_mmio_read(SBSA_CNTControlBase + CNTCV_HI)) {
+        sbsa_acs_set_status(ACS_STATUS_FAIL, 0x7);
         return 0;
     }
 
@@ -90,16 +151,16 @@ sbsa_acs_system_counter_entry()
     /* So, get the frequency, if less that 150 MHZ,
        then rollover will not happen for 15 years,
        which we consider practical situation */
-    if ((sbsa_acs_mmio_read(SBSA_CNTControlBase + 0x20)) > 150000000) {
-        sbsa_acs_set_status(ACS_STATUS_FAIL, 0x4);
+    if ((sbsa_acs_mmio_read(SBSA_CNTControlBase + CNTFID0)) > 150000000) {
+        sbsa_acs_set_status(ACS_STATUS_FAIL, 0x8);
         return 0;
     }
 
     /* check CNTControlBase is mapped within the secure range */
     /* return data back to non-secure side to verify it is not accessible from there */
     data = 0xDEADBEEF;
-    sbsa_acs_mmio_write(SBSA_CNTControlBase + 0x8, data);
-    sbsa_acs_set_status(ACS_STATUS_PASS, SBSA_CNTControlBase + 0x8);
+    sbsa_acs_mmio_write(SBSA_CNTControlBase + CNTCV_LO, data);
+    sbsa_acs_set_status(ACS_STATUS_PASS, SBSA_CNTControlBase + CNTCV_LO);
     g_sbsa_acs_return_data2 = data;
     return 0;
 }
@@ -112,23 +173,50 @@ sbsa_acs_wd_ws0_test()
 {
     volatile uint32_t int_id;
     uint32_t timeout = 0x500;
+    uint32_t wdog_type = (SBSA_GENERIC_TWDOG_BASE) ? SBSA_GENERIC : ((SBSA_SP805_TWDOG_BASE) ? SP805 : 0);
 
-    /* Unlock the Watchdog because Arm-TF loads and locks WD during init */
-    sbsa_acs_mmio_write(SBSA_SEC_WATCHDOG_BASE + 0xC00, WDOG_UNLOCK_KEY);
-    sbsa_acs_mmio_write(SBSA_SEC_WATCHDOG_BASE + 0x0, 0);
-
-    acs_printf("Enabling watchdog \n");
-    sbsa_acs_mmio_write(SBSA_SEC_WATCHDOG_BASE + 0x8, 0x50);
-    sbsa_acs_mmio_write(SBSA_SEC_WATCHDOG_BASE + 0x0, 0x1);
-
-    while(--timeout) {
-        int_id = sbsa_acs_get_pending_interrupt_id();
-        if (int_id != 0xFFFFFFFF)
-            break;
+    if(wdog_type == 0){
+        sbsa_acs_set_status(ACS_STATUS_SKIP, 0x1);
+        return 0;
     }
-    acs_printf("Stop the watchdog %x \n", timeout);
-    /* Stop the Watchdog */
-    sbsa_acs_mmio_write(SBSA_SEC_WATCHDOG_BASE + 0x0, 0);
+    else if(wdog_type == SBSA_GENERIC){
+        sbsa_acs_mmio_write(SBSA_GENERIC_TWDOG_BASE + 0x0, 0);
+
+        acs_printf("Enabling watchdog \n");
+        sbsa_acs_mmio_write(SBSA_GENERIC_TWDOG_BASE + 0x8, 0x50);
+        sbsa_acs_mmio_write(SBSA_GENERIC_TWDOG_BASE + 0x0, 0x1);
+
+        while(--timeout) {
+            int_id = sbsa_acs_get_pending_interrupt_id();
+            if (int_id != 0xFFFFFFFF)
+                break;
+        }
+        acs_printf("Stop the watchdog %x \n", timeout);
+        /* Stop the Watchdog */
+        sbsa_acs_mmio_write(SBSA_GENERIC_TWDOG_BASE + 0x0, 0);
+    }
+    else{
+        /* Unlock the Watchdog because Arm-TF loads and locks WD during init */
+        sbsa_acs_mmio_write(SBSA_SP805_TWDOG_BASE + 0xC00, WDOG_UNLOCK_KEY);
+        sbsa_acs_mmio_write(SBSA_SP805_TWDOG_BASE + 0x8, 0);
+
+        acs_printf("Enabling watchdog \n");
+        sbsa_acs_mmio_write(SBSA_SP805_TWDOG_BASE + 0x0, 0x50);
+        sbsa_acs_mmio_write(SBSA_SP805_TWDOG_BASE + 0x8, 0x1);
+
+        //sbsa_acs_mmio_read(SBSA_SP805_TWDOG_BASE + 0x0);
+        //sbsa_acs_mmio_read(SBSA_SP805_TWDOG_BASE + 0x4);
+        //sbsa_acs_mmio_read(SBSA_SP805_TWDOG_BASE + 0x8);
+
+        while(--timeout) {
+            int_id = sbsa_acs_get_pending_interrupt_id();
+            if (int_id != 0xFFFFFFFF)
+                break;
+        }
+        acs_printf("Stop the watchdog %x \n", timeout);
+        /* Stop the Watchdog */
+        sbsa_acs_mmio_write(SBSA_SP805_TWDOG_BASE + 0x8, 0);
+    }
     if (timeout)
     {
         sbsa_acs_acknowledge_interrupt();
@@ -189,6 +277,47 @@ sbsa_acs_el3_phy_timer()
     return 0;
 }
 
+/**
+  @brief   This API checks if an interrupt is able to wake PE up due to secure
+           physical timer interrupt
+**/
+int
+sbsa_acs_secure_timer_wakeup()
+{
+
+    uint32_t ctl = 0;
+    volatile uint32_t timeout = 0x10000;
+    uint32_t int_id;
+
+    acs_printf("Programming Secure PE timer  %lx \n", read_cntps_ctl_el1());
+    write_cntps_tval_el1(10000);
+    set_cntp_ctl_enable(ctl);
+    write_cntps_ctl_el1(ctl);
+
+    acs_printf("Placing the PE to sleep \n");
+    psci_cpu_suspend(0, 0, 0);
+
+    while(--timeout)
+    {
+        int_id = sbsa_acs_get_pending_interrupt_id();
+        if (int_id == 29)
+        {
+            sbsa_acs_acknowledge_interrupt();
+            sbsa_acs_end_of_interrupt(29);
+            g_sbsa_acs_result = ACS_STATUS_PASS;
+            acs_printf("cleared CNTPS interrupt %x \n", sbsa_acs_get_pending_interrupt_id());
+            break;
+        }
+    }
+    write_cntps_ctl_el1(0); //Stop the secure timer
+
+    if (timeout == 0) {
+        g_sbsa_acs_result = ACS_STATUS_FAIL;
+    }
+
+    return 0;
+}
+
 void
 uart_compliance_test();
 
@@ -204,18 +333,27 @@ sbsa_acs_secure_uart()
 }
 
 /**
-  @brief   This API contains secure initialization code which SBSA test rely upon
+  @brief   This API sets secure bits required for generating PMBIRQ
 **/
 int
-sbsa_acs_smc_init(int arg01)
+sbsa_acs_pmbirq(int arg01)
 {
     uint64_t data = 0;
-    acs_printf("Initializing code through SMC \n");
 
     data = read_mdcr_el3();
     data |= ((arg01 & 0x3) << 12);  // Set MDCR_EL3.NSPB
     write_mdcr_el3(data);
-
+    sbsa_acs_set_status(ACS_STATUS_PASS, SBSA_SMC_INIT_SIGN);
+    return 0;
+}
+/**
+  @brief   This API contains secure initialization code which SBSA test rely upon
+**/
+int
+sbsa_acs_smc_init(void)
+{
+    sbsa_acs_set_status(ACS_STATUS_PASS, SBSA_SMC_INIT_SIGN);
+    g_sbsa_acs_return_data2 = 0;
     return 0;
 }
 /**
@@ -264,7 +402,7 @@ uint64_t sbsa_smc_handler(uint32_t smc_fid,
 
     switch (x1) {
         case SBSA_SECURE_TEST_NSWD_WS1:
-            SMC_RET1(handle, sbsa_acs_default_handler(x1, x2, x3));
+            SMC_RET1(handle, sbsa_acs_nswdg_intr(x2));
 
         case SBSA_SECURE_TEST_SYS_COUNTER:
             SMC_RET1(handle, sbsa_acs_system_counter_entry());
@@ -275,6 +413,9 @@ uint64_t sbsa_smc_handler(uint32_t smc_fid,
         case SBSA_SECURE_TEST_EL3_PHY:
             SMC_RET1(handle, sbsa_acs_el3_phy_timer());
 
+        case SBSA_SECURE_TEST_WAKEUP:
+            SMC_RET1(handle, sbsa_acs_secure_timer_wakeup());
+
         case SBSA_SECURE_TEST_SEC_UART:
             SMC_RET1(handle, sbsa_acs_secure_uart());
 
@@ -282,19 +423,20 @@ uint64_t sbsa_smc_handler(uint32_t smc_fid,
             SMC_RET4(handle, g_sbsa_test_index, g_sbsa_acs_result, g_sbsa_acs_return_data, g_sbsa_acs_return_data2);
 
         case SBSA_SECURE_INFRA_INIT:
-            SMC_RET1(handle, sbsa_acs_smc_init(x2));
+            SMC_RET1(handle, sbsa_acs_smc_init());
+
+        case SBSA_SECURE_PMBIRQ:
+            SMC_RET1(handle, sbsa_acs_pmbirq(x2));
 
         case SBSA_SECURE_PLATFORM_ADDRESS:
             SMC_RET1(handle, sbsa_acs_secure_platform_address(x2));
 
         default:
-            g_sbsa_acs_result = ACS_STATUS_SKIP;
-            g_sbsa_acs_return_data = 0;
-            g_sbsa_acs_return_data2 = 0;
+            sbsa_acs_default_handler(x1,x2,x3);
             break;
     }
 
-    WARN("Unimplemented Standard Service Call: 0x%x \n", smc_fid);
+    WARN("Unimplemented SBSA Standard Service Call: 0x%x \n", smc_fid);
     return 1;
 
 }

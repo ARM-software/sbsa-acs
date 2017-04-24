@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016, ARM Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2017, ARM Limited or its affiliates. All rights reserved.
 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,44 +13,38 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  **/
-
 #include "val/include/sbsa_avs_val.h"
 #include "val/include/val_interface.h"
 
 #include "val/include/sbsa_avs_pcie.h"
+#include "val/include/sbsa_avs_memory.h"
 
+/* SBSA-checklist 63 & 64 */
 #define TEST_NUM   (AVS_PCIE_TEST_NUM_BASE + 4)
-#define TEST_DESC  "Check ECAM Memory attributes      "
+#define TEST_DESC  "Check PCIe Unaligned access, Norm mem"
 
 static
 void
-payload()
+payload(void)
 {
-
-  uint64_t ecam_base;
-  uint64_t type;
-  uint64_t attr;
+  uint32_t count = 0;
+  uint64_t base;
+  uint32_t data;
+  char *baseptr;
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
 
-  ecam_base = val_pcie_get_info(PCIE_INFO_ECAM);
+  /* Map SATA Controller BARs to a NORMAL memory attribute. check unaligned access */
+  count = val_peripheral_get_info(NUM_SATA, 0);
 
-  type = val_memory_get_info(ecam_base, &attr);
+  while (count--) {
+      base = val_peripheral_get_info(SATA_BASE1, count);
+      baseptr = (char *)val_memory_ioremap((void *)base, 1024, 0);
 
-  if (type == MEM_TYPE_DEVICE) {
-      val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
-      return;
+      data = *(uint32_t *)(baseptr+3);
+
+      val_memory_unmap(baseptr);
   }
-  if (type == MEM_TYPE_NORMAL) {
-      val_print(AVS_PRINT_TEST, "\n      ECAM is reported as NORMAL Memory ", 0);
-      val_print(AVS_PRINT_TEST, "\n      Checking un-aligned access to ECAM", 0);
-      val_print(AVS_PRINT_INFO, " %x \n", *(unsigned int *)(ecam_base + 3));
-  } else {
-      val_print(AVS_PRINT_ERR, "\n       Unexpected attribute for ECAM %4x ", type);
-      val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
-      return;
-  }
-
-  val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
+   val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 0));
 
 }
 

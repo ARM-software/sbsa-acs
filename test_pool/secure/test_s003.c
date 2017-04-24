@@ -31,17 +31,15 @@ typedef struct {
 }secure_test_list;
 
 secure_test_list list[] = {
-    {(AVS_SECURE_TEST_NUM_BASE + 3), SBSA_SECURE_TEST_EL3_PHY, 
+    {(AVS_SECURE_TEST_NUM_BASE + 3), SBSA_SECURE_TEST_EL3_PHY,
                             "Check EL1-S PE timer interrupt    ", 0, 0, 0},
     {(AVS_SECURE_TEST_NUM_BASE + 4), SBSA_SECURE_TEST_WD_WS0,
                             "Check Secure Watchdog WS0 intr    ", 0, 0, 0},
-    {(AVS_SECURE_TEST_NUM_BASE + 5), SBSA_SECURE_TEST_WD_WS1,
-                            "Check Secure Watchdog WS1 intr    ", 0, 0, 0},
-    {(AVS_SECURE_TEST_NUM_BASE + 6), SBSA_SECURE_TEST_UART, 
+    {(AVS_SECURE_TEST_NUM_BASE + 5), SBSA_SECURE_TEST_UART,
                             "Check Secure UART Access          ", 0, 0, 0},
-    {(AVS_SECURE_TEST_NUM_BASE + 7), SBSA_SECURE_TEST_WAKEUP,
+    {(AVS_SECURE_TEST_NUM_BASE + 6), SBSA_SECURE_TEST_WAKEUP,
                             "Check Wakeup from Secure timer    ", 0, 0, 0},
-    {(AVS_SECURE_TEST_NUM_BASE + 8), SBSA_SECURE_TEST_FINISH, 
+    {(AVS_SECURE_TEST_NUM_BASE + 7), SBSA_SECURE_TEST_FINISH,
                             "Last entry                        ", 0, 0, 0}
 };
 
@@ -51,7 +49,7 @@ esr()
 {
   val_print(AVS_PRINT_TEST, "\n Received FIQ ", 0);
   //AArch64FlushCache((uint64_t)payload);
-  //update_x28(gnext_line); 
+  //update_x28(gnext_line);
   val_set_status(0, RESULT_PASS(g_sbsa_level, 904, 01));
 }
 

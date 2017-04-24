@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016, ARM Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2017, ARM Limited or its affiliates. All rights reserved.
 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,14 +35,31 @@ val_secure_execute_tests(uint32_t level, uint32_t num_pe)
 {
   uint32_t status;
 
-  //status = s001_entry(num_pe);
-  status = s002_entry(num_pe);
+  status = val_secure_trusted_firmware_init();
+  if(status != SBSA_SMC_INIT_SIGN){
+      val_print(AVS_PRINT_WARN, "\n   ARM-TF firmware not ported, skipping all secure tests", 0);
+      return AVS_STATUS_SKIP;
+  }
+
+  status = s001_entry(num_pe);
+  status |= s002_entry(num_pe);
   status |= s003_entry(num_pe);
   status |= m002_entry(num_pe);
 
   return status;
 }
 
+uint32_t
+val_secure_trusted_firmware_init(void)
+{
+  SBSA_SMC_t  smc;
+
+  smc.test_index = SBSA_SECURE_INFRA_INIT;
+  val_secure_call_smc(&smc);
+
+  val_secure_get_result(&smc, 2);
+  return smc.test_arg02;
+}
 /**
   @brief   Call PAL layer to initiate an SMC call to jump to Exception Level 3
            1. Caller       - VAL
@@ -91,8 +108,8 @@ val_secure_get_result(SBSA_SMC_t *smc, uint32_t timeout)
   smc->test_arg02 = l_smc_args.Arg2;
   smc->test_arg03 = l_smc_args.Arg3;
 
-  val_print(AVS_PRINT_INFO, "return data 1 is %x \n", smc->test_index);
-  val_print(AVS_PRINT_INFO, "return data 2 is %x \n", smc->test_arg01);
+  val_print(AVS_PRINT_INFO, "\n       return data 1 is %x ", smc->test_index);
+  val_print(AVS_PRINT_INFO, "    return data 2 is %x", smc->test_arg01);
 
   return (uint32_t)l_smc_args.Arg1;
 }

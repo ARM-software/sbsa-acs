@@ -17,10 +17,12 @@
 #ifndef __SBSA_AVS_CFG_H__
 #define __SBSA_AVS_CFG_H__
 
+#define MAX_TEST_SKIP_NUM  3
+
 extern uint32_t g_sbsa_level;
 extern uint32_t g_print_level;
 extern uint32_t g_execute_secure;
-extern uint32_t g_skip_test_num;
+extern uint32_t g_skip_test_num[MAX_TEST_SKIP_NUM];
 extern uint32_t g_sbsa_tests_total;
 extern uint32_t g_sbsa_tests_pass;
 extern uint32_t g_sbsa_tests_fail;

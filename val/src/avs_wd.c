@@ -33,12 +33,15 @@ WD_INFO_TABLE  *g_wd_info_table;
 uint32_t
 val_wd_execute_tests(uint32_t level, uint32_t num_pe)
 {
-  uint32_t status;
+  uint32_t status, i;
 
-  if (g_skip_test_num == AVS_WD_TEST_NUM_BASE) {
-      val_print(AVS_PRINT_TEST, "      USER Override - Skipping all Watchdog tests \n", 0);
-      return AVS_STATUS_SKIP;
+  for (i=0 ; i<MAX_TEST_SKIP_NUM ; i++){
+      if (g_skip_test_num[i] == AVS_WD_TEST_NUM_BASE) {
+          val_print(AVS_PRINT_TEST, "      USER Override - Skipping all Watchdog tests \n", 0);
+          return AVS_STATUS_SKIP;
+      }
   }
+
 
   status = w001_entry(num_pe);
   if (status != AVS_STATUS_PASS) {

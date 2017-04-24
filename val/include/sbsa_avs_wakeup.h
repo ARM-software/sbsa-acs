@@ -21,6 +21,7 @@
 #include "sbsa_avs_wd.h"
 
 uint32_t u001_entry(uint32_t num_pe);
+uint32_t u002_entry(uint32_t num_pe);
 
 #endif
 

@@ -226,3 +226,19 @@ pal_memory_create_info_table(MEMORY_INFO_TABLE *memoryInfoTable)
 
   //pal_mem_free(&Address);
 }
+
+UINT64
+pal_memory_ioremap(VOID *ptr, UINT32 size, UINT32 attr)
+{
+
+
+  return (UINT64)ptr;
+}
+
+
+VOID
+pal_memory_unmap(void *ptr)
+{
+
+  return;
+}

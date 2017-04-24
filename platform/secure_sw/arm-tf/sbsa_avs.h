@@ -34,6 +34,15 @@ uint32_t sbsa_acs_mmio_read(uint64_t addr);
 void     sbsa_acs_set_status(unsigned int status, unsigned int data);
 
 
+/**
+  @brief  Defines for CNTControlBase Registers
+**/
+#define CNTCR                           0x000
+#define CNTSR                           0x004
+#define CNTCV_LO                        0x008
+#define CNTCV_HI                        0x00C
+#define CNTFID0                         0x020
+#define CounterID0                      0xFD0
 
 /**
   @brief  Defines for runtime services function ids
@@ -44,18 +53,21 @@ typedef enum {
   SBSA_SECURE_TEST_NSWD_WS1=0x1000,
   SBSA_SECURE_TEST_SYS_COUNTER,
   SBSA_SECURE_TEST_WD_WS0,
-  SBSA_SECURE_TEST_WD_WS1,
   SBSA_SECURE_TEST_SEC_UART,
   SBSA_SECURE_TEST_CNTBASE,
   SBSA_SECURE_TEST_EL3_PHY,
   SBSA_SECURE_TEST_WAKEUP,
   SBSA_SECURE_TEST_FINISH,
   SBSA_SECURE_INFRA_INIT,
-  SBSA_SECURE_PLATFORM_ADDRESS
+  SBSA_SECURE_PLATFORM_ADDRESS,
+  SBSA_SECURE_PMBIRQ
 }SBSA_SECURE_TEST_INDEX_e;
 
+#define SBSA_SMC_INIT_SIGN          0x9abcdef9
 #define SBSA_SECURE_GET_RESULT      0x9000
 
+#define SBSA_GENERIC             0xA
+#define SP805                    0xB
 
 uint64_t sbsa_smc_handler(uint32_t smc_fid,
                           uint64_t x1,

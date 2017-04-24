@@ -32,6 +32,9 @@
 uint32_t
 val_smmu_read_cfg(uint32_t offset, uint32_t index);
 
+uint64_t
+val_smmu_ops(SMMU_OPS_e ops, uint32_t index, void *param1, void *param2);
+
 uint32_t
 i001_entry(uint32_t num_pe);
 uint32_t

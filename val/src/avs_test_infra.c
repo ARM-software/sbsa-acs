@@ -39,6 +39,28 @@ val_print(uint32_t level, char8_t *string, uint64_t data)
 }
 
 /**
+  @brief  This API calls PAL layer to print a string to the output console.
+          1. Caller       - Application layer
+          2. Prerequisite - None.
+
+  @param level   the print verbosity (1 to 5)
+  @param string  formatted ASCII string
+  @param data    64-bit data. set to 0 if no data is to sent to console.
+
+  @return        None
+ **/
+void
+val_print_raw(uint32_t level, char8_t *string, uint64_t data)
+{
+
+  if (level >= g_print_level){
+      uint64_t uart_address = val_peripheral_get_info(UART_BASE0, 0);
+      pal_print_raw(uart_address, string, data);
+  }
+
+}
+
+/**
   @brief  This API calls PAL layer to read from a Memory address
           and return 32-bit data.
           1. Caller       - Test Suite
@@ -104,10 +126,12 @@ val_initialize_test(uint32_t test_num, char8_t *desc, uint32_t num_pe, uint32_t 
   for (i = 0; i < num_pe; i++)
       val_set_status(i, RESULT_PENDING(level, test_num));
 
-  if (g_skip_test_num == test_num) {
-      val_print(AVS_PRINT_TEST, "\n       USER OVERRIDE  - Skip Test        ", 0);
-      val_set_status(index, RESULT_SKIP(g_sbsa_level, test_num, 0));
-      return AVS_STATUS_SKIP;
+  for (i=0 ; i<MAX_TEST_SKIP_NUM ; i++){
+      if (g_skip_test_num[i] == test_num) {
+          val_print(AVS_PRINT_TEST, "\n       USER OVERRIDE  - Skip Test        ", 0);
+          val_set_status(index, RESULT_SKIP(g_sbsa_level, test_num, 0));
+          return AVS_STATUS_SKIP;
+      }
   }
 
   return AVS_STATUS_PASS;
@@ -174,7 +198,7 @@ val_set_test_data(uint32_t index, uint64_t addr, uint64_t test_data)
   mem->data0 = addr;
   mem->data1 = test_data;
 
-  val_data_cache_ci_va((addr_t)mem);
+  val_data_cache_ops_by_va((addr_t)mem, CLEAN_AND_INVALIDATE);
 }
 
 /**
@@ -202,6 +226,8 @@ val_get_test_data(uint32_t index, uint64_t *data0, uint64_t *data1)
 
   mem = (VAL_SHARED_MEM_t *) pal_mem_get_shared_addr();
   mem = mem + index;
+
+  val_data_cache_ops_by_va((addr_t)mem, INVALIDATE);
 
   *data0 = mem->data0;
   *data1 = mem->data1;
@@ -343,9 +369,9 @@ val_check_for_error(uint32_t test_num, uint32_t num_pe)
           the input address tag
 **/
 void 
-val_data_cache_ci_va(addr_t addr)
+val_data_cache_ops_by_va(addr_t addr, uint32_t type)
 {
-  pal_pe_data_cache_ci_va(addr);
+  pal_pe_data_cache_ops_by_va(addr, type);
 
 }
 

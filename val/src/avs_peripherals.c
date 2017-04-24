@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016, ARM Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2017, ARM Limited or its affiliates. All rights reserved.
 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@
 
 PERIPHERAL_INFO_TABLE  *g_peripheral_info_table;
 
+#ifndef TARGET_LINUX
 /**
   @brief  Sequentially execute all the peripheral tests
           1. Caller       - Application
@@ -28,17 +29,19 @@ PERIPHERAL_INFO_TABLE  *g_peripheral_info_table;
   @param  level  - level of compliance being tested for
   @param  num_pe - number of PEs to run this test on
 
-  @result  consolidated status of all the tests 
+  @result  consolidated status of all the tests
 **/
 uint32_t
 val_peripheral_execute_tests(uint32_t level, uint32_t num_pe)
 {
 
-  uint32_t status;
+  uint32_t status, i;
 
-  if (g_skip_test_num == AVS_PER_TEST_NUM_BASE) {
-      val_print(AVS_PRINT_TEST, "      USER Override - Skipping all Peripheral tests \n", 0);
-      return AVS_STATUS_SKIP;
+  for (i=0 ; i<MAX_TEST_SKIP_NUM ; i++){
+      if (g_skip_test_num[i] == AVS_PER_TEST_NUM_BASE) {
+          val_print(AVS_PRINT_TEST, "      USER Override - Skipping all Peripheral tests \n", 0);
+          return AVS_STATUS_SKIP;
+      }
   }
 
   status = d001_entry(num_pe);
@@ -51,6 +54,7 @@ val_peripheral_execute_tests(uint32_t level, uint32_t num_pe)
   }
   return status;
 }
+#endif
 
 /**
   @brief  Return the Index of the entry in the peripheral info table
@@ -135,9 +139,13 @@ val_peripheral_get_info(PERIPHERAL_INFO_e info_type, uint32_t instance)
           if (i != 0xFF)
               return g_peripheral_info_table->info[i].flags;
       case SATA_BDF:
-          i = val_peripheral_get_entry_index(PERIPHERAL_TYPE_USB, instance);
+          i = val_peripheral_get_entry_index(PERIPHERAL_TYPE_SATA, instance);
           if (i != 0xFF)
               return g_peripheral_info_table->info[i].bdf;
+      case SATA_GSIV:
+          i = val_peripheral_get_entry_index(PERIPHERAL_TYPE_SATA, instance);
+          if (i != 0xFF)
+              return g_peripheral_info_table->info[i].irq;
       case UART_BASE0:
           i = val_peripheral_get_entry_index(PERIPHERAL_TYPE_UART, instance);
           if (i != 0xFF)

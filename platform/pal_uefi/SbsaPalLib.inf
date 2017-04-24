@@ -33,6 +33,7 @@
   src/pal_gic.c
   src/pal_timer_wd.c
   src/pal_pcie.c
+  src/pal_iovirt.c
   src/pal_smmu.c
   src/pal_pcie_enumeration.c
   src/pal_peripherals.c

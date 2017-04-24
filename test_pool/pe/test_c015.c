@@ -20,11 +20,12 @@
 #define TEST_NUM    (AVS_PE_TEST_NUM_BASE  +  15)
 #define TEST_DESC  "Check Arch symmetry across PE     "
 
-#define NUM_OF_REGISTERS  35
+#define NUM_OF_REGISTERS  34
 
 #define RAS               1
 #define SPE               2
 #define LOR               3
+#define AA64              4
 
 #define MASK_AA64MMFR0    0xF
 #define MASK_MIDR         0x00F0FFFF
@@ -51,7 +52,7 @@ reg_details reg_list[] = {
     {ID_AA64DFR1_EL1,  0x0,            "ID_AA64DFR1_EL1" , 0x0 },
     {ID_AA64MMFR0_EL1, MASK_AA64MMFR0, "ID_AA64MMFR0_EL1", 0x0 },
     {ID_AA64MMFR1_EL1, 0x0,            "ID_AA64MMFR1_EL1", 0x0 },
-    {ID_AA64MMFR2_EL1, 0x0,            "ID_AA64MMFR2_EL1", 0x0 },
+    //{ID_AA64MMFR2_EL1, 0x0,            "ID_AA64MMFR2_EL1", 0x0 },
     {CTR_EL0,          MASK_CTR,       "CTR_EL0"         , 0x0 },
     {ID_AA64ISAR0_EL1, 0x0,            "ID_AA64ISAR0_EL1", 0x0 },
     {ID_AA64ISAR1_EL1, 0x0,            "ID_AA64ISAR1_EL1", 0x0 },
@@ -60,23 +61,23 @@ reg_details reg_list[] = {
     {MIDR_EL1,         MASK_MIDR,      "MIDR_EL1"        , 0x0 },
     {VPIDR_EL2,        MASK_VPIDR,     "VPIDR_EL2"       , 0x0 },
     {CCSIDR_EL1,       MASK_CCSIDR,    "CCSIDR_EL1"      , 0x0 },
-    {ID_DFR0_EL1,      0x0,            "ID_DFR0_EL1"     , 0x0 },
-    {ID_ISAR0_EL1,     0x0,            "ID_ISAR0_EL1"    , 0x0 },
-    {ID_ISAR1_EL1,     0x0,            "ID_ISAR1_EL1"    , 0x0 },
-    {ID_ISAR2_EL1,     0x0,            "ID_ISAR2_EL1"    , 0x0 },
-    {ID_ISAR3_EL1,     0x0,            "ID_ISAR3_EL1"    , 0x0 },
-    {ID_ISAR4_EL1,     0x0,            "ID_ISAR4_EL1"    , 0x0 },
-    {ID_ISAR5_EL1,     0x0,            "ID_ISAR5_EL1"    , 0x0 },
-    {ID_MMFR0_EL1,     0x0,            "ID_MMFR0_EL1"    , 0x0 },
-    {ID_MMFR1_EL1,     0x0,            "ID_MMFR1_EL1"    , 0x0 },
-    {ID_MMFR2_EL1,     0x0,            "ID_MMFR2_EL1"    , 0x0 },
-    {ID_MMFR3_EL1,     0x0,            "ID_MMFR3_EL1"    , 0x0 },
-    {ID_MMFR4_EL1,     0x0,            "ID_MMFR4_EL1"    , 0x0 },
-    {ID_PFR0_EL1,      0x0,            "ID_PFR0_EL1"     , 0x0 },
-    {ID_PFR1_EL1,      0x0,            "ID_PFR1_EL1"     , 0x0 },
-    {MVFR0_EL1,        0x0,            "MVFR0_EL1"       , 0x0 },
-    {MVFR1_EL1,        0x0,            "MVFR1_EL1"       , 0x0 },
-    {MVFR2_EL1,        0x0,            "MVFR2_EL1"       , 0x0 },
+    {ID_DFR0_EL1,      0x0,            "ID_DFR0_EL1"     , AA64},
+    {ID_ISAR0_EL1,     0x0,            "ID_ISAR0_EL1"    , AA64},
+    {ID_ISAR1_EL1,     0x0,            "ID_ISAR1_EL1"    , AA64},
+    {ID_ISAR2_EL1,     0x0,            "ID_ISAR2_EL1"    , AA64},
+    {ID_ISAR3_EL1,     0x0,            "ID_ISAR3_EL1"    , AA64},
+    {ID_ISAR4_EL1,     0x0,            "ID_ISAR4_EL1"    , AA64},
+    {ID_ISAR5_EL1,     0x0,            "ID_ISAR5_EL1"    , AA64},
+    {ID_MMFR0_EL1,     0x0,            "ID_MMFR0_EL1"    , AA64},
+    {ID_MMFR1_EL1,     0x0,            "ID_MMFR1_EL1"    , AA64},
+    {ID_MMFR2_EL1,     0x0,            "ID_MMFR2_EL1"    , AA64},
+    {ID_MMFR3_EL1,     0x0,            "ID_MMFR3_EL1"    , AA64},
+    {ID_MMFR4_EL1,     0x0,            "ID_MMFR4_EL1"    , AA64},
+    {ID_PFR0_EL1,      0x0,            "ID_PFR0_EL1"     , AA64},
+    {ID_PFR1_EL1,      0x0,            "ID_PFR1_EL1"     , AA64},
+    {MVFR0_EL1,        0x0,            "MVFR0_EL1"       , AA64},
+    {MVFR1_EL1,        0x0,            "MVFR1_EL1"       , AA64},
+    {MVFR2_EL1,        0x0,            "MVFR2_EL1"       , AA64},
     {PMCEID0_EL0,      0x0,            "PMCEID0_EL0"     , 0x0 },
     {PMCEID1_EL0,      0x0,            "PMCEID1_EL0"     , 0x0 },
     {PMCR_EL0,         MASK_PMCR,      "PMCR_EL0"        , 0x0 },
@@ -100,7 +101,7 @@ return_reg_value(uint32_t reg, uint8_t dependency)
 
   switch(dependency)
   {
-    case RAS:
+    case RAS: // If RAS is not supported, then skip register check
         temp = val_pe_reg_read(ID_AA64PFR0_EL1);
         temp = (temp >> 28) & 0xf;
         if(temp == 1)
@@ -109,7 +110,7 @@ return_reg_value(uint32_t reg, uint8_t dependency)
             return 0;
         break;
 
-    case SPE:
+    case SPE: // If Statistical Profiling Extension is not supported, then skip register check
         temp = val_pe_reg_read(ID_AA64DFR0_EL1);
         temp = (temp >> 32) & 0xf;
         if(temp == 1)
@@ -118,10 +119,19 @@ return_reg_value(uint32_t reg, uint8_t dependency)
             return 0;
         break;
 
-    case LOR:
+    case LOR: // If Limited Ordering Region is not supported, then skip register check
         temp = val_pe_reg_read(ID_AA64MMFR1_EL1);
         temp = (temp >> 16) & 0xf;
         if(temp == 1)
+            return val_pe_reg_read(reg);
+        else
+            return 0;
+        break;
+
+    case AA64: // If the register is UNK in pure AArch64 implementation, then skip register check
+        temp = val_pe_reg_read(ID_AA64PFR0_EL1);
+        temp = (temp & 1);
+        if(temp == 0)
             return val_pe_reg_read(reg);
         else
             return 0;
@@ -170,7 +180,7 @@ payload(uint32_t num_pe)
   for (i = 0; i < NUM_OF_REGISTERS; i++)
   {
       rd_data_array[i] = return_reg_value(reg_list[i].reg_name, reg_list[i].dependency);
-      val_data_cache_ci_va((addr_t)(rd_data_array + i));
+      val_data_cache_ops_by_va((addr_t)(rd_data_array + i), CLEAN_AND_INVALIDATE);
   }
 
   for (i = 0; i < num_pe; i++)

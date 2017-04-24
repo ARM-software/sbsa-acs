@@ -58,6 +58,15 @@ val_gic_reg_write(uint32_t reg_id, uint64_t write_data)
       case ICH_HCR_EL2:
           GicWriteIchHcr(write_data);
           break;
+      case ICC_IGRPEN1_EL1:
+          GicWriteIccIgrpen1(write_data);
+          break;
+      case ICC_BPR1_EL1:
+          GicWriteIccBpr1(write_data);
+          break;
+      case ICC_PMR_EL1:
+          GicWriteIccPmr(write_data);
+          break;
       default:
            val_report_status(255, 0x87655678);
   }

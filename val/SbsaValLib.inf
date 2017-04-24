@@ -33,6 +33,7 @@
   src/avs_gic.c
   src/avs_gic_support.c
   src/avs_pcie.c
+  src/avs_iovirt.c
   src/avs_smmu.c
   src/avs_test_infra.c
   src/avs_timer.c

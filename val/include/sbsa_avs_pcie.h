@@ -21,7 +21,7 @@
 #define PCIE_EXTRACT_BDF_DEV(bdf)  ((bdf >> 8) & 0xFF)
 #define PCIE_EXTRACT_BDF_FUNC(bdf) (bdf & 0xFF)
 
-#define PCIE_CREATE_BDF(seg, bus, dev, func) ()
+#define PCIE_CREATE_BDF(seg, bus, dev, func) ((seg << 24) | ((bus & 0xFF) << 16) | ((dev & 0xFF) << 8) | func)
 
 #define PCIE_MAX_BUS   256
 #define PCIE_MAX_DEV    32
@@ -31,12 +31,16 @@ void     val_pcie_write_cfg(uint32_t bdf, uint32_t offset, uint32_t data);
 uint32_t val_pcie_read_cfg(uint32_t bdf, uint32_t offset);
 
 typedef enum {
-  PCIE_INFO_ECAM=1,
-  PCIE_INFO_MCFG_ECAM
+  PCIE_INFO_NUM_ECAM = 1,
+  PCIE_INFO_ECAM,
+  PCIE_INFO_MCFG_ECAM,
+  PCIE_INFO_START_BUS,
+  PCIE_INFO_END_BUS,
+  PCIE_INFO_SEGMENT
 }PCIE_INFO_e;
 
 uint64_t
-val_pcie_get_info(PCIE_INFO_e type);
+val_pcie_get_info(PCIE_INFO_e type, uint32_t index);
 
 uint32_t
 p001_entry(uint32_t num_pe);
@@ -49,5 +53,14 @@ p003_entry(uint32_t num_pe);
 
 uint32_t
 p004_entry(uint32_t num_pe);
+
+uint32_t
+p005_entry(uint32_t num_pe);
+
+uint32_t
+p006_entry(uint32_t num_pe);
+
+uint32_t
+p007_entry(uint32_t num_pe);
 
 #endif

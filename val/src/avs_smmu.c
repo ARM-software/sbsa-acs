@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016, ARM Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2017, ARM Limited or its affiliates. All rights reserved.
 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,11 +18,7 @@
 #include "include/sbsa_avs_common.h"
 
 #include "include/sbsa_avs_smmu.h"
-
-SMMU_INFO_TABLE *g_smmu_info_table;
-
-uint64_t
-pal_get_iort_ptr(void);
+#include "include/sbsa_avs_iovirt.h"
 
 /**
   @brief  This API reads 32-bit data from a register of an SMMU controller
@@ -45,6 +41,8 @@ val_smmu_read_cfg(uint32_t offset, uint32_t index)
   return val_mmio_read(ctrl_base + offset);
 }
 
+#ifndef TARGET_LINUX
+
 /**
   @brief   This API executes all the SMMU tests sequentially
            1. Caller       -  Application layer.
@@ -56,18 +54,19 @@ val_smmu_read_cfg(uint32_t offset, uint32_t index)
 uint32_t
 val_smmu_execute_tests(uint32_t level, uint32_t num_pe)
 {
-  uint32_t status;
+  uint32_t status, i;
 
   if (val_smmu_get_info(SMMU_NUM_CTRL, 0) == 0) {
       val_print(AVS_PRINT_WARN, "      SMMU controller not present. Skipping tests..\n", 0);
       return AVS_STATUS_SKIP;
   }
 
-  if (g_skip_test_num == AVS_SMMU_TEST_NUM_BASE) {
-      val_print(AVS_PRINT_TEST, "      USER Override - Skipping all SMMU tests \n", 0);
-      return AVS_STATUS_SKIP;
+  for (i=0 ; i<MAX_TEST_SKIP_NUM ; i++){
+      if (g_skip_test_num[i] == AVS_SMMU_TEST_NUM_BASE) {
+          val_print(AVS_PRINT_TEST, "      USER Override - Skipping all SMMU tests \n", 0);
+          return AVS_STATUS_SKIP;
+      }
   }
-
 
   status = i001_entry(num_pe);
   status |= i002_entry(num_pe);
@@ -86,76 +85,96 @@ val_smmu_execute_tests(uint32_t level, uint32_t num_pe)
 
   return status;
 }
+#endif
 
-/**
-  @brief   This API will call PAL layer to fill in the SMMU information
-           into the g_smmu_info_table pointer.
-           1. Caller       -  Application layer.
-           2. Prerequisite -  Memory allocated and passed as argument.
-  @param   smmu_info_table  pre-allocated memory pointer for smmu_info
-  @return  Error if Input param is NULL
-**/
-void
-val_smmu_create_info_table(uint64_t *smmu_info_table)
-{
 
-  if (smmu_info_table == NULL) {
-      val_print(AVS_PRINT_ERR, "\n   Input for Create Info table cannot be NULL \n", 0);
-      return;
-  }
-
-  g_smmu_info_table = (SMMU_INFO_TABLE *)smmu_info_table;
-
-  pal_smmu_create_info_table(g_smmu_info_table);
-  
-  val_print(AVS_PRINT_TEST, " SMMU_INFO: Number of SMMU CTRL       :    %x \n", val_smmu_get_info(SMMU_NUM_CTRL, 0));
-}
-
-void
-val_smmu_free_info_table()
-{
-  pal_mem_free((void *)g_smmu_info_table);
-}
-
-/**
-  @brief   This API is a single point of entry to retrieve 
-           information stored in the SMMU Info table
-           1. Caller       -  Test Suite
-           2. Prerequisite -  val_smmu_create_info_table
-  @param   type   the type of information being requested
-  @return  64-bit data
-**/
 uint64_t
 val_smmu_get_info(SMMU_INFO_e type, uint32_t index)
 {
+  return val_iovirt_get_smmu_info(type, index);
+}
 
-  if (g_smmu_info_table == NULL)
-  {
-      val_print(AVS_PRINT_ERR, "GET_SMMU_INFO: SMMU info table is not created \n", 0);
-      return 0;
+
+uint32_t
+val_smmu_start_monitor_dev(uint32_t ctrl_index)
+{
+  void *ap = NULL;
+
+  ap = (void *)val_dma_get_info(DMA_PORT_INFO, ctrl_index);
+  if (ap == NULL) {
+      val_print(AVS_PRINT_ERR, "Invalid Controller index %d \n", ctrl_index);
+      return AVS_STATUS_ERR;
   }
-  if (index > g_smmu_info_table->smmu_num_ctrl)
-  {
-      val_print(AVS_PRINT_ERR, "GET_SMMU_INFO: Index (%d) is greater than num of SMMU \n", index);
-      return 0;
-  }
 
-  switch (type)
-  {
-      case SMMU_NUM_CTRL:
-          return g_smmu_info_table->smmu_num_ctrl;
-
-      case SMMU_CTRL_ARCH_MAJOR_REV:
-          return g_smmu_info_table->smmu_block[index].arch_major_rev;
-
-      case SMMU_CTRL_BASE:
-          return g_smmu_info_table->smmu_block[index].base;
-
-      default:
-          val_print(AVS_PRINT_ERR, "This SMMU info option not supported %d \n", type);
-          break;
-  }
+  pal_smmu_device_start_monitor_iova(ap);
 
   return 0;
 }
 
+uint32_t
+val_smmu_stop_monitor_dev(uint32_t ctrl_index)
+{
+  void *ap = NULL;
+
+  ap = (void *)val_dma_get_info(DMA_PORT_INFO, ctrl_index);
+  if (ap == NULL) {
+      val_print(AVS_PRINT_ERR, "Invalid Controller index %d \n", ctrl_index);
+      return AVS_STATUS_ERR;
+  }
+
+  pal_smmu_device_stop_monitor_iova(ap);
+
+  return 0;
+}
+
+
+/**
+  @brief   Check if input address is within the IOVA translation range for the device
+           1. Caller       -  Test suite
+           2. Prerequisite -  val_smmu_create_info_table()
+  @param   ctrl_index - The device whose IO Translation range needs to be checked
+  @param   dma_addr   - The input address to be checked
+  @return  Success if the input address is found in the range
+**/
+uint32_t
+val_smmu_check_device_iova(uint32_t ctrl_index, addr_t dma_addr)
+{
+  void *ap = NULL;
+  uint32_t status;
+
+  ap = (void *)val_dma_get_info(DMA_PORT_INFO, ctrl_index);
+  if (ap == NULL) {
+      val_print(AVS_PRINT_ERR, "Invalid Controller index %d \n", ctrl_index);
+      return AVS_STATUS_ERR;
+  }
+  val_print(AVS_PRINT_DEBUG, "Input dma addr = %lx \n", dma_addr);
+
+  status = pal_smmu_check_device_iova(ap, dma_addr);
+
+  return status;
+}
+
+
+uint64_t
+val_smmu_ops(SMMU_OPS_e ops, uint32_t smmu_index, void *param1, void *param2)
+{
+
+  switch(ops)
+  {
+      case SMMU_START_MONITOR_DEV:
+          return val_smmu_start_monitor_dev(*(uint32_t *)param1);
+
+      case SMMU_STOP_MONITOR_DEV:
+          return val_smmu_stop_monitor_dev(*(uint32_t *)param1);
+
+      case SMMU_CHECK_DEVICE_IOVA:
+          return val_smmu_check_device_iova(*(uint32_t *)param1, *(addr_t *)param2);
+          break;
+
+      default:
+          break;
+  }
+//  pal_smmu_ops(ops, index, param1, param2);
+  return 0;
+
+}

@@ -50,7 +50,7 @@ val_pe_create_info_table(uint64_t *pe_info_table)
   g_pe_info_table = (PE_INFO_TABLE *)pe_info_table;
 
   pal_pe_create_info_table(g_pe_info_table);
-  val_data_cache_ci_va((addr_t)&g_pe_info_table);
+  val_data_cache_ops_by_va((addr_t)&g_pe_info_table, CLEAN_AND_INVALIDATE);
 
   val_print(AVS_PRINT_TEST, " PE_INFO: Number of PE detected       : %4d \n", val_pe_get_num());
 
@@ -176,13 +176,12 @@ val_test_entry(void)
   uint64_t test_arg;
   ARM_SMC_ARGS smc_args;
   void (*vector)(uint64_t args);
-//  void (*vector)(uint64_t args) = (void *)val_get_vector(val_pe_get_index_mpid(val_pe_get_mpid()), &test_arg);
 
   val_get_test_data(val_pe_get_index_mpid(val_pe_get_mpid()), (uint64_t *)&vector, &test_arg);
   vector(test_arg);
 
   // We have completed our TEST code. So, switch off the PE now
-  smc_args.Arg0 = ARM_SMC_ID_PSCI_CPU_OFF; 
+  smc_args.Arg0 = ARM_SMC_ID_PSCI_CPU_OFF;
   smc_args.Arg1 = val_pe_get_mpid();
   pal_pe_call_smc(&smc_args);
 }
@@ -217,5 +216,13 @@ val_execute_on_pe(uint32_t index, void (*payload)(void), uint64_t test_input)
 
   val_set_test_data(index, (uint64_t)payload, test_input);
   pal_pe_execute_payload(&g_smc_args);
+
+  if(g_smc_args.Arg0 == 0)
+      val_print(AVS_PRINT_INFO, "       PSCI status is success  \n", 0);
+  else if(g_smc_args.Arg0 == (uint64_t)ARM_SMC_PSCI_RET_ALREADY_ON){
+      val_print(AVS_PRINT_INFO, "       PSCI status is already on  \n", 0);
+      val_set_status(index, RESULT_FAIL(g_sbsa_level, 0, 0x124));
+      return;
+  }
 
 }

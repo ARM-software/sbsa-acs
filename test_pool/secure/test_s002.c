@@ -50,9 +50,15 @@ payload()
 
   SBSA_SMC_t  smc;
 
+  if (!val_timer_get_info(TIMER_INFO_NUM_PLATFORM_TIMERS)) {
+      val_print(AVS_PRINT_WARN, "\n       No System timers implemented      ", 0);
+      val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
+      return;
+  }
+
   if (!val_is_el3_enabled())
   {
-      val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
+      val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 02));
       return;
   }
 

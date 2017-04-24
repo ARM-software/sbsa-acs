@@ -15,9 +15,9 @@
 **/
 
 
-/* THESE values are provided as a HOOK to 
+/* THESE values are provided as a HOOK to
      1. Override a value which is read from ACPI tables
-     2. Fill-in a value which is not provided by any ACPI Table 
+     2. Fill-in a value which is not provided by any ACPI Table
  */
 
 //Vexpress 0x1c090000
@@ -31,8 +31,8 @@
 #define PLATFORM_OVERRIDE_PLATFORM_TIMER 0
 #define PLATFORM_OVERRIDE_CNTCTL_BASE    0x2a810000
 #define PLATFORM_OVERRIDE_CNTREAD_BASE   0x2a800000
-#define PLATFORM_OVERRIDE_CNTBASE_N      0x0
-#define PLATFORM_OVERRIDE_PLATFORM_TIMER_GSIV 91
+#define PLATFORM_OVERRIDE_CNTBASE_N      0x2a830000
+#define PLATFORM_OVERRIDE_PLATFORM_TIMER_GSIV 58
 
 
 #define PLATFORM_OVERRIDE_EL2_VIR_TIMER_GSIV  28
@@ -46,8 +46,8 @@
 
 
 /* To use a different value from the MCFG Table, change this to Non-Zero */
-#define PLATFORM_OVERRIDE_ECAM_BASE       0x0 //0x40000000
-
+#define PLATFORM_OVERRIDE_PCIE_ECAM_BASE       0x0 //0x40000000
+#define PLATFORM_OVERRIDE_PCIE_START_BUS_NUM   0x0
 
 /* Change OVERRIDE_SMMU_BASE to non-zero value for this to take effect */
 #define PLATFORM_OVERRIDE_SMMU_BASE        0x0 //0x2B400000

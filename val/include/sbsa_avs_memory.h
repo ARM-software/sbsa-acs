@@ -17,5 +17,9 @@
 #ifndef __SBSA_AVS_MEMORY_H__
 #define __SBSA_AVS_MEMORY_H__
 
+addr_t val_memory_ioremap(void *addr, uint32_t size, uint64_t attr);
+
+void val_memory_unmap(void *ptr);
+
 
 #endif // __SBSA_AVS_PERIPHERAL_H__

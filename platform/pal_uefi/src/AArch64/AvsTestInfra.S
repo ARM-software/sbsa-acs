@@ -20,12 +20,27 @@
 
 GCC_ASM_EXPORT(UpdateElr)
 GCC_ASM_EXPORT(DataCacheCleanInvalidateVA)
+GCC_ASM_EXPORT(DataCacheInvalidateVA)
+GCC_ASM_EXPORT(DataCacheCleanVA)
 
 #define FP_CONTEXT_SIZE   0x200
 
 ASM_PFX(DataCacheCleanInvalidateVA):
-  dc civac, x0
+  dc  civac, x0
+  dsb sy
+  isb
+  ret
+
+ASM_PFX(DataCacheCleanVA):
+  dc  cvac, x0
   dsb ish
+  isb
+  ret
+
+ASM_PFX(DataCacheInvalidateVA):
+  dc  ivac, x0
+  dsb ish
+  isb
   ret
 
 ASM_PFX(UpdateElr):
