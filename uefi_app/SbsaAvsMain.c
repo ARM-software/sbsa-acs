@@ -21,6 +21,7 @@
 #include  <Library/UefiBootServicesTableLib.h>
 
 #include "val/include/val_interface.h"
+#include "val/include/sbsa_avs_pe.h"
 
 #include "SbsaAvs.h"
 
@@ -33,6 +34,20 @@ UINT32  g_sbsa_tests_total;
 UINT32  g_sbsa_tests_pass;
 UINT32  g_sbsa_tests_fail;
 SHELL_FILE_HANDLE g_sbsa_log_file_handle;
+
+STATIC VOID FlushImage (VOID)
+{
+  EFI_LOADED_IMAGE_PROTOCOL   *ImageInfo;
+  EFI_STATUS Status;
+  Status = gBS->HandleProtocol (gImageHandle, &gEfiLoadedImageProtocolGuid, (VOID **)&ImageInfo);
+  if(EFI_ERROR (Status))
+  {
+    return;
+  }
+
+  val_pe_cache_clean_range((UINT64)ImageInfo->ImageBase, (UINT64)ImageInfo->ImageSize);
+
+}
 
 EFI_STATUS
 createPeInfoTable (
@@ -373,6 +388,8 @@ ShellAppMain (
   createPeripheralInfoTable();
 
   val_allocate_shared_mem();
+
+  FlushImage();
 
   if (g_execute_secure == TRUE) {
     Print(L"\n      ***  Starting Secure FW tests ***  \n");

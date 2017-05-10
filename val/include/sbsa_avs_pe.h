@@ -230,6 +230,8 @@ void val_pe_spe_disable(void);
 
 uint32_t val_pe_bigend_check(uint64_t *ptr);
 
+void val_pe_cache_clean_range(uint64_t start_addr, uint64_t length);
+
 uint32_t c001_entry(void);
 uint32_t c002_entry(uint32_t num_pe);
 uint32_t c003_entry(uint32_t num_pe);

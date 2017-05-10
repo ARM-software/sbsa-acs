@@ -74,18 +74,19 @@ PalGetMaxMpidr()
 VOID
 PalAllocateSecondaryStack(UINT64 mpidr)
 {
-  EFI_STATUS Status, NumPe, Aff0, Aff1, Aff2, Aff3;
+  EFI_STATUS Status;
+  UINT32 MaxPe, Aff0, Aff1, Aff2, Aff3;
 
   Aff0 = ((mpidr & 0x00000000ff) >>  0);
   Aff1 = ((mpidr & 0x000000ff00) >>  8);
   Aff2 = ((mpidr & 0x0000ff0000) >> 16);
   Aff3 = ((mpidr & 0xff00000000) >> 32);
 
-  NumPe = ((Aff3+1) * (Aff2+1) * (Aff1+1) * (Aff0+1));
+  MaxPe = ((Aff3+1) * (Aff2+1) * (Aff1+1) * (Aff0+1));
 
   if (gSecondaryPeStack == NULL) {
       Status = gBS->AllocatePool ( EfiBootServicesData,
-                    (NumPe * SIZE_STACK_SECONDARY_PE),
+                    (MaxPe * SIZE_STACK_SECONDARY_PE),
                     (VOID **) &gSecondaryPeStack);
       if (EFI_ERROR(Status)) {
           Print(L"\n FATAL - Allocation for Seconday stack failed %x \n", Status);
@@ -153,6 +154,7 @@ pal_pe_create_info_table(PE_INFO_TABLE *PeTable)
 
   gMpidrMax = MpidrAff0Max | MpidrAff1Max | MpidrAff2Max | MpidrAff3Max;
   pal_pe_data_cache_ops_by_va((UINT64)PeTable, CLEAN_AND_INVALIDATE);
+  pal_pe_data_cache_ops_by_va((UINT64)&gMpidrMax, CLEAN_AND_INVALIDATE);
   PalAllocateSecondaryStack(gMpidrMax);
 
 }

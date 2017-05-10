@@ -210,7 +210,7 @@ val_execute_on_pe(uint32_t index, void (*payload)(void), uint64_t test_input)
 
   g_smc_args.Arg0 = ARM_SMC_ID_PSCI_CPU_ON_AARCH64;
 
-  /* Set the TEST function pointer in a shared memory location. This location is 
+  /* Set the TEST function pointer in a shared memory location. This location is
      read by the Secondary PE (val_test_entry()) and executes the test. */
   g_smc_args.Arg1 = val_pe_get_mpid_index(index);
 
@@ -225,4 +225,22 @@ val_execute_on_pe(uint32_t index, void (*payload)(void), uint64_t test_input)
       return;
   }
 
+}
+
+/**
+  @brief  Cache clean operation on a defined address range
+**/
+void
+val_pe_cache_clean_range(uint64_t start_addr, uint64_t length)
+{
+  uint64_t aligned_addr, end_addr, line_length;
+
+  line_length = 2 << ((val_pe_reg_read(CTR_EL0) >> 16) & 0xf);
+  aligned_addr = start_addr - (start_addr & (line_length-1));
+  end_addr = start_addr + length;
+
+  while(aligned_addr < end_addr){
+      val_data_cache_ops_by_va(aligned_addr, CLEAN);
+      aligned_addr += line_length;
+  }
 }

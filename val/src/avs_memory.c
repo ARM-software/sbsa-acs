@@ -79,7 +79,7 @@ val_memory_create_info_table(uint64_t *memory_info_table)
            which matches the input type and the input instance number
            Instance number is '0' based
            1. Caller       -  VAL
-           2. Prerequisite - 
+           2. Prerequisite -
   @param   type     - type of memory being requested
   @param   instance - instance is '0' based and incremented to get different ranges
   @return  index
@@ -103,7 +103,7 @@ val_memory_get_entry_index(uint32_t type, uint32_t instance)
 }
 
 /**
-  @brief   Returns a random address whose attributes match the input 
+  @brief   Returns a random address whose attributes match the input
            memory type
            1. Caller       - Test Suite
            2. Prerequisite - val_memory_create_info_table
