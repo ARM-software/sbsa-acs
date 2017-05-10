@@ -103,6 +103,7 @@
   gHardwareInterruptProtocolGuid                ## CONSUMES
   gEfiCpuArchProtocolGuid                       ## CONSUMES
   gEfiPciIoProtocolGuid                         ## CONSUMES
+  gEfiLoadedImageProtocolGuid                   ## CONSUMES
 
 [Guids]
   gEfiAcpi20TableGuid

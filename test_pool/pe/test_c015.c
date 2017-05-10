@@ -25,7 +25,7 @@
 #define RAS               1
 #define SPE               2
 #define LOR               3
-#define AA64              4
+#define AA32              4
 
 #define MASK_AA64MMFR0    0xF
 #define MASK_MIDR         0x00F0FFFF
@@ -61,23 +61,23 @@ reg_details reg_list[] = {
     {MIDR_EL1,         MASK_MIDR,      "MIDR_EL1"        , 0x0 },
     {VPIDR_EL2,        MASK_VPIDR,     "VPIDR_EL2"       , 0x0 },
     {CCSIDR_EL1,       MASK_CCSIDR,    "CCSIDR_EL1"      , 0x0 },
-    {ID_DFR0_EL1,      0x0,            "ID_DFR0_EL1"     , AA64},
-    {ID_ISAR0_EL1,     0x0,            "ID_ISAR0_EL1"    , AA64},
-    {ID_ISAR1_EL1,     0x0,            "ID_ISAR1_EL1"    , AA64},
-    {ID_ISAR2_EL1,     0x0,            "ID_ISAR2_EL1"    , AA64},
-    {ID_ISAR3_EL1,     0x0,            "ID_ISAR3_EL1"    , AA64},
-    {ID_ISAR4_EL1,     0x0,            "ID_ISAR4_EL1"    , AA64},
-    {ID_ISAR5_EL1,     0x0,            "ID_ISAR5_EL1"    , AA64},
-    {ID_MMFR0_EL1,     0x0,            "ID_MMFR0_EL1"    , AA64},
-    {ID_MMFR1_EL1,     0x0,            "ID_MMFR1_EL1"    , AA64},
-    {ID_MMFR2_EL1,     0x0,            "ID_MMFR2_EL1"    , AA64},
-    {ID_MMFR3_EL1,     0x0,            "ID_MMFR3_EL1"    , AA64},
-    {ID_MMFR4_EL1,     0x0,            "ID_MMFR4_EL1"    , AA64},
-    {ID_PFR0_EL1,      0x0,            "ID_PFR0_EL1"     , AA64},
-    {ID_PFR1_EL1,      0x0,            "ID_PFR1_EL1"     , AA64},
-    {MVFR0_EL1,        0x0,            "MVFR0_EL1"       , AA64},
-    {MVFR1_EL1,        0x0,            "MVFR1_EL1"       , AA64},
-    {MVFR2_EL1,        0x0,            "MVFR2_EL1"       , AA64},
+    {ID_DFR0_EL1,      0x0,            "ID_DFR0_EL1"     , AA32},
+    {ID_ISAR0_EL1,     0x0,            "ID_ISAR0_EL1"    , AA32},
+    {ID_ISAR1_EL1,     0x0,            "ID_ISAR1_EL1"    , AA32},
+    {ID_ISAR2_EL1,     0x0,            "ID_ISAR2_EL1"    , AA32},
+    {ID_ISAR3_EL1,     0x0,            "ID_ISAR3_EL1"    , AA32},
+    {ID_ISAR4_EL1,     0x0,            "ID_ISAR4_EL1"    , AA32},
+    {ID_ISAR5_EL1,     0x0,            "ID_ISAR5_EL1"    , AA32},
+    {ID_MMFR0_EL1,     0x0,            "ID_MMFR0_EL1"    , AA32},
+    {ID_MMFR1_EL1,     0x0,            "ID_MMFR1_EL1"    , AA32},
+    {ID_MMFR2_EL1,     0x0,            "ID_MMFR2_EL1"    , AA32},
+    {ID_MMFR3_EL1,     0x0,            "ID_MMFR3_EL1"    , AA32},
+    {ID_MMFR4_EL1,     0x0,            "ID_MMFR4_EL1"    , AA32},
+    {ID_PFR0_EL1,      0x0,            "ID_PFR0_EL1"     , AA32},
+    {ID_PFR1_EL1,      0x0,            "ID_PFR1_EL1"     , AA32},
+    {MVFR0_EL1,        0x0,            "MVFR0_EL1"       , AA32},
+    {MVFR1_EL1,        0x0,            "MVFR1_EL1"       , AA32},
+    {MVFR2_EL1,        0x0,            "MVFR2_EL1"       , AA32},
     {PMCEID0_EL0,      0x0,            "PMCEID0_EL0"     , 0x0 },
     {PMCEID1_EL0,      0x0,            "PMCEID1_EL0"     , 0x0 },
     {PMCR_EL0,         MASK_PMCR,      "PMCR_EL0"        , 0x0 },
@@ -128,7 +128,7 @@ return_reg_value(uint32_t reg, uint8_t dependency)
             return 0;
         break;
 
-    case AA64: // If the register is UNK in pure AArch64 implementation, then skip register check
+    case AA32: // If the register is UNK in pure AArch64 implementation, then skip register check
         temp = val_pe_reg_read(ID_AA64PFR0_EL1);
         temp = (temp & 1);
         if(temp == 0)

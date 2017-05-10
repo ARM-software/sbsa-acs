@@ -65,14 +65,14 @@ pal_peripheral_create_info_table(PERIPHERAL_INFO_TABLE *peripheralInfoTable)
           per_info++;
        }
        StartBdf = incrementBusDev(DeviceBdf);
-       
+
   } while (DeviceBdf != 0);
 
 
   StartBdf = 0;
   /* check for any SATA Controllers */
   do {
-  
+
        DeviceBdf = palPcieGetBdf(SATA_CLASSCODE, StartBdf);
        if (DeviceBdf != 0) {
           per_info->type  = PERIPHERAL_TYPE_SATA;
@@ -105,7 +105,7 @@ pal_peripheral_create_info_table(PERIPHERAL_INFO_TABLE *peripheralInfoTable)
     per_info->type  = PERIPHERAL_TYPE_UART;
     per_info++;
   }
-  
+
   per_info->type = 0xFF; //indicate end of table
 
 }
@@ -237,7 +237,7 @@ pal_memory_ioremap(VOID *ptr, UINT32 size, UINT32 attr)
 
 
 VOID
-pal_memory_unmap(void *ptr)
+pal_memory_unmap(VOID *ptr)
 {
 
   return;

@@ -33,7 +33,7 @@ pal_get_gtdt_ptr();
 
 /* Information about only one timer can be mentioned as an Override */
 static
-void
+VOID
 pal_timer_platform_override(TIMER_INFO_TABLE *TimerTable)
 {
   if (PLATFORM_OVERRIDE_PLATFORM_TIMER) {
@@ -63,7 +63,7 @@ pal_timer_platform_override(TIMER_INFO_TABLE *TimerTable)
 
   @return  None
 **/
-void
+VOID
 pal_timer_create_info_table(TIMER_INFO_TABLE *TimerTable)
 {
   EFI_ACPI_6_1_GTDT_GT_BLOCK_STRUCTURE       *Entry;
@@ -146,7 +146,7 @@ pal_timer_create_info_table(TIMER_INFO_TABLE *TimerTable)
 
 
 /* Only one watchdog information can be assigned as an override */
-void
+VOID
 pal_wd_platform_override(WD_INFO_TABLE *WdTable)
 {
 
@@ -171,7 +171,7 @@ pal_wd_platform_override(WD_INFO_TABLE *WdTable)
   @return  None
 **/
 
-void
+VOID
 pal_wd_create_info_table(WD_INFO_TABLE *WdTable)
 {
 

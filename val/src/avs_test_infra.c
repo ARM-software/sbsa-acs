@@ -68,7 +68,7 @@ val_print_raw(uint32_t level, char8_t *string, uint64_t data)
 
   @param addr   64-bit address
 
-  @return       32-bits of data 
+  @return       32-bits of data
  **/
 uint32_t
 val_mmio_read(addr_t addr)
@@ -120,7 +120,7 @@ val_initialize_test(uint32_t test_num, char8_t *desc, uint32_t num_pe, uint32_t 
   val_print(AVS_PRINT_ERR, "%4d : ", test_num); //Always print this
   val_print(AVS_PRINT_TEST, desc, 0);
   val_report_status(0, SBSA_AVS_START(level, test_num));
-  
+
   g_sbsa_tests_total++;
 
   for (i = 0; i < num_pe; i++)
@@ -299,7 +299,7 @@ val_run_test_payload(uint32_t test_num, uint32_t num_pe, void (*payload)(void), 
 
   //Now run the test on all other PE
   for (i = 0; i < num_pe; i++) {
-      if (i != my_index) 
+      if (i != my_index)
           val_execute_on_pe(i, payload, test_input);
   }
 
@@ -324,7 +324,7 @@ val_check_for_error(uint32_t test_num, uint32_t num_pe)
   uint32_t error_flag = 0;
   uint32_t my_index = val_pe_get_index_mpid(val_pe_get_mpid());
 
-  /* this special case is needed when the Main PE is not the first entry 
+  /* this special case is needed when the Main PE is not the first entry
      of pe_info_table but num_pe is 1 for SOC tests */
   if (num_pe == 1) {
       status = val_get_status(my_index);
@@ -365,10 +365,10 @@ val_check_for_error(uint32_t test_num, uint32_t num_pe)
 }
 
 /**
-  @brief  Clean and Invalidate the Data cache line containing 
+  @brief  Clean and Invalidate the Data cache line containing
           the input address tag
 **/
-void 
+void
 val_data_cache_ops_by_va(addr_t addr, uint32_t type)
 {
   pal_pe_data_cache_ops_by_va(addr, type);
