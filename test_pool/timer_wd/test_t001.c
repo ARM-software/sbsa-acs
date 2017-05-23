@@ -30,7 +30,7 @@ payload()
   uint32_t counter_freq;
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
 
-  counter_freq = val_timer_get_info(TIMER_INFO_CNTFREQ);
+  counter_freq = val_timer_get_info(TIMER_INFO_CNTFREQ, 0);
 
   if ((counter_freq > 10*1000*1000) && (counter_freq < 400*1000*1000)) {
       val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));

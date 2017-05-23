@@ -58,7 +58,7 @@ payload()
     return;
   }
  
-  intid = val_timer_get_info(TIMER_INFO_VIR_EL2_INTID);
+  intid = val_timer_get_info(TIMER_INFO_VIR_EL2_INTID, 0);
   /* For SBSA level 2 and above, the PPI has to be a specific value.*/
   if (g_sbsa_level > 1) {
       if (intid != 28) {

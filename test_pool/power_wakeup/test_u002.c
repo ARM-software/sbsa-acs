@@ -50,11 +50,11 @@ wakeup_event_for_semantic_f()
   num = val_wd_get_info(0, WD_INFO_COUNT);
 
   if(num == 0){
-      num = val_timer_get_info(TIMER_INFO_NUM_PLATFORM_TIMERS);
+      num = val_timer_get_info(TIMER_INFO_NUM_PLATFORM_TIMERS, 0);
       if(num == 0)
           return 0;
       else{
-          intid = val_timer_get_info(TIMER_INFO_SYS_INTID);
+          intid = val_timer_get_info(TIMER_INFO_SYS_INTID, 0);
           return SYSTIMER_SEMF;
       }
   }
@@ -128,7 +128,7 @@ payload()
   // Step5: Program timer/watchdog, which on expiry will generate an interrupt
   //        and wake target PE
   if(wakeup_event == SYSTIMER_SEMF){
-      cnt_base_n = val_timer_get_info(TIMER_INFO_SYS_CNT_BASE_N);
+      cnt_base_n = val_timer_get_info(TIMER_INFO_SYS_CNT_BASE_N, 0);
       val_timer_set_system_timer((addr_t)cnt_base_n, timer_expire_ticks);
   }
   else if(wakeup_event == WATCHDOG_SEMF){

@@ -123,10 +123,10 @@ pal_timer_create_info_table(TIMER_INFO_TABLE *TimerTable)
         GtEntry->GtCntEl0Base[i] = GtBlockTimer->CntEL0BaseX;
         GtEntry->gsiv[i]         = GtBlockTimer->GTxPhysicalTimerGSIV;
         GtEntry->virt_gsiv[i]    = GtBlockTimer->GTxVirtualTimerGSIV;
-        GtEntry->flags[i]        = GtBlockTimer->GTxPhysicalTimerFlags | (GtBlockTimer->GTxVirtualTimerFlags << 8);
+        GtEntry->flags[i]        = GtBlockTimer->GTxPhysicalTimerFlags | (GtBlockTimer->GTxVirtualTimerFlags << 8) | (GtBlockTimer->GTxCommonFlags << 16);
         GtBlockTimer++;
+        TimerTable->header.num_platform_timer++;
       }
-      TimerTable->header.num_platform_timer++;
       GtEntry++;
     }
 

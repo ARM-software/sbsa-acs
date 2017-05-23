@@ -29,7 +29,7 @@ payload()
 
   data = val_pe_reg_read(ID_AA64ISAR0_EL1);
 
-  if (((data > 4) & 0xF) && ((data >> 8) & 0xF) && ((data >> 12) & 0xF))  //bits 7:4, 11:8, 15:12 must be non-zero
+  if (((data >> 4) & 0xF) && ((data >> 8) & 0xF) && ((data >> 12) & 0xF))  //bits 7:4, 11:8, 15:12 must be non-zero
 	val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
   else
 	val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));

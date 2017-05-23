@@ -92,6 +92,7 @@ typedef enum {
   TIMER_INFO_VIR_EL2_INTID,
   TIMER_INFO_VIR_EL2_FLAGS,
   TIMER_INFO_NUM_PLATFORM_TIMERS,
+  TIMER_INFO_IS_PLATFORM_TIMER_SECURE,
   TIMER_INFO_SYS_CNTL_BASE,
   TIMER_INFO_SYS_CNT_BASE_N,
   TIMER_INFO_SYS_INTID
@@ -102,14 +103,15 @@ typedef enum {
 void     val_timer_create_info_table(uint64_t *timer_info_table);
 void     val_timer_free_info_table(void);
 uint32_t val_timer_execute_tests(uint32_t level, uint32_t num_pe);
-uint64_t val_timer_get_info(TIMER_INFO_e info_type);
+uint64_t val_timer_get_info(TIMER_INFO_e info_type, uint64_t instance);
 void     val_timer_set_phy_el1(uint64_t timeout);
 void     val_timer_set_vir_el1(uint64_t timeout);
 void     val_timer_set_phy_el2(uint64_t timeout);
 void     val_timer_set_vir_el2(uint64_t timeout);
 void     val_timer_set_system_timer(addr_t cnt_base_n, uint32_t timeout);
 void     val_timer_disable_system_timer(addr_t cnt_base_n);
-uint32_t val_timer_skip_if_cntbase_access_not_allowed(void);
+uint32_t val_timer_skip_if_cntbase_access_not_allowed(uint64_t index);
+void val_platform_timer_get_entry_index(uint64_t instance, uint32_t *block, uint32_t *index);
 
 /* Watchdog VAL APIs */
 typedef enum {
