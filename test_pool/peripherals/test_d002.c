@@ -39,7 +39,7 @@ payload()
   }
 
   while (count != 0) {
-      bdf = val_peripheral_get_info(USB_BDF, count - 1);
+      bdf = val_peripheral_get_info(SATA_BDF, count - 1);
       interface = val_pcie_read_cfg(bdf, 0x8);
       interface = (interface >> 8) & 0xFF;
       if (interface != 0x01) {

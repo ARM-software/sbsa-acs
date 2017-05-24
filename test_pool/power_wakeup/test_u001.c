@@ -42,7 +42,7 @@ isr_failsafe()
   val_timer_set_phy_el1(0);
   val_print(AVS_PRINT_INFO, "\n       Received Failsafe interrupt      ", 0);
   val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
-  intid = val_timer_get_info(TIMER_INFO_PHY_EL1_INTID);
+  intid = val_timer_get_info(TIMER_INFO_PHY_EL1_INTID, 0);
   val_gic_end_of_interrupt(intid);
 }
 
@@ -54,7 +54,7 @@ isr1()
   val_timer_set_phy_el1(0);
   val_print(AVS_PRINT_INFO, "\n       Received EL1 PHY interrupt       ", 0);
   val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
-  intid = val_timer_get_info(TIMER_INFO_PHY_EL1_INTID);
+  intid = val_timer_get_info(TIMER_INFO_PHY_EL1_INTID, 0);
   val_gic_end_of_interrupt(intid);
 }
 
@@ -68,7 +68,7 @@ isr2()
   val_timer_set_vir_el1(0);
   val_print(AVS_PRINT_INFO, "\n       Received EL1 VIRT interrupt      ", 0);
   val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM2, 01));
-  intid = val_timer_get_info(TIMER_INFO_VIR_EL1_INTID);
+  intid = val_timer_get_info(TIMER_INFO_VIR_EL1_INTID, 0);
   val_gic_end_of_interrupt(intid);
 }
 
@@ -81,7 +81,7 @@ isr3()
   val_timer_set_phy_el2(0);
   val_print(AVS_PRINT_INFO, "\n       Received EL2 Physical interrupt  ", 0);
   val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM3, 01));
-  intid = val_timer_get_info(TIMER_INFO_PHY_EL2_INTID);
+  intid = val_timer_get_info(TIMER_INFO_PHY_EL2_INTID, 0);
   val_gic_end_of_interrupt(intid);
 }
 
@@ -108,11 +108,11 @@ static
 void
 isr5()
 {
-  uint64_t cnt_base_n = val_timer_get_info(TIMER_INFO_SYS_CNT_BASE_N);
+  uint64_t cnt_base_n = val_timer_get_info(TIMER_INFO_SYS_CNT_BASE_N, 0);
   val_timer_disable_system_timer((addr_t)cnt_base_n);
   val_print(AVS_PRINT_INFO, "\n       Received Sys timer interrupt   ", 0);
   val_set_status(0, RESULT_PASS(g_sbsa_level, TEST_NUM5, 01));
-  intid = val_timer_get_info(TIMER_INFO_SYS_INTID);
+  intid = val_timer_get_info(TIMER_INFO_SYS_INTID, 0);
   val_gic_end_of_interrupt(intid);
 }
 
@@ -122,7 +122,7 @@ wakeup_set_failsafe()
 {
   uint64_t timer_expire_val = 900000;
 
-  intid = val_timer_get_info(TIMER_INFO_PHY_EL1_INTID);
+  intid = val_timer_get_info(TIMER_INFO_PHY_EL1_INTID, 0);
   val_gic_install_isr(intid, isr_failsafe);
   val_timer_set_phy_el1(timer_expire_val);
 }
@@ -143,7 +143,7 @@ payload1()
 
   val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
 
-  intid = val_timer_get_info(TIMER_INFO_PHY_EL1_INTID);
+  intid = val_timer_get_info(TIMER_INFO_PHY_EL1_INTID, 0);
   val_gic_install_isr(intid, isr1);
   val_timer_set_phy_el1(timer_expire_val);
   val_power_enter_semantic(SBSA_POWER_SEM_B);
@@ -158,7 +158,7 @@ payload2()
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
 
   val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM2, 01));
-  intid = val_timer_get_info(TIMER_INFO_VIR_EL1_INTID);
+  intid = val_timer_get_info(TIMER_INFO_VIR_EL1_INTID, 0);
   val_gic_install_isr(intid, isr2);
   wakeup_set_failsafe();
   val_timer_set_vir_el1(timer_expire_val);
@@ -175,7 +175,7 @@ payload3()
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
 
   val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM3, 01));
-  intid = val_timer_get_info(TIMER_INFO_PHY_EL2_INTID);
+  intid = val_timer_get_info(TIMER_INFO_PHY_EL2_INTID, 0);
   val_gic_install_isr(intid, isr3);
   wakeup_set_failsafe();
   val_timer_set_phy_el2(timer_expire_val);
@@ -220,22 +220,22 @@ payload5()
   uint32_t status;
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
 
-  if (val_timer_get_info(TIMER_INFO_NUM_PLATFORM_TIMERS)) {
+  if (val_timer_get_info(TIMER_INFO_NUM_PLATFORM_TIMERS, 0)) {
 
       //Read CNTACR to determine whether access permission from NS state is permitted
-      status = val_timer_skip_if_cntbase_access_not_allowed();
+      status = val_timer_skip_if_cntbase_access_not_allowed(0);
       if(status == AVS_STATUS_SKIP){
           val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM5, 02));
           return;
       }
 
-      cnt_base_n = val_timer_get_info(TIMER_INFO_SYS_CNT_BASE_N);
+      cnt_base_n = val_timer_get_info(TIMER_INFO_SYS_CNT_BASE_N, 0);
       if(cnt_base_n == 0){
           val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM5, 03));
           return;
       }
 
-      intid = val_timer_get_info(TIMER_INFO_SYS_INTID);
+      intid = val_timer_get_info(TIMER_INFO_SYS_INTID, 0);
       status = val_gic_install_isr(intid, isr5);
 
       if(status == 0) {

@@ -75,9 +75,10 @@ val_timer_execute_tests(uint32_t level, uint32_t num_pe)
 **/
 
 uint64_t
-val_timer_get_info(TIMER_INFO_e info_type)
+val_timer_get_info(TIMER_INFO_e info_type, uint64_t instance)
 {
 
+  uint32_t block_num, block_index;
   if (g_timer_info_table == NULL)
       return 0;
 
@@ -94,12 +95,22 @@ val_timer_get_info(TIMER_INFO_e info_type)
           return g_timer_info_table->header.el2_virt_timer_gsiv;
       case TIMER_INFO_NUM_PLATFORM_TIMERS:
           return g_timer_info_table->header.num_platform_timer;
+      case TIMER_INFO_IS_PLATFORM_TIMER_SECURE:
+          val_platform_timer_get_entry_index (instance, &block_num, &block_index);
+          if (block_num != 0xFFFF)
+              return ((g_timer_info_table->gt_info[block_num].flags[block_index] >> 16) & 1);
       case TIMER_INFO_SYS_CNTL_BASE:
-          return g_timer_info_table->gt_info[0].block_cntl_base;
+          val_platform_timer_get_entry_index (instance, &block_num, &block_index);
+          if (block_num != 0xFFFF)
+              return g_timer_info_table->gt_info[block_num].block_cntl_base;
       case TIMER_INFO_SYS_CNT_BASE_N:
-          return g_timer_info_table->gt_info[0].GtCntBase[0];
+          val_platform_timer_get_entry_index (instance, &block_num, &block_index);
+          if (block_num != 0xFFFF)
+              return g_timer_info_table->gt_info[block_num].GtCntBase[block_index];
       case TIMER_INFO_SYS_INTID:
-          return g_timer_info_table->gt_info[0].gsiv[0];
+          val_platform_timer_get_entry_index (instance, &block_num, &block_index);
+          if (block_num != 0xFFFF)
+            return g_timer_info_table->gt_info[block_num].gsiv[block_index];
       case TIMER_INFO_PHY_EL1_FLAGS:
           return g_timer_info_table->header.ns_el1_timer_flag;
       case TIMER_INFO_VIR_EL1_FLAGS:
@@ -111,7 +122,22 @@ val_timer_get_info(TIMER_INFO_e info_type)
   }
 }
 
+void
+val_platform_timer_get_entry_index(uint64_t instance, uint32_t *block, uint32_t *index)
+{
+  if(instance > g_timer_info_table->header.num_platform_timer){
+      *block = 0xFFFF;
+      return;
+  }
 
+  *block = 0;
+  *index = instance;
+  while (instance > g_timer_info_table->gt_info[*block].timer_count){
+      instance = instance - g_timer_info_table->gt_info[*block].timer_count;
+      *index   = instance;
+      *block   = *block + 1;
+  }
+}
 /**
   @brief   This API enables the Architecture timer whose register is given as the input parameter.
            1. Caller       -  VAL
@@ -307,12 +333,12 @@ val_timer_disable_system_timer(addr_t cnt_base_n)
           access permission from NS state is permitted
 **/
 uint32_t
-val_timer_skip_if_cntbase_access_not_allowed()
+val_timer_skip_if_cntbase_access_not_allowed(uint64_t index)
 {
   uint64_t cnt_ctl_base;
   uint32_t data;
 
-  cnt_ctl_base = val_timer_get_info(TIMER_INFO_SYS_CNTL_BASE);
+  cnt_ctl_base = val_timer_get_info(TIMER_INFO_SYS_CNTL_BASE, index);
   if(cnt_ctl_base){
       data = val_mmio_read(cnt_ctl_base + 0x40);
       if((data & 0x1) == 0x1)

@@ -17,6 +17,7 @@
 #ifndef __SBSA_AVS_PCIE_H__
 #define __SBSA_AVS_PCIE_H__
 
+#define PCIE_EXTRACT_BDF_SEG(bdf)  ((bdf >> 24) & 0xFF)
 #define PCIE_EXTRACT_BDF_BUS(bdf)  ((bdf >> 16) & 0xFF)
 #define PCIE_EXTRACT_BDF_DEV(bdf)  ((bdf >> 8) & 0xFF)
 #define PCIE_EXTRACT_BDF_FUNC(bdf) (bdf & 0xFF)

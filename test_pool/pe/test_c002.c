@@ -28,8 +28,9 @@ payload()
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
 
   data = val_pe_reg_read(ID_AA64PFR0_EL1);
+  data = (data & 0xF00000) >> 20;
 
-  if ((data & 0xF00000) == 0) 
+  if ((data == 0x0) || (data == 0x1))
         val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
   else
         val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
