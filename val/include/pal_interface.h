@@ -82,7 +82,7 @@ typedef struct {
 
 void pal_pe_call_smc(ARM_SMC_ARGS *args);
 void pal_pe_execute_payload(ARM_SMC_ARGS *args);
-uint32_t pal_pe_install_esr(uint32_t exception_type, void (*esr)(void));
+uint32_t pal_pe_install_esr(uint32_t exception_type, void (*esr)(uint64_t, void *));
 /* ********** PE INFO END **********/
 
 
@@ -404,7 +404,7 @@ uint64_t pal_mem_get_shared_addr(void);
 uint32_t pal_mmio_read(uint64_t addr);
 void     pal_mmio_write(uint64_t addr, uint32_t data);
 
-void     pal_pe_update_elr(uint64_t offset);
+void     pal_pe_update_elr(void *context, uint64_t offset);
 void     pal_pe_data_cache_ops_by_va(uint64_t addr, uint32_t type);
 
 #define CLEAN_AND_INVALIDATE  0x1

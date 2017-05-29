@@ -222,7 +222,7 @@ void DisableSpe(void);
 
 uint32_t BigEndianCheck(uint64_t *ptr);
 
-void val_pe_update_elr(uint32_t offset);
+void val_pe_update_elr(void *context, uint64_t offset);
 
 void val_pe_spe_program_under_profiling(uint64_t interval, addr_t address);
 
