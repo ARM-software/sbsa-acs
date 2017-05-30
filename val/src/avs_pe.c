@@ -318,30 +318,6 @@ val_pe_get_pmu_gsiv(uint32_t index)
 
 }
 
-
-/**
-  @brief   This API installs the Exception handler pointed
-           by the function pointer to the input exception type.
-           1. Caller       -  Test Suite
-           2. Prerequisite -  None
-  @param   exception_type - one of the four exceptions defined by AARCH64
-  @param   esr            - Function pointer of the exception handler
-  @return  0 if success or ERROR for invalid Exception type.
-**/
-uint32_t
-val_pe_install_esr(uint32_t exception_type, void (*esr)(void))
-{
-
-  if (exception_type > 3) {
-      val_print(AVS_PRINT_ERR, "Invalid Exception type %x \n", exception_type);
-      return AVS_STATUS_ERR;
-  }
-
-  pal_pe_install_esr(exception_type, esr);
-
-  return 0;
-}
-
 /**
   @brief   This API will call an assembly sequence with interval
            as argument over which an SPE event is exected to be generated.

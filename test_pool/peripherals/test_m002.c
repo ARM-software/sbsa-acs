@@ -28,13 +28,13 @@ static void *branch_to_test;
 
 static
 void
-esr()
+esr(uint64_t interrupt_type, void *context)
 {
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
   uint64_t syndrome;
 
   /* Update the ELR to return to test specified address */
-  val_pe_update_elr((uint64_t)branch_to_test);
+  val_pe_update_elr(context, (uint64_t)branch_to_test);
 
   syndrome = val_pe_reg_read(ESR_EL2);
   syndrome &= 0x3F;    // Get the DFSC field from ESR

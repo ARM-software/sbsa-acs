@@ -169,7 +169,7 @@ pal_pe_create_info_table(PE_INFO_TABLE *PeTable)
   @return status of the API
 **/
 UINT32
-pal_pe_install_esr(UINT32 ExceptionType,  VOID (*esr)())
+pal_pe_install_esr(UINT32 ExceptionType,  VOID (*esr)(UINT64, VOID *))
 {
 
   EFI_STATUS  Status;
@@ -195,7 +195,7 @@ pal_pe_install_esr(UINT32 ExceptionType,  VOID (*esr)())
   //
   // Register to receive interrupts
   //
-  Status = Cpu->RegisterInterruptHandler (Cpu, ExceptionType, esr);
+  Status = Cpu->RegisterInterruptHandler (Cpu, ExceptionType, (EFI_CPU_INTERRUPT_HANDLER)esr);
   if (EFI_ERROR (Status)) {
     return Status;
   }
@@ -244,13 +244,9 @@ pal_pe_execute_payload(ARM_SMC_ARGS *ArmSmcArgs)
 }
 
 VOID
-UpdateElr(UINT64 offset);
-
-
-VOID
-pal_pe_update_elr(UINT64 offset)
+pal_pe_update_elr(VOID *context, UINT64 offset)
 {
-  UpdateElr(offset);
+  ((EFI_SYSTEM_CONTEXT_AARCH64*)context)->ELR = offset;
 }
 
 VOID

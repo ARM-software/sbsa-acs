@@ -198,7 +198,8 @@ val_set_test_data(uint32_t index, uint64_t addr, uint64_t test_data)
   mem->data0 = addr;
   mem->data1 = test_data;
 
-  val_data_cache_ops_by_va((addr_t)mem, CLEAN_AND_INVALIDATE);
+  val_data_cache_ops_by_va((addr_t)&mem->data0, CLEAN_AND_INVALIDATE);
+  val_data_cache_ops_by_va((addr_t)&mem->data1, CLEAN_AND_INVALIDATE);
 }
 
 /**
@@ -227,7 +228,8 @@ val_get_test_data(uint32_t index, uint64_t *data0, uint64_t *data1)
   mem = (VAL_SHARED_MEM_t *) pal_mem_get_shared_addr();
   mem = mem + index;
 
-  val_data_cache_ops_by_va((addr_t)mem, INVALIDATE);
+  val_data_cache_ops_by_va((addr_t)&mem->data0, INVALIDATE);
+  val_data_cache_ops_by_va((addr_t)&mem->data1, INVALIDATE);
 
   *data0 = mem->data0;
   *data1 = mem->data1;
@@ -379,7 +381,7 @@ val_data_cache_ops_by_va(addr_t addr, uint32_t type)
   @brief  Update ELR based on the offset provided
 **/
 void
-val_pe_update_elr(uint32_t offset)
+val_pe_update_elr(void *context, uint64_t offset)
 {
-    pal_pe_update_elr(offset);
+    pal_pe_update_elr(context, offset);
 }

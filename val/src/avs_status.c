@@ -73,7 +73,7 @@ val_set_status(uint32_t index, uint32_t status)
   mem = mem + index;
   mem->status = status;
 
-  val_data_cache_ops_by_va((addr_t)mem, CLEAN_AND_INVALIDATE);
+  val_data_cache_ops_by_va((addr_t)&mem->status, CLEAN_AND_INVALIDATE);
 }
 
 /**
@@ -91,7 +91,7 @@ val_get_status(uint32_t index)
   mem = (VAL_SHARED_MEM_t *) pal_mem_get_shared_addr();
   mem = mem + index;
 
-  val_data_cache_ops_by_va((addr_t)mem, INVALIDATE);
+  val_data_cache_ops_by_va((addr_t)&mem->status, INVALIDATE);
 
   return (uint32_t)(mem->status);
 
