@@ -233,6 +233,7 @@ val_execute_on_pe(uint32_t index, void (*payload)(void), uint64_t test_input)
 void
 val_pe_cache_clean_range(uint64_t start_addr, uint64_t length)
 {
+#ifndef TARGET_LINUX
   uint64_t aligned_addr, end_addr, line_length;
 
   line_length = 2 << ((val_pe_reg_read(CTR_EL0) >> 16) & 0xf);
@@ -243,6 +244,7 @@ val_pe_cache_clean_range(uint64_t start_addr, uint64_t length)
       val_data_cache_ops_by_va(aligned_addr, CLEAN);
       aligned_addr += line_length;
   }
+#endif
 }
 
 /**
