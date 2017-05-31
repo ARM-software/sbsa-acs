@@ -30,7 +30,7 @@ static
 void
 isr()
 {
-  uint64_t cnt_base_n = val_timer_get_info(TIMER_INFO_SYS_CNT_BASE_N);
+  uint64_t cnt_base_n = val_timer_get_info(TIMER_INFO_SYS_CNT_BASE_N, 0);
 
   val_print(AVS_PRINT_INFO, "\n       Received interrupt   ", 0);
   val_timer_disable_system_timer((addr_t)cnt_base_n);
@@ -48,38 +48,48 @@ payload()
   uint32_t timeout = TIMEOUT_MEDIUM;
   uint32_t status;
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
+  uint64_t timer_num = val_timer_get_info(TIMER_INFO_NUM_PLATFORM_TIMERS, 0);
 
-  if (!val_timer_get_info(TIMER_INFO_NUM_PLATFORM_TIMERS)) {
+  if (!timer_num) {
       val_print(AVS_PRINT_WARN, "\n       No System timers are defined      ", 0);
       val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
       return;
   }
 
-  //Read CNTACR to determine whether access permission from NS state is permitted
-  status = val_timer_skip_if_cntbase_access_not_allowed();
-  if(status == AVS_STATUS_SKIP){
-      val_print(AVS_PRINT_WARN, "\n       Security doesn't allow access to timer registers      ", 0);
-      val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 02));
-      return;
+  while(timer_num){
+      timer_num--;  //array index starts from 0, so subtract 1 from count
+
+      if (val_timer_get_info(TIMER_INFO_IS_PLATFORM_TIMER_SECURE, timer_num))
+          continue;    //Skip Secure Timer
+
+      //Read CNTACR to determine whether access permission from NS state is permitted
+      status = val_timer_skip_if_cntbase_access_not_allowed(timer_num);
+      if(status == AVS_STATUS_SKIP){
+          val_print(AVS_PRINT_WARN, "\n       Security doesn't allow access to timer registers      ", 0);
+          val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 02));
+          return;
+      }
+
+      cnt_base_n = val_timer_get_info(TIMER_INFO_SYS_CNT_BASE_N, timer_num);
+      if (cnt_base_n == 0) {
+          val_print(AVS_PRINT_WARN, "\n      CNT_BASE_N is zero                 ", 0);
+          val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 03));
+          return;
+      }
+
+      /* Install ISR */
+      intid = val_timer_get_info(TIMER_INFO_SYS_INTID, timer_num);
+      val_gic_install_isr(intid, isr);
+
+      /* enable System timer */
+      val_timer_set_system_timer((addr_t)cnt_base_n, timeout);
+
+      while ((--timeout > 0) && (IS_RESULT_PENDING(val_get_status(index))));
+
+      if (timeout == 0)
+          val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
+      timer_num = 0;
   }
-
-  cnt_base_n = val_timer_get_info(TIMER_INFO_SYS_CNT_BASE_N);
-  if (cnt_base_n == 0) {
-      val_print(AVS_PRINT_WARN, "\n      CNT_BASE_N is zero                 ", 0);
-      val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 03));
-      return;
-  }
-  /* Install ISR */
-  intid = val_timer_get_info(TIMER_INFO_SYS_INTID);
-  val_gic_install_isr(intid, isr);
-
-  /* enable System timer */
-  val_timer_set_system_timer((addr_t)cnt_base_n, timeout);
-
-  while ((--timeout > 0) && (IS_RESULT_PENDING(val_get_status(index))));
-
-  if (timeout == 0)
-      val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
 
 }
 

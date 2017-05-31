@@ -27,7 +27,12 @@ void
 set_pmu_overflow()
 {
   uint64_t pmcr;
-  
+
+  //Initializing the state of overflow status and interrupt request registers
+  val_pe_reg_write(PMINTENCLR_EL1, 0xFFFFFFFF);
+  val_pe_reg_write(PMOVSCLR_EL0, 0xFFFFFFFF);
+
+  //Sequence to generate PMUIRQ
   pmcr = val_pe_reg_read(PMCR_EL0);
   val_pe_reg_write(PMCR_EL0, pmcr|0x1);
 

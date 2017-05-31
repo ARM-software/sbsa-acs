@@ -198,7 +198,7 @@ val_pe_reg_read(uint32_t reg_id)
       case ESR_EL2:
           return AA64ReadEsr2();
       default:
-           val_report_status(255, 0x87655678);
+           val_report_status(val_pe_get_index_mpid(val_pe_get_mpid()), RESULT_FAIL(g_sbsa_level, 0, 0x78));
   }
 
   return 0x0;
@@ -255,7 +255,7 @@ val_pe_reg_write(uint32_t reg_id, uint64_t write_data)
           AA64WritePmblimitr(write_data);
           break;
       default:
-           val_report_status(255, 0x87655678);
+           val_report_status(val_pe_get_index_mpid(val_pe_get_mpid()), RESULT_FAIL(g_sbsa_level, 0, 0x78));
   }
 
 }
@@ -316,30 +316,6 @@ val_pe_get_pmu_gsiv(uint32_t index)
 
   return entry[index].pmu_gsiv;
 
-}
-
-
-/**
-  @brief   This API installs the Exception handler pointed
-           by the function pointer to the input exception type.
-           1. Caller       -  Test Suite
-           2. Prerequisite -  None
-  @param   exception_type - one of the four exceptions defined by AARCH64
-  @param   esr            - Function pointer of the exception handler
-  @return  0 if success or ERROR for invalid Exception type.
-**/
-uint32_t
-val_pe_install_esr(uint32_t exception_type, void (*esr)(void))
-{
-
-  if (exception_type > 3) {
-      val_print(AVS_PRINT_ERR, "Invalid Exception type %x \n", exception_type);
-      return AVS_STATUS_ERR;
-  }
-
-  pal_pe_install_esr(exception_type, esr);
-
-  return 0;
 }
 
 /**

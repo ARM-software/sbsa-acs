@@ -74,18 +74,19 @@ PalGetMaxMpidr()
 VOID
 PalAllocateSecondaryStack(UINT64 mpidr)
 {
-  EFI_STATUS Status, NumPe, Aff0, Aff1, Aff2, Aff3;
+  EFI_STATUS Status;
+  UINT32 MaxPe, Aff0, Aff1, Aff2, Aff3;
 
   Aff0 = ((mpidr & 0x00000000ff) >>  0);
   Aff1 = ((mpidr & 0x000000ff00) >>  8);
   Aff2 = ((mpidr & 0x0000ff0000) >> 16);
   Aff3 = ((mpidr & 0xff00000000) >> 32);
 
-  NumPe = ((Aff3+1) * (Aff2+1) * (Aff1+1) * (Aff0+1));
+  MaxPe = ((Aff3+1) * (Aff2+1) * (Aff1+1) * (Aff0+1));
 
   if (gSecondaryPeStack == NULL) {
       Status = gBS->AllocatePool ( EfiBootServicesData,
-                    (NumPe * SIZE_STACK_SECONDARY_PE),
+                    (MaxPe * SIZE_STACK_SECONDARY_PE),
                     (VOID **) &gSecondaryPeStack);
       if (EFI_ERROR(Status)) {
           Print(L"\n FATAL - Allocation for Seconday stack failed %x \n", Status);
@@ -153,6 +154,7 @@ pal_pe_create_info_table(PE_INFO_TABLE *PeTable)
 
   gMpidrMax = MpidrAff0Max | MpidrAff1Max | MpidrAff2Max | MpidrAff3Max;
   pal_pe_data_cache_ops_by_va((UINT64)PeTable, CLEAN_AND_INVALIDATE);
+  pal_pe_data_cache_ops_by_va((UINT64)&gMpidrMax, CLEAN_AND_INVALIDATE);
   PalAllocateSecondaryStack(gMpidrMax);
 
 }
@@ -167,7 +169,7 @@ pal_pe_create_info_table(PE_INFO_TABLE *PeTable)
   @return status of the API
 **/
 UINT32
-pal_pe_install_esr(UINT32 ExceptionType,  VOID (*esr)())
+pal_pe_install_esr(UINT32 ExceptionType,  VOID (*esr)(UINT64, VOID *))
 {
 
   EFI_STATUS  Status;
@@ -193,7 +195,7 @@ pal_pe_install_esr(UINT32 ExceptionType,  VOID (*esr)())
   //
   // Register to receive interrupts
   //
-  Status = Cpu->RegisterInterruptHandler (Cpu, ExceptionType, esr);
+  Status = Cpu->RegisterInterruptHandler (Cpu, ExceptionType, (EFI_CPU_INTERRUPT_HANDLER)esr);
   if (EFI_ERROR (Status)) {
     return Status;
   }
@@ -242,13 +244,9 @@ pal_pe_execute_payload(ARM_SMC_ARGS *ArmSmcArgs)
 }
 
 VOID
-UpdateElr(UINT64 offset);
-
-
-VOID
-pal_pe_update_elr(UINT64 offset)
+pal_pe_update_elr(VOID *context, UINT64 offset)
 {
-  UpdateElr(offset);
+  ((EFI_SYSTEM_CONTEXT_AARCH64*)context)->ELR = offset;
 }
 
 VOID

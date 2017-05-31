@@ -28,12 +28,12 @@ static void *branch_to_test;
 
 static
 void
-esr()
+esr(uint64_t interrupt_type, void *context)
 {
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
 
   /* Update the ELR to return to test specified address */
-  val_pe_update_elr((uint64_t)branch_to_test);
+  val_pe_update_elr(context, (uint64_t)branch_to_test);
 
   val_print(AVS_PRINT_INFO, "\n       Received exception           ", 0);
   val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
@@ -50,7 +50,7 @@ payload()
 
   SBSA_SMC_t  smc;
 
-  if (!val_timer_get_info(TIMER_INFO_NUM_PLATFORM_TIMERS)) {
+  if (!val_timer_get_info(TIMER_INFO_NUM_PLATFORM_TIMERS, 0)) {
       val_print(AVS_PRINT_WARN, "\n       No System timers implemented      ", 0);
       val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
       return;
