@@ -105,7 +105,7 @@ check_mapping_overlap(IOVIRT_INFO_TABLE *iort)
       continue;
     for(j = 0, key_map = &key_block->data_map[0]; j < key_block->num_data_map; j++, key_map++) {
       a = (*key_map).map.output_base;
-      b = a + (*key_map).map.id_count;
+      b = a + (*key_map).map.id_count - 1;
       for(k = i, block = key_block; k < iort->num_blocks; k++, block = IOVIRT_NEXT_BLOCK(block)) {
         if(block->type == IOVIRT_NODE_ITS_GROUP)
           continue;
@@ -119,7 +119,7 @@ check_mapping_overlap(IOVIRT_INFO_TABLE *iort)
           if((*map).map.output_ref != (*key_map).map.output_ref)
             continue;
           c = (*map).map.output_base;
-          d = c + (*map).map.id_count;
+          d = c + (*map).map.id_count - 1;
           if((a >= c && a <=d) ||
              (b >= c && b <=d) ||
              (a < c && b > d)) {
