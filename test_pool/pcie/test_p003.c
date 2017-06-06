@@ -52,8 +52,8 @@ payload(void)
 
       data = val_pcie_read_cfg(bdf, 0xC);
 
-      //If this really is PCIe CFG, Header type must be 01 or 00
-      if (((data >> 16) & 0xFF) > 01) {
+      //If this really is PCIe CFG, Header type[6:0] must be 01 or 00
+      if (((data >> 16) & 0x7F) > 01) {
           val_print(AVS_PRINT_ERR, "\n      Incorrect PCIe CFG Hdr type %4x    ", data);
           val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
           return;

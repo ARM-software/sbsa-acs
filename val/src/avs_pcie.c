@@ -99,6 +99,7 @@ val_pcie_write_cfg(uint32_t bdf, uint32_t offset, uint32_t data)
   uint32_t bus      = PCIE_EXTRACT_BDF_BUS(bdf);
   uint32_t dev      = PCIE_EXTRACT_BDF_DEV(bdf);
   uint32_t func     = PCIE_EXTRACT_BDF_FUNC(bdf);
+  uint32_t segment  = PCIE_EXTRACT_BDF_SEG(bdf);
   uint32_t cfg_addr;
   addr_t   ecam_base = 0;
   uint32_t i = 0;
@@ -118,7 +119,8 @@ val_pcie_write_cfg(uint32_t bdf, uint32_t offset, uint32_t data)
   {
 
       if ((bus >= val_pcie_get_info(PCIE_INFO_START_BUS, i)) &&
-           (bus <= val_pcie_get_info(PCIE_INFO_END_BUS, i))) {
+           (bus <= val_pcie_get_info(PCIE_INFO_END_BUS, i)) &&
+           (segment == val_pcie_get_info(PCIE_INFO_SEGMENT, i))) {
           ecam_base = val_pcie_get_info(PCIE_INFO_ECAM, i);
 
           if (ecam_base == 0) {

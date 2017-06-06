@@ -22,6 +22,8 @@
 #define TEST_NUM   (AVS_TIMER_TEST_NUM_BASE + 7)
 #define TEST_DESC  "CNTCTLBase & CNTBaseN access      "
 
+#define ARBIT_VALUE 0xA000
+
 static
 void
 payload()
@@ -53,29 +55,28 @@ payload()
           return;
       }
 
-
       data = val_mmio_read(cnt_ctl_base + 0xFD0);
       if ((data == 0x0) || ((data & 0xFFFF) == 0xFFFF)) {
           val_print(AVS_PRINT_ERR, "\n       Unxepected value for CNTCTLBase.CounterID %x ", data);
-          val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 04));
+          val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
           return;
       }
 
       if (cnt_base_n == 0) {
           val_print(AVS_PRINT_WARN, "\n      CNT_BASE_N is zero                 ", 0);
-          val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 02));
+          val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 03));
           return;
       }
 
       data = val_mmio_read(cnt_base_n + 0x0);
-      val_mmio_write(cnt_base_n + 0x0, 0xFFFFFF);
-      if(data != val_mmio_read(cnt_base_n + 0x0)) {
-          val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 05));
+      val_mmio_write(cnt_base_n + 0x0, data - ARBIT_VALUE);  // Writes to Read-Only registers should be ignored
+      if(val_mmio_read(cnt_base_n + 0x0) < data) {
+          val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
           val_print(AVS_PRINT_ERR, "\n    CNTBaseN offset 0 should be read-only ", 0);
           return;
       }
 
-      data = val_mmio_read(cnt_ctl_base + 0x10);
+      data = val_mmio_read(cnt_base_n + 0x10);
       if (!data) {
           val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 03));
           val_print(AVS_PRINT_ERR, "\n   CNTBaseN.CNTFRQ should not be 0   ", 0);
@@ -85,7 +86,7 @@ payload()
       data = val_mmio_read(cnt_base_n + 0xFD0);
       if ((data == 0x0) || ((data & 0xFFFF) == 0xFFFF)) {
           val_print(AVS_PRINT_ERR, "\n      Unxepected value for CNTBaseN.CounterID %x  ", data);
-          val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 06));
+          val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 04));
           return;
       }
 
