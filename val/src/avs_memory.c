@@ -54,7 +54,7 @@ val_memory_free_info_table()
 }
 
 /**
-  @brief   This function will call PAL layer to fill all relevant peripheral
+  @brief   This function will call PAL layer to fill all relevant peripheral 
            information into the g_peripheral_info_table pointer.
            1. Caller       - Application layer
            2. Prerequisite - Memory allocated and passed as argument.
@@ -103,7 +103,7 @@ val_memory_get_entry_index(uint32_t type, uint32_t instance)
 }
 
 /**
-  @brief   Returns a random address whose attributes match the input
+  @brief   Returns a random address whose attributes match the input 
            memory type
            1. Caller       - Test Suite
            2. Prerequisite - val_memory_create_info_table

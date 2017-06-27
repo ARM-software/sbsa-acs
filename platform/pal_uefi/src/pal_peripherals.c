@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016, ARM Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2017, ARM Limited or its affiliates. All rights reserved.
 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,14 +37,26 @@
 UINT64
 pal_get_spcr_ptr();
 
+/**
+  @brief  This API fills in the PERIPHERAL_INFO_TABLE with information about peripherals
+          in the system. This is achieved by parsing the ACPI - SPCR table and PCIe config space.
+
+  @param  peripheralInfoTable  - Address where the Peripheral information needs to be filled.
+
+  @return  None
+**/
 VOID
 pal_peripheral_create_info_table(PERIPHERAL_INFO_TABLE *peripheralInfoTable)
 {
   UINT32   DeviceBdf = 0;
   UINT32   StartBdf  = 0;
-  PERIPHERAL_INFO_BLOCK *per_info;
-  EFI_ACPI_SERIAL_PORT_CONSOLE_REDIRECTION_TABLE *spcr;
+  PERIPHERAL_INFO_BLOCK *per_info = NULL;
+  EFI_ACPI_SERIAL_PORT_CONSOLE_REDIRECTION_TABLE *spcr = NULL;
 
+  if (peripheralInfoTable == NULL) {
+    sbsa_print(AVS_PRINT_ERR, L"Input Peripheral Table Pointer is NULL. Cannot create Peripheral INFO \n");
+    return;
+  }
 
   per_info = peripheralInfoTable->info;
 
@@ -60,14 +72,13 @@ pal_peripheral_create_info_table(PERIPHERAL_INFO_TABLE *peripheralInfoTable)
           per_info->type  = PERIPHERAL_TYPE_USB;
           per_info->base0 = palPcieGetBase(DeviceBdf, BAR0);
           per_info->bdf   = DeviceBdf;
-          //Print(L"Found a USB controller %4x \n", per_info->base0);
+          sbsa_print(AVS_PRINT_INFO, L"Found a USB controller %4x \n", per_info->base0);
           peripheralInfoTable->header.num_usb++;
           per_info++;
        }
        StartBdf = incrementBusDev(DeviceBdf);
 
   } while (DeviceBdf != 0);
-
 
   StartBdf = 0;
   /* check for any SATA Controllers */
@@ -78,12 +89,12 @@ pal_peripheral_create_info_table(PERIPHERAL_INFO_TABLE *peripheralInfoTable)
           per_info->type  = PERIPHERAL_TYPE_SATA;
           per_info->base0 = palPcieGetBase(DeviceBdf, BAR0);
           per_info->bdf   = DeviceBdf;
-          Print(L"Found a SATA controller %4x \n", per_info->base0);
+          sbsa_print(AVS_PRINT_INFO, L"Found a SATA controller %4x \n", per_info->base0);
           peripheralInfoTable->header.num_sata++;
           per_info++;
-          //Increment and check if we have more controllers
-          StartBdf = incrementBusDev(DeviceBdf);
        }
+       //Increment and check if we have more controllers
+       StartBdf = incrementBusDev(DeviceBdf);
 
   } while (DeviceBdf != 0);
 
@@ -111,6 +122,14 @@ pal_peripheral_create_info_table(PERIPHERAL_INFO_TABLE *peripheralInfoTable)
 }
 
 
+/**
+  @brief  Check if the memory type is reserved for UEFI
+
+  @param  EFI_MEMORY_TYPE  - Type of UEFI memory.
+
+  @return  true   if memory reserved for UEFI usage
+           false  otherwise
+**/
 BOOLEAN
 IsUefiMemory(EFI_MEMORY_TYPE type)
 {
@@ -132,6 +151,14 @@ IsUefiMemory(EFI_MEMORY_TYPE type)
 
 }
 
+/**
+  @brief  Check if the memory type is normal
+
+  @param  EFI_MEMORY_TYPE  - Type of UEFI memory.
+
+  @return  true   if memory is normal
+           false  otherwise
+**/
 BOOLEAN
 IsNormalMemory(EFI_MEMORY_TYPE type)
 {
@@ -145,6 +172,14 @@ IsNormalMemory(EFI_MEMORY_TYPE type)
 
 }
 
+/**
+  @brief  Check if the memory type is device
+
+  @param  EFI_MEMORY_TYPE  - Type of UEFI memory.
+
+  @return  true   if memory is device
+           false  otherwise
+**/
 BOOLEAN
 IsDeviceMemory(EFI_MEMORY_TYPE type)
 {
@@ -160,13 +195,21 @@ IsDeviceMemory(EFI_MEMORY_TYPE type)
 }
 
 
+/**
+  @brief  This API fills in the MEMORY_INFO_TABLE with information about memory in the
+          system. This is achieved by parsing the UEFI memory map.
+
+  @param  peripheralInfoTable  - Address where the Peripheral information needs to be filled.
+
+  @return  None
+**/
 VOID
 pal_memory_create_info_table(MEMORY_INFO_TABLE *memoryInfoTable)
 {
 
   UINTN                 MemoryMapSize;
-  EFI_MEMORY_DESCRIPTOR *MemoryMap;
-  EFI_MEMORY_DESCRIPTOR *MemoryMapPtr;
+  EFI_MEMORY_DESCRIPTOR *MemoryMap = NULL;
+  EFI_MEMORY_DESCRIPTOR *MemoryMapPtr = NULL;
   EFI_PHYSICAL_ADDRESS  Address;
   UINTN                 MapKey;
   UINTN                 DescriptorSize;
@@ -174,6 +217,11 @@ pal_memory_create_info_table(MEMORY_INFO_TABLE *memoryInfoTable)
   UINTN                 Pages;
   EFI_STATUS            Status;
   UINT32                Index, i = 0;
+
+  if (memoryInfoTable == NULL) {
+    sbsa_print(AVS_PRINT_ERR, L"Input Memory Table Pointer is NULL. Cannot create Memory INFO \n");
+    return;
+  }
 
 // Retrieve the UEFI Memory Map
 
@@ -197,10 +245,9 @@ pal_memory_create_info_table(MEMORY_INFO_TABLE *memoryInfoTable)
   if (!EFI_ERROR (Status)) {
     MemoryMapPtr = MemoryMap;
     for (Index = 0; Index < (MemoryMapSize / DescriptorSize); Index++) {
-        /* Print(L"Reserved region of type %d [0x%lX, 0x%lX]\n",
-            MemoryMapPtr->Type,
-            (UINTN)MemoryMapPtr->PhysicalStart,
-            (UINTN)(MemoryMapPtr->PhysicalStart + MemoryMapPtr->NumberOfPages * EFI_PAGE_SIZE));*/
+          sbsa_print(AVS_PRINT_INFO, L"Reserved region of type %d [0x%lX, 0x%lX]\n",
+            MemoryMapPtr->Type, (UINTN)MemoryMapPtr->PhysicalStart,
+            (UINTN)(MemoryMapPtr->PhysicalStart + MemoryMapPtr->NumberOfPages * EFI_PAGE_SIZE));
       if (IsUefiMemory ((EFI_MEMORY_TYPE)MemoryMapPtr->Type)) {
         memoryInfoTable->info[i].type      = MEMORY_TYPE_RESERVED;
       } else {
@@ -224,7 +271,6 @@ pal_memory_create_info_table(MEMORY_INFO_TABLE *memoryInfoTable)
     memoryInfoTable->info[i].type      = MEMORY_TYPE_LAST_ENTRY;
   }
 
-  //pal_mem_free(&Address);
 }
 
 UINT64

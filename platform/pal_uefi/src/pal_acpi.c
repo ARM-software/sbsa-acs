@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016, ARM Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2017, ARM Limited or its affiliates. All rights reserved.
 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@
 #include <Protocol/AcpiTable.h>
 #include "Include/IndustryStandard/Acpi61.h"
 
+#include "include/pal_uefi.h"
 
 /**
   @brief   Use UEFI System Table to look up Acpi20TableGuid and returns the Xsdt Address
@@ -43,7 +44,6 @@ pal_get_xsdt_ptr()
       CompareGuid (&(gST->ConfigurationTable[Index].VendorGuid), &gEfiAcpi20TableGuid)
       ) {
       // A match was found.
-      //
       Rsdp = (EFI_ACPI_6_1_ROOT_SYSTEM_DESCRIPTION_POINTER *) gST->ConfigurationTable[Index].VendorTable;
       break;
     }
@@ -74,7 +74,7 @@ pal_get_madt_ptr()
 
   Xsdt = (EFI_ACPI_DESCRIPTION_HEADER *) pal_get_xsdt_ptr();
   if (Xsdt == NULL) {
-      Print(L"XSDT not found \n");
+      sbsa_print(AVS_PRINT_ERR, L"XSDT not found \n");
       return 0;
   }
 
@@ -108,7 +108,7 @@ pal_get_gtdt_ptr()
 
   Xsdt = (EFI_ACPI_DESCRIPTION_HEADER *) pal_get_xsdt_ptr();
   if (Xsdt == NULL) {
-      Print(L"XSDT not found \n");
+      sbsa_print(AVS_PRINT_ERR, L"XSDT not found \n");
       return 0;
   }
 
@@ -141,7 +141,7 @@ pal_get_mcfg_ptr()
 
   Xsdt = (EFI_ACPI_DESCRIPTION_HEADER *) pal_get_xsdt_ptr();
   if (Xsdt == NULL) {
-      Print(L"XSDT not found \n");
+      sbsa_print(AVS_PRINT_ERR, L"XSDT not found \n");
       return 0;
   }
 
@@ -158,7 +158,7 @@ pal_get_mcfg_ptr()
 }
 
 /**
-  @brief  Iterate through the tables pointed by XSDT and return MCFG Table address
+  @brief  Iterate through the tables pointed by XSDT and return SPCR Table address
 
   @param  None
 
@@ -174,7 +174,7 @@ pal_get_spcr_ptr()
 
   Xsdt = (EFI_ACPI_DESCRIPTION_HEADER *) pal_get_xsdt_ptr();
   if (Xsdt == NULL) {
-      Print(L"XSDT not found \n");
+      sbsa_print(AVS_PRINT_ERR, L"XSDT not found \n");
       return 0;
   }
 
@@ -207,7 +207,7 @@ pal_get_iort_ptr()
 
   Xsdt = (EFI_ACPI_DESCRIPTION_HEADER *) pal_get_xsdt_ptr();
   if (Xsdt == NULL) {
-      Print(L"XSDT not found \n");
+      sbsa_print(AVS_PRINT_ERR, L"XSDT not found \n");
       return 0;
   }
 

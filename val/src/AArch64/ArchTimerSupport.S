@@ -63,6 +63,7 @@ ASM_PFX(ArmReadCntkCtl):
 
 ASM_PFX(ArmWriteCntkCtl):
   msr   cntkctl_el1, x0          // Write to CNTK_CTL (Timer PL1 Control Register)
+  isb
   ret
 
 
@@ -73,6 +74,7 @@ ASM_PFX(ArmReadCntpTval):
 
 ASM_PFX(ArmWriteCntpTval):
   msr   cntp_tval_el0, x0        // Write to CNTP_TVAL (PL1 physical timer value register)
+  isb
   ret
 
 
@@ -83,6 +85,7 @@ ASM_PFX(ArmReadCntpCtl):
 
 ASM_PFX(ArmWriteCntpCtl):
   msr   cntp_ctl_el0, x0         // Write to  CNTP_CTL (PL1 Physical Timer Control Register)
+  isb
   ret
 
 
@@ -93,6 +96,7 @@ ASM_PFX(ArmReadCntvTval):
 
 ASM_PFX(ArmWriteCntvTval):
   msr   cntv_tval_el0, x0        // Write to CNTV_TVAL (Virtual Timer Value register)
+  isb
   ret
 
 
@@ -103,6 +107,7 @@ ASM_PFX(ArmReadCntvCtl):
 
 ASM_PFX(ArmWriteCntvCtl):
   msr   cntv_ctl_el0, x0         // Write to CNTV_CTL (Virtual Timer Control Register)
+  isb
   ret
 
 
@@ -118,6 +123,7 @@ ASM_PFX(ArmReadCntpCval):
 
 ASM_PFX(ArmWriteCntpCval):
   msr   cntp_cval_el0, x0        // Write to CNTP_CTVAL (Physical Timer Compare Value Register)
+  isb
   ret
 
 
@@ -128,6 +134,7 @@ ASM_PFX(ArmReadCntvCval):
 
 ASM_PFX(ArmWriteCntvCval):
   msr   cntv_cval_el0, x0        // write to  CNTV_CTVAL (Virtual Timer Compare Value Register)
+  isb
   ret
 
 
@@ -138,6 +145,7 @@ ASM_PFX(ArmReadCntvOff):
 
 ASM_PFX(ArmWriteCntvOff):
   msr   cntvoff_el2, x0          // Write to CNTVOFF (Virtual Offset register)
+  isb
   ret
 
 ASM_PFX(ArmReadCnthpCtl):
@@ -147,6 +155,7 @@ ASM_PFX(ArmReadCnthpCtl):
 
 ASM_PFX(ArmWriteCnthpCtl):
   msr   cnthp_ctl_el2, x0
+  isb
   ret
 
 ASM_PFX(ArmReadCnthpTval):
@@ -156,6 +165,7 @@ ASM_PFX(ArmReadCnthpTval):
 
 ASM_PFX(ArmWriteCnthpTval):
   msr   cnthp_tval_el2, x0
+  isb
   ret
 
 ASM_PFX(ArmReadCnthvCtl):
@@ -165,6 +175,7 @@ ASM_PFX(ArmReadCnthvCtl):
 
 ASM_PFX(ArmWriteCnthvCtl):
   msr   cnthv_ctl_el2, x0
+  isb
   ret
 
 ASM_PFX(ArmReadCnthvTval):
@@ -174,6 +185,7 @@ ASM_PFX(ArmReadCnthvTval):
 
 ASM_PFX(ArmWriteCnthvTval):
   msr   cnthv_tval_el2, x0
+  isb
   ret
 
 

@@ -20,10 +20,19 @@
 
 
   #define SBSA_ACS_MAJOR_VER  0
-  #define SBSA_ACS_MINOR_VER  8
+  #define SBSA_ACS_MINOR_VER  9
 
   #define G_SBSA_LEVEL  3
   #define G_PRINT_LEVEL AVS_PRINT_TEST
+
+  #define PE_INFO_TBL_SZ         8192
+  #define GIC_INFO_TBL_SZ        2048
+  #define TIMER_INFO_TBL_SZ      1024
+  #define WD_INFO_TBL_SZ         512
+  #define MEM_INFO_TBL_SZ        4096
+  #define IOVIRT_INFO_TBL_SZ     4096
+  #define PERIPHERAL_INFO_TBL_SZ 1024
+  #define PCIE_INFO_TBL_SZ       64
 
 
 #endif

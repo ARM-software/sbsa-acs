@@ -13,43 +13,47 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  **/
+
 #include "val/include/sbsa_avs_val.h"
 #include "val/include/val_interface.h"
 
-#include "val/include/sbsa_avs_pcie.h"
-#include "val/include/sbsa_avs_memory.h"
+#include "val/include/sbsa_avs_iovirt.h"
 
-/* SBSA-checklist 63 & 64 */
-#define TEST_NUM   (AVS_PCIE_TEST_NUM_BASE + 4)
-#define TEST_DESC  "PCIe Unaligned access, Norm mem   "
+#define TEST_NUM   (AVS_SMMU_TEST_NUM_BASE + 5)
+#define TEST_DESC  "SMMUv2 unique interrupt per context bank           "
 
 static
 void
-payload(void)
+payload()
 {
-  uint32_t count = 0;
-  uint64_t base;
-  uint32_t data;
-  char *baseptr;
+  uint32_t num_smmu;
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
 
-  /* Map SATA Controller BARs to a NORMAL memory attribute. check unaligned access */
-  count = val_peripheral_get_info(NUM_SATA, 0);
+  num_smmu = val_smmu_get_info(SMMU_NUM_CTRL, 0);
 
-  while (count--) {
-      base = val_peripheral_get_info(SATA_BASE1, count);
-      baseptr = (char *)val_memory_ioremap((void *)base, 1024, 0);
-
-      data = *(uint32_t *)(baseptr+3);
-
-      val_memory_unmap(baseptr);
+  if (num_smmu == 0) {
+      val_print(AVS_PRINT_ERR, "\n      No SMMU Controllers are discovered ", 0);
+      val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 3));
+      return;
   }
-   val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 0));
 
+  while (num_smmu--) {
+      if (val_smmu_get_info(SMMU_CTRL_ARCH_MAJOR_REV, num_smmu) == 3) {
+          val_print(AVS_PRINT_WARN, "\n        Not Valid for SMMU v3       ", 0);
+          val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 2));
+          return;
+      }
+
+      if(!val_iovirt_check_unique_ctx_intid(num_smmu)) {
+          val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 1));
+      } else {
+          val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 0));
+      }
+  }
 }
 
 uint32_t
-p004_entry(uint32_t num_pe)
+i005_entry(uint32_t num_pe)
 {
 
   uint32_t status = AVS_STATUS_FAIL;

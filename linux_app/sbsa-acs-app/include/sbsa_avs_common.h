@@ -29,9 +29,9 @@
 #define AVS_TIMER_TEST_NUM_BASE      30
 #define AVS_WD_TEST_NUM_BASE         40
 #define AVS_PCIE_TEST_NUM_BASE       50
-#define AVS_SMMU_TEST_NUM_BASE       60
 #define AVS_WAKEUP_TEST_NUM_BASE     70
 #define AVS_PER_TEST_NUM_BASE        80
+#define AVS_SMMU_TEST_NUM_BASE       90
 #define AVS_SECURE_TEST_NUM_BASE    900
 
 #define STATE_BIT   28

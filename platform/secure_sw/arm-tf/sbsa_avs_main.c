@@ -51,7 +51,7 @@ sbsa_acs_default_handler(int test_index,
 int
 sbsa_acs_nswdg_intr(int int_id_expected)
 {
-    uint32_t timeout = 10000, int_id;
+    uint32_t timeout = 100000, int_id;
 
     while(--timeout){
         int_id = sbsa_acs_get_pending_interrupt_id();
@@ -166,13 +166,63 @@ sbsa_acs_system_counter_entry()
 }
 
 /**
+  @brief   This API checks System Timer interrupt
+**/
+int
+sbsa_acs_system_timer_interrupt()
+{
+    uint32_t timeout = 100000;
+    uint32_t timer_expire_val = 100;
+    uint32_t int_id;
+
+    if(SBSA_SECURE_SYSTEM_TIMER == 0){
+        sbsa_acs_set_status(ACS_STATUS_FAIL, 0x1);
+        acs_printf("Secure Sytem timer is not implemented for SBSA L3-FW compliant platform\n");
+        return 0;
+    }
+    if(SBSA_SECURE_CNTBaseN == 0){
+        sbsa_acs_set_status(ACS_STATUS_FAIL, 0x2);
+        acs_printf("CNTBaseN can't be 0 for SBSA L3-FW compliant platform\n");
+        return 0;
+    }
+    sbsa_acs_mmio_write(SBSA_SECURE_CNTBaseN + 0x28, timer_expire_val);
+    sbsa_acs_mmio_write(SBSA_SECURE_CNTBaseN + 0x2C, 1);
+
+    while(--timeout) {
+        int_id = sbsa_acs_get_pending_interrupt_id();
+        if (int_id != 0xFFFFFFFF)
+            break;
+    }
+    acs_printf("Stop the System Timer %x \n", timeout);
+    /* Stop the System Timer */
+    sbsa_acs_mmio_write(SBSA_SECURE_CNTBaseN + 0x2C, 0);
+
+    if (timeout)
+    {
+        sbsa_acs_acknowledge_interrupt();
+        sbsa_acs_end_of_interrupt(int_id);
+        if(int_id != SBSA_SECURE_SYS_TIMER_INTID){
+            sbsa_acs_set_status(ACS_STATUS_FAIL, 0x3);
+            acs_printf("Secure System Timer Interrupt-ID is incorrect, intID = 0x%x \n", int_id);
+        } else {
+            sbsa_acs_set_status(ACS_STATUS_PASS, 0x0);
+        }
+
+    } else {
+        acs_printf("Secure System Timer did not generate an Interrupt \n");
+        sbsa_acs_set_status(ACS_STATUS_FAIL, 0x4);
+    }
+    return 0;
+}
+/**
   @brief   This API checks if watchdog WS0 signal routed as interrupt to EL3
 **/
 int
 sbsa_acs_wd_ws0_test()
 {
     volatile uint32_t int_id;
-    uint32_t timeout = 0x500;
+    uint32_t timeout = 100000;
+    uint32_t timer_expire_val = 100;
     uint32_t wdog_type = (SBSA_GENERIC_TWDOG_BASE) ? SBSA_GENERIC : ((SBSA_SP805_TWDOG_BASE) ? SP805 : 0);
 
     if(wdog_type == 0){
@@ -183,7 +233,7 @@ sbsa_acs_wd_ws0_test()
         sbsa_acs_mmio_write(SBSA_GENERIC_TWDOG_BASE + 0x0, 0);
 
         acs_printf("Enabling watchdog \n");
-        sbsa_acs_mmio_write(SBSA_GENERIC_TWDOG_BASE + 0x8, 0x50);
+        sbsa_acs_mmio_write(SBSA_GENERIC_TWDOG_BASE + 0x8, timer_expire_val);
         sbsa_acs_mmio_write(SBSA_GENERIC_TWDOG_BASE + 0x0, 0x1);
 
         while(--timeout) {
@@ -406,6 +456,9 @@ uint64_t sbsa_smc_handler(uint32_t smc_fid,
 
         case SBSA_SECURE_TEST_SYS_COUNTER:
             SMC_RET1(handle, sbsa_acs_system_counter_entry());
+
+        case SBSA_SECURE_TEST_SYS_TIMER_INT:
+            SMC_RET1(handle, sbsa_acs_system_timer_interrupt());
 
         case SBSA_SECURE_TEST_WD_WS0:
             SMC_RET1(handle, sbsa_acs_wd_ws0_test());

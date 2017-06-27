@@ -21,9 +21,6 @@
 #include <stdint.h>
 #include "include/sbsa_drv_intf.h"
 
-#define SIZE 1
-#define NUMELEM 5
-
 typedef
 struct __SBSA_DRV_PARMS__
 {
@@ -73,15 +70,17 @@ call_drv_wait_for_completion()
 
   arg0 = DRV_STATUS_PENDING;
 
-  while (arg0 == DRV_STATUS_PENDING)
+  while (arg0 == DRV_STATUS_PENDING){
     call_drv_get_status(&arg0, &arg1, &arg2);
+    read_from_proc_sbsa_msg();
+  }
 
   return arg1;
 }
 
 
 int
-call_drv_init_test_env()
+call_drv_init_test_env(unsigned int print_level)
 {
     FILE             *fd = NULL;
     sbsa_drv_parms_t test_params;
@@ -95,7 +94,7 @@ call_drv_init_test_env()
     }
 
     test_params.api_num  = SBSA_CREATE_INFO_TABLES;
-    test_params.arg1     = 0;
+    test_params.arg1     = print_level;
     test_params.arg2     = 0;
 
     fwrite(&test_params,1,sizeof(test_params),fd);
@@ -132,8 +131,8 @@ call_drv_clean_test_env()
 }
 
 int
-call_drv_execute_test(unsigned int test_num, unsigned int num_pe,
-  unsigned int level, unsigned long int test_input)
+call_drv_execute_test(unsigned int api_num, unsigned int num_pe,
+  unsigned int level, unsigned int print_level, unsigned long int test_input)
 {
     FILE             *fd = NULL;
     sbsa_drv_parms_t test_params;
@@ -146,11 +145,11 @@ call_drv_execute_test(unsigned int test_num, unsigned int num_pe,
         return 1;
     }
 
-    test_params.api_num  = SBSA_EXECUTE_TEST;
+    test_params.api_num  = api_num;
     test_params.num_pe   = num_pe;
     test_params.level    = level;
-    test_params.arg0     = test_num;
-    test_params.arg1     = test_input;
+    test_params.arg0     = test_input;
+    test_params.arg1     = print_level;
     test_params.arg2     = 0;
 
     fwrite(&test_params,1,sizeof(test_params),fd);
@@ -159,12 +158,58 @@ call_drv_execute_test(unsigned int test_num, unsigned int num_pe,
 
 }
 
-
 int
-pal_os_driver_release()
+call_update_skip_list(unsigned int api_num, int *p_skip_test_num)
 {
+    FILE             *fd = NULL;
+    sbsa_drv_parms_t test_params;
 
+    fd = fopen("/proc/sbsa", "rw+");
 
+    if (NULL == fd)
+    {
+        printf("fopen failed \n");
+        return 1;
+    }
+
+    test_params.api_num  = api_num;
+    test_params.num_pe   = 0;
+    test_params.level    = 0;
+    test_params.arg0     = p_skip_test_num[0];
+    test_params.arg1     = p_skip_test_num[1];
+    test_params.arg2     = p_skip_test_num[2];
+
+    fwrite(&test_params,1,sizeof(test_params),fd);
+
+    fclose(fd);
 
 }
 
+typedef struct __SBSA_MSG__ {
+    char string[92];
+    unsigned long data;
+}sbsa_msg_parms_t;
+
+int read_from_proc_sbsa_msg() {
+
+  char buf_msg[sizeof(sbsa_msg_parms_t)];
+
+  FILE  *fd = NULL;
+  sbsa_msg_parms_t msg_params;
+
+  fd = fopen("/proc/sbsa_msg", "r");
+
+  fseek(fd, 0, SEEK_SET);
+
+  if (NULL == fd) {
+    printf("fopen failed \n");
+    return 1;
+  }
+
+  /* Print Until buffer is empty */
+  while(fread(buf_msg,1,sizeof(buf_msg),fd)){
+    printf("%s", buf_msg);
+  }
+
+  fclose(fd);
+}

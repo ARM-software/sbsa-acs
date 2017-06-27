@@ -13,43 +13,41 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  **/
+
 #include "val/include/sbsa_avs_val.h"
 #include "val/include/val_interface.h"
 
-#include "val/include/sbsa_avs_pcie.h"
-#include "val/include/sbsa_avs_memory.h"
+#include "val/include/sbsa_avs_iovirt.h"
 
-/* SBSA-checklist 63 & 64 */
-#define TEST_NUM   (AVS_PCIE_TEST_NUM_BASE + 4)
-#define TEST_DESC  "PCIe Unaligned access, Norm mem   "
+#define TEST_NUM   (AVS_SMMU_TEST_NUM_BASE + 6)
+#define TEST_DESC  "Unique stream id for each requestor id           "
 
 static
 void
-payload(void)
+payload()
 {
-  uint32_t count = 0;
-  uint64_t base;
-  uint32_t data;
-  char *baseptr;
+  int num_rc;
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
 
-  /* Map SATA Controller BARs to a NORMAL memory attribute. check unaligned access */
-  count = val_peripheral_get_info(NUM_SATA, 0);
-
-  while (count--) {
-      base = val_peripheral_get_info(SATA_BASE1, count);
-      baseptr = (char *)val_memory_ioremap((void *)base, 1024, 0);
-
-      data = *(uint32_t *)(baseptr+3);
-
-      val_memory_unmap(baseptr);
+  num_rc = val_iovirt_get_pcie_rc_info(NUM_PCIE_RC, 0);
+  if(!num_rc) {
+      val_print(AVS_PRINT_ERR, "\n      No Root Complex discovered ", 0);
+      val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 3));
+      return;
   }
-   val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 0));
-
+  while(num_rc--) {
+      if(!val_iovirt_unique_rid_strid_map(num_rc)) {
+          val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 1));
+          break;
+      }
+  }
+  if(num_rc < 0)
+      val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 0));
 }
 
+
 uint32_t
-p004_entry(uint32_t num_pe)
+i006_entry(uint32_t num_pe)
 {
 
   uint32_t status = AVS_STATUS_FAIL;

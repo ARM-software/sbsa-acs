@@ -16,9 +16,9 @@
 
 #include "include/sbsa_avs_val.h"
 #include "include/sbsa_avs_common.h"
+#include "include/sbsa_avs_iovirt.h"
 
 IOVIRT_INFO_TABLE *g_iovirt_info_table;
-void pal_iovirt_create_info_table(IOVIRT_INFO_TABLE *iovirt);
 
 /**
   @brief   This API is a single point of entry to retrieve
@@ -58,6 +58,8 @@ val_iovirt_get_smmu_info(SMMU_INFO_e type, uint32_t index)
                       return block->data.smmu.arch_major_rev;
                   case SMMU_CTRL_BASE:
                       return block->data.smmu.base;
+                  case SMMU_IOVIRT_BLOCK:
+                      return (uint64_t)block;
                   default:
                       val_print(AVS_PRINT_ERR, "This SMMU info option not supported %d \n", type);
                       return 0;
@@ -73,6 +75,75 @@ val_iovirt_get_smmu_info(SMMU_INFO_e type, uint32_t index)
       return 0;
   }
   return j;
+}
+
+/**
+  @brief   This API is a single point of entry to retrieve
+           PCIe Root Complex Node info stored in the iovirt Info table
+           1. Caller       -  Test suite
+           2. Prerequisite -  val_iovirt_create_info_table
+  @param   type   the type of information being requested
+  @return  64-bit data
+**/
+uint64_t
+val_iovirt_get_pcie_rc_info(PCIE_RC_INFO_e type, uint32_t index)
+{
+  uint32_t i,j = 0;
+  uint64_t mem_attr=0;
+  IOVIRT_BLOCK *block;
+
+  if (g_iovirt_info_table == NULL)
+  {
+      val_print(AVS_PRINT_ERR, "GET_PCIe_RC_INFO: iovirt info table is not created \n", 0);
+      return 0;
+  }
+
+  if(type == NUM_PCIE_RC)
+      return g_iovirt_info_table->num_pci_rcs;
+
+  /* Go through the table return the relevant field value for the SMMU block */
+  /* at the index position */
+  block = &g_iovirt_info_table->blocks[0];
+  for(i = 0; i < g_iovirt_info_table->num_blocks; i++, block=IOVIRT_NEXT_BLOCK(block))
+  {
+      if(block->type == IOVIRT_NODE_PCI_ROOT_COMPLEX)
+      {
+          if(j == index)
+          {
+              switch(type)
+              {
+                  case RC_SEGMENT_NUM:
+                      return block->data.segment;
+                  case RC_MEM_ATTRIBUTE:
+                      mem_attr = block->data_map[index].id[1];
+                      mem_attr = mem_attr << 32;
+                      return (block->data_map[index].id[0] | mem_attr);
+                  case RC_ATS_ATTRIBUTE:
+                      return block->data_map[index].id[2];
+                  case RC_IOVIRT_BLOCK:
+                      return (uint64_t)block;
+                  default:
+                      val_print(AVS_PRINT_ERR, "This PCIe RC info option not supported %d \n", type);
+                      return 0;
+              }
+          }
+          j++;
+      }
+  }
+  if (index > j-1)
+  {
+      val_print(AVS_PRINT_ERR, "GET_PCIe_RC_INFO: Index (%d) is greater than num of PCIe-RC \n", index);
+      return 0;
+  }
+  return j;
+
+}
+
+uint32_t
+val_iovirt_unique_rid_strid_map(uint32_t rc_index)
+{
+  uint64_t block = val_iovirt_get_pcie_rc_info(RC_IOVIRT_BLOCK, rc_index);
+  return pal_iovirt_unique_rid_strid_map(block);
 }
 
 /**
@@ -183,9 +254,15 @@ val_iovirt_create_info_table(uint64_t *iovirt_info_table)
             val_iovirt_get_smmu_info(SMMU_NUM_CTRL, 0));
 }
 
+uint32_t
+val_iovirt_check_unique_ctx_intid(uint32_t smmu_index)
+{
+  uint64_t smmu_block = val_iovirt_get_smmu_info(SMMU_IOVIRT_BLOCK, smmu_index);
+  return pal_iovirt_check_unique_ctx_intid(smmu_block);
+}
+
 void
 val_iovirt_free_info_table()
 {
   pal_mem_free((void *)g_iovirt_info_table);
 }
-

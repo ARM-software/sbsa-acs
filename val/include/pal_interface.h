@@ -26,6 +26,7 @@
   typedef long long int addr_t;
 #else
   typedef CHAR8  char8_t;
+  typedef CHAR16 char16_t;
   typedef UINT8  uint8_t;
   typedef UINT16 uint16_t;
   typedef UINT32 uint32_t;
@@ -66,7 +67,7 @@ typedef struct {
 void pal_pe_create_info_table(PE_INFO_TABLE *pe_info_table);
 
 /**
-  @brief  Structure to Pass SMC arguments. Return data is also filled into 
+  @brief  Structure to Pass SMC arguments. Return data is also filled into
           the same structure.
 **/
 typedef struct {
@@ -142,10 +143,9 @@ typedef struct {
   uint32_t virtual_timer_flag;
   uint32_t virtual_timer_gsiv;
   uint32_t el2_virt_timer_gsiv;
-  uint64_t CntControl_base;
-  uint64_t CntRead_base;
   uint32_t num_platform_timer;
   uint32_t num_watchdog;
+  uint32_t sys_timer_status;
 }TIMER_INFO_HDR;
 
 #define TIMER_TYPE_SYS_TIMER 0x2001
@@ -238,6 +238,12 @@ typedef enum {
         IOVIRT_NODE_SMMU_V3 = 0x04
 }IOVIRT_NODE_TYPE;
 
+typedef enum {
+        IOVIRT_FLAG_DEVID_OVERLAP_SHIFT,
+        IOVIRT_FLAG_STRID_OVERLAP_SHIFT,
+        IOVIRT_FLAG_SMMU_CTX_INT_SHIFT,
+}IOVIRT_FLAG_SHIFT;
+
 typedef struct {
   uint32_t input_base;
   uint32_t id_count;
@@ -261,6 +267,7 @@ typedef struct {
   uint32_t type;
   uint32_t num_data_map;
   NODE_DATA data;
+  uint32_t flags;
   NODE_DATA_MAP data_map[];
 }IOVIRT_BLOCK;
 
@@ -275,6 +282,10 @@ typedef struct {
   IOVIRT_BLOCK blocks[];
 }IOVIRT_INFO_TABLE;
 
+void pal_iovirt_create_info_table(IOVIRT_INFO_TABLE *iovirt);
+uint32_t pal_iovirt_check_unique_ctx_intid(uint64_t smmu_block);
+uint32_t pal_iovirt_unique_rid_strid_map(uint64_t rc_block);
+
 /**
   @brief SMMU Info Table
 **/
@@ -287,6 +298,7 @@ void     pal_smmu_create_info_table(SMMU_INFO_TABLE *smmu_info_table);
 uint32_t pal_smmu_check_device_iova(void *port, uint64_t dma_addr);
 void     pal_smmu_device_start_monitor_iova(void *port);
 void     pal_smmu_device_stop_monitor_iova(void *port);
+uint32_t pal_smmu_max_pasids(uint64_t smmu_base);
 
 
 /** Peripheral Tests related definitions **/
@@ -298,12 +310,15 @@ typedef struct {
   uint32_t    num_usb;   ///< Number of USB  Controllers
   uint32_t    num_sata;  ///< Number of SATA Controllers
   uint32_t    num_uart;  ///< Number of UART Controllers
+  uint32_t    num_all;   ///< Number of all PCI Controllers
 }PERIPHERAL_INFO_HDR;
 
 typedef enum {
   PERIPHERAL_TYPE_USB = 0x2000,
   PERIPHERAL_TYPE_SATA,
-  PERIPHERAL_TYPE_UART
+  PERIPHERAL_TYPE_UART,
+  PERIPHERAL_TYPE_OTHER,
+  PERIPHERAL_TYPE_NONE
 }PER_INFO_TYPE_e;
 
 /**
@@ -316,6 +331,9 @@ typedef struct {
   uint64_t         base1; ///< Base Address of the controller
   uint32_t         irq;   ///< IRQ to install an ISR
   uint32_t         flags;
+  uint32_t         msi;   ///< MSI Enabled
+  uint32_t         msix;  ///< MSIX Enabled
+  uint32_t         max_pasids;
 }PERIPHERAL_INFO_BLOCK;
 
 /**
@@ -327,6 +345,48 @@ typedef struct {
 }PERIPHERAL_INFO_TABLE;
 
 void  pal_peripheral_create_info_table(PERIPHERAL_INFO_TABLE *per_info_table);
+
+/**
+  @brief MSI(X) controllers info structure
+**/
+
+typedef struct {
+  uint32_t         vector_upper_addr; ///< Bus Device Function
+  uint32_t         vector_lower_addr; ///< Base Address of the controller
+  uint32_t         vector_data;       ///< Base Address of the controller
+  uint32_t         vector_control;    ///< IRQ to install an ISR
+  uint32_t         vector_irq_base;   ///< Base IRQ for the vectors in the block
+}PERIPHERAL_VECTOR_BLOCK;
+
+typedef struct PERIPHERAL_VECTOR_LIST_STRUCT
+{
+  PERIPHERAL_VECTOR_BLOCK vector;
+  struct PERIPHERAL_VECTOR_LIST_STRUCT *next;
+}PERIPHERAL_VECTOR_LIST;
+
+uint32_t pal_get_msi_vectors (uint32_t bus, uint32_t dev, uint32_t fn, PERIPHERAL_VECTOR_LIST **mvector);
+
+#define LEGACY_PCI_IRQ_CNT 4  // Legacy PCI IRQ A, B, C. and D
+#define MAX_IRQ_CNT 0xFFFF    // This value is arbitrary and may have to be adjusted
+
+typedef struct {
+  uint32_t  irq_list[MAX_IRQ_CNT];
+  uint32_t  irq_count;
+} PERIFERAL_IRQ_LIST;
+
+typedef struct {
+  PERIFERAL_IRQ_LIST  legacy_irq_map[LEGACY_PCI_IRQ_CNT];
+} PERIPHERAL_IRQ_MAP;
+
+#define DEVCTL_SNOOP_BIT 11        // Device control register no snoop bit
+
+uint32_t pal_pcie_get_legacy_irq_map(uint32_t bus, uint32_t dev, uint32_t fn, PERIPHERAL_IRQ_MAP *irq_map);
+uint32_t pal_pcie_is_device_behind_smmu(uint32_t bus, uint32_t dev, uint32_t fn);
+uint32_t pal_pcie_get_root_port_bdf(uint32_t *seg, uint32_t *bus, uint32_t *dev, uint32_t *func);
+uint32_t pal_pcie_get_device_type(uint32_t bus, uint32_t dev, uint32_t fn);
+uint32_t pal_pcie_get_snoop_bit(uint32_t bus, uint32_t dev, uint32_t fn);
+uint32_t pal_pcie_get_dma_support(uint32_t bus, uint32_t dev, uint32_t fn);
+uint32_t pal_pcie_get_dma_coherent(uint32_t bus, uint32_t dev, uint32_t fn);
 
 /**
   @brief DMA controllers info structure
@@ -360,6 +420,7 @@ uint32_t pal_dma_start_to_device(void *dma_source_buf, uint32_t length,
                          void *host, void *target, uint32_t timeout);
 
 void pal_dma_scsi_get_dma_addr(void *port, void *dma_addr, uint32_t *dma_len);
+int pal_dma_mem_get_attrs(void *buf, uint32_t *attr, uint32_t *sh);
 
 
 /* Memory INFO table */
@@ -394,6 +455,7 @@ void pal_memory_unmap(void *addr);
 void     pal_print(char8_t *string, uint64_t data);
 void     pal_print_raw(uint64_t addr, char8_t *string, uint64_t data);
 
+
 void     *pal_mem_alloc(uint32_t size);
 void     pal_mem_free(void *buffer);
 
@@ -405,6 +467,8 @@ uint32_t pal_mmio_read(uint64_t addr);
 void     pal_mmio_write(uint64_t addr, uint32_t data);
 
 void     pal_pe_update_elr(void *context, uint64_t offset);
+uint64_t pal_pe_get_esr(void *context);
+uint64_t pal_pe_get_far(void *context);
 void     pal_pe_data_cache_ops_by_va(uint64_t addr, uint32_t type);
 
 #define CLEAN_AND_INVALIDATE  0x1

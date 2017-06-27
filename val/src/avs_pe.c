@@ -197,6 +197,8 @@ val_pe_reg_read(uint32_t reg_id)
           return AA64ReadErr3fr();
       case ESR_EL2:
           return AA64ReadEsr2();
+      case FAR_EL2:
+          return AA64ReadFar2();
       default:
            val_report_status(val_pe_get_index_mpid(val_pe_get_mpid()), RESULT_FAIL(g_sbsa_level, 0, 0x78));
   }

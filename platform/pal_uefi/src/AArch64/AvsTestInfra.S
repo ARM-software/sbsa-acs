@@ -39,4 +39,3 @@ ASM_PFX(DataCacheInvalidateVA):
   dsb ish
   isb
   ret
-

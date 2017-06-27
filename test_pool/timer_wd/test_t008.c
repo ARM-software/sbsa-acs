@@ -45,7 +45,8 @@ payload()
 {
 
   uint64_t cnt_base_n;
-  uint32_t timeout = TIMEOUT_MEDIUM;
+  uint32_t timeout = TIMEOUT_LARGE;
+  uint32_t timer_expire_val = 100;
   uint32_t status;
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
   uint64_t timer_num = val_timer_get_info(TIMER_INFO_NUM_PLATFORM_TIMERS, 0);
@@ -82,12 +83,15 @@ payload()
       val_gic_install_isr(intid, isr);
 
       /* enable System timer */
-      val_timer_set_system_timer((addr_t)cnt_base_n, timeout);
+      val_timer_set_system_timer((addr_t)cnt_base_n, timer_expire_val);
 
       while ((--timeout > 0) && (IS_RESULT_PENDING(val_get_status(index))));
 
-      if (timeout == 0)
+      if (timeout == 0){
+          val_print(AVS_PRINT_ERR, "\n       Sys timer interrupt not received on %d   ", intid);
           val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
+          return;
+      }
       timer_num = 0;
   }
 

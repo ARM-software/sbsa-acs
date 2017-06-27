@@ -37,14 +37,13 @@ isr()
 }
 
 
-
 static
 void
 payload()
 {
 
-  uint32_t timeout = 0x100000;
-  uint64_t timer_expire_val = 10000;
+  uint32_t timeout = TIMEOUT_LARGE;
+  uint64_t timer_expire_val = 100;
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
 
   intid = val_timer_get_info(TIMER_INFO_PHY_EL2_INTID, 0);
@@ -63,8 +62,10 @@ payload()
 
   while ((--timeout > 0) && (IS_RESULT_PENDING(val_get_status(index))));
 
-  if (timeout == 0)
+  if (timeout == 0) {
+    val_print(AVS_PRINT_ERR, "\n       EL2-Phy timer interrupt not received on %d   ", intid);
     val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
+  }
 
 }
 
