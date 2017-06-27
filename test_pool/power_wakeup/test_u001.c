@@ -216,7 +216,7 @@ void
 payload5()
 {
   uint64_t cnt_base_n;
-  uint32_t timeout = TIMEOUT_MEDIUM;
+  uint32_t timeout = 100000;
   uint32_t status;
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
 
