@@ -34,7 +34,6 @@
   src/pal_timer_wd.c
   src/pal_pcie.c
   src/pal_iovirt.c
-  src/pal_smmu.c
   src/pal_pcie_enumeration.c
   src/pal_peripherals.c
 
@@ -68,4 +67,4 @@
   gEfiAcpiTableGuid
 
 [BuildOptions]
-  GCC:*_*_*_ASM_FLAGS  =  -march=armv8.1-a
+  GCC:*_*_*_ASM_FLAGS  =  -march=armv8.2-a

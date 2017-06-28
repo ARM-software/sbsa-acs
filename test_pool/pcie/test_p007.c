@@ -30,18 +30,24 @@ payload(void)
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
   uint32_t data;
 
+  if (!count){
+      val_print(AVS_PRINT_WARN, "\n       Skipping because no SATA controller present ", 0);
+      val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
+      return;
+  }
+
   while (count != 0) {
       data = val_peripheral_get_info(SATA_FLAGS, count - 1);
 
       if ((data & PER_FLAG_MSI_ENABLED) == 0) {
-          val_print(AVS_STATUS_ERR, "    MSI should be enabled for a PCIe device ", 0);
+          val_print(AVS_STATUS_ERR, "\n       MSI should be enabled for a PCIe device ", 0);
           val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
           break;
       } else {
           if (val_peripheral_get_info(SATA_GSIV, count - 1))
               val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
           else {
-              val_print(AVS_STATUS_ERR, "    IRQ not assigned to the Device ", 0);
+              val_print(AVS_STATUS_ERR, "\n       IRQ not assigned to the Device ", 0);
               val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
               break;
           }

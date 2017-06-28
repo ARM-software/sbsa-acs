@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016, ARM Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2017, ARM Limited or its affiliates. All rights reserved.
 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,22 +33,6 @@ EFI_HARDWARE_INTERRUPT_PROTOCOL *gInterrupt = NULL;
 UINT64
 pal_get_madt_ptr();
 
-/*
- *Example table
- * info = { {3, 4, 1, 1},
- *          {0x1000, 0x2fc00000},
- *          {0x1000, 0x2fc00000},
- *          {0x1000, 0x2fc00000},
- *          {0x1000, 0x2fc00000},
- *          {0x1001, 0x2fd00000},
- *          {0x1001, 0x2fd00000},
- *          {0x1001, 0x2fd00000},
- *          {0x1001, 0x2fd00000},
- *          {0x1002, 0x2fe00000},
- *          {0x1003, 0x2ff00000},
- *        };
- *
- */
 /**
   @brief  Populate information about the GIC sub-system at the input address.
           In a UEFI-ACPI framework, this information is part of the MADT table.
@@ -60,13 +44,13 @@ pal_get_madt_ptr();
 VOID
 pal_gic_create_info_table(GIC_INFO_TABLE *GicTable)
 {
-  EFI_ACPI_6_1_GIC_STRUCTURE    *Entry;
-  GIC_INFO_ENTRY                *GicEntry;
+  EFI_ACPI_6_1_GIC_STRUCTURE    *Entry = NULL;
+  GIC_INFO_ENTRY                *GicEntry = NULL;
   UINT32                         Length= 0;
   UINT32                         TableLength;
 
   if (GicTable == NULL) {
-    Print(L"Input GIC Table Pointer is NULL. Cannot create GIC INFO \n");
+    sbsa_print(AVS_PRINT_ERR, L"Input GIC Table Pointer is NULL. Cannot create GIC INFO \n");
     return;
   }
 
@@ -78,11 +62,11 @@ pal_gic_create_info_table(GIC_INFO_TABLE *GicTable)
 
   gMadtHdr = (EFI_ACPI_6_1_MULTIPLE_APIC_DESCRIPTION_TABLE_HEADER *) pal_get_madt_ptr();
 
-  if (gMadtHdr != 0) {
+  if (gMadtHdr != NULL) {
     TableLength =  gMadtHdr->Header.Length;
-    //Print(L" MADT is at %x and length is %x \n", gMadtHdr, TableLength);
+    sbsa_print(AVS_PRINT_INFO, L" MADT is at %x and length is %x \n", gMadtHdr, TableLength);
   } else {
-    Print(L"MADT not found \n");
+    sbsa_print(AVS_PRINT_ERR, L" MADT not found \n");
     return;
   }
 
@@ -96,15 +80,15 @@ pal_gic_create_info_table(GIC_INFO_TABLE *GicTable)
       if (Entry->PhysicalBaseAddress != 0) {
         GicEntry->type = ENTRY_TYPE_CPUIF;
         GicEntry->base = Entry->PhysicalBaseAddress;
-        //Print(L"GIC CPUIF base %x \n", GicEntry->base);
+        sbsa_print(AVS_PRINT_INFO, L"GIC CPUIF base %x \n", GicEntry->base);
         GicEntry++;
       }
 
       if (Entry->GICRBaseAddress != 0) {
         GicEntry->type = ENTRY_TYPE_GICRD;
         GicEntry->base = Entry->GICRBaseAddress;
-        //Print(L"GIC RD base %x \n", GicEntry->base);
-	GicTable->header.num_gicrd++;
+        sbsa_print(AVS_PRINT_INFO, L"GIC RD base %x \n", GicEntry->base);
+        GicTable->header.num_gicrd++;
         GicEntry++;
       }
     }
@@ -113,15 +97,15 @@ pal_gic_create_info_table(GIC_INFO_TABLE *GicTable)
         GicEntry->type = ENTRY_TYPE_GICD;
         GicEntry->base = ((EFI_ACPI_6_1_GIC_DISTRIBUTOR_STRUCTURE *)Entry)->PhysicalBaseAddress;
         GicTable->header.gic_version = ((EFI_ACPI_6_1_GIC_DISTRIBUTOR_STRUCTURE *)Entry)->GicVersion;
-	GicTable->header.num_gicd++;
+        GicTable->header.num_gicd++;
         GicEntry++;
     }
 
     if (Entry->Type == EFI_ACPI_6_1_GIC_ITS) {
         GicEntry->type = ENTRY_TYPE_GICITS;
         GicEntry->base = ((EFI_ACPI_6_1_GIC_ITS_STRUCTURE *)Entry)->PhysicalBaseAddress;
-        //Print(L"GIC ITS base %x \n", GicEntry->base);
-	GicTable->header.num_its++;
+        sbsa_print(AVS_PRINT_INFO, L"GIC ITS base %x \n", GicEntry->base);
+        GicTable->header.num_its++;
         GicEntry++;
     }
     Length += Entry->Length;
@@ -154,15 +138,11 @@ pal_gic_install_isr(UINT32 int_id,  VOID (*isr)())
   if (EFI_ERROR(Status)) {
     return 0xFFFFFFFF;
   }
- 
-  //
+
   //First disable the interrupt to enable a clean handoff to our Interrupt handler.
-  // 
   gInterrupt->DisableInterruptSource(gInterrupt, int_id);
 
-  //
   //Register our handler
-  //
   Status = gInterrupt->RegisterInterruptSource (gInterrupt, int_id, isr);
   if (EFI_ERROR(Status)) {
     Status =  gInterrupt->RegisterInterruptSource (gInterrupt, int_id, NULL);  //Deregister existing handler
@@ -193,9 +173,7 @@ pal_gic_end_of_interrupt(UINT32 int_id)
     return 0xFFFFFFFF;
   }
 
-  //
   //EndOfInterrupt.
-  //
   gInterrupt->EndOfInterrupt(gInterrupt, int_id);
 
   return 0;

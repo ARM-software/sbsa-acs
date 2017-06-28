@@ -13,43 +13,49 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  **/
+
 #include "val/include/sbsa_avs_val.h"
 #include "val/include/val_interface.h"
 
-#include "val/include/sbsa_avs_pcie.h"
-#include "val/include/sbsa_avs_memory.h"
+#include "val/include/sbsa_avs_iovirt.h"
 
-/* SBSA-checklist 63 & 64 */
-#define TEST_NUM   (AVS_PCIE_TEST_NUM_BASE + 4)
-#define TEST_DESC  "PCIe Unaligned access, Norm mem   "
+#define TEST_NUM   (AVS_PCIE_TEST_NUM_BASE + 11)
+#define TEST_DESC  "PCIe RC & PE, Same Inner SH Domain"
 
-static
-void
+#define SHAREABILITY_BIT (1UL << 57)
+
+static void
 payload(void)
 {
-  uint32_t count = 0;
-  uint64_t base;
-  uint32_t data;
-  char *baseptr;
-  uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
+  uint32_t num_pcie_rc;
+  uint64_t mem_attr;
+  uint32_t index = val_pe_get_index_mpid (val_pe_get_mpid());
 
-  /* Map SATA Controller BARs to a NORMAL memory attribute. check unaligned access */
-  count = val_peripheral_get_info(NUM_SATA, 0);
+  num_pcie_rc = val_iovirt_get_pcie_rc_info(NUM_PCIE_RC,0);
 
-  while (count--) {
-      base = val_peripheral_get_info(SATA_BASE1, count);
-      baseptr = (char *)val_memory_ioremap((void *)base, 1024, 0);
-
-      data = *(uint32_t *)(baseptr+3);
-
-      val_memory_unmap(baseptr);
+  if(!num_pcie_rc){
+     val_print(AVS_PRINT_WARN, "\n       Skip because no PCIe RC detected  ", 0);
+     val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
+     return;
   }
-   val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 0));
+
+  while(num_pcie_rc){
+      num_pcie_rc--;   // Index is one lesser than the component number being accessed
+      mem_attr = val_iovirt_get_pcie_rc_info(RC_MEM_ATTRIBUTE, num_pcie_rc);
+
+      if(mem_attr & SHAREABILITY_BIT)
+         val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
+      else {
+         val_print(AVS_PRINT_ERR, "\n       Failed mem attribute check for PCIe RC %d", num_pcie_rc);
+         val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
+         return;
+      }
+  }
 
 }
 
 uint32_t
-p004_entry(uint32_t num_pe)
+p011_entry(uint32_t num_pe)
 {
 
   uint32_t status = AVS_STATUS_FAIL;

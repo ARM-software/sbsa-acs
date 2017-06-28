@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016, ARM Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2017, ARM Limited or its affiliates. All rights reserved.
 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ UINT8   *gSecondaryPeStack;
 UINT64  gMpidrMax;
 
 #define SIZE_STACK_SECONDARY_PE  0x100		//256 bytes per core
+#define UPDATE_AFF_MAX(src,dest,mask)  ((dest & mask) > (src & mask) ? (dest & mask) : (src & mask))
 
 UINT64
 pal_get_madt_ptr();
@@ -52,7 +53,7 @@ PalGetSecondaryStackBase()
 }
 
 /**
-  @brief   Returns the Max MPIDR.
+  @brief   Returns the Max of each 8-bit Affinity fields in MPIDR.
   @param   None
   @return  Max MPIDR
 **/
@@ -75,21 +76,21 @@ VOID
 PalAllocateSecondaryStack(UINT64 mpidr)
 {
   EFI_STATUS Status;
-  UINT32 MaxPe, Aff0, Aff1, Aff2, Aff3;
+  UINT32 NumPe, Aff0, Aff1, Aff2, Aff3;
 
   Aff0 = ((mpidr & 0x00000000ff) >>  0);
   Aff1 = ((mpidr & 0x000000ff00) >>  8);
   Aff2 = ((mpidr & 0x0000ff0000) >> 16);
   Aff3 = ((mpidr & 0xff00000000) >> 32);
 
-  MaxPe = ((Aff3+1) * (Aff2+1) * (Aff1+1) * (Aff0+1));
+  NumPe = ((Aff3+1) * (Aff2+1) * (Aff1+1) * (Aff0+1));
 
   if (gSecondaryPeStack == NULL) {
       Status = gBS->AllocatePool ( EfiBootServicesData,
-                    (MaxPe * SIZE_STACK_SECONDARY_PE),
+                    (NumPe * SIZE_STACK_SECONDARY_PE),
                     (VOID **) &gSecondaryPeStack);
       if (EFI_ERROR(Status)) {
-          Print(L"\n FATAL - Allocation for Seconday stack failed %x \n", Status);
+          sbsa_print(AVS_PRINT_ERR, L"\n FATAL - Allocation for Seconday stack failed %x \n", Status);
       }
       pal_pe_data_cache_ops_by_va((UINT64)&gSecondaryPeStack, CLEAN_AND_INVALIDATE);
   }
@@ -104,30 +105,36 @@ PalAllocateSecondaryStack(UINT64 mpidr)
 
   @return  None
 **/
-void
+VOID
 pal_pe_create_info_table(PE_INFO_TABLE *PeTable)
 {
-  EFI_ACPI_6_1_GIC_STRUCTURE    *Entry;
-  PE_INFO_ENTRY                 *Ptr = PeTable->pe_info;
+  EFI_ACPI_6_1_GIC_STRUCTURE    *Entry = NULL;
+  PE_INFO_ENTRY                 *Ptr = NULL;
   UINT32                        TableLength = 0;
   UINT32                        Length = 0;
   UINT64                        MpidrAff0Max = 0, MpidrAff1Max = 0, MpidrAff2Max = 0, MpidrAff3Max = 0;
 
 
-  gMadtHdr = (EFI_ACPI_6_1_MULTIPLE_APIC_DESCRIPTION_TABLE_HEADER *) pal_get_madt_ptr();
-
-  PeTable->header.num_of_pe = 0;
-
-  if (gMadtHdr != 0) {
-    TableLength =  gMadtHdr->Header.Length;
-    //Print(L" MADT is at %x and length is %x \n", gMadtHdr, TableLength);
-  } else {
-    Print(L"MADT not found \n");
+  if (PeTable == NULL) {
+    sbsa_print(AVS_PRINT_ERR, L"Input PE Table Pointer is NULL. Cannot create PE INFO \n");
     return;
   }
 
+  gMadtHdr = (EFI_ACPI_6_1_MULTIPLE_APIC_DESCRIPTION_TABLE_HEADER *) pal_get_madt_ptr();
+
+  if (gMadtHdr != NULL) {
+    TableLength =  gMadtHdr->Header.Length;
+    sbsa_print(AVS_PRINT_INFO, L" MADT is at %x and length is %x \n", gMadtHdr, TableLength);
+  } else {
+    sbsa_print(AVS_PRINT_ERR, L"MADT not found \n");
+    return;
+  }
+
+  PeTable->header.num_of_pe = 0;
+
   Entry = (EFI_ACPI_6_1_GIC_STRUCTURE *) (gMadtHdr + 1);
   Length = sizeof (EFI_ACPI_6_1_MULTIPLE_APIC_DESCRIPTION_TABLE_HEADER);
+  Ptr = PeTable->pe_info;
 
   do {
 
@@ -136,15 +143,15 @@ pal_pe_create_info_table(PE_INFO_TABLE *PeTable)
       Ptr->mpidr    = Entry->MPIDR;
       Ptr->pe_num   = PeTable->header.num_of_pe;
       Ptr->pmu_gsiv = Entry->PerformanceInterruptGsiv;
-      //Print(L"FOUND an entry %x %x \n", Ptr->mpidr, Ptr->pe_num);
+      sbsa_print(AVS_PRINT_DEBUG, L"MPIDR %x PE num %x \n", Ptr->mpidr, Ptr->pe_num);
       pal_pe_data_cache_ops_by_va((UINT64)Ptr, CLEAN_AND_INVALIDATE);
       Ptr++;
       PeTable->header.num_of_pe++;
 
-      MpidrAff0Max = ((Entry->MPIDR & 0x000000ff) > (MpidrAff0Max & 0x000000ff))? (Entry->MPIDR & 0x000000ff) : (MpidrAff0Max & 0x000000ff);
-      MpidrAff1Max = ((Entry->MPIDR & 0x0000ff00) > (MpidrAff1Max & 0x0000ff00))? (Entry->MPIDR & 0x0000ff00) : (MpidrAff1Max & 0x0000ff00);
-      MpidrAff2Max = ((Entry->MPIDR & 0x00ff0000) > (MpidrAff2Max & 0x00ff0000))? (Entry->MPIDR & 0x00ff0000) : (MpidrAff2Max & 0x00ff0000);
-      MpidrAff3Max = ((Entry->MPIDR & 0xff00000000) > (MpidrAff3Max & 0xff00000000))? (Entry->MPIDR & 0xff00000000) : (MpidrAff3Max & 0xff00000000);
+      MpidrAff0Max = UPDATE_AFF_MAX(MpidrAff0Max, Entry->MPIDR, 0x000000ff);
+      MpidrAff1Max = UPDATE_AFF_MAX(MpidrAff1Max, Entry->MPIDR, 0x0000ff00);
+      MpidrAff2Max = UPDATE_AFF_MAX(MpidrAff2Max, Entry->MPIDR, 0x00ff0000);
+      MpidrAff3Max = UPDATE_AFF_MAX(MpidrAff3Max, Entry->MPIDR, 0xff00000000);
     }
 
     Length += Entry->Length;
@@ -175,26 +182,19 @@ pal_pe_install_esr(UINT32 ExceptionType,  VOID (*esr)(UINT64, VOID *))
   EFI_STATUS  Status;
   EFI_CPU_ARCH_PROTOCOL   *Cpu;
 
-
-  //
   // Get the CPU protocol that this driver requires.
-  //
   Status = gBS->LocateProtocol (&gEfiCpuArchProtocolGuid, NULL, (VOID **)&Cpu);
   if (EFI_ERROR (Status)) {
     return Status;
   }
 
-  //
   // Unregister the default exception handler.
-  //
   Status = Cpu->RegisterInterruptHandler (Cpu, ExceptionType, NULL);
   if (EFI_ERROR (Status)) {
     return Status;
   }
 
-  //
   // Register to receive interrupts
-  //
   Status = Cpu->RegisterInterruptHandler (Cpu, ExceptionType, (EFI_CPU_INTERRUPT_HANDLER)esr);
   if (EFI_ERROR (Status)) {
     return Status;
@@ -204,16 +204,10 @@ pal_pe_install_esr(UINT32 ExceptionType,  VOID (*esr)(UINT64, VOID *))
 }
 
 /**
-  Trigger an SMC call
-
-  SMC calls can take up to 7 arguments and return up to 4 return values.
-  Therefore, the 4 first fields in the ARM_SMC_ARGS structure are used
-  for both input and output values.
-
-**/
-
-/**
   @brief  Make the SMC call using AARCH64 Assembly code
+          SMC calls can take up to 7 arguments and return up to 4 return values.
+          Therefore, the 4 first fields in the ARM_SMC_ARGS structure are used
+          for both input and output values.
 
   @param  Argumets to pass to the EL3 firmware
 
@@ -243,10 +237,44 @@ pal_pe_execute_payload(ARM_SMC_ARGS *ArmSmcArgs)
   pal_pe_call_smc(ArmSmcArgs);
 }
 
+/**
+  @brief Update the ELR to return from exception handler to a desired address
+
+  @param  context - exception context structure
+  @param  offset - address with which ELR should be updated
+
+  @return  None
+**/
 VOID
 pal_pe_update_elr(VOID *context, UINT64 offset)
 {
   ((EFI_SYSTEM_CONTEXT_AARCH64*)context)->ELR = offset;
+}
+
+/**
+  @brief Get the Exception syndrome from UEFI exception handler
+
+  @param  context - exception context structure
+
+  @return  ESR
+**/
+UINT64
+pal_pe_get_esr(VOID *context)
+{
+  return ((EFI_SYSTEM_CONTEXT_AARCH64*)context)->ESR;
+}
+
+/**
+  @brief Get the FAR from UEFI exception handler
+
+  @param  context - exception context structure
+
+  @return  FAR
+**/
+UINT64
+pal_pe_get_far(VOID *context)
+{
+  return ((EFI_SYSTEM_CONTEXT_AARCH64*)context)->FAR;
 }
 
 VOID
@@ -258,6 +286,14 @@ DataCacheCleanVA(UINT64 addr);
 VOID
 DataCacheInvalidateVA(UINT64 addr);
 
+/**
+  @brief Perform cache maintenance operation on an address
+
+  @param addr - address on which cache ops to be performed
+  @param type - type of cache ops
+
+  @return  None
+**/
 VOID
 pal_pe_data_cache_ops_by_va(UINT64 addr, UINT32 type)
 {

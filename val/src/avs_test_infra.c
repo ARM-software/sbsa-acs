@@ -15,6 +15,7 @@
  **/
 
 #include "include/sbsa_avs_val.h"
+#include "include/sbsa_avs_pe.h"
 #include "include/sbsa_avs_common.h"
 
 /**
@@ -73,7 +74,6 @@ val_print_raw(uint32_t level, char8_t *string, uint64_t data)
 uint32_t
 val_mmio_read(addr_t addr)
 {
-  val_print(AVS_PRINT_DEBUG, "\n       val_mmio_read: addr is %x   ", addr);
   return pal_mmio_read(addr);
 
 }
@@ -116,10 +116,10 @@ val_initialize_test(uint32_t test_num, char8_t *desc, uint32_t num_pe, uint32_t 
   uint32_t i;
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
 
-
   val_print(AVS_PRINT_ERR, "%4d : ", test_num); //Always print this
   val_print(AVS_PRINT_TEST, desc, 0);
   val_report_status(0, SBSA_AVS_START(level, test_num));
+  val_pe_initialize_default_exception_handler(val_pe_default_esr);
 
   g_sbsa_tests_total++;
 
@@ -384,4 +384,32 @@ void
 val_pe_update_elr(void *context, uint64_t offset)
 {
     pal_pe_update_elr(context, offset);
+}
+
+/**
+  @brief  Get ESR from exception context
+**/
+uint64_t
+val_pe_get_esr(void *context)
+{
+    return pal_pe_get_esr(context);
+}
+
+/**
+  @brief  Get FAR from exception context
+**/
+uint64_t
+val_pe_get_far(void *context)
+{
+    return pal_pe_get_far(context);
+}
+
+/**
+  @brief  Write to an address, meant for debugging purpose
+**/
+void
+val_debug_brk(uint32_t data)
+{
+   addr_t address = 0x9000F000; // address = pal_get_debug_address();
+   *(addr_t *)address = data;
 }

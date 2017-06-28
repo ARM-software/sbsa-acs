@@ -90,7 +90,7 @@ val_dma_create_info_table(uint64_t *dma_info_ptr)
 
   pal_dma_create_info_table(g_dma_info_table);
 
-  val_print(AVS_PRINT_TEST, " DMA_INFO: Number of DMA CTRL in PCIe:    %x \n", val_dma_get_info(DMA_NUM_CTRL, 0));
+  val_print(AVS_PRINT_TEST, " DMA_INFO: Number of DMA CTRL in PCIe :    %x \n", val_dma_get_info(DMA_NUM_CTRL, 0));
 }
 
 
@@ -168,4 +168,10 @@ val_dma_device_get_dma_addr(uint32_t ctrl_index, void *dma_addr, uint32_t *cpu_l
   ap = (void *)val_dma_get_info(DMA_PORT_INFO, ctrl_index);
   pal_dma_scsi_get_dma_addr(ap, dma_addr, cpu_len);
 
+}
+
+int
+val_dma_mem_get_attrs(void *buf, uint32_t *attr, uint32_t *sh)
+{
+  return pal_dma_mem_get_attrs(buf, attr, sh);
 }

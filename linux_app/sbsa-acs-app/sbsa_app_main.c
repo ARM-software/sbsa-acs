@@ -21,16 +21,18 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include "include/sbsa_app.h"
+#include <getopt.h>
 
 int  g_sbsa_level = 3;
 int  g_print_level = 3;
-int  g_skip_test_num[3];
+int  g_skip_test_num[3] = {10000, 10000, 10000};
+unsigned long int  g_exception_ret_addr;
 
 int
-initialize_test_environment()
+initialize_test_environment(unsigned int print_level)
 {
 
-    return call_drv_init_test_env();
+    return call_drv_init_test_env(print_level);
 }
 
 void
@@ -40,16 +42,37 @@ cleanup_test_environment()
     call_drv_clean_test_env();
 }
 
+void print_help(){
+  printf ("\nUsage: Sbsa [-v <n>] | [-l <n>] | [--skip <n>]\n"
+         "Options:\n"
+         "-v      Verbosity of the Prints\n"
+         "        1 shows all prints, 5 shows Errors\n"
+         "-l      Level of compliance to be tested for\n"
+         "        As per SBSA spec, 0 to 3\n"
+         "--skip  Test(s) to be skipped\n"
+         "        Refer to section 4 of SBSA_ACS_UEFI_App_User_Guide\n"
+         "        To skip a module, use Model_ID as mentioned in user guide\n"
+         "        To skip a particular test within a module, use the exact testcase number\n"
+  );
+}
+
 int
 main (int argc, char **argv)
 {
 
-    int   c = 0;
-    char *endptr;
+    int   c = 0,i=0;
+    char *endptr, *pt;
     int   status;
 
+    struct option long_opt[] =
+    {
+      {"skip", required_argument, NULL, 'n'},
+      {"help", no_argument, NULL, 'h'},
+      {NULL, 0, NULL, 0}
+    };
+
     /* Process Command Line arguments */
-    while ((c = getopt (argc, argv, "v:l:")) != -1)
+    while ((c = getopt_long(argc, argv, "hv:l:", long_opt, NULL)) != -1)
     {
        switch (c)
        {
@@ -58,6 +81,18 @@ main (int argc, char **argv)
          break;
        case 'l':
          g_sbsa_level = strtol(optarg, &endptr, 10);
+         break;
+       case 'h':
+         print_help();
+         return 1;
+         break;
+       case 'n':/*SKIP tests */
+         pt = strtok(optarg, ",");
+         while((pt!=NULL) && (i<3)){
+           int a = atoi(pt);
+           g_skip_test_num[i++] = a;
+           pt = strtok(NULL, ",");
+         }
          break;
        case '?':
          if (isprint (optopt))
@@ -80,17 +115,17 @@ main (int argc, char **argv)
     printf ("\n Starting Compliance verification for Level %2d (Print level is %2d)\n\n", g_sbsa_level, g_print_level);
 
     printf (" Gathering System information.... \n");
-    status = initialize_test_environment();
+    status = initialize_test_environment(g_print_level);
     if (status) {
         printf ("Cannot Initialize test environment. Exiting.... \n");
         return 0;
     }
 
     printf("\n      *** Starting PCIe tests ***  \n");
-    execute_tests_pcie(1, g_sbsa_level);
+    execute_tests_pcie(1, g_sbsa_level, g_print_level);
 
 
-    printf("\n   *** SBSA Compliance Test Complete. check dmesg for detailed log. *** \n\n");
+    printf("\n   *** SBSA Compliance Test Complete *** \n\n");
 
     cleanup_test_environment();
 

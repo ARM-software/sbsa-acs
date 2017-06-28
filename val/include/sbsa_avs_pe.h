@@ -88,7 +88,8 @@ typedef enum {
   PMSFCR_EL1,
   PMBPTR_EL1,
   PMBLIMITR_EL1,
-  ESR_EL2
+  ESR_EL2,
+  FAR_EL2
 }SBSA_AVS_PE_REGS;
 
 
@@ -216,6 +217,12 @@ void AA64WritePmblimitr(uint64_t write_data);
 
 uint64_t AA64ReadEsr2(void);
 
+uint64_t AA64ReadSp(void);
+
+uint64_t AA64WriteSp(uint64_t write_data);
+
+uint64_t AA64ReadFar2(void);
+
 void SpeProgramUnderProfiling(uint64_t interval, uint64_t address);
 
 void DisableSpe(void);
@@ -224,12 +231,20 @@ uint32_t BigEndianCheck(uint64_t *ptr);
 
 void val_pe_update_elr(void *context, uint64_t offset);
 
+uint64_t val_pe_get_esr(void *context);
+
+uint64_t val_pe_get_far(void *context);
+
 void val_pe_spe_program_under_profiling(uint64_t interval, addr_t address);
 
 void val_pe_spe_disable(void);
 
 uint32_t val_pe_bigend_check(uint64_t *ptr);
 
+void val_pe_context_save(uint64_t sp, uint64_t elr);
+void val_pe_initialize_default_exception_handler(void (*esr)(uint64_t, void *));
+void val_pe_context_restore(uint64_t sp);
+void val_pe_default_esr(uint64_t interrupt_type, void *context);
 void val_pe_cache_clean_range(uint64_t start_addr, uint64_t length);
 
 uint32_t c001_entry(void);

@@ -44,8 +44,8 @@ void
 payload()
 {
 
-  uint32_t timeout = 0x100000;
-  uint64_t timer_expire_val = 10000;
+  uint32_t timeout = TIMEOUT_LARGE;
+  uint64_t timer_expire_val = 100;
   uint64_t data = 0;
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
 
@@ -57,12 +57,12 @@ payload()
     val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
     return;
   }
- 
+
   intid = val_timer_get_info(TIMER_INFO_VIR_EL2_INTID, 0);
   /* For SBSA level 2 and above, the PPI has to be a specific value.*/
   if (g_sbsa_level > 1) {
       if (intid != 28) {
-          val_print(AVS_PRINT_ERR, "\n     Incorrect PPI value %d     ", intid);
+          val_print(AVS_PRINT_ERR, "\n       Incorrect PPI value %d     ", intid);
           val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
           return;
       }
@@ -74,8 +74,10 @@ payload()
 
   while ((--timeout > 0) && (IS_RESULT_PENDING(val_get_status(index))));
 
-  if (timeout == 0)
+  if (timeout == 0) {
+    val_print(AVS_PRINT_ERR, "\n       EL2-Virtual timer interrupt not received on %d   ", intid);
     val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
+  }
 
 }
 

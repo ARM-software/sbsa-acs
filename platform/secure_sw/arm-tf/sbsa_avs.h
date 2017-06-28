@@ -52,6 +52,7 @@ void     sbsa_acs_set_status(unsigned int status, unsigned int data);
 typedef enum {
   SBSA_SECURE_TEST_NSWD_WS1=0x1000,
   SBSA_SECURE_TEST_SYS_COUNTER,
+  SBSA_SECURE_TEST_SYS_TIMER_INT,
   SBSA_SECURE_TEST_WD_WS0,
   SBSA_SECURE_TEST_SEC_UART,
   SBSA_SECURE_TEST_CNTBASE,

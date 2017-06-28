@@ -33,7 +33,7 @@ payload(void)
   ecam_base = val_pcie_get_info(PCIE_INFO_MCFG_ECAM, 0);
 
   if (ecam_base == 0) {
-      val_print(AVS_PRINT_ERR, "\n      ECAM base not in MCFG %4x       ", ecam_base);
+      val_print(AVS_PRINT_ERR, "\n       ECAM base not in MCFG %4x       ", ecam_base);
       val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
       return;
   }

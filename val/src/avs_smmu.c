@@ -78,6 +78,8 @@ val_smmu_execute_tests(uint32_t level, uint32_t num_pe)
   }
 
   status |= i004_entry(num_pe);
+  status |= i005_entry(num_pe);
+  status |= i006_entry(num_pe);
 
   if (status != AVS_STATUS_PASS) {
       val_print(AVS_PRINT_ERR, "\n      One or more SMMU tests have failed...  \n", status);
@@ -177,4 +179,10 @@ val_smmu_ops(SMMU_OPS_e ops, uint32_t smmu_index, void *param1, void *param2)
 //  pal_smmu_ops(ops, index, param1, param2);
   return 0;
 
+}
+
+uint32_t
+val_smmu_max_pasids(uint64_t smmu_base)
+{
+  return pal_smmu_max_pasids(smmu_base);
 }

@@ -228,26 +228,6 @@ val_execute_on_pe(uint32_t index, void (*payload)(void), uint64_t test_input)
 }
 
 /**
-  @brief  Cache clean operation on a defined address range
-**/
-void
-val_pe_cache_clean_range(uint64_t start_addr, uint64_t length)
-{
-#ifndef TARGET_LINUX
-  uint64_t aligned_addr, end_addr, line_length;
-
-  line_length = 2 << ((val_pe_reg_read(CTR_EL0) >> 16) & 0xf);
-  aligned_addr = start_addr - (start_addr & (line_length-1));
-  end_addr = start_addr + length;
-
-  while(aligned_addr < end_addr){
-      val_data_cache_ops_by_va(aligned_addr, CLEAN);
-      aligned_addr += line_length;
-  }
-#endif
-}
-
-/**
   @brief   This API installs the Exception handler pointed
            by the function pointer to the input exception type.
            1. Caller       -  Test Suite
@@ -268,4 +248,72 @@ val_pe_install_esr(uint32_t exception_type, void (*esr)(uint64_t, void *))
   pal_pe_install_esr(exception_type, esr);
 
   return 0;
+}
+
+
+/**
+  @brief  Save context data (LR, SP and ELR in case of unexpected exception)
+**/
+void
+val_pe_context_save(uint64_t sp, uint64_t elr)
+{
+    g_stack_pointer = sp;
+    g_exception_ret_addr = elr;
+    g_ret_addr = *(uint64_t *)(g_stack_pointer+8);
+}
+
+/**
+  @brief  Restore context data (LR, SP for return to a known location)
+**/
+void
+val_pe_context_restore(uint64_t sp)
+{
+    sp = 0;
+    *(uint64_t *)(g_stack_pointer+8) = g_ret_addr;
+}
+
+/**
+  @brief  Initialise exception vector with the default handler
+**/
+void
+val_pe_initialize_default_exception_handler(void (*esr)(uint64_t, void *))
+{
+    val_pe_install_esr(EXCEPT_AARCH64_SYNCHRONOUS_EXCEPTIONS, esr);
+}
+
+/**
+  @brief  Default handler which, if installed into exception vector, will be
+          called in case of unexpected exceptions
+**/
+void
+val_pe_default_esr(uint64_t interrupt_type, void *context)
+{
+    uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
+    val_print(AVS_PRINT_WARN, "\n        Unexpected exception occured", 0);
+#ifndef TARGET_LINUX
+    val_print(AVS_PRINT_WARN, "\n        FAR reported = 0x%x", val_pe_get_far(context));
+    val_print(AVS_PRINT_WARN, "\n        ESR reported = 0x%x", val_pe_get_esr(context));
+#endif
+    val_set_status(index, RESULT_FAIL(g_sbsa_level, 0, 01));
+    val_pe_update_elr(context, g_exception_ret_addr);
+}
+
+/**
+  @brief  Cache clean operation on a defined address range
+**/
+void
+val_pe_cache_clean_range(uint64_t start_addr, uint64_t length)
+{
+#ifndef TARGET_LINUX
+  uint64_t aligned_addr, end_addr, line_length;
+
+  line_length = 2 << ((val_pe_reg_read(CTR_EL0) >> 16) & 0xf);
+  aligned_addr = start_addr - (start_addr & (line_length-1));
+  end_addr = start_addr + length;
+
+  while(aligned_addr < end_addr){
+      val_data_cache_ops_by_va(aligned_addr, CLEAN);
+      aligned_addr += line_length;
+  }
+#endif
 }

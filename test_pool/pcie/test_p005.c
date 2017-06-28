@@ -41,7 +41,7 @@ payload(void)
   target_dev_index = val_dma_get_info(DMA_NUM_CTRL, 0);
 
   if (!target_dev_index) {
-      val_print(AVS_PRINT_WARN, "\n       No DMA controllers detected... ", 0);
+      val_print(AVS_PRINT_WARN, "\n       No DMA controllers detected...    ", 0);
       val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
       return;
   }

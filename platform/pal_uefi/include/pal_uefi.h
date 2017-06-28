@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016, ARM Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2017, ARM Limited or its affiliates. All rights reserved.
 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,14 @@
 #ifndef __PAL_UEFI_H__
 #define __PAL_UEFI_H__
 
-extern void* g_sbsa_log_file_handle;
+extern VOID* g_sbsa_log_file_handle;
+extern UINT32 g_print_level;
+
+#define AVS_PRINT_ERR   5      /* Only Errors. use this to de-clutter the terminal and focus only on specifics */
+#define AVS_PRINT_WARN  4      /* Only warnings & errors. use this to de-clutter the terminal and focus only on specifics */
+#define AVS_PRINT_TEST  3      /* Test description and result descriptions. THIS is DEFAULT */
+#define AVS_PRINT_DEBUG 2      /* For Debug statements. contains register dumps etc */
+#define AVS_PRINT_INFO  1      /* Print all statements. Do not use unless really needed */
 
 typedef struct {
   UINT64   Arg0;
@@ -30,6 +37,8 @@ typedef struct {
   UINT64   Arg7;
 } ARM_SMC_ARGS;
 
+#define sbsa_print(verbose, string, ...) if(verbose >= g_print_level) \
+                                            Print(string, ##__VA_ARGS__)
 
 typedef struct {
   UINT32 num_of_pe;
@@ -50,7 +59,7 @@ typedef struct {
   PE_INFO_ENTRY  pe_info[];
 }PE_INFO_TABLE;
 
-void     pal_pe_data_cache_ops_by_va(UINT64 addr, UINT32 type);
+VOID     pal_pe_data_cache_ops_by_va(UINT64 addr, UINT32 type);
 
 #define CLEAN_AND_INVALIDATE  0x1
 #define CLEAN                 0x2
@@ -79,7 +88,7 @@ typedef struct {
 }GIC_INFO_ENTRY;
 
 /**
-  @brief  GIC Information Table 
+  @brief  GIC Information Table
 **/
 typedef struct {
   GIC_INFO_HDR   header;
@@ -97,10 +106,9 @@ typedef struct {
   UINT32 virtual_timer_flag;
   UINT32 virtual_timer_gsiv;
   UINT32 el2_virt_timer_gsiv;
-  UINT64 CntControl_base;
-  UINT64 CntRead_base;
   UINT32 num_platform_timer;
   UINT32 num_watchdog;
+  UINT32 sys_timer_status;
 }TIMER_INFO_HDR;
 
 #define TIMER_TYPE_SYS_TIMER 0x2001
@@ -181,6 +189,12 @@ typedef enum {
   IOVIRT_NODE_SMMU_V3 = 0x04
 }IOVIRT_NODE_TYPE;
 
+typedef enum {
+        IOVIRT_FLAG_DEVID_OVERLAP_SHIFT,
+        IOVIRT_FLAG_STRID_OVERLAP_SHIFT,
+        IOVIRT_FLAG_SMMU_CTX_INT_SHIFT,
+}IOVIRT_FLAG_SHIFT;
+
 typedef struct {
   UINT32 input_base;
   UINT32 id_count;
@@ -204,6 +218,7 @@ typedef struct {
   UINT32 type;
   UINT32 num_data_map;
   NODE_DATA data;
+  UINT32 flags;
   NODE_DATA_MAP data_map[];
 }IOVIRT_BLOCK;
 
@@ -230,12 +245,15 @@ typedef struct {
   UINT32    num_usb;   ///< Number of USB  Controllers
   UINT32    num_sata;  ///< Number of SATA Controllers
   UINT32    num_uart;  ///< Number of UART Controllers
+  UINT32    num_all;   ///< Number of all PCI Controllers
 }PERIPHERAL_INFO_HDR;
 
 typedef enum {
   PERIPHERAL_TYPE_USB = 0x2000,
   PERIPHERAL_TYPE_SATA,
-  PERIPHERAL_TYPE_UART
+  PERIPHERAL_TYPE_UART,
+  PERIPHERAL_TYPE_OTHER,
+  PERIPHERAL_TYPE_NONE
 }PER_INFO_TYPE_e;
 
 /**
@@ -248,6 +266,9 @@ typedef struct {
   UINT64         base1; ///< Base Address of the controller
   UINT32         irq;   ///< IRQ to install an ISR
   UINT32         flags;
+  UINT32         msi;   ///< MSI Enabled
+  UINT32         msix;  ///< MSIX Enabled
+  UINT32         max_pasids;
 }PERIPHERAL_INFO_BLOCK;
 
 /**
@@ -284,6 +305,6 @@ typedef struct {
 } MEMORY_INFO_TABLE;
 
 
-void  pal_memory_create_info_table(MEMORY_INFO_TABLE *memoryInfoTable);
+VOID  pal_memory_create_info_table(MEMORY_INFO_TABLE *memoryInfoTable);
 
 #endif

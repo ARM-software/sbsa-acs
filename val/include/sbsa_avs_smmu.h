@@ -36,6 +36,9 @@ uint64_t
 val_smmu_ops(SMMU_OPS_e ops, uint32_t index, void *param1, void *param2);
 
 uint32_t
+val_smmu_max_pasids(uint64_t smmu_base);
+
+uint32_t
 i001_entry(uint32_t num_pe);
 uint32_t
 i002_entry(uint32_t num_pe);
@@ -43,6 +46,9 @@ uint32_t
 i003_entry(uint32_t num_pe);
 uint32_t
 i004_entry(uint32_t num_pe);
-
+uint32_t
+i005_entry(uint32_t num_pe);
+uint32_t
+i006_entry(uint32_t num_pe);
 
 #endif

@@ -28,6 +28,6 @@ typedef unsigned long int addr_t;
 typedef unsigned char     char8_t;
 
 int
-execute_tests_pcie(int num_pe, int level);
+execute_tests_pcie(int num_pe, int level, unsigned int print_level);
 
 #endif

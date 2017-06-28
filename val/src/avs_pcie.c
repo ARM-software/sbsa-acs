@@ -176,6 +176,21 @@ val_pcie_execute_tests(uint32_t level, uint32_t num_pe)
   status |= p002_entry(num_pe);
   status |= p003_entry(num_pe);
 
+#ifdef TARGET_LINUX
+  status |= p004_entry(num_pe);
+  status |= p005_entry(num_pe);
+  status |= p006_entry(num_pe);
+  status |= p007_entry(num_pe);
+  status |= p008_entry(num_pe);
+  status |= p009_entry(num_pe);
+  status |= p010_entry(num_pe);
+  status |= p011_entry(num_pe);
+  status |= p012_entry(num_pe);
+  status |= p013_entry(num_pe);
+  status |= p014_entry(num_pe);
+  status |= p015_entry(num_pe);
+#endif
+
   if (status != AVS_STATUS_PASS) {
       val_print(AVS_PRINT_ERR, "\n     One or more PCIe tests have failed.... \n", status);
   }
@@ -262,5 +277,127 @@ val_pcie_get_info(PCIE_INFO_e type, uint32_t index)
   }
 
   return 0;
+}
+
+/**
+  @brief   This API returns list of MSI(X) vectors for a specified device
+           1. Caller       -  Test Suite
+  @param   bdf      - PCIe BUS/Device/Function
+  @param   mvector  - Pointer to MSI vector's list head
+
+  @return  number of MSI(X) vectors
+**/
+uint32_t
+val_get_msi_vectors (uint32_t bdf, PERIPHERAL_VECTOR_LIST **mvector)
+{
+  return pal_get_msi_vectors (PCIE_EXTRACT_BDF_BUS (bdf),
+                              PCIE_EXTRACT_BDF_DEV (bdf),
+                              PCIE_EXTRACT_BDF_FUNC (bdf),
+                              mvector);
+}
+
+/**
+  @brief   This API returns legacy interrupts routing map
+           1. Caller       -  Test Suite
+  @param   bdf      - PCIe BUS/Device/Function
+  @param   irq_map  - Pointer to IRQ map structure
+
+  @return  status code
+**/
+uint32_t
+val_pci_get_legacy_irq_map (uint32_t bdf, PERIPHERAL_IRQ_MAP *irq_map)
+{
+  return pal_pcie_get_legacy_irq_map (PCIE_EXTRACT_BDF_BUS (bdf),
+                                      PCIE_EXTRACT_BDF_DEV (bdf),
+                                      PCIE_EXTRACT_BDF_FUNC (bdf),
+                                      irq_map);
+}
+/**
+  @brief   This API checks if device is behind SMMU
+           1. Caller       -  Test Suite
+  @param   bdf      - PCIe BUS/Device/Function
+  @return  0 -> not present, nonzero -> present
+**/
+uint32_t
+val_pcie_is_device_behind_smmu(uint32_t bdf)
+{
+  return pal_pcie_is_device_behind_smmu(PCIE_EXTRACT_BDF_BUS (bdf),
+                                      PCIE_EXTRACT_BDF_DEV (bdf),
+                                      PCIE_EXTRACT_BDF_FUNC (bdf));
+}
+/**
+  @brief   This API returns the bdf of root port
+  @param   bdf             - PCIe BUS/Device/Function
+
+  @return  status & BDF of root port
+**/
+uint32_t
+val_pcie_get_root_port_bdf(uint32_t *bdf)
+{
+  uint32_t bus  = PCIE_EXTRACT_BDF_BUS (*bdf);
+  uint32_t dev  = PCIE_EXTRACT_BDF_DEV (*bdf);
+  uint32_t func = PCIE_EXTRACT_BDF_FUNC (*bdf);
+  uint32_t seg  = PCIE_EXTRACT_BDF_SEG (*bdf);
+  uint32_t status;
+  status = pal_pcie_get_root_port_bdf(&seg, &bus, &dev, &func);
+  if(status)
+    return status;
+
+  *bdf = PCIE_CREATE_BDF(seg, bus, dev, func);
+  return 0;
+}
+/**
+  @brief   This API returns the PCIe device type
+           1. Caller       -  Test Suite
+  @param   bdf      - PCIe BUS/Device/Function
+  @return  0: Normal PCIe device, 1: PCIe bridge device,
+           2: PCIe Host bridge, else: INVALID
+**/
+uint32_t
+val_pcie_get_device_type(uint32_t bdf)
+{
+  return pal_pcie_get_device_type(PCIE_EXTRACT_BDF_BUS (bdf), PCIE_EXTRACT_BDF_DEV (bdf), PCIE_EXTRACT_BDF_FUNC (bdf));
+}
+
+/**
+  @brief   This API returns PCIe device snoop bit transaction attribute
+           1. Caller       -  Test Suite
+  @param   bdf      - PCIe BUS/Device/Function
+  @return  0 snoop
+           1 no snoop
+           2 device error
+**/
+uint32_t
+val_pcie_get_snoop_bit(uint32_t bdf)
+{
+  return pal_pcie_get_snoop_bit(PCIE_EXTRACT_BDF_BUS (bdf), PCIE_EXTRACT_BDF_DEV (bdf), PCIE_EXTRACT_BDF_FUNC (bdf));
+}
+
+/**
+  @brief   This API returns PCIe device DMA support
+           1. Caller       -  Test Suite
+  @param   bdf      - PCIe BUS/Device/Function
+  @return  0 no support
+           1 support
+           2 device error
+**/
+uint32_t
+val_pcie_get_dma_support(uint32_t bdf)
+{
+  return pal_pcie_get_dma_support(PCIE_EXTRACT_BDF_BUS (bdf), PCIE_EXTRACT_BDF_DEV (bdf), PCIE_EXTRACT_BDF_FUNC (bdf));
+}
+
+/**
+  @brief   This API returns PCIe device DMA coherency support
+           1. Caller       -  Test Suite
+  @param   bdf      - PCIe BUS/Device/Function
+  @return  0 DMA is not coherent
+           1 DMA is coherent
+           2 device error
+**/
+uint32_t
+val_pcie_get_dma_coherent(uint32_t bdf)
+{
+  return pal_pcie_get_dma_coherent(PCIE_EXTRACT_BDF_BUS (bdf), PCIE_EXTRACT_BDF_DEV (bdf), PCIE_EXTRACT_BDF_FUNC (bdf));
 }
 

@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016, ARM Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2017, ARM Limited or its affiliates. All rights reserved.
 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,10 @@ pal_get_mcfg_ptr();
 
 /**
   @brief  Returns the PCI ECAM address from the ACPI MCFG Table address
+
+  @param  None
+
+  @return  None
 **/
 UINT64
 pal_pcie_get_mcfg_ecam()
@@ -42,9 +46,9 @@ pal_pcie_get_mcfg_ecam()
 
   gMcfgHdr = (EFI_ACPI_MEMORY_MAPPED_CONFIGURATION_BASE_ADDRESS_TABLE_HEADER *) pal_get_mcfg_ptr();
 
-  if (gMcfgHdr == 0) {
-    //Print(L"ACPI - MCFG Table not found. Setting ECAM Base to 0. \n");
-    return 0x0;
+  if (gMcfgHdr == NULL) {
+      sbsa_print(AVS_PRINT_WARN, L"ACPI - MCFG Table not found. Setting ECAM Base to 0. \n");
+      return 0x0;
   }
 
   Entry = (EFI_ACPI_MEMORY_MAPPED_ENHANCED_CONFIGURATION_SPACE_BASE_ADDRESS_ALLOCATION_STRUCTURE *) (gMcfgHdr + 1);
@@ -55,28 +59,39 @@ pal_pcie_get_mcfg_ecam()
 
 /**
   @brief  Fill the PCIE Info table with the details of the PCIe sub-system
+
+  @param  PcieTable - Address where the PCIe information needs to be filled.
+
+  @return  None
  **/
 VOID
 pal_pcie_create_info_table(PCIE_INFO_TABLE *PcieTable)
 {
 
-  EFI_ACPI_MEMORY_MAPPED_ENHANCED_CONFIGURATION_SPACE_BASE_ADDRESS_ALLOCATION_STRUCTURE  *Entry;
+  EFI_ACPI_MEMORY_MAPPED_ENHANCED_CONFIGURATION_SPACE_BASE_ADDRESS_ALLOCATION_STRUCTURE  *Entry = NULL;
   UINT32 length = sizeof(EFI_ACPI_MEMORY_MAPPED_CONFIGURATION_BASE_ADDRESS_TABLE_HEADER);
   UINT32 i = 0;
+
+  if (PcieTable == NULL) {
+    sbsa_print(AVS_PRINT_ERR, L"Input PCIe Table Pointer is NULL. Cannot create PCIe INFO \n");
+    return;
+  }
 
   PcieTable->num_entries = 0;
 
   gMcfgHdr = (EFI_ACPI_MEMORY_MAPPED_CONFIGURATION_BASE_ADDRESS_TABLE_HEADER *) pal_get_mcfg_ptr();
 
-  if (gMcfgHdr == 0) {
-      if(PLATFORM_OVERRIDE_PCIE_ECAM_BASE) {
-          PcieTable->block[i].ecam_base = PLATFORM_OVERRIDE_PCIE_ECAM_BASE;
-          PcieTable->block[i].start_bus_num = PLATFORM_OVERRIDE_PCIE_START_BUS_NUM;
-          PcieTable->block[i].segment_num = 0;
-          PcieTable->num_entries = 1;
-      }
-    //Print(L"ACPI - MCFG Table not found. Setting ECAM Base to 0. \n");
-    return;
+  if (gMcfgHdr == NULL) {
+      sbsa_print(AVS_PRINT_DEBUG, L"ACPI - MCFG Table not found. \n");
+      return;
+  }
+
+  if(PLATFORM_OVERRIDE_PCIE_ECAM_BASE) {
+      PcieTable->block[i].ecam_base = PLATFORM_OVERRIDE_PCIE_ECAM_BASE;
+      PcieTable->block[i].start_bus_num = PLATFORM_OVERRIDE_PCIE_START_BUS_NUM;
+      PcieTable->block[i].segment_num = 0;
+      PcieTable->num_entries = 1;
+      return;
   }
 
   Entry = (EFI_ACPI_MEMORY_MAPPED_ENHANCED_CONFIGURATION_SPACE_BASE_ADDRESS_ALLOCATION_STRUCTURE *) (gMcfgHdr + 1);
