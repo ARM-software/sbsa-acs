@@ -36,12 +36,11 @@ payload()
   val_print(AVS_PRINT_DEBUG, "\n       Found %d watchdogs in ACPI table ", wd_num);
 
   if (wd_num == 0) {
-      //no watchdogs in the system. Fail this test and return 
       val_print(AVS_PRINT_WARN, "\n       No Watchdogs reported          %d  ", wd_num);
       val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
       return;
   }
-    
+
   do {
       wd_num--; //array index starts from 0, so subtract 1 from count
 

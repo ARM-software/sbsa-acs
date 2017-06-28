@@ -61,8 +61,8 @@ payload (void)
 
   /* get legacy IRQ info from PCI devices */
   while (count > 0 && status == 0) {
-    if (val_peripheral_get_info (ANY_GSIV, count)) {
-      dev_bdf = val_peripheral_get_info (ANY_BDF, count);
+    if (val_peripheral_get_info (ANY_GSIV, count-1)) {
+      dev_bdf = val_peripheral_get_info (ANY_BDF, count-1);
       status = val_pci_get_legacy_irq_map (dev_bdf, irq_map);
 
       switch (status) {

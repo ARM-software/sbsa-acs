@@ -62,14 +62,14 @@ val_pcie_read_cfg(uint32_t bdf, uint32_t offset)
            (bus <= val_pcie_get_info(PCIE_INFO_END_BUS, i)) &&
            (segment == val_pcie_get_info(PCIE_INFO_SEGMENT, i))) {
           ecam_base = val_pcie_get_info(PCIE_INFO_ECAM, i);
-
-          if (ecam_base == 0) {
-              val_print(AVS_PRINT_ERR, "\n    Read PCIe_CFG: ECAM Base is zero ", 0);
-              return 0;
-          }
           break;
       }
       i++;
+  }
+
+  if (ecam_base == 0) {
+      val_print(AVS_PRINT_ERR, "\n    Read PCIe_CFG: ECAM Base is zero ", 0);
+      return 0;
   }
 
   /* There are 8 functions / device, 32 devices / Bus and each has a 4KB config space */
@@ -122,14 +122,14 @@ val_pcie_write_cfg(uint32_t bdf, uint32_t offset, uint32_t data)
            (bus <= val_pcie_get_info(PCIE_INFO_END_BUS, i)) &&
            (segment == val_pcie_get_info(PCIE_INFO_SEGMENT, i))) {
           ecam_base = val_pcie_get_info(PCIE_INFO_ECAM, i);
-
-          if (ecam_base == 0) {
-              val_print(AVS_PRINT_ERR, "\n    Read PCIe_CFG: ECAM Base is zero ", 0);
-              return;
-          }
           break;
       }
       i++;
+  }
+
+  if (ecam_base == 0) {
+      val_print(AVS_PRINT_ERR, "\n    Read PCIe_CFG: ECAM Base is zero ", 0);
+      return;
   }
 
   /* There are 8 functions / device, 32 devices / Bus and each has a 4KB config space */

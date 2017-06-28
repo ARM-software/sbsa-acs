@@ -74,7 +74,7 @@ payload()
               return;
           }
       }
-      
+
       val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
   }
 

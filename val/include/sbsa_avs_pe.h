@@ -20,7 +20,7 @@
 #define MAX_NUM_PE_LEVEL0        0x8
 #define MAX_NUM_PE_LEVEL2        (2 << 27)
 
-// 
+//
 //  AARCH64 processor exception types.
 //
 #define EXCEPT_AARCH64_SYNCHRONOUS_EXCEPTIONS    0

@@ -201,7 +201,7 @@ payload(uint32_t num_pe)
           if(IS_TEST_FAIL(val_get_status(i)))
           {
               val_get_test_data(i, &debug_data, &array_index);
-              val_print(AVS_PRINT_ERR, "\n       Reg compare failed for PE index=%d for Register: ", i);  
+              val_print(AVS_PRINT_ERR, "\n       Reg compare failed for PE index=%d for Register: ", i);
               val_print(AVS_PRINT_ERR, reg_list[array_index].reg_desc, 0);
               val_print(AVS_PRINT_ERR, "\n       Current PE value = 0x%llx", rd_data_array[array_index] & (~reg_list[array_index].reg_mask));
               val_print(AVS_PRINT_ERR, "         Other PE value = 0x%llx", debug_data);
