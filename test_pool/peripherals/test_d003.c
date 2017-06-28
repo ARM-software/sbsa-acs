@@ -51,7 +51,7 @@ uart_reg_write(uint32_t offset, uint32_t width_mask, uint32_t data)
 
   if (width_mask & WIDTH_BIT16)
       *((uint16_t *)(l_uart_base + offset)) = (uint16_t)data;
-  
+
   if (width_mask & WIDTH_BIT32)
       *((uint32_t *)(l_uart_base + offset)) = (uint32_t)data;
 

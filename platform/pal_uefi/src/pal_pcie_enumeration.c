@@ -29,7 +29,7 @@
 
 
 /**
-  @brief  Increment the Device number (and Bus number if Dev num reaches 32) to the next valid value. 
+  @brief  Increment the Device number (and Bus number if Dev num reaches 32) to the next valid value.
 
   @param  StartBdf  Segment/Bus/Dev/Func in the format created by PCIE_CREATE_BDF
 
@@ -173,5 +173,5 @@ palPcieGetBase(UINT32 bdf, UINT32 bar_index)
   }
 
   return 0;
-} 
+}
 

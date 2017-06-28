@@ -19,7 +19,7 @@
 
 
 /**
-  @brief  Parse the input status and print the appropriate information to console 
+  @brief  Parse the input status and print the appropriate information to console
           1. Caller       - Application layer
           2. Prerequisite - None
   @param  index  - index of the PE who is reporting this status.
@@ -56,7 +56,7 @@ val_report_status(uint32_t index, uint32_t status)
 }
 
 /**
-  @brief  Record the state and status of the test execution 
+  @brief  Record the state and status of the test execution
           1. Caller       - Test Suite
           2. Prerequisite - val_allocate_shared_mem
   @param  index  - index of the PE who is reporting this status.
@@ -87,7 +87,7 @@ uint32_t
 val_get_status(uint32_t index)
 {
   volatile VAL_SHARED_MEM_t *mem;
- 
+
   mem = (VAL_SHARED_MEM_t *) pal_mem_get_shared_addr();
   mem = mem + index;
 

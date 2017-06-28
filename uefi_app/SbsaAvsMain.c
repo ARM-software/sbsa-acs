@@ -246,7 +246,7 @@ HelpMsg (
          "-f      Name of the log file to record the test results in\n"
          "-s      Enable the execution of secure tests\n"
          "-skip   Test(s) to be skipped\n"
-         "        Refer to section 4 of SBSA_ACS_UEFI_App_User_Guide\n"
+         "        Refer to section 4 of SBSA_ACS_User_Guide\n"
          "        To skip a module, use Model_ID as mentioned in user guide\n"
          "        To skip a particular test within a module, use the exact testcase number\n"
   );

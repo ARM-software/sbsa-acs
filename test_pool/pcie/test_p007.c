@@ -59,7 +59,7 @@ payload(void)
 
 uint32_t
 p007_entry(uint32_t num_pe)
-{ 
+{
   uint32_t status = AVS_STATUS_FAIL;
 
   num_pe = 1;  //This test is run on single processor

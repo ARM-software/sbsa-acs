@@ -25,6 +25,8 @@
 #define TEST_DESC  "Test No-Wake from Power Semantic F"
 
 static uint32_t intid, wakeup_event, cnt_base_n=0;
+static uint64_t timer_num, wd_num;
+
 #define WATCHDOG_SEMF  0x1
 #define SYSTIMER_SEMF  0x2
 
@@ -37,7 +39,7 @@ isr()
   if(wakeup_event == SYSTIMER_SEMF)
       val_timer_disable_system_timer((addr_t)cnt_base_n);
   else if(wakeup_event == WATCHDOG_SEMF)
-      val_wd_set_ws0(0, 0);
+      val_wd_set_ws0(wd_num, 0);
 
   val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
   val_gic_end_of_interrupt(intid);
@@ -46,20 +48,40 @@ isr()
 uint32_t
 wakeup_event_for_semantic_f()
 {
-  uint64_t num;
-  num = val_wd_get_info(0, WD_INFO_COUNT);
+  uint32_t ns_timer = 0, ns_wdg = 0;
+  wd_num = val_wd_get_info(0, WD_INFO_COUNT);
 
-  if(num == 0){
-      num = val_timer_get_info(TIMER_INFO_NUM_PLATFORM_TIMERS, 0);
-      if(num == 0)
+  if(wd_num == 0){
+      timer_num = val_timer_get_info(TIMER_INFO_NUM_PLATFORM_TIMERS, 0);
+      if(timer_num == 0)
           return 0;
       else{
-          intid = val_timer_get_info(TIMER_INFO_SYS_INTID, 0);
+          while(timer_num--) {
+              if(val_timer_get_info(TIMER_INFO_IS_PLATFORM_TIMER_SECURE, timer_num))
+                  continue;
+              else{
+                  ns_timer++;
+                  break;
+              }
+          }
+          if(ns_timer == 0)
+              return 0;
+          intid = val_timer_get_info(TIMER_INFO_SYS_INTID, timer_num);
           return SYSTIMER_SEMF;
       }
   }
   else{
-      intid = val_wd_get_info(0, WD_INFO_GSIV);
+      while(wd_num--) {
+          if(val_wd_get_info(wd_num, WD_INFO_ISSECURE))
+              continue;
+          else{
+              ns_wdg++;
+              break;
+          }
+      }
+      if(ns_wdg == 0)
+          return 0;
+      intid = val_wd_get_info(wd_num, WD_INFO_GSIV);
       return WATCHDOG_SEMF;
   }
 
@@ -128,11 +150,11 @@ payload()
   // Step5: Program timer/watchdog, which on expiry will generate an interrupt
   //        and wake target PE
   if(wakeup_event == SYSTIMER_SEMF){
-      cnt_base_n = val_timer_get_info(TIMER_INFO_SYS_CNT_BASE_N, 0);
+      cnt_base_n = val_timer_get_info(TIMER_INFO_SYS_CNT_BASE_N, timer_num);
       val_timer_set_system_timer((addr_t)cnt_base_n, timer_expire_ticks);
   }
   else if(wakeup_event == WATCHDOG_SEMF){
-      val_wd_set_ws0(0, timer_expire_ticks);
+      val_wd_set_ws0(wd_num, timer_expire_ticks);
   }
 
   // Step6: Wait for target PE to update the status, if a timeout occurs that would mean that
@@ -148,7 +170,7 @@ payload()
       if(wakeup_event == SYSTIMER_SEMF)
           val_timer_disable_system_timer((addr_t)cnt_base_n);
       else if(wakeup_event == WATCHDOG_SEMF)
-          val_wd_set_ws0(0, 0);
+          val_wd_set_ws0(wd_num, 0);
 
       val_gic_clear_interrupt(intid);
   }
@@ -167,7 +189,7 @@ payload()
   if(wakeup_event == SYSTIMER_SEMF)
       val_timer_set_system_timer((addr_t)cnt_base_n, timer_expire_ticks);
   else if(wakeup_event == WATCHDOG_SEMF)
-      val_wd_set_ws0(0, timer_expire_ticks);
+      val_wd_set_ws0(wd_num, timer_expire_ticks);
 
   val_print(AVS_PRINT_INFO, "\n       Interrupt generating sequence triggered", 0);
 
@@ -182,7 +204,7 @@ payload()
       if(wakeup_event == SYSTIMER_SEMF)
           val_timer_disable_system_timer((addr_t)cnt_base_n);
       else if(wakeup_event == WATCHDOG_SEMF)
-          val_wd_set_ws0(0, 0);
+          val_wd_set_ws0(wd_num, 0);
 
       val_gic_clear_interrupt(intid);
       val_gic_end_of_interrupt(intid);     // trigger END of interrupt for above interrupt

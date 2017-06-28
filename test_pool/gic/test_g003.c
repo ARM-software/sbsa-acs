@@ -34,7 +34,7 @@ payload()
 
   if (data != 0)
       val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
-      
+
   val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
 }
 

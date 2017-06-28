@@ -65,7 +65,7 @@ val_peripheral_execute_tests(uint32_t level, uint32_t num_pe)
   @param  type     - Type of peripheral whose index needs to be returned
   @param  instance - Instance number is '0' based.
 
-  @result  Index of peripheral matching type and instance 
+  @result  Index of peripheral matching type and instance
 **/
 
 uint32_t
@@ -93,7 +93,7 @@ val_peripheral_get_entry_index(uint32_t type, uint32_t instance)
   @param  info_type - Type of peripheral whose index needs to be returned
   @param  instance  - id (0' based) for which the info has to be returned
 
-  @result  64-bit data of peripheral matching type and instance 
+  @result  64-bit data of peripheral matching type and instance
 **/
 uint64_t
 val_peripheral_get_info(PERIPHERAL_INFO_e info_type, uint32_t instance)
@@ -182,21 +182,21 @@ val_peripheral_get_info(PERIPHERAL_INFO_e info_type, uint32_t instance)
   return 0;
 }
 
-/* 
+/*
  * val_create_peripheralinfo_table:
  *    Caller         Application layer.
  *    Prerequisite   Memory allocated and passed as argument.
- *    Description    This function will call PAL layer to fill all relevant peripheral 
+ *    Description    This function will call PAL layer to fill all relevant peripheral
  *                   information into the g_peripheral_info_table pointer.
  */
 /**
-  @brief  This API calls PAL layer to fill all relevant peripheral 
+  @brief  This API calls PAL layer to fill all relevant peripheral
           information into the g_peripheral_info_table pointer
           1. Caller       - Application layer
           2. Prerequisite - Memory allocated and passed as argument
   @param  info_table - pointer to a memory where peripheral data is filled
 
-  @result  None 
+  @result  None
 **/
 
 void

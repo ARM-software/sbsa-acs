@@ -46,7 +46,7 @@ val_gic_execute_tests(uint32_t level, uint32_t num_pe)
 
   if (status != AVS_STATUS_PASS) {
     val_print(AVS_PRINT_WARN, "\n     Skip remaining GIC tests.\n ",0);
-    return status; 
+    return status;
   }
 
   if (level > 1) {
@@ -137,7 +137,7 @@ val_get_gicd_base(void)
 }
 
 /**
-  @brief   This function is a single point of entry to retrieve 
+  @brief   This function is a single point of entry to retrieve
            all GIC related information.
            1. Caller       -  Test Suite
            2. Prerequisite -  val_gic_create_info_table

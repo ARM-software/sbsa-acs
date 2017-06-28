@@ -295,7 +295,7 @@ val_timer_create_info_table(uint64_t *timer_info_table)
   val_timer_set_phy_el1(0);
 
   val_print(AVS_PRINT_TEST, " TIMER_INFO: Number of system timers  : %4d \n", g_timer_info_table->header.num_platform_timer);
- 
+
 }
 
 /**

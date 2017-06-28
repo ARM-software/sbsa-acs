@@ -59,7 +59,7 @@ val_wd_execute_tests(uint32_t level, uint32_t num_pe)
 }
 
 /**
-  @brief   This API is a single point of entry to retrieve 
+  @brief   This API is a single point of entry to retrieve
            information stored in the WD Info table
            1. Caller       -  Test Suite
            2. Prerequisite -  val_wd_create_info_table
@@ -109,7 +109,7 @@ val_wd_create_info_table(uint64_t *wd_info_table)
   g_wd_info_table = (WD_INFO_TABLE *)wd_info_table;
 
   pal_wd_create_info_table(g_wd_info_table);
-  
+
   val_print(AVS_PRINT_TEST, " WATCHDOG_INFO: Number of Watchdogs   : %4d \n", val_wd_get_info(0, WD_INFO_COUNT));
 }
 

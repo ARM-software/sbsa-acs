@@ -24,7 +24,7 @@
            1. Caller       -  Test Suite
            2. Prerequisite -  None
   @param   reg_id  - the system register index for which data is returned
-  @return  the value read from the system register. 
+  @return  the value read from the system register.
 **/
 uint64_t
 val_gic_reg_read(uint32_t reg_id)

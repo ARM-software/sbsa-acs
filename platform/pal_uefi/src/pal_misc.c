@@ -24,7 +24,7 @@
 UINT8   *gSharedMemory;
 
 /**
-  @brief  Provides a single point of abstraction to read from all 
+  @brief  Provides a single point of abstraction to read from all
           Memory Mapped IO address
 
   @param  addr 64-bit address

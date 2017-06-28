@@ -29,7 +29,7 @@ payload()
 
   data = val_pe_reg_read(ID_AA64DFR0_EL1);
 
-  if (((data >> 20) & 0xF) > 2) //bits 23:20 for Number of watchpoints - 1 
+  if (((data >> 20) & 0xF) > 2) //bits 23:20 for Number of watchpoints - 1
 	val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
   else
 	val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));

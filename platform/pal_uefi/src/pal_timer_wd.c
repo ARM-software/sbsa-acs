@@ -68,7 +68,7 @@ pal_timer_create_info_table(TIMER_INFO_TABLE *TimerTable)
   UINT32                      i;
   UINT32                      num_of_entries;
 
-  if (TimerTable == NULL){
+  if (TimerTable == NULL) {
     sbsa_print(AVS_PRINT_ERR, L"Input Timer Table Pointer is NULL. Cannot create Timer INFO \n");
     return;
   }
