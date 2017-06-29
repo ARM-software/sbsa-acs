@@ -31,13 +31,13 @@ payload()
   uint64_t refresh_base;
   uint64_t wd_num = val_wd_get_info(0, WD_INFO_COUNT);
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
-  uint32_t data;
+  uint32_t data, ns_wdg = 0;
 
   val_print(AVS_PRINT_DEBUG, "\n       Found %d watchdogs in ACPI table ", wd_num);
 
   if (wd_num == 0) {
       val_print(AVS_PRINT_WARN, "\n       No Watchdogs reported          %d  ", wd_num);
-      val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
+      val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
       return;
   }
 
@@ -47,6 +47,7 @@ payload()
       if (val_wd_get_info(wd_num, WD_INFO_ISSECURE))
           continue;    //Skip Secure watchdog
 
+      ns_wdg++;
       refresh_base = val_wd_get_info(wd_num, WD_INFO_REFRESH_BASE);
       val_print(AVS_PRINT_INFO, "\n      Watchdog Refresh base is %x ", refresh_base);
       ctrl_base    = val_wd_get_info(wd_num, WD_INFO_CTRL_BASE);
@@ -66,6 +67,12 @@ payload()
           return;
       }
   } while(wd_num);
+
+  if(!ns_wdg) {
+      val_print(AVS_PRINT_WARN, "\n       No non-secure Watchdogs reported", 0);
+      val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 02));
+      return;
+  }
 
   val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
 

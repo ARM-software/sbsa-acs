@@ -108,16 +108,16 @@ main (int argc, char **argv)
     }
 
 
-    printf ("\n ************ SBSA Architecture Compliance Suite ********* \n");
-    printf ("                version %d.%d  \n", SBSA_APP_VERSION_MAJOR, SBSA_APP_VERSION_MINOR);
+    printf ("\n ************ SBSA Architectural Suite ********* \n");
+    printf ("                Version %d.%d  \n", SBSA_APP_VERSION_MAJOR, SBSA_APP_VERSION_MINOR);
 
 
-    printf ("\n Starting Compliance verification for Level %2d (Print level is %2d)\n\n", g_sbsa_level, g_print_level);
+    printf ("\n Starting tests for level %2d (Print level is %2d)\n\n", g_sbsa_level, g_print_level);
 
-    printf (" Gathering System information.... \n");
+    printf (" Gathering system information.... \n");
     status = initialize_test_environment(g_print_level);
     if (status) {
-        printf ("Cannot Initialize test environment. Exiting.... \n");
+        printf ("Cannot initialize test environment. Exiting.... \n");
         return 0;
     }
 
@@ -125,7 +125,7 @@ main (int argc, char **argv)
     execute_tests_pcie(1, g_sbsa_level, g_print_level);
 
 
-    printf("\n   *** SBSA Compliance Test Complete *** \n\n");
+    printf("\n   *** SBSA tests complete *** \n\n");
 
     cleanup_test_environment();
 

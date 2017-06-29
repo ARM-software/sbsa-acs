@@ -114,18 +114,10 @@ payload()
           return;
       }
 
-      data = 0xA5A500FF;
-      val_mmio_write(cnt_base_n + 0x28, data);
-      if(data != val_mmio_read(cnt_base_n + 0x28)) {
-          val_print(AVS_PRINT_ERR, "\n       Read-write check failed for CNTBaseN.CNTP_TVAL, expected value %x ", data);
-          val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 0x8));
-          return;
-      }
-
       data = val_mmio_read(cnt_base_n + 0xFD0);
       if ((data == 0x0) || ((data & 0xFFFF) == 0xFFFF)) {
           val_print(AVS_PRINT_ERR, "\n      Unexpected value for CNTBaseN.CounterID %x  ", data);
-          val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 0x9));
+          val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 0x8));
           return;
       }
 
