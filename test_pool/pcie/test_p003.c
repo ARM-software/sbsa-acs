@@ -18,9 +18,26 @@
 #include "val/include/val_interface.h"
 
 #include "val/include/sbsa_avs_pcie.h"
+#include "val/include/sbsa_avs_pe.h"
 
 #define TEST_NUM   (AVS_PCIE_TEST_NUM_BASE + 3)
 #define TEST_DESC  "Check ECAM Memory accessibility   "
+
+static void *branch_to_test;
+uint64_t stack_pointer, ret_addr;
+
+static
+void
+esr(uint64_t interrupt_type, void *context)
+{
+  uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
+
+  /* Update the ELR to return to test specified address */
+  val_pe_update_elr(context, (uint64_t)branch_to_test);
+
+  val_print(AVS_PRINT_ERR, "\n      Exception occured while accessing ECAM address", 0);
+  val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
+}
 
 static
 void
@@ -49,11 +66,20 @@ payload(void)
       val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
       return;
   }
+  //Context save in case an exception occurs while accessing ECAM base
+  stack_pointer = AA64ReadSp();
+  ret_addr =  *(uint64_t *)(stack_pointer+8);
 
   while (num_ecam) {
       num_ecam--;
       segment = val_pcie_get_info(PCIE_INFO_SEGMENT, num_ecam);
       bus = val_pcie_get_info(PCIE_INFO_START_BUS, num_ecam);
+
+      /* Install both sync and async handlers, so that the test could handle
+         either of these exceptions.*/
+      val_pe_install_esr(EXCEPT_AARCH64_SERROR, esr);
+      val_pe_install_esr(EXCEPT_AARCH64_SYNCHRONOUS_EXCEPTIONS, esr);
+      branch_to_test = &&exception_label;
 
       bdf = PCIE_CREATE_BDF(segment, bus, 0, 0);
       data = val_pcie_read_cfg(bdf, 0);
@@ -61,7 +87,7 @@ payload(void)
       //If this is really PCIe CFG space, Device ID and Vendor ID cannot be 0 or 0xFFFF
       if ((data == 0) || ((data & 0xFFFF) == 0xFFFF)) {
           val_print(AVS_PRINT_ERR, "\n      Incorrect data at ECAM Base %4x    ", data);
-          val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
+          val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
           return;
       }
 
@@ -70,13 +96,18 @@ payload(void)
       //If this really is PCIe CFG, Header type[6:0] must be 01 or 00
       if (((data >> 16) & 0x7F) > 01) {
           val_print(AVS_PRINT_ERR, "\n      Incorrect PCIe CFG Hdr type %4x    ", data);
-          val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
+          val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 03));
           return;
       }
   }
 
   val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
+  return;
 
+exception_label:
+  //Context restore
+  AA64WriteSp(stack_pointer);
+  *(uint64_t *)(stack_pointer+8) = ret_addr;
 }
 
 uint32_t
