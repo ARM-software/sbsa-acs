@@ -209,7 +209,6 @@ payload4()
       } else {
           val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM4, 01));
       }
-      break;
   }
 
   if(!ns_wdg){
@@ -274,7 +273,6 @@ payload5()
           val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM5, 01));
           return;
       }
-      break;
   }
 
   if(!ns_timer){

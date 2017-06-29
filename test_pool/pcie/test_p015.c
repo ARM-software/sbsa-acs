@@ -19,7 +19,7 @@
 #include "val/include/sbsa_avs_pcie.h"
 
 #define TEST_NUM   (AVS_PCIE_TEST_NUM_BASE + 15)
-#define TEST_DESC  "PCIe No Snoop transaction attribute"
+#define TEST_DESC  "PCIe No Snoop transaction attr    "
 
 static
 void

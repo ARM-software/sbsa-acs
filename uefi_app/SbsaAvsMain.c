@@ -373,11 +373,11 @@ ShellAppMain (
   g_sbsa_tests_pass  = 0;
   g_sbsa_tests_fail  = 0;
 
-  Print(L"\n\n SBSA Compliance Suite \n");
+  Print(L"\n\n SBSA Architectural Suite \n");
   Print(L"    Version %d.%d  \n", SBSA_ACS_MAJOR_VER, SBSA_ACS_MINOR_VER);
 
 
-  Print(L"\n Starting Compliance verification for Level %2d (Print level is %2d)\n\n", g_sbsa_level, g_print_level);
+  Print(L"\n Starting tests for level %2d (Print level is %2d)\n\n", g_sbsa_level, g_print_level);
 
 
   Print(L" Creating Platform Information Tables \n");
@@ -405,7 +405,7 @@ ShellAppMain (
   if (g_execute_secure == TRUE) {
     Print(L"\n      ***  Starting Secure FW tests ***  \n");
     val_secure_execute_tests(g_sbsa_level, val_pe_get_num());
-    Print(L"\n      ***  Secure FW tests Completed ***  \n");
+    Print(L"\n      ***  Secure FW tests completed ***  \n");
   }
 
   Print(L"\n      ***  Starting PE tests ***  \n");
@@ -445,7 +445,7 @@ print_test_status:
     ShellCloseFile(&g_sbsa_log_file_handle);
   }
 
-  Print(L"\n      *** SBSA Compliance Test Complete. Reset the System. *** \n\n");
+  Print(L"\n      *** SBSA tests complete. Reset the system. *** \n\n");
 
   val_pe_context_restore(AA64WriteSp(g_stack_pointer));
 
