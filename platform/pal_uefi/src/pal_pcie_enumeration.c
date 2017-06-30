@@ -107,7 +107,7 @@ palPcieGetBdf(UINT32 ClassCode, UINT32 StartBdf)
           Status = Pci->Pci.Read (Pci, EfiPciIoWidthUint32, 0, sizeof (PciHeader)/sizeof (UINT32), &PciHeader);
           if (!EFI_ERROR (Status)) {
             Hdr = &PciHeader.Bridge.Hdr;
-            sbsa_print(AVS_PRINT_ERR,L"\n%03d.%02d.%02d class_code = %d %d", Bus, Dev, Index, Hdr->ClassCode[1], Hdr->ClassCode[2]);
+            sbsa_print(AVS_PRINT_INFO,L"\n%03d.%02d.%02d class_code = %d %d", Bus, Dev, Index, Hdr->ClassCode[1], Hdr->ClassCode[2]);
             if (Hdr->ClassCode[2] == ((ClassCode >> 16) & 0xFF)) {
               if (Hdr->ClassCode[1] == ((ClassCode >> 8) & 0xFF)) {
                  /* Found our device */
