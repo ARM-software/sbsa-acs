@@ -17,7 +17,7 @@ A few tests are executed by running the SBSA Linux application which in turn dep
 
 
 ## Release details
- - Code Quality: Beta
+ - Code Quality: REL v1.0 staging
  - Test results must not be taken as a true indication of compliance. There is a possibility of false positives and false negatives.
  - To know about the gaps in the test coverage, see [Testcase checklist](docs/testcase-checklist.md).
 
