@@ -5,6 +5,7 @@ cscope.*
 *~
 .project
 .cproject
-
+*.o*
+sbsa
 #Ignore build directory
 build/

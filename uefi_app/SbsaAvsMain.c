@@ -373,7 +373,7 @@ ShellAppMain (
   g_sbsa_tests_pass  = 0;
   g_sbsa_tests_fail  = 0;
 
-  Print(L"\n\n SBSA Architectural Suite \n");
+  Print(L"\n\n SBSA Architecture Compliance Suite \n");
   Print(L"    Version %d.%d  \n", SBSA_ACS_MAJOR_VER, SBSA_ACS_MINOR_VER);
 
 
