@@ -10,15 +10,15 @@ For more information, download the [SBSA specification](http://infocenter.arm.co
 
 ## SBSA - Architecture Compliance Suite
 
-SBSA **Architecture compliance suite** (ACS) is a collection of self-checking, portable C-based tests.
+SBSA **Architecture Compliance Suite** (ACS) is a collection of self-checking, portable C-based tests.
 These tests check an implementation for compliance against SBSA specification version 3.0.
 Most of the tests are executed from UEFI Shell by executing the SBSA UEFI shell application.
 A few tests are executed by running the SBSA Linux application which in turn depends on the SBSA Linux kernel module.
 
 
 ## Release details
- - Code Quality  : Beta
- - Test results must not be taken as a true indication of compliance. There is a possibility of false positives and false negetives.
+ - Code Quality: REL v1.0 staging
+ - Test results must not be taken as a true indication of compliance. There is a possibility of false positives and false negatives.
  - To know about the gaps in the test coverage, see [Testcase checklist](docs/testcase-checklist.md).
 
 ## GitHub branch
@@ -136,7 +136,7 @@ Certain PCIe and IOMMU tests require Linux operating system with kernel version 
 SBSA ACS is distributed under Apache v2.0 License.
 
 
-## Feedback, contrubutions and support
+## Feedback, contributions and support
 
  - For feedback, use the GitHub Issue Tracker that is associated with this repository.
  - ARM licensees can contact ARM directly through their partner managers.
