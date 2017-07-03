@@ -108,7 +108,7 @@ main (int argc, char **argv)
     }
 
 
-    printf ("\n ************ SBSA Architectural Suite ********* \n");
+    printf ("\n ************ SBSA Architecture Compliance Suite ********* \n");
     printf ("                Version %d.%d  \n", SBSA_APP_VERSION_MAJOR, SBSA_APP_VERSION_MINOR);
 
 

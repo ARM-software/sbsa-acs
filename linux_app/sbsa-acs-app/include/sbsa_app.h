@@ -20,7 +20,7 @@
 
 
 #define SBSA_APP_VERSION_MAJOR  0
-#define SBSA_APP_VERSION_MINOR  5
+#define SBSA_APP_VERSION_MINOR  9
 
 #include "sbsa_drv_intf.h"
 
