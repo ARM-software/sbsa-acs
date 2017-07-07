@@ -110,7 +110,7 @@ payload (void)
           clean_msi_list (dev_mvec);
         }
       } else {
-        val_print (AVS_STATUS_ERR, "    Failed to get address of PCI device", 0);
+        val_print (AVS_STATUS_ERR, "\n       Failed to get address of PCI device", 0);
         val_set_status (index, RESULT_FAIL (g_sbsa_level, TEST_NUM, 1));
         status = 1;
       }

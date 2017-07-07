@@ -152,7 +152,7 @@ payload (void)
               if (val_get_msi_vectors (next_dev_bdf, &next_dev_mvec)) {
                 /* Compare two lists of MSI(X) vectors */
                 if(check_list_duplicates (current_dev_mvec, next_dev_mvec)) {
-                  val_print (AVS_STATUS_ERR, "    Allocated MSIs are not unique", 0);
+                  val_print (AVS_STATUS_ERR, "\n       Allocated MSIs are not unique", 0);
                   val_set_status (index, RESULT_FAIL (g_sbsa_level, TEST_NUM, 02));
                   status = 1;
                 }
@@ -165,7 +165,7 @@ payload (void)
           clean_msi_list (current_dev_mvec);
         }
       } else {
-        val_print (AVS_STATUS_ERR, "    Failed to get address of PCI device", 0);
+        val_print (AVS_STATUS_ERR, "\n       Failed to get address of PCI device", 0);
         val_set_status (index, RESULT_FAIL (g_sbsa_level, TEST_NUM, 01));
         status = 1;
       }

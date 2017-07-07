@@ -20,7 +20,7 @@
 #include "val/include/sbsa_avs_iovirt.h"
 
 #define TEST_NUM   (AVS_SMMU_TEST_NUM_BASE + 5)
-#define TEST_DESC  "SMMUv2 unique interrupt per context bank           "
+#define TEST_DESC  "SMMUv2 unique intr per ctxt bank  "
 
 static
 void

@@ -62,7 +62,7 @@ payload (void)
   }
 
   if(no_snoop_set) {
-    val_print (AVS_STATUS_ERR, "    PCIe no snoop bit set to %d for a device with coherent DMA", no_snoop_set);
+    val_print (AVS_STATUS_ERR, "\n       PCIe no snoop bit set to %d for a device with coherent DMA", no_snoop_set);
     val_set_status (index, RESULT_FAIL (g_sbsa_level, TEST_NUM, 1));
   } else {
     val_set_status (index, RESULT_PASS (g_sbsa_level, TEST_NUM, status));

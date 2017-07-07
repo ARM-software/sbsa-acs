@@ -20,7 +20,7 @@
 #include "val/include/sbsa_avs_smmu.h"
 
 #define TEST_NUM   (AVS_SMMU_TEST_NUM_BASE + 3)
-#define TEST_DESC  "SMMU Compatibility Check             "
+#define TEST_DESC  "SMMU Compatibility Check          "
 
 static
 void

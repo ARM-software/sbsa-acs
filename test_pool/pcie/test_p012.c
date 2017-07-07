@@ -54,7 +54,7 @@ payload (void)
 
   irq_map = kzalloc(sizeof(PERIPHERAL_IRQ_MAP), GFP_KERNEL);
   if (!irq_map) {
-    val_print (AVS_STATUS_ERR, "    Memory allocation error", 0);
+    val_print (AVS_STATUS_ERR, "\n       Memory allocation error", 0);
     val_set_status (index, RESULT_FAIL (g_sbsa_level, TEST_NUM, 01));
     return;
   }
@@ -69,25 +69,25 @@ payload (void)
       case 0:
         break;
       case 1:
-        val_print (AVS_STATUS_ERR, "    Unable to access PCI bridge device", 0);
+        val_print (AVS_STATUS_ERR, "\n       Unable to access PCI bridge device", 0);
         break;
       case 2:
-        val_print (AVS_STATUS_ERR, "    Unable to fetch _PRT ACPI handle", 0);
+        val_print (AVS_STATUS_ERR, "\n       Unable to fetch _PRT ACPI handle", 0);
         break;
       case 3:
-        val_print (AVS_STATUS_ERR, "    Unable to access _PRT ACPI object", 0);
+        val_print (AVS_STATUS_ERR, "\n       Unable to access _PRT ACPI object", 0);
         break;
       case 4:
-        val_print (AVS_STATUS_ERR, "    Interrupt hard-wire error", 0);
+        val_print (AVS_STATUS_ERR, "\n       Interrupt hard-wire error", 0);
         break;
       case 5:
-        val_print (AVS_STATUS_ERR, "    Legacy interrupt out of range", 0);
+        val_print (AVS_STATUS_ERR, "\n       Legacy interrupt out of range", 0);
         break;
       case 6:
-        val_print (AVS_STATUS_ERR, "    Maximum number of interrupts has been reached", 0);
+        val_print (AVS_STATUS_ERR, "\n       Maximum number of interrupts has been reached", 0);
         break;
       default:
-        val_print (AVS_STATUS_ERR, "    Unknown error", 0);
+        val_print (AVS_STATUS_ERR, "\n       Unknown error", 0);
         break;
       }
     }
@@ -104,8 +104,8 @@ payload (void)
             if (irq_map->legacy_irq_map[current_irq_pin].irq_list[ccnt] ==
                 irq_map->legacy_irq_map[next_irq_pin].irq_list[ncnt]) {
               status = 7;
-              val_print (AVS_STATUS_ERR, "    Legacy interrupt %c routing", pin_name(current_irq_pin));
-              val_print (AVS_STATUS_ERR, "    is the same as %c routing", pin_name(next_irq_pin));
+              val_print (AVS_STATUS_ERR, "\n       Legacy interrupt %c routing", pin_name(current_irq_pin));
+              val_print (AVS_STATUS_ERR, "\n       is the same as %c routing", pin_name(next_irq_pin));
             }
           }
         }

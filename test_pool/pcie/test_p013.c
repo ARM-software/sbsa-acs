@@ -64,7 +64,8 @@ payload (void)
       if(BAR_64BIT_SUPPORT != ((data & ADDR_TYPE_MASK) >> 1)) {
           if(!val_pcie_is_device_behind_smmu(dev_bdf)) {
               val_set_status (index, RESULT_FAIL (g_sbsa_level, TEST_NUM, 1));
-              val_print (AVS_STATUS_ERR, "\n       The device with bdf=0x%x doesn't support 64 bit addressing for BAR0, and is not behind SMMU", dev_bdf);
+              val_print (AVS_STATUS_ERR, "\n       The device with bdf=0x%x doesn't support 64 bit addressing", dev_bdf);
+              val_print (AVS_STATUS_ERR, "\n       for BAR0, and is not behind SMMU", 0);
               val_print (AVS_STATUS_ERR, "\n       The device is of type = %d", dev_type);
               return;
           }
@@ -77,7 +78,8 @@ payload (void)
               if(BAR_64BIT_SUPPORT != ((data & ADDR_TYPE_MASK) >> 1)) {
                   if(!val_pcie_is_device_behind_smmu(dev_bdf)) {
                       val_set_status (index, RESULT_FAIL (g_sbsa_level, TEST_NUM, 1));
-                      val_print (AVS_STATUS_ERR, "\nThe device with bdf=0x%x doesn't support 64 bit addressing for BAR2, and is not behind SMMU", dev_bdf);
+                      val_print (AVS_STATUS_ERR, "\n       The device with bdf=0x%x doesn't support 64 bit addressing", dev_bdf);
+                      val_print (AVS_STATUS_ERR, "\n       for BAR2, and is not behind SMMU", 0);
                       return;
                   }
                   smmu_checked++;
@@ -102,7 +104,8 @@ payload (void)
               data = val_pcie_read_cfg(dev_bdf, BAR0_OFFSET);
               if(BAR_64BIT_SUPPORT != ((data & ADDR_TYPE_MASK) >> 1)) {
                   if(!val_pcie_is_device_behind_smmu(dev_bdf)) {
-                      val_print (AVS_STATUS_ERR, "\n       The device root bridge doesn't support 64 bit addressing, and is not behind SMMU", 0);
+                      val_print (AVS_STATUS_ERR, "\n       The device root bridge doesn't support 64 bit addressing", 0);
+                      val_print (AVS_STATUS_ERR, "\n       , and is not behind SMMU", 0);
                       val_set_status (index, RESULT_FAIL (g_sbsa_level, TEST_NUM, 1));
                       return;
                   }
