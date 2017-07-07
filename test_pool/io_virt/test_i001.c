@@ -20,7 +20,7 @@
 #include "val/include/sbsa_avs_smmu.h"
 
 #define TEST_NUM   (AVS_SMMU_TEST_NUM_BASE + 1)
-#define TEST_DESC  "Check 64KB Granularity support       "
+#define TEST_DESC  "Check 64KB Granularity support    "
 
 static
 void

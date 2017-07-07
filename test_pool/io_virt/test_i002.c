@@ -20,7 +20,7 @@
 #include "val/include/sbsa_avs_smmu.h"
 
 #define TEST_NUM   (AVS_SMMU_TEST_NUM_BASE + 2)
-#define TEST_DESC  "All SMMUs have same Arch Revision    "
+#define TEST_DESC  "All SMMUs have same Arch Revision "
 
 static
 void

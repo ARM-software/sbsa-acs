@@ -109,7 +109,7 @@ main (int argc, char **argv)
 
 
     printf ("\n ************ SBSA Architecture Compliance Suite ********* \n");
-    printf ("                Version %d.%d  \n", SBSA_APP_VERSION_MAJOR, SBSA_APP_VERSION_MINOR);
+    printf ("                        Version %d.%d  \n", SBSA_APP_VERSION_MAJOR, SBSA_APP_VERSION_MINOR);
 
 
     printf ("\n Starting tests for level %2d (Print level is %2d)\n\n", g_sbsa_level, g_print_level);
@@ -125,7 +125,7 @@ main (int argc, char **argv)
     execute_tests_pcie(1, g_sbsa_level, g_print_level);
 
 
-    printf("\n   *** SBSA tests complete *** \n\n");
+    printf("\n                    *** SBSA tests complete *** \n\n");
 
     cleanup_test_environment();
 

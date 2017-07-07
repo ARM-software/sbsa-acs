@@ -207,7 +207,7 @@ int read_from_proc_sbsa_msg() {
   }
 
   /* Print Until buffer is empty */
-  while(fread(buf_msg,1,sizeof(buf_msg),fd)){
+  while(fread(buf_msg,sizeof(buf_msg),1,fd)){
     printf("%s", buf_msg);
   }
 
