@@ -20,7 +20,7 @@
 #define TEST_NUM    (AVS_PE_TEST_NUM_BASE  +  15)
 #define TEST_DESC  "Check Arch symmetry across PE     "
 
-#define NUM_OF_REGISTERS  34
+#define NUM_OF_REGISTERS  32
 
 #define RAS               1
 #define SPE               2
@@ -29,9 +29,7 @@
 
 #define MASK_AA64MMFR0    0xF
 #define MASK_MIDR         0x00F0FFFF
-#define MASK_VPIDR        0x00F0FFFF
 #define MASK_MPIDR        0xFF3FFFFFFF
-#define MASK_VMPIDR       0xFF3FFFFFFF
 #define MASK_CTR          0xC000
 #define MASK_CCSIDR       0xFFFFFF0
 #define MASK_PMCR         0xFFFF
@@ -57,9 +55,7 @@ reg_details reg_list[] = {
     {ID_AA64ISAR0_EL1, 0x0,            "ID_AA64ISAR0_EL1", 0x0 },
     {ID_AA64ISAR1_EL1, 0x0,            "ID_AA64ISAR1_EL1", 0x0 },
     {MPIDR_EL1,        MASK_MPIDR,     "MPIDR_EL1"       , 0x0 },
-    {VMPIDR_EL2,       MASK_VMPIDR,    "VMPIDR_EL2"      , 0x0 },
     {MIDR_EL1,         MASK_MIDR,      "MIDR_EL1"        , 0x0 },
-    {VPIDR_EL2,        MASK_VPIDR,     "VPIDR_EL2"       , 0x0 },
     {CCSIDR_EL1,       MASK_CCSIDR,    "CCSIDR_EL1"      , 0x0 },
     {ID_DFR0_EL1,      0x0,            "ID_DFR0_EL1"     , AA32},
     {ID_ISAR0_EL1,     0x0,            "ID_ISAR0_EL1"    , AA32},
