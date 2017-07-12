@@ -11,15 +11,18 @@ For more information, download the [SBSA specification](http://infocenter.arm.co
 ## SBSA - Architecture Compliance Suite
 
 SBSA **Architecture Compliance Suite** (ACS) is a collection of self-checking, portable C-based tests.
-These tests check an implementation for compliance against SBSA specification version 3.0.
+This suite includes a set of examples of the invariant behaviours that are provided by the [SBSA](http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.den0029/index.html) specification, so that implementers can verify if these behavious have been interpreted correctly.
 Most of the tests are executed from UEFI Shell by executing the SBSA UEFI shell application.
-A few tests are executed by running the SBSA Linux application which in turn depends on the SBSA Linux kernel module.
+A few tests are executed by running the SBSA ACS Linux application which in turn depends on the SBSA ACS Linux kernel module.
 
 
 ## Release details
- - Code Quality: REL v1.0 staging
- - Test results must not be taken as a true indication of compliance. There is a possibility of false positives and false negatives.
+ - Code Quality: REL v1.0
+ - The tests are written for version 3.0 of the SBSA specification.
+ - The compliance suite is not a substitute for design verification.
+ - To review the SBSA ACS logs, ARM licensees can contact ARM directly through their partner managers.
  - To know about the gaps in the test coverage, see [Testcase checklist](docs/testcase-checklist.md).
+
 
 ## GitHub branch
   - To pick up the release version of the code, checkout the release branch.
@@ -139,5 +142,6 @@ SBSA ACS is distributed under Apache v2.0 License.
 ## Feedback, contributions and support
 
  - For feedback, use the GitHub Issue Tracker that is associated with this repository.
+ - For support, please send an email to "support-enterprise-acs@arm.com" with details.
  - ARM licensees can contact ARM directly through their partner managers.
- - ARM welcomes code contributions through GitHub pull requests. For details, see "Contributing Code” section of the documentation.
+ - ARM welcomes code contributions through GitHub pull requests. See GitHub documentation on how to raise pull requests.

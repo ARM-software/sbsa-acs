@@ -91,12 +91,14 @@ payload()
 
       data = 0x3;
       val_mmio_write(cnt_base_n + 0x2C, data);
-      if(data != val_mmio_read(cnt_base_n + 0x2C)) {
+      if(data != (val_mmio_read(cnt_base_n + 0x2C) & 0x3)) {
           val_print(AVS_PRINT_ERR, "\n       Read-write check failed for CNTBaseN.CNTP_CTL, expected value %x ", data);
+          val_print(AVS_PRINT_ERR, "\n       Read value %x ", val_mmio_read(cnt_base_n + 0x2C));
           val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 0x5));
+          val_mmio_write(cnt_base_n + 0x2C, 0x0); // Disable the timer before return
           return;
       }
-      val_mmio_write(cnt_base_n + 0x2C, 0x0); // Disabling timer
+      val_mmio_write(cnt_base_n + 0x2C, 0x0); // Disable timer
 
       data = 0xFF00FF00;
       val_mmio_write(cnt_base_n + 0x20, data);

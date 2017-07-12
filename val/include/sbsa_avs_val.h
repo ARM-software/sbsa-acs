@@ -26,7 +26,7 @@
 typedef struct {
   uint64_t    data0;
   uint64_t    data1;
-  uint32_t     status;
+  uint32_t    status;
 }VAL_SHARED_MEM_t;
 
 uint64_t
