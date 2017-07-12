@@ -11,7 +11,7 @@ For more information, download the [SBSA specification](http://infocenter.arm.co
 ## SBSA - Architecture Compliance Suite
 
 SBSA **Architecture Compliance Suite** (ACS) is a collection of self-checking, portable C-based tests.
-This suite includes a set of examples of the invariant behaviours that are provided by the [SBSA](http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.den0029/index.html) specification, so that implementers can verify if these behavious have been interpreted correctly.
+This suite includes a set of examples of the invariant behaviours that are provided by the [SBSA](http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.den0029/index.html) specification, so that implementers can verify if these behaviours have been interpreted correctly.
 Most of the tests are executed from UEFI Shell by executing the SBSA UEFI shell application.
 A few tests are executed by running the SBSA ACS Linux application which in turn depends on the SBSA ACS Linux kernel module.
 
