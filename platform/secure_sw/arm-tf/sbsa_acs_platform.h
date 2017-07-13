@@ -22,21 +22,25 @@
   @brief SECURE DEVICE Definitions  - Modify them to match the Target Platform
 **/
 
-  #define SBSA_CNTControlBase      ARM_SYS_CNTCTL_BASE
-  #define SBSA_CNTReadBase         ARM_SYS_CNTREAD_BASE
-  #define SBSA_CNTCTLBase          ARM_SYS_TIMCTL_BASE
+  #define SBSA_CNTControlBase               ARM_SYS_CNTCTL_BASE
+  #define SBSA_CNTReadBase                  ARM_SYS_CNTREAD_BASE
+  #define SBSA_CNTCTLBase                   ARM_SYS_TIMCTL_BASE
 
-  #define SBSA_GENERIC_TWDOG_BASE  0
-  #define SBSA_SP805_TWDOG_BASE    ARM_SP805_TWDG_BASE
-  #define WDOG_UNLOCK_KEY          0x1ACCE551
+  #define SBSA_SECURE_SYSTEM_TIMER          0
+  #define SBSA_SECURE_CNTBaseN              0
+  #define SBSA_SECURE_SYS_TIMER_INTID       0
 
-  #define SBSA_SEC_UART_BASE       PLAT_ARM_BL31_RUN_UART_BASE
-  #define SBSA_SEC_UART_GSIV       0     //148
+  #define SBSA_GENERIC_TWDOG_BASE           0
+  #define SBSA_SP805_TWDOG_BASE             ARM_SP805_TWDG_BASE
+  #define WDOG_UNLOCK_KEY                   0x1ACCE551
 
-  #define SBSA_TRUSTED_SRAM_BASE1  ARM_TRUSTED_SRAM_BASE + 0x00
-  #define SBSA_TRUSTED_SRAM_BASE2  ARM_TRUSTED_SRAM_BASE + 0x20
-  #define SBSA_TRUSTED_SRAM_BASE3  ARM_TRUSTED_SRAM_BASE + 0x40
-  #define SBSA_TRUSTED_SRAM_BASE4  ARM_TRUSTED_SRAM_BASE + 0x60
+  #define SBSA_SEC_UART_BASE                PLAT_ARM_BL31_RUN_UART_BASE
+  #define SBSA_SEC_UART_GSIV                0     //148
+
+  #define SBSA_TRUSTED_SRAM_BASE1           ARM_TRUSTED_SRAM_BASE + 0x00
+  #define SBSA_TRUSTED_SRAM_BASE2           ARM_TRUSTED_SRAM_BASE + 0x20
+  #define SBSA_TRUSTED_SRAM_BASE3           ARM_TRUSTED_SRAM_BASE + 0x40
+  #define SBSA_TRUSTED_SRAM_BASE4           ARM_TRUSTED_SRAM_BASE + 0x60
 
 /**
   @brief PLATFORM FUNCTIONS - Modify this based on the Target Platform

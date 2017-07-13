@@ -42,6 +42,7 @@ void val_set_test_data(uint32_t index, uint64_t addr, uint64_t test_data);
 void val_get_test_data(uint32_t index, uint64_t *data0, uint64_t *data1);
 
 
+
 /* VAL PE APIs */
 uint32_t val_pe_execute_tests(uint32_t level, uint32_t num_pe);
 uint32_t val_pe_create_info_table(uint64_t *pe_info_table);
@@ -95,7 +96,8 @@ typedef enum {
   TIMER_INFO_IS_PLATFORM_TIMER_SECURE,
   TIMER_INFO_SYS_CNTL_BASE,
   TIMER_INFO_SYS_CNT_BASE_N,
-  TIMER_INFO_SYS_INTID
+  TIMER_INFO_SYS_INTID,
+  TIMER_INFO_SYS_TIMER_STATUS
 }TIMER_INFO_e;
 
 #define SBSA_TIMER_FLAG_ALWAYS_ON 0x4
@@ -138,7 +140,8 @@ uint32_t val_pcie_execute_tests(uint32_t level, uint32_t num_pe);
 typedef enum {
   SMMU_NUM_CTRL = 1,
   SMMU_CTRL_BASE,
-  SMMU_CTRL_ARCH_MAJOR_REV
+  SMMU_CTRL_ARCH_MAJOR_REV,
+  SMMU_IOVIRT_BLOCK
 }SMMU_INFO_e;
 
 typedef enum {
@@ -153,6 +156,14 @@ typedef enum {
   SMMU_GET_ATTR,
   SMMU_SET_ATTR,
 }SMMU_OPS_e;
+
+typedef enum {
+  NUM_PCIE_RC = 1,
+  RC_SEGMENT_NUM,
+  RC_ATS_ATTRIBUTE,
+  RC_MEM_ATTRIBUTE,
+  RC_IOVIRT_BLOCK
+}PCIE_RC_INFO_e;
 
 void     val_iovirt_create_info_table(uint64_t *iovirt_info_table);
 void     val_iovirt_free_info_table(void);
@@ -176,6 +187,7 @@ uint32_t val_dma_start_from_device(void *buffer, uint32_t length, uint32_t index
 uint32_t val_dma_start_to_device(void *buffer, uint32_t length, uint32_t index);
 uint32_t val_dma_iommu_check_iova(uint32_t ctrl_index, addr_t dma_addr, addr_t cpu_addr);
 void     val_dma_device_get_dma_addr(uint32_t ctrl_index, void *dma_addr, uint32_t *cpu_len);
+int      val_dma_mem_get_attrs(void *buf, uint32_t *attr, uint32_t *sh);
 
 
 /* POWER and WAKEUP APIs */
@@ -202,6 +214,7 @@ typedef enum {
   NUM_USB,
   NUM_SATA,
   NUM_UART,
+  NUM_ALL,
   USB_BASE0,
   USB_FLAGS,
   USB_GSIV,
@@ -213,7 +226,11 @@ typedef enum {
   SATA_BDF,
   UART_BASE0,
   UART_GSIV,
-  UART_FLAGS
+  UART_FLAGS,
+  ANY_FLAGS,
+  ANY_GSIV,
+  ANY_BDF,
+  MAX_PASIDS
 }PERIPHERAL_INFO_e;
 
 void     val_peripheral_create_info_table(uint64_t *peripheral_info_table);
@@ -232,6 +249,13 @@ typedef enum {
 
 #define MEM_ATTR_UNCACHED  0x2000
 #define MEM_ATTR_CACHED    0x1000
+
+/* Identify memory type using MAIR attribute, refer to ARM ARM VMSA for details */
+
+#define MEM_NORMAL_WB_IN_OUT(attr) (((attr & 0xcc) == 0xcc) || (((attr & 0x7) >= 5) && (((attr >> 4) & 0x7) >= 5)))
+#define MEM_NORMAL_NC_IN_OUT(attr) (attr == 0x44)
+#define MEM_DEVICE(attr) ((attr & 0xf0) == 0)
+#define MEM_SH_INNER(sh) (sh == 0x3)
 
 void     val_memory_create_info_table(uint64_t *memory_info_table);
 void     val_memory_free_info_table(void);

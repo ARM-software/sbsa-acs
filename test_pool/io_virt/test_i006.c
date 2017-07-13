@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016, ARM Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2017, ARM Limited or its affiliates. All rights reserved.
 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,34 +17,42 @@
 #include "val/include/sbsa_avs_val.h"
 #include "val/include/val_interface.h"
 
-#include "val/include/sbsa_avs_gic.h"
+#include "val/include/sbsa_avs_iovirt.h"
 
-#define TEST_NUM   (AVS_GIC_TEST_NUM_BASE + 3)
-#define TEST_DESC  "GIC number of Security states(2)  "
+#define TEST_NUM   (AVS_SMMU_TEST_NUM_BASE + 6)
+#define TEST_DESC  "Unique stream id for each req id  "
 
 static
 void
 payload()
 {
-
-  uint32_t data;
+  int num_rc;
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
 
-  data = val_gic_get_info(GIC_INFO_SEC_STATES);
-
-  if (data != 0)
-      val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
-
-  val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
+  num_rc = val_iovirt_get_pcie_rc_info(NUM_PCIE_RC, 0);
+  if(!num_rc) {
+      val_print(AVS_PRINT_ERR, "\n      No Root Complex discovered ", 0);
+      val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 3));
+      return;
+  }
+  while(num_rc--) {
+      if(!val_iovirt_unique_rid_strid_map(num_rc)) {
+          val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 1));
+          break;
+      }
+  }
+  if(num_rc < 0)
+      val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 0));
 }
 
+
 uint32_t
-g003_entry(uint32_t num_pe)
+i006_entry(uint32_t num_pe)
 {
 
   uint32_t status = AVS_STATUS_FAIL;
 
-  num_pe = 1;  //This GIC test is run on single processor
+  num_pe = 1;  //This test is run on single processor
 
   status = val_initialize_test(TEST_NUM, TEST_DESC, num_pe, g_sbsa_level);
   if (status != AVS_STATUS_SKIP)

@@ -33,6 +33,7 @@
 #define TEST_DESC5 "Wake from System Timer Interrupt  "
 
 static uint32_t intid;
+uint64_t timer_num;
 
 static
 void
@@ -40,7 +41,7 @@ isr_failsafe()
 {
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
   val_timer_set_phy_el1(0);
-  val_print(AVS_PRINT_INFO, "\n       Received Failsafe interrupt      ", 0);
+  val_print(AVS_PRINT_ERR, "\n       Received Failsafe interrupt      ", 0);
   val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
   intid = val_timer_get_info(TIMER_INFO_PHY_EL1_INTID, 0);
   val_gic_end_of_interrupt(intid);
@@ -90,17 +91,10 @@ void
 isr4()
 {
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
-//  uint64_t wd_num = val_get_wd_info(0, WD_INFO_COUNT);
-
-  /* We received our interrupt, we don't know which WD instance generated
-     the interrupt, so just ahead and disable all */
-//  while(wd_num)
-//    val_set_wd_ws0(wd_num, 0);
-
-  val_wd_set_ws0(0, 0);
+  val_wd_set_ws0(timer_num, 0);
   val_print(AVS_PRINT_INFO, "\n       Received WS0 interrupt           ", 0);
   val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM4, 01));
-  intid = val_wd_get_info(0, WD_INFO_GSIV);
+  intid = val_wd_get_info(timer_num, WD_INFO_GSIV);
   val_gic_end_of_interrupt(intid);
 }
 
@@ -108,11 +102,12 @@ static
 void
 isr5()
 {
-  uint64_t cnt_base_n = val_timer_get_info(TIMER_INFO_SYS_CNT_BASE_N, 0);
+  uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
+  uint64_t cnt_base_n = val_timer_get_info(TIMER_INFO_SYS_CNT_BASE_N, timer_num);
   val_timer_disable_system_timer((addr_t)cnt_base_n);
   val_print(AVS_PRINT_INFO, "\n       Received Sys timer interrupt   ", 0);
-  val_set_status(0, RESULT_PASS(g_sbsa_level, TEST_NUM5, 01));
-  intid = val_timer_get_info(TIMER_INFO_SYS_INTID, 0);
+  val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM5, 01));
+  intid = val_timer_get_info(TIMER_INFO_SYS_INTID, timer_num);
   val_gic_end_of_interrupt(intid);
 }
 
@@ -120,7 +115,7 @@ isr5()
 void
 wakeup_set_failsafe()
 {
-  uint64_t timer_expire_val = 900000;
+  uint64_t timer_expire_val = TIMEOUT_LARGE;
 
   intid = val_timer_get_info(TIMER_INFO_PHY_EL1_INTID, 0);
   val_gic_install_isr(intid, isr_failsafe);
@@ -138,7 +133,7 @@ static
 void
 payload1()
 {
-  uint64_t timer_expire_val = 100000;
+  uint64_t timer_expire_val = TIMEOUT_SMALL;
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
 
   val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
@@ -154,7 +149,7 @@ static
 void
 payload2()
 {
-  uint64_t timer_expire_val = 100000;
+  uint64_t timer_expire_val = TIMEOUT_SMALL;
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
 
   val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM2, 01));
@@ -171,7 +166,7 @@ static
 void
 payload3()
 {
-  uint64_t timer_expire_val = 100000;
+  uint64_t timer_expire_val = TIMEOUT_SMALL;
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
 
   val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM3, 01));
@@ -188,25 +183,38 @@ static
 void
 payload4()
 {
-  uint32_t status;
-  uint64_t timer_expire_val = 100000;
+  uint32_t status, ns_wdg = 0;
+  uint64_t timer_expire_val = TIMEOUT_SMALL;
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
 
-  val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM4, 01));
+  timer_num = val_wd_get_info(0, WD_INFO_COUNT);
+  if(!timer_num){
+      val_print(AVS_PRINT_WARN, "\n       No watchdog implemented   ", 0);
+      val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM4, 01));
+      return;
+  }
 
-  if (val_wd_get_info(0, WD_INFO_COUNT)) { 
-      intid = val_wd_get_info(0, WD_INFO_GSIV);
+  while(timer_num--) {
+      if(val_wd_get_info(timer_num, WD_INFO_ISSECURE))
+          continue;
+
+      ns_wdg++;
+      intid = val_wd_get_info(timer_num, WD_INFO_GSIV);
       status = val_gic_install_isr(intid, isr4);
       if (status == 0) {
           wakeup_set_failsafe();
-          val_wd_set_ws0(0, timer_expire_val);
+          val_wd_set_ws0(timer_num, timer_expire_val);
           val_power_enter_semantic(SBSA_POWER_SEM_B);
           wakeup_clear_failsafe();
       } else {
           val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM4, 01));
       }
-  } else {
-      val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM4, 01));
+  }
+
+  if(!ns_wdg){
+      val_print(AVS_PRINT_WARN, "\n       No non-secure watchdog implemented   ", 0);
+      val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM4, 02));
+      return;
   }
 
 }
@@ -216,32 +224,49 @@ void
 payload5()
 {
   uint64_t cnt_base_n;
-  uint32_t timeout = TIMEOUT_MEDIUM;
-  uint32_t status;
+  uint64_t timer_expire_val = TIMEOUT_SMALL;
+  uint32_t status, ns_timer = 0;
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
 
-  if (val_timer_get_info(TIMER_INFO_NUM_PLATFORM_TIMERS, 0)) {
+  timer_num = val_timer_get_info(TIMER_INFO_NUM_PLATFORM_TIMERS, 0);
+  if(!timer_num){
+      val_print(AVS_PRINT_WARN, "\n       No system timers implemented   ", 0);
+      val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM5, 01));
+      return;
+  }
 
-      //Read CNTACR to determine whether access permission from NS state is permitted
-      status = val_timer_skip_if_cntbase_access_not_allowed(0);
-      if(status == AVS_STATUS_SKIP){
+  while(timer_num--) {
+
+      if(val_timer_get_info(TIMER_INFO_IS_PLATFORM_TIMER_SECURE, timer_num))
+          continue;
+
+      ns_timer++;
+      status = val_timer_get_info(TIMER_INFO_SYS_TIMER_STATUS, 0);
+      if(status != AVS_STATUS_PASS){
           val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM5, 02));
           return;
       }
 
-      cnt_base_n = val_timer_get_info(TIMER_INFO_SYS_CNT_BASE_N, 0);
-      if(cnt_base_n == 0){
+      //Read CNTACR to determine whether access permission from NS state is permitted
+      status = val_timer_skip_if_cntbase_access_not_allowed(timer_num);
+      if(status == AVS_STATUS_SKIP){
           val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM5, 03));
           return;
       }
 
-      intid = val_timer_get_info(TIMER_INFO_SYS_INTID, 0);
+      cnt_base_n = val_timer_get_info(TIMER_INFO_SYS_CNT_BASE_N, timer_num);
+      if(cnt_base_n == 0){
+          val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM5, 04));
+          return;
+      }
+
+      intid = val_timer_get_info(TIMER_INFO_SYS_INTID, timer_num);
       status = val_gic_install_isr(intid, isr5);
 
       if(status == 0) {
           wakeup_set_failsafe();
           /* enable System timer */
-          val_timer_set_system_timer((addr_t)cnt_base_n, timeout);
+          val_timer_set_system_timer((addr_t)cnt_base_n, timer_expire_val);
           val_power_enter_semantic(SBSA_POWER_SEM_B);
           wakeup_clear_failsafe();
       } else{
@@ -249,8 +274,10 @@ payload5()
           return;
       }
   }
-  else{
-      val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM5, 01));
+
+  if(!ns_timer){
+      val_print(AVS_PRINT_WARN, "\n       No non-secure systimer implemented   ", 0);
+      val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM4, 03));
       return;
   }
 }

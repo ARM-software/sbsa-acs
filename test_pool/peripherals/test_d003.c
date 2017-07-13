@@ -51,7 +51,7 @@ uart_reg_write(uint32_t offset, uint32_t width_mask, uint32_t data)
 
   if (width_mask & WIDTH_BIT16)
       *((uint16_t *)(l_uart_base + offset)) = (uint16_t)data;
-  
+
   if (width_mask & WIDTH_BIT32)
       *((uint32_t *)(l_uart_base + offset)) = (uint32_t)data;
 
@@ -80,7 +80,7 @@ void
 uart_disable_txintr()
 {
   uint32_t data;
-  
+
   /* mask TX interrupt bit 5 in */
   data = uart_reg_read(SBSA_UARTIMSC, WIDTH_BIT32);
   data = data & (~(1<<5));
@@ -211,7 +211,7 @@ payload1()
           val_set_status(index, RESULT_PENDING(g_sbsa_level, TEST_NUM2));
           val_gic_install_isr(int_id, isr);
           uart_enable_txintr();
-          val_print(AVS_PRINT_DEBUG, "\n      Test Message                   ", 0);
+          val_print(g_print_level, "\n       Test Message                      ", 0);
       } else {
           val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM2, 01));
       }

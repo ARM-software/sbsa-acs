@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016, ARM Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2017, ARM Limited or its affiliates. All rights reserved.
 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,14 +25,15 @@
 #include <Protocol/PciIo.h>
 
 #include "include/sbsa_pcie_enum.h"
+#include "include/pal_uefi.h"
 
 
 /**
-  @brief  Increment the Device number (and Bus number if Dev num reaches 32) to the next valid value. 
+  @brief  Increment the Device number (and Bus number if Dev num reaches 32) to the next valid value.
 
   @param  StartBdf  Segment/Bus/Dev/Func in the format created by PCIE_CREATE_BDF
 
-  @return the new incremented BDF 
+  @return the new incremented BDF
 **/
 UINT32
 incrementBusDev(UINT32 StartBdf)
@@ -82,7 +83,7 @@ palPcieGetBdf(UINT32 ClassCode, UINT32 StartBdf)
 
   Status = gBS->LocateHandleBuffer (ByProtocol, &gEfiPciIoProtocolGuid, NULL, &HandleCount, &HandleBuffer);
   if (EFI_ERROR (Status)) {
-    //AsciiPrint ("No PCI devices found in the system\n");
+    sbsa_print(AVS_PRINT_INFO,L"No PCI devices found in the system\n");
     return EFI_SUCCESS;
   }
 
@@ -106,9 +107,7 @@ palPcieGetBdf(UINT32 ClassCode, UINT32 StartBdf)
           Status = Pci->Pci.Read (Pci, EfiPciIoWidthUint32, 0, sizeof (PciHeader)/sizeof (UINT32), &PciHeader);
           if (!EFI_ERROR (Status)) {
             Hdr = &PciHeader.Bridge.Hdr;
-
-          /*AsciiPrint ("\n%03d.%02d.%02d class_code = %d %d", Bus, Dev, Index,
-             Hdr->ClassCode[1], Hdr->ClassCode[2]);*/
+            sbsa_print(AVS_PRINT_INFO,L"\n%03d.%02d.%02d class_code = %d %d", Bus, Dev, Index, Hdr->ClassCode[1], Hdr->ClassCode[2]);
             if (Hdr->ClassCode[2] == ((ClassCode >> 16) & 0xFF)) {
               if (Hdr->ClassCode[1] == ((ClassCode >> 8) & 0xFF)) {
                  /* Found our device */
@@ -148,7 +147,7 @@ palPcieGetBase(UINT32 bdf, UINT32 bar_index)
 
   Status = gBS->LocateHandleBuffer (ByProtocol, &gEfiPciIoProtocolGuid, NULL, &HandleCount, &HandleBuffer);
   if (EFI_ERROR (Status)) {
-    AsciiPrint ("No PCI devices found in the system\n");
+    sbsa_print(AVS_PRINT_INFO,L"No PCI devices found in the system\n");
     return EFI_SUCCESS;
   }
 
@@ -174,5 +173,5 @@ palPcieGetBase(UINT32 bdf, UINT32 bar_index)
   }
 
   return 0;
-} 
+}
 

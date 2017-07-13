@@ -19,8 +19,8 @@
 #define __SBSA_APP_LINUX_H__
 
 
-#define SBSA_APP_VERSION_MAJOR  0
-#define SBSA_APP_VERSION_MINOR  5
+#define SBSA_APP_VERSION_MAJOR  1
+#define SBSA_APP_VERSION_MINOR  0
 
 #include "sbsa_drv_intf.h"
 
@@ -28,6 +28,6 @@ typedef unsigned long int addr_t;
 typedef unsigned char     char8_t;
 
 int
-execute_tests_pcie(int num_pe, int level);
+execute_tests_pcie(int num_pe, int level, unsigned int print_level);
 
 #endif

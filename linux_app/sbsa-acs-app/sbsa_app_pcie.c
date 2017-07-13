@@ -27,33 +27,18 @@
 
 #include "sbsa_avs_common.h"
 
+extern int  g_skip_test_num[3];
+
 /**
   This function calls the SBSA Kernel Module in a loop to execute all the PCIe tests
 **/
 int
-execute_tests_pcie(int num_pe, int level)
+execute_tests_pcie(int num_pe, int level, unsigned int print_level)
 {
 
     int status;
-    int test_num;
-
-    for (test_num = AVS_PCIE_TEST_NUM_BASE + 1; test_num <= AVS_PCIE_TEST_NUM_BASE + 7; test_num++)
-    {
-        /* Execute PCIe tests one bys one */
-        printf("Executing Test %d :  ", test_num);
-        call_drv_execute_test(test_num, num_pe, level, 0);
-        status  = call_drv_wait_for_completion();
-        if (IS_TEST_PASS(status))
-            printf("RESULT: PASS \n");
-        else {
-            if (IS_TEST_SKIP(status))
-                printf("RESULT: SKIP \n");
-            else
-                printf("RESULT: FAIL \n");
-            if (test_num == AVS_PCIE_TEST_NUM_BASE + 1) {
-                printf("\n No ECAM, No point continuing with PCIe tests \n");
-                break;
-            }
-        }
-    }
+    call_update_skip_list(SBSA_UPDATE_SKIP_LIST, g_skip_test_num);
+    call_drv_execute_test(SBSA_PCIE_EXECUTE_TEST, num_pe, level, print_level, 0);
+    status  = call_drv_wait_for_completion();
+    return status;
 }

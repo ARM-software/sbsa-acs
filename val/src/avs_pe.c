@@ -90,7 +90,7 @@ val_pe_execute_tests(uint32_t level, uint32_t num_pe)
            1. Caller       -  Test Suite
            2. Prerequisite -  None
   @param   reg_id  - the system register index for which data is returned
-  @return  the value read from the system register. 
+  @return  the value read from the system register.
 **/
 uint64_t
 val_pe_reg_read(uint32_t reg_id)
@@ -197,6 +197,8 @@ val_pe_reg_read(uint32_t reg_id)
           return AA64ReadErr3fr();
       case ESR_EL2:
           return AA64ReadEsr2();
+      case FAR_EL2:
+          return AA64ReadFar2();
       default:
            val_report_status(val_pe_get_index_mpid(val_pe_get_mpid()), RESULT_FAIL(g_sbsa_level, 0, 0x78));
   }
@@ -265,7 +267,7 @@ val_pe_reg_write(uint32_t reg_id, uint64_t write_data)
            1. Caller       -  Test Suite
            2. Prerequisite -  None
   @param   None
-  @return  1 if EL3 is present, 0 if EL3 is not implemented 
+  @return  1 if EL3 is present, 0 if EL3 is not implemented
 **/
 uint8_t
 val_is_el3_enabled()
@@ -281,7 +283,7 @@ val_is_el3_enabled()
            1. Caller       -  Test Suite
            2. Prerequisite -  None
   @param   None
-  @return  1 if EL2 is present, 0 if EL2 is not implemented 
+  @return  1 if EL2 is present, 0 if EL2 is not implemented
 **/
 uint8_t
 val_is_el2_enabled()
@@ -323,7 +325,7 @@ val_pe_get_pmu_gsiv(uint32_t index)
            as argument over which an SPE event is exected to be generated.
            1. Caller       -  Test Suite
            2. Prerequisite -  None
-  @param   interval - The interval after completion of which SPE event 
+  @param   interval - The interval after completion of which SPE event
                       would be generated
   @param   address  - Address on which to trigger the SPE
   @return  None.

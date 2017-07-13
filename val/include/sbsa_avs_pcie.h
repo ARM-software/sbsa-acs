@@ -30,6 +30,7 @@
 
 void     val_pcie_write_cfg(uint32_t bdf, uint32_t offset, uint32_t data);
 uint32_t val_pcie_read_cfg(uint32_t bdf, uint32_t offset);
+uint32_t val_get_msi_vectors (uint32_t bdf, PERIPHERAL_VECTOR_LIST **mvector);
 
 typedef enum {
   PCIE_INFO_NUM_ECAM = 1,
@@ -42,6 +43,27 @@ typedef enum {
 
 uint64_t
 val_pcie_get_info(PCIE_INFO_e type, uint32_t index);
+
+uint32_t
+val_pci_get_legacy_irq_map (uint32_t bdf, PERIPHERAL_IRQ_MAP *irq_map);
+
+uint32_t
+val_pcie_is_device_behind_smmu(uint32_t bdf);
+
+uint32_t
+val_pcie_get_device_type(uint32_t bdf);
+
+uint32_t
+val_pcie_get_root_port_bdf(uint32_t *bdf);
+
+uint32_t
+val_pcie_get_snoop_bit (uint32_t bdf);
+
+uint32_t
+val_pcie_get_dma_support(uint32_t bdf);
+
+uint32_t
+val_pcie_get_dma_coherent(uint32_t bdf);
 
 uint32_t
 p001_entry(uint32_t num_pe);
@@ -63,5 +85,29 @@ p006_entry(uint32_t num_pe);
 
 uint32_t
 p007_entry(uint32_t num_pe);
+
+uint32_t
+p008_entry (uint32_t num_pe);
+
+uint32_t
+p009_entry (uint32_t num_pe);
+
+uint32_t
+p010_entry (uint32_t num_pe);
+
+uint32_t
+p011_entry (uint32_t num_pe);
+
+uint32_t
+p012_entry (uint32_t num_pe);
+
+uint32_t
+p013_entry (uint32_t num_pe);
+
+uint32_t
+p014_entry (uint32_t num_pe);
+
+uint32_t
+p015_entry (uint32_t num_pe);
 
 #endif

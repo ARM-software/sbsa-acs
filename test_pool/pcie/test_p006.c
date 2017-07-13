@@ -20,7 +20,7 @@
 #include "val/include/sbsa_avs_smmu.h"
 
 #define TEST_NUM   (AVS_PCIE_TEST_NUM_BASE + 6)
-#define TEST_DESC  "No extra addr translation - SMMU"
+#define TEST_DESC  "No extra addr translation - SMMU  "
 
 
 /* For all DMA masters populated in the Info table, which are behind an SMMU,
@@ -41,7 +41,7 @@ payload(void)
   target_dev_index = val_dma_get_info(DMA_NUM_CTRL, 0);
 
   if (!target_dev_index) {
-      val_print(AVS_PRINT_TEST, "\n       No DMA controllers detected... ", 0);
+      val_print(AVS_PRINT_TEST, "\n       No DMA controllers detected...    ", 0);
       val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 02));
       return;
   }

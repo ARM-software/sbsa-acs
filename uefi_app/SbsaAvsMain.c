@@ -19,9 +19,12 @@
 #include  <Library/ShellCEntryLib.h>
 #include  <Library/ShellLib.h>
 #include  <Library/UefiBootServicesTableLib.h>
+#include  <Library/CacheMaintenanceLib.h>
+#include  <Protocol/LoadedImage.h>
 
 #include "val/include/val_interface.h"
 #include "val/include/sbsa_avs_pe.h"
+#include "val/include/sbsa_avs_val.h"
 
 #include "SbsaAvs.h"
 
@@ -33,6 +36,9 @@ UINT32  g_skip_test_num[3] = {10000, 10000, 10000};
 UINT32  g_sbsa_tests_total;
 UINT32  g_sbsa_tests_pass;
 UINT32  g_sbsa_tests_fail;
+UINT64  g_stack_pointer;
+UINT64  g_exception_ret_addr;
+UINT64  g_ret_addr;
 SHELL_FILE_HANDLE g_sbsa_log_file_handle;
 
 STATIC VOID FlushImage (VOID)
@@ -60,7 +66,7 @@ createPeInfoTable (
 
 /* allowing room for growth, at present each entry is 16 bytes, so we can support upto 511 PEs with 8192 bytes*/
   Status = gBS->AllocatePool ( EfiBootServicesData,
-                               8192,
+                               PE_INFO_TBL_SZ,
                                (VOID **) &PeInfoTable );
 
   if (EFI_ERROR(Status))
@@ -83,7 +89,7 @@ createGicInfoTable (
   UINT64     *GicInfoTable;
 
   Status = gBS->AllocatePool (EfiBootServicesData,
-                               2048,
+                               GIC_INFO_TBL_SZ,
                                (VOID **) &GicInfoTable);
 
   if (EFI_ERROR(Status))
@@ -107,7 +113,7 @@ createTimerInfoTable(
   EFI_STATUS Status;
 
   Status = gBS->AllocatePool (EfiBootServicesData,
-                              1024,
+                              TIMER_INFO_TBL_SZ,
                               (VOID **) &TimerInfoTable);
 
   if (EFI_ERROR(Status))
@@ -128,7 +134,7 @@ createWatchdogInfoTable(
   EFI_STATUS Status;
 
   Status = gBS->AllocatePool (EfiBootServicesData,
-                              512,
+                              WD_INFO_TBL_SZ,
                               (VOID **) &WdInfoTable);
 
   if (EFI_ERROR(Status))
@@ -153,7 +159,7 @@ createPcieVirtInfoTable(
   EFI_STATUS Status;
 
   Status = gBS->AllocatePool (EfiBootServicesData,
-                              64,
+                              PCIE_INFO_TBL_SZ,
                               (VOID **) &PcieInfoTable);
 
   if (EFI_ERROR(Status))
@@ -164,7 +170,7 @@ createPcieVirtInfoTable(
   val_pcie_create_info_table(PcieInfoTable);
 
   Status = gBS->AllocatePool (EfiBootServicesData,
-                              4096,
+                              IOVIRT_INFO_TBL_SZ,
                               (VOID **) &IoVirtInfoTable);
 
   if (EFI_ERROR(Status))
@@ -187,7 +193,7 @@ createPeripheralInfoTable(
   EFI_STATUS Status;
 
   Status = gBS->AllocatePool (EfiBootServicesData,
-                              1024,
+                              PERIPHERAL_INFO_TBL_SZ,
                               (VOID **) &PeripheralInfoTable);
 
   if (EFI_ERROR(Status))
@@ -198,7 +204,7 @@ createPeripheralInfoTable(
   val_peripheral_create_info_table(PeripheralInfoTable);
 
   Status = gBS->AllocatePool (EfiBootServicesData,
-                              4096,
+                              MEM_INFO_TBL_SZ,
                               (VOID **) &MemoryInfoTable);
 
   if (EFI_ERROR(Status))
@@ -240,7 +246,7 @@ HelpMsg (
          "-f      Name of the log file to record the test results in\n"
          "-s      Enable the execution of secure tests\n"
          "-skip   Test(s) to be skipped\n"
-         "        Refer to section 4 of SBSA_ACS_UEFI_App_User_Guide\n"
+         "        Refer to section 4 of SBSA_ACS_User_Guide\n"
          "        To skip a module, use Model_ID as mentioned in user guide\n"
          "        To skip a particular test within a module, use the exact testcase number\n"
   );
@@ -279,6 +285,7 @@ ShellAppMain (
   CHAR16             *ProbParam;
   UINT32             Status;
   UINT32             i,j=0;
+  VOID               *branch_label;
 
 
   //
@@ -366,11 +373,11 @@ ShellAppMain (
   g_sbsa_tests_pass  = 0;
   g_sbsa_tests_fail  = 0;
 
-  Print(L"\n\n SBSA Compliance Suite \n");
+  Print(L"\n\n SBSA Architecture Compliance Suite \n");
   Print(L"    Version %d.%d  \n", SBSA_ACS_MAJOR_VER, SBSA_ACS_MINOR_VER);
 
 
-  Print(L"\n Starting Compliance verification for Level %2d (Print level is %2d)\n\n", g_sbsa_level, g_print_level);
+  Print(L"\n Starting tests for level %2d (Print level is %2d)\n\n", g_sbsa_level, g_print_level);
 
 
   Print(L" Creating Platform Information Tables \n");
@@ -389,12 +396,16 @@ ShellAppMain (
 
   val_allocate_shared_mem();
 
+  // Initialise exception vector, so any unexpected exception gets handled by default SBSA exception handler
+  branch_label = &&print_test_status;
+  val_pe_context_save(AA64ReadSp(), (uint64_t)branch_label);
+  val_pe_initialize_default_exception_handler(val_pe_default_esr);
   FlushImage();
 
   if (g_execute_secure == TRUE) {
     Print(L"\n      ***  Starting Secure FW tests ***  \n");
     val_secure_execute_tests(g_sbsa_level, val_pe_get_num());
-    Print(L"\n      ***  Secure FW tests Completed ***  \n");
+    Print(L"\n      ***  Secure FW tests completed ***  \n");
   }
 
   Print(L"\n      ***  Starting PE tests ***  \n");
@@ -412,15 +423,16 @@ ShellAppMain (
   Print(L"\n      *** Starting PCIe tests ***  \n");
   Status |= val_pcie_execute_tests(g_sbsa_level, val_pe_get_num());
 
-  Print(L"\n      *** Starting IO Virtualization tests ***  \n");
-  Status |= val_smmu_execute_tests(g_sbsa_level, val_pe_get_num());
-
   Print(L"\n      *** Starting Power and Wakeup semantic tests ***  \n");
   Status |= val_wakeup_execute_tests(g_sbsa_level, val_pe_get_num());
 
   Print(L"\n      *** Starting Peripheral tests ***  \n");
   Status |= val_peripheral_execute_tests(g_sbsa_level, val_pe_get_num());
 
+  Print(L"\n      *** Starting IO Virtualization tests ***  \n");
+  Status |= val_smmu_execute_tests(g_sbsa_level, val_pe_get_num());
+
+print_test_status:
   val_print(AVS_PRINT_TEST, "\n     ------------------------------------------------------- \n", 0);
   val_print(AVS_PRINT_TEST, "     Total Tests run  = %4d;", g_sbsa_tests_total);
   val_print(AVS_PRINT_TEST, "  Tests Passed  = %4d", g_sbsa_tests_pass);
@@ -433,6 +445,9 @@ ShellAppMain (
     ShellCloseFile(&g_sbsa_log_file_handle);
   }
 
-  Print(L"\n      *** SBSA Compliance Test Complete. Reset the System. *** \n\n");
+  Print(L"\n      *** SBSA tests complete. Reset the system. *** \n\n");
+
+  val_pe_context_restore(AA64WriteSp(g_stack_pointer));
+
   return(0);
 }

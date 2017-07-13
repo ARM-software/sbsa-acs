@@ -21,7 +21,7 @@
 #include "val/include/sbsa_avs_secure.h"
 
 #define TEST_NUM   (AVS_SECURE_TEST_NUM_BASE + 1)
-#define TEST_DESC  "Check NS Watchdog WS1 interrupt    "
+#define TEST_DESC  "Check NS Watchdog WS1 interrupt   "
 
 static
 void
@@ -39,21 +39,21 @@ static
 void
 payload()
 {
-  uint32_t int_id_ws0, int_id_ws1;
-  uint64_t wd_num = 1; //val_wd_get_info(0, INFO_WD_COUNT);
-  uint32_t timeout = 2, timeout_intr=0;
-  uint32_t timer_expire_ticks = 10000;
+  uint32_t int_id_ws0, int_id_ws1, ns_wdg = 0;
+  uint64_t wd_num = val_wd_get_info(0, WD_INFO_COUNT);
+  uint32_t timeout = 2, timeout_intr;
+  uint32_t timer_expire_ticks = 1000;
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
 
   SBSA_SMC_t  smc;
 
 
   if (wd_num == 0) {
-      //no watchdogs in the system. Fail this test and return 
-      val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
+      val_print(AVS_PRINT_WARN, "\n       No Watchdogs reported          %d  ", wd_num);
+      val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
       return;
   }
-    
+
   do
   {
       wd_num--;         //array index starts from 0, so subtract 1 from count
@@ -61,18 +61,20 @@ payload()
       if (val_wd_get_info(wd_num, WD_INFO_ISSECURE))
           continue;    //Skip Secure watchdog
 
+      ns_wdg++;
+      timeout_intr = TIMEOUT_LARGE;
+      val_set_status(index, RESULT_PENDING(g_sbsa_level, TEST_NUM));     // Set the initial result to pending
+
       int_id_ws0 = val_wd_get_info(wd_num, WD_INFO_GSIV);
       int_id_ws1 = val_wd_get_info(wd_num+1, WD_INFO_GSIV);  // ACPI table for WS1 may need to be populated
       val_print(AVS_PRINT_DEBUG, "\n       WS0 Interrupt id  %d        ", int_id_ws0);
       val_print(AVS_PRINT_DEBUG, "\n       WS1 Interrupt id  %d        ", int_id_ws1);
 
       val_gic_install_isr(int_id_ws0, isr);
-      val_gic_install_isr(int_id_ws1, isr); // ISR doesn't matter here, 
+      val_gic_install_isr(int_id_ws1, isr); // ISR doesn't matter here,
                                             // because interrupt is routed to EL3
 
       val_wd_set_ws0(wd_num, timer_expire_ticks);
-
-      timeout_intr = 2*timer_expire_ticks;
 
       while (!(IS_TEST_PASS(val_get_status(index))) && (--timeout_intr));
 
@@ -99,13 +101,19 @@ payload()
               val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 03));
       }
 
+      // Stop watchdog and signal end of interrupt to gic, it should be done after receiving both
+      // WS0 and WS1 interrupts
+      val_wd_set_ws0(wd_num, 0);
+      val_gic_end_of_interrupt(int_id_ws0);
 
   }while(wd_num);
 
-  // Stop watchdog and signal end of interrupt to gic, it should be done after receiving both
-  // WS0 and WS1 interrupts
-  val_wd_set_ws0(0, 0);
-  val_gic_end_of_interrupt(int_id_ws0);
+  if(!ns_wdg) {
+      val_print(AVS_PRINT_WARN, "\n       No non-secure Watchdogs reported", 0);
+      val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 02));
+      return;
+  }
+
 }
 
 uint32_t

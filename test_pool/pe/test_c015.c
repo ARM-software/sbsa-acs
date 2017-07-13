@@ -20,7 +20,7 @@
 #define TEST_NUM    (AVS_PE_TEST_NUM_BASE  +  15)
 #define TEST_DESC  "Check Arch symmetry across PE     "
 
-#define NUM_OF_REGISTERS  34
+#define NUM_OF_REGISTERS  32
 
 #define RAS               1
 #define SPE               2
@@ -29,9 +29,7 @@
 
 #define MASK_AA64MMFR0    0xF
 #define MASK_MIDR         0x00F0FFFF
-#define MASK_VPIDR        0x00F0FFFF
 #define MASK_MPIDR        0xFF3FFFFFFF
-#define MASK_VMPIDR       0xFF3FFFFFFF
 #define MASK_CTR          0xC000
 #define MASK_CCSIDR       0xFFFFFF0
 #define MASK_PMCR         0xFFFF
@@ -57,9 +55,7 @@ reg_details reg_list[] = {
     {ID_AA64ISAR0_EL1, 0x0,            "ID_AA64ISAR0_EL1", 0x0 },
     {ID_AA64ISAR1_EL1, 0x0,            "ID_AA64ISAR1_EL1", 0x0 },
     {MPIDR_EL1,        MASK_MPIDR,     "MPIDR_EL1"       , 0x0 },
-    {VMPIDR_EL2,       MASK_VMPIDR,    "VMPIDR_EL2"      , 0x0 },
     {MIDR_EL1,         MASK_MIDR,      "MIDR_EL1"        , 0x0 },
-    {VPIDR_EL2,        MASK_VPIDR,     "VPIDR_EL2"       , 0x0 },
     {CCSIDR_EL1,       MASK_CCSIDR,    "CCSIDR_EL1"      , 0x0 },
     {ID_DFR0_EL1,      0x0,            "ID_DFR0_EL1"     , AA32},
     {ID_ISAR0_EL1,     0x0,            "ID_ISAR0_EL1"    , AA32},
@@ -177,31 +173,32 @@ payload(uint32_t num_pe)
   uint32_t timeout;
   uint64_t debug_data=0, array_index=0;
 
-  for (i = 0; i < NUM_OF_REGISTERS; i++)
-  {
+  if (num_pe == 1) {
+      val_print(AVS_PRINT_WARN, "\n       Skipping as num of PE is 1        ", 0);
+      val_set_status(my_index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
+      return;
+  }
+
+  for (i = 0; i < NUM_OF_REGISTERS; i++) {
       rd_data_array[i] = return_reg_value(reg_list[i].reg_name, reg_list[i].dependency);
       val_data_cache_ops_by_va((addr_t)(rd_data_array + i), CLEAN_AND_INVALIDATE);
   }
 
-  for (i = 0; i < num_pe; i++)
-  {
-      if (i != my_index)
-      {
+  for (i = 0; i < num_pe; i++) {
+      if (i != my_index) {
           timeout=TIMEOUT_LARGE;
           val_execute_on_pe(i, id_regs_check, 0);
           while ((--timeout) && (IS_RESULT_PENDING(val_get_status(i))));
 
-          if(timeout == 0)
-          {
-              val_print(AVS_PRINT_ERR, "\n **Timed out** for PE index = %d", i);
+          if(timeout == 0) {
+              val_print(AVS_PRINT_ERR, "\n       **Timed out** for PE index = %d", i);
               val_set_status(i, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
               return;
           }
 
-          if(IS_TEST_FAIL(val_get_status(i)))
-          {
+          if(IS_TEST_FAIL(val_get_status(i))) {
               val_get_test_data(i, &debug_data, &array_index);
-              val_print(AVS_PRINT_ERR, "\n       Reg compare failed for PE index=%d for Register: ", i);  
+              val_print(AVS_PRINT_ERR, "\n       Reg compare failed for PE index=%d for Register: ", i);
               val_print(AVS_PRINT_ERR, reg_list[array_index].reg_desc, 0);
               val_print(AVS_PRINT_ERR, "\n       Current PE value = 0x%llx", rd_data_array[array_index] & (~reg_list[array_index].reg_mask));
               val_print(AVS_PRINT_ERR, "         Other PE value = 0x%llx", debug_data);

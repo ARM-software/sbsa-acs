@@ -24,7 +24,7 @@ program_OBJS := $(program_C_OBJS) $(program_CXX_OBJS)
 program_INCLUDE_DIRS := ../../ ../../val/include
 program_LIBRARY_DIRS :=
 program_LIBRARIES :=
-CC := $(GCC49_AARCH64_PREFIX)gcc
+CC := $(CROSS_COMPILE)gcc
 
 CPPFLAGS += $(foreach includedir,$(program_INCLUDE_DIRS),-I$(includedir)) -DTARGET_LINUX -g
 LDFLAGS += $(foreach librarydir,$(program_LIBRARY_DIRS),-L$(librarydir))
@@ -35,7 +35,7 @@ LDFLAGS += $(foreach library,$(program_LIBRARIES),-l$(library))
 all: $(program_NAME)
 
 $(program_NAME): $(program_OBJS)
-	$(GCC49_AARCH64_PREFIX)gcc -static $(program_OBJS) -o $(program_NAME)
+	$(CROSS_COMPILE)gcc -static $(program_OBJS) -o $(program_NAME)
 
 clean:
 	@- $(RM) $(program_NAME)

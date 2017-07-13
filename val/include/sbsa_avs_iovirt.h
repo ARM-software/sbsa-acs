@@ -18,6 +18,9 @@
 #define __SBSA_AVS_IOVIRT_H__
 
 uint64_t val_iovirt_get_smmu_info(SMMU_INFO_e type, uint32_t index);
+uint32_t val_iovirt_check_unique_ctx_intid(uint32_t smmu_index);
+uint32_t val_iovirt_unique_rid_strid_map(uint32_t rc_index);
 int val_iovirt_get_device_id(uint32_t rid, uint32_t segment, uint32_t *device_id, uint32_t *stream_id);
+uint64_t val_iovirt_get_pcie_rc_info(PCIE_RC_INFO_e type, uint32_t index);
 
 #endif

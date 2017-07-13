@@ -22,7 +22,8 @@
 /* API NUMBERS to COMMUNICATE with DRIVER */
 
 #define SBSA_CREATE_INFO_TABLES   0x1000
-#define SBSA_EXECUTE_TEST         0x2000
+#define SBSA_PCIE_EXECUTE_TEST    0x2000
+#define SBSA_UPDATE_SKIP_LIST     0x3000
 #define SBSA_FREE_INFO_TABLES     0x9000
 
 
@@ -43,9 +44,14 @@ call_drv_clean_test_env();
 
 int
 call_drv_execute_test(unsigned int test_num, unsigned int num_pe,
-  unsigned int level, unsigned long int test_input);
+  unsigned int level, unsigned int print_level, unsigned long int test_input);
+
+int
+call_update_skip_list(unsigned int api_num, int *p_skip_test_num);
 
 int
 call_drv_wait_for_completion();
+
+int read_from_proc_sbsa_msg();
 
 #endif

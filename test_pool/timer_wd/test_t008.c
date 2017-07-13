@@ -25,16 +25,17 @@
 #define TEST_DESC  "Generate Mem Mapped SYS Timer Intr"
 
 static uint32_t intid;
+static uint64_t cnt_base_n;
 
 static
 void
 isr()
 {
-  uint64_t cnt_base_n = val_timer_get_info(TIMER_INFO_SYS_CNT_BASE_N, 0);
+  uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
 
   val_print(AVS_PRINT_INFO, "\n       Received interrupt   ", 0);
   val_timer_disable_system_timer((addr_t)cnt_base_n);
-  val_set_status(0, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
+  val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
   val_gic_end_of_interrupt(intid);
 }
 
@@ -44,9 +45,9 @@ void
 payload()
 {
 
-  uint64_t cnt_base_n;
-  uint32_t timeout = TIMEOUT_MEDIUM;
-  uint32_t status;
+  volatile uint32_t timeout;
+  uint32_t timer_expire_val = 1000;
+  uint32_t status, ns_timer = 0;
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
   uint64_t timer_num = val_timer_get_info(TIMER_INFO_NUM_PLATFORM_TIMERS, 0);
 
@@ -61,6 +62,10 @@ payload()
 
       if (val_timer_get_info(TIMER_INFO_IS_PLATFORM_TIMER_SECURE, timer_num))
           continue;    //Skip Secure Timer
+
+      ns_timer++;
+      timeout = TIMEOUT_LARGE;
+      val_set_status(index, RESULT_PENDING(g_sbsa_level, TEST_NUM));     // Set the initial result to pending
 
       //Read CNTACR to determine whether access permission from NS state is permitted
       status = val_timer_skip_if_cntbase_access_not_allowed(timer_num);
@@ -82,13 +87,21 @@ payload()
       val_gic_install_isr(intid, isr);
 
       /* enable System timer */
-      val_timer_set_system_timer((addr_t)cnt_base_n, timeout);
+      val_timer_set_system_timer((addr_t)cnt_base_n, timer_expire_val);
 
       while ((--timeout > 0) && (IS_RESULT_PENDING(val_get_status(index))));
 
-      if (timeout == 0)
+      if (timeout == 0){
+          val_print(AVS_PRINT_ERR, "\n       Sys timer interrupt not received on %d   ", intid);
           val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
-      timer_num = 0;
+          return;
+      }
+  }
+
+  if(!ns_timer) {
+      val_print(AVS_PRINT_WARN, "\n       No non-secure systimer implemented", 0);
+      val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 04));
+      return;
   }
 
 }

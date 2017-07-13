@@ -28,17 +28,17 @@ void payload()
 
   data = val_pe_reg_read(ID_AA64DFR0_EL1);
 
-  if ((g_sbsa_level == 0) && ((data >> 12) & 0xF) < 3) { //bits 15:12 for Number of breakpoints - 1 
+  if ((g_sbsa_level == 0) && ((data >> 12) & 0xF) < 3) { //bits 15:12 for Number of breakpoints - 1
       val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
       return;
   }
 
-  if ((g_sbsa_level > 0) && ((data >> 12) & 0xF) < 5) { //bits 15:12 for Number of breakpoints - 1 
+  if ((g_sbsa_level > 0) && ((data >> 12) & 0xF) < 5) { //bits 15:12 for Number of breakpoints - 1
       val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
       return;
   }
 
-  if (((data >> 28) > 0))  //bits 31:28 for Number of context aware breakpoints - 1 
+  if (((data >> 28) > 0))  //bits 31:28 for Number of context aware breakpoints - 1
       val_set_status(pe_index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
   else
       val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));

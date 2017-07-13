@@ -57,6 +57,8 @@ val_timer_execute_tests(uint32_t level, uint32_t num_pe)
 
   status |= status_sys_timer;
 
+  g_timer_info_table->header.sys_timer_status = status_sys_timer;
+
   if (status != 0)
     val_print(AVS_PRINT_TEST, "\n      *** One or more tests have Failed/Skipped.*** \n", 0);
   else
@@ -117,6 +119,8 @@ val_timer_get_info(TIMER_INFO_e info_type, uint64_t instance)
           return g_timer_info_table->header.virtual_timer_flag;
       case TIMER_INFO_PHY_EL2_FLAGS:
           return g_timer_info_table->header.el2_timer_flag;
+      case TIMER_INFO_SYS_TIMER_STATUS:
+          return g_timer_info_table->header.sys_timer_status;
     default:
       return 0;
   }
@@ -291,7 +295,7 @@ val_timer_create_info_table(uint64_t *timer_info_table)
   val_timer_set_phy_el1(0);
 
   val_print(AVS_PRINT_TEST, " TIMER_INFO: Number of system timers  : %4d \n", g_timer_info_table->header.num_platform_timer);
- 
+
 }
 
 /**

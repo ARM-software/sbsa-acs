@@ -39,19 +39,11 @@ secure_test_list list[] = {
                             "Check Secure UART Access          ", 0, 0, 0},
     {(AVS_SECURE_TEST_NUM_BASE + 6), SBSA_SECURE_TEST_WAKEUP,
                             "Check Wakeup from Secure timer    ", 0, 0, 0},
-    {(AVS_SECURE_TEST_NUM_BASE + 7), SBSA_SECURE_TEST_FINISH,
+    {(AVS_SECURE_TEST_NUM_BASE + 7), SBSA_SECURE_TEST_SYS_TIMER_INT,
+                            "System Wakeup Timer interrupt     ", 0, 0, 0},
+    {(AVS_SECURE_TEST_NUM_BASE + 8), SBSA_SECURE_TEST_FINISH,
                             "Last entry                        ", 0, 0, 0}
 };
-
-static
-void
-esr()
-{
-  val_print(AVS_PRINT_TEST, "\n Received FIQ ", 0);
-  //AArch64FlushCache((uint64_t)payload);
-  //update_x28(gnext_line);
-  val_set_status(0, RESULT_PASS(g_sbsa_level, 904, 01));
-}
 
 static
 void
@@ -62,8 +54,6 @@ start_secure_tests(uint32_t num_pe)
   uint32_t   timeout = 3;
   uint32_t   status;
   SBSA_SMC_t smc;
-
-  val_pe_install_esr(EXCEPT_AARCH64_FIQ, esr);
 
   while (list[i].test_index != SBSA_SECURE_TEST_FINISH)
   {

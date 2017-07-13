@@ -21,7 +21,7 @@
 #include "val/include/sbsa_avs_pcie.h"
 
 #define TEST_NUM   (AVS_SMMU_TEST_NUM_BASE + 4)
-#define TEST_DESC  "If PCIe, Check Stall model           "
+#define TEST_DESC  "If PCIe, Check Stall model        "
 
 static
 void
