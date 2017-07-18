@@ -40,8 +40,10 @@ To enable the export of a few kernel APIs that are necessary for PCIe and IOMMU 
 ## Target platforms
   Any AARCH64 Enterprise Platform that boots UEFI and Linux OS.
 
-
 ## ACS build steps - UEFI Shell application
+
+### Prebuilt images
+Prebuilt images for each release are available in the prebuilt_images folder of the release branch. You can choose to use these images or build your own image by following the steps below. If you choose to use the prebuilt image, please jump to the test suite execution section below for details on how to run the application.
 
 ### Prerequisites
     Before starting the ACS build, ensure that the following requirements are met.
