@@ -201,30 +201,37 @@ void
 val_execute_on_pe(uint32_t index, void (*payload)(void), uint64_t test_input)
 {
 
+  int timeout = TIMEOUT_LARGE;
   if (index > g_pe_info_table->header.num_of_pe) {
       val_print(AVS_PRINT_ERR, "Input Index exceeds Num of PE %x \n", index);
       val_report_status(index, RESULT_FAIL(g_sbsa_level, 0, 0xFF));
       return;
   }
 
+  do {
+      g_smc_args.Arg0 = ARM_SMC_ID_PSCI_CPU_ON_AARCH64;
 
-  g_smc_args.Arg0 = ARM_SMC_ID_PSCI_CPU_ON_AARCH64;
+      /* Set the TEST function pointer in a shared memory location. This location is
+         read by the Secondary PE (val_test_entry()) and executes the test. */
+      g_smc_args.Arg1 = val_pe_get_mpid_index(index);
 
-  /* Set the TEST function pointer in a shared memory location. This location is
-     read by the Secondary PE (val_test_entry()) and executes the test. */
-  g_smc_args.Arg1 = val_pe_get_mpid_index(index);
+      val_set_test_data(index, (uint64_t)payload, test_input);
+      pal_pe_execute_payload(&g_smc_args);
 
-  val_set_test_data(index, (uint64_t)payload, test_input);
-  pal_pe_execute_payload(&g_smc_args);
+  } while (g_smc_args.Arg0 == (uint64_t)ARM_SMC_PSCI_RET_ALREADY_ON && timeout--);
 
-  if(g_smc_args.Arg0 == 0)
-      val_print(AVS_PRINT_INFO, "       PSCI status is success  \n", 0);
-  else if(g_smc_args.Arg0 == (uint64_t)ARM_SMC_PSCI_RET_ALREADY_ON){
-      val_print(AVS_PRINT_INFO, "       PSCI status is already on  \n", 0);
-      val_set_status(index, RESULT_FAIL(g_sbsa_level, 0, 0x124));
-      return;
+  if (g_smc_args.Arg0 == (uint64_t)ARM_SMC_PSCI_RET_ALREADY_ON)
+      val_print(AVS_PRINT_ERR, "       PSCI_CPU_ON: cpu already on  \n", 0);
+  else {
+      if(g_smc_args.Arg0 == 0) {
+          val_print(AVS_PRINT_INFO, "       PSCI_CPU_ON: success  \n", 0);
+          return;
+      }
+      else
+          val_print(AVS_PRINT_ERR, "       PSCI_CPU_ON: failure  \n", 0);
+
   }
-
+  val_set_status(index, RESULT_FAIL(g_sbsa_level, 0, 0x120 - (int)g_smc_args.Arg0));
 }
 
 /**
