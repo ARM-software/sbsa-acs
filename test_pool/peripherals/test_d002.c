@@ -43,9 +43,15 @@ payload()
       interface = val_pcie_read_cfg(bdf, 0x8);
       interface = (interface >> 8) & 0xFF;
       if (interface != 0x01) {
-          val_print(AVS_PRINT_ERR, "\n Detected SATA CTRL not AHCI        ", 0);
-          val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
-          return;
+          val_print(AVS_PRINT_WARN, "\n       WARN: Using ECAM access, SATA CTRL detected is not AHCI %x  ", interface);
+          val_print(AVS_PRINT_WARN, "\n       Re-checking SATA CTRL using PciIo protocol       ", 0);
+          interface = val_pcie_io_read_cfg(bdf, 0x8);
+          interface = (interface >> 8) & 0xFF;
+          if (interface != 0x01) {
+              val_print(AVS_PRINT_ERR, "\n Detected SATA CTRL not AHCI        ", 0);
+              val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
+              return;
+          }
       }
       count--;
   }
