@@ -25,14 +25,14 @@
   #define G_SBSA_LEVEL  3
   #define G_PRINT_LEVEL AVS_PRINT_TEST
 
-  #define PE_INFO_TBL_SZ         8192
-  #define GIC_INFO_TBL_SZ        2048
-  #define TIMER_INFO_TBL_SZ      1024
-  #define WD_INFO_TBL_SZ         512
-  #define MEM_INFO_TBL_SZ        4096
-  #define IOVIRT_INFO_TBL_SZ     4096
-  #define PERIPHERAL_INFO_TBL_SZ 1024
-  #define PCIE_INFO_TBL_SZ       64
+  #define PE_INFO_TBL_SZ         8192 /*Supports maximum 400 PEs*/
+  #define GIC_INFO_TBL_SZ        8192 /*Supports maximum 256 redistributors, 256 ITS blocks & 4 distributors*/
+  #define TIMER_INFO_TBL_SZ      1024 /*Supports maximum 2 system timers*/
+  #define WD_INFO_TBL_SZ         512  /*Supports maximum 20 Watchdogs*/
+  #define MEM_INFO_TBL_SZ        4096 /*Supports maximum 110 memory regions*/
+  #define IOVIRT_INFO_TBL_SZ     4096 /*Supports maximum 60 nodes of a typical iort table*/
+  #define PERIPHERAL_INFO_TBL_SZ 1024 /*Supports maximum 20 PCIe EPs (USB and SATA controllers only) */
+  #define PCIE_INFO_TBL_SZ       512  /*Supports maximum 20 RC's*/
 
 
 #endif
