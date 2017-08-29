@@ -45,6 +45,7 @@ val_pcie_read_cfg(uint32_t bdf, uint32_t offset)
   addr_t   ecam_base = 0;
   uint32_t i = 0;
 
+
   if ((bus >= PCIE_MAX_BUS) || (dev >= PCIE_MAX_DEV) || (func >= PCIE_MAX_FUNC)) {
      val_print(AVS_PRINT_ERR, "Invalid Bus/Dev/Func  %x \n", bdf);
      return 0;
@@ -80,6 +81,22 @@ val_pcie_read_cfg(uint32_t bdf, uint32_t offset)
 
   return pal_mmio_read(ecam_base + cfg_addr + offset);
 
+}
+
+/**
+  @brief   Read 32bit data  from PCIe config space pointed by Bus,
+           Device, Function and offset using UEFI PciIoProtocol interface
+           1. Caller       -  Test Suite
+           2. Prerequisite -  val_pcie_create_info_table
+  @param   bdf    - concatenated Bus(8-bits), device(8-bits) & function(8-bits)
+  @param   offset - Register offset within a device PCIe config space
+
+  @return  32-bit data read from the config space
+**/
+uint32_t
+val_pcie_io_read_cfg(uint32_t bdf, uint32_t offset)
+{
+    return pal_pcie_read_cfg(bdf, offset);
 }
 
 /**

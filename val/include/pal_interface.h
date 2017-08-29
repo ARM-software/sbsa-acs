@@ -221,6 +221,7 @@ typedef struct {
 
 uint64_t pal_pcie_get_mcfg_ecam(void);
 void     pal_pcie_create_info_table(PCIE_INFO_TABLE *PcieTable);
+uint32_t pal_pcie_read_cfg(uint32_t bdf, uint32_t offset);
 
 /**
   @brief  Instance of SMMU INFO block
