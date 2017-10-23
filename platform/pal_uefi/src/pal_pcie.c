@@ -24,8 +24,13 @@
 #include <Protocol/AcpiTable.h>
 #include <Protocol/HardwareInterrupt.h>
 
+#include "Include/IndustryStandard/Pci.h"
+#include "Include/IndustryStandard/Pci22.h"
+#include <Protocol/PciIo.h>
+
 #include "include/platform_override.h"
 #include "include/pal_uefi.h"
+#include "include/sbsa_pcie_enum.h"
 
 static EFI_ACPI_MEMORY_MAPPED_CONFIGURATION_BASE_ADDRESS_TABLE_HEADER *gMcfgHdr;
 
@@ -110,4 +115,50 @@ pal_pcie_create_info_table(PCIE_INFO_TABLE *PcieTable)
   } while((length < gMcfgHdr->Header.Length) && (Entry));
 
   return;
+}
+
+/**
+    @brief   Reads 32-bit data from PCIe config space pointed by Bus,
+           Device, Function and register offset, using UEFI PciIoProtocol
+
+    @param   Bdf      - BDF value for the device
+    @param   offset - Register offset within a device PCIe config space
+    @return  32 bit value at offset from ECAM base of the device specified by BDF value
+**/
+UINT32
+pal_pcie_read_cfg(UINT32 Bdf, UINT32 offset)
+{
+
+  EFI_STATUS                    Status;
+  EFI_PCI_IO_PROTOCOL           *Pci;
+  UINTN                         HandleCount;
+  EFI_HANDLE                    *HandleBuffer;
+  UINTN                         Seg, Bus, Dev, Func;
+  UINT32                        Index;
+  UINT32                        InputBus, InputDev, InputFunc, Data;
+
+
+  Status = gBS->LocateHandleBuffer (ByProtocol, &gEfiPciIoProtocolGuid, NULL, &HandleCount, &HandleBuffer);
+  if (EFI_ERROR (Status)) {
+    sbsa_print(AVS_PRINT_INFO,L"No PCI devices found in the system\n");
+    return EFI_SUCCESS;
+  }
+
+  InputBus = PCIE_EXTRACT_BDF_BUS(Bdf);
+  InputDev = PCIE_EXTRACT_BDF_DEV(Bdf);
+  InputFunc = PCIE_EXTRACT_BDF_FUNC(Bdf);
+
+  for (Index = 0; Index < HandleCount; Index++) {
+    Status = gBS->HandleProtocol (HandleBuffer[Index], &gEfiPciIoProtocolGuid, (VOID **)&Pci);
+    if (!EFI_ERROR (Status)) {
+      Pci->GetLocation (Pci, &Seg, &Bus, &Dev, &Func);
+      if (InputBus == Bus && InputDev == Dev && InputFunc == Func) {
+          Status = Pci->Pci.Read (Pci, EfiPciIoWidthUint32, offset, 1, &Data);
+          if (!EFI_ERROR (Status))
+            return Data;
+          break;
+      }
+    }
+  }
+  return 0;
 }

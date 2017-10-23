@@ -17,11 +17,12 @@ A few tests are executed by running the SBSA ACS Linux application which in turn
 
 
 ## Release details
- - Code Quality: REL v1.0
+ - Code Quality: REL v1.1
  - The tests are written for version 3.0 of the SBSA specification.
  - The compliance suite is not a substitute for design verification.
  - To review the SBSA ACS logs, ARM licensees can contact ARM directly through their partner managers.
  - To know about the gaps in the test coverage, see [Testcase checklist](docs/testcase-checklist.md).
+ - Refer to changelog.txt to know about the changes.
 
 
 ## GitHub branch
@@ -40,8 +41,10 @@ To enable the export of a few kernel APIs that are necessary for PCIe and IOMMU 
 ## Target platforms
   Any AARCH64 Enterprise Platform that boots UEFI and Linux OS.
 
-
 ## ACS build steps - UEFI Shell application
+
+### Prebuilt images
+Prebuilt images for each release are available in the prebuilt_images folder of the release branch. You can choose to use these images or build your own image by following the steps below. If you choose to use the prebuilt image, please jump to the test suite execution section below for details on how to run the application.
 
 ### Prerequisites
     Before starting the ACS build, ensure that the following requirements are met.

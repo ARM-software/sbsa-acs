@@ -43,11 +43,17 @@ payload()
       interface = val_pcie_read_cfg(bdf, 0x8);
       interface = (interface >> 8) & 0xFF;
       if ((interface < 0x20) || (interface == 0xFF)) {
-          val_print(AVS_PRINT_ERR, "\n       Detected USB CTRL not EHCI/XHCI %d  ", interface);
-          val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
-          return;
-      }
+          val_print(AVS_PRINT_WARN, "\n       WARN: Using ECAM access, USB CTRL detected is not EHCI/XHCI 0x%x  ", interface);
+          val_print(AVS_PRINT_WARN, "\n       Re-checking USB CTRL using PciIo protocol       ", 0);
+          interface = val_pcie_io_read_cfg(bdf, 0x8);
+          interface = (interface >> 8) & 0xFF;
+          if ((interface < 0x20) || (interface == 0xFF)) {
+              val_print(AVS_PRINT_ERR, "\n       Detected USB CTRL not EHCI/XHCI 0x%x  ", interface);
+              val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
+              return;
+          }
       count--;
+    }
   }
   val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
   return;
