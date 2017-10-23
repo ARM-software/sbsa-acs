@@ -1,0 +1,5 @@
+v17.10_REL1.1
+
+* Enhanced PSCI_CPU_ON error handling to wait for a pending PSCI_CPU_OFF operation to complete.
+* PciIo protocol is used to read ECAM address space in case the PCI endpoint is emulated in UEFI.
+* Increased sizes of the info tables to handle a wider range of platforms.
