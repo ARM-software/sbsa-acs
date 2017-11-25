@@ -22,13 +22,13 @@
 #define TEST_NUM   (AVS_PCIE_TEST_NUM_BASE + 11)
 #define TEST_DESC  "PCIe RC & PE, Same Inner SH Domain"
 
-#define SHAREABILITY_BIT (1UL << 57)
+#define INNER_SHAREABLE 1
 
 static void
 payload(void)
 {
   uint32_t num_pcie_rc;
-  uint64_t mem_attr;
+  uint32_t mem_attr;
   uint32_t index = val_pe_get_index_mpid (val_pe_get_mpid());
 
   num_pcie_rc = val_iovirt_get_pcie_rc_info(NUM_PCIE_RC,0);
@@ -43,7 +43,7 @@ payload(void)
       num_pcie_rc--;   // Index is one lesser than the component number being accessed
       mem_attr = val_iovirt_get_pcie_rc_info(RC_MEM_ATTRIBUTE, num_pcie_rc);
 
-      if(mem_attr & SHAREABILITY_BIT)
+      if(mem_attr == INNER_SHAREABLE)
          val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
       else {
          val_print(AVS_PRINT_ERR, "\n       Failed mem attribute check for PCIe RC %d", num_pcie_rc);
