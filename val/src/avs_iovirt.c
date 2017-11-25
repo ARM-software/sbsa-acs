@@ -89,7 +89,6 @@ uint64_t
 val_iovirt_get_pcie_rc_info(PCIE_RC_INFO_e type, uint32_t index)
 {
   uint32_t i,j = 0;
-  uint64_t mem_attr=0;
   IOVIRT_BLOCK *block;
 
   if (g_iovirt_info_table == NULL)
@@ -113,13 +112,11 @@ val_iovirt_get_pcie_rc_info(PCIE_RC_INFO_e type, uint32_t index)
               switch(type)
               {
                   case RC_SEGMENT_NUM:
-                      return block->data.segment;
+                      return block->data.rc.segment;
                   case RC_MEM_ATTRIBUTE:
-                      mem_attr = block->data_map[index].id[1];
-                      mem_attr = mem_attr << 32;
-                      return (block->data_map[index].id[0] | mem_attr);
+                      return block->data.rc.cca;
                   case RC_ATS_ATTRIBUTE:
-                      return block->data_map[index].id[2];
+                      return block->data.rc.ats_attr;
                   case RC_IOVIRT_BLOCK:
                       return (uint64_t)block;
                   default:
@@ -181,7 +178,7 @@ val_iovirt_get_device_id(uint32_t rid, uint32_t segment, uint32_t *device_id, ui
   {
       if(block->type != IOVIRT_NODE_PCI_ROOT_COMPLEX)
           continue;
-      if(block->data.segment != segment)
+      if(block->data.rc.segment != segment)
           continue;
       for(j = 0, map = &block->data_map[0]; j < block->num_data_map; j++, map++)
       {
