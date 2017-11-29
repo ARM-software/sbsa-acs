@@ -198,7 +198,7 @@ val_pcie_execute_tests(uint32_t level, uint32_t num_pe)
   status |= p005_entry(num_pe);
   status |= p006_entry(num_pe);
   status |= p007_entry(num_pe);
-  status |= p008_entry(num_pe);
+//test needs to be changed  status |= p008_entry(num_pe);
   status |= p009_entry(num_pe);
   status |= p010_entry(num_pe);
   status |= p011_entry(num_pe);

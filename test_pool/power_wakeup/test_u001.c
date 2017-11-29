@@ -230,7 +230,7 @@ payload5()
 
   timer_num = val_timer_get_info(TIMER_INFO_NUM_PLATFORM_TIMERS, 0);
   if(!timer_num){
-      val_print(AVS_PRINT_WARN, "\n       No system timers implemented   ", 0);
+      val_print(AVS_PRINT_WARN, "\n       No system timers implemented      ", 0);
       val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM5, 01));
       return;
   }
