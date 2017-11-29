@@ -66,7 +66,6 @@ val_suspend_pe(uint32_t power_state, uint64_t entry, uint32_t context_id)
   smc_args.Arg2 = entry;
   smc_args.Arg3 = context_id;
   pal_pe_call_smc(&smc_args);
-
 }
 
 
@@ -82,7 +81,7 @@ val_power_enter_semantic(SBSA_POWER_SEM_e semantic)
 
   switch(semantic) {
       case SBSA_POWER_SEM_B:
-          val_suspend_pe(0, 0, 0);
+          ArmCallWFI();
           break;
       default:
           break;

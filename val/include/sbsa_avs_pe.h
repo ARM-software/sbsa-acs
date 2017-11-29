@@ -52,6 +52,7 @@ typedef enum {
   MDCR_EL2,
   VBAR_EL2,
   CCSIDR_EL1,
+  CSSELR_EL1,
   CLIDR_EL1,
   ID_DFR0_EL1,
   ID_ISAR0_EL1,
@@ -143,6 +144,10 @@ void AA64WritePmintenclr(uint64_t write_data);
 
 uint64_t AA64ReadCcsidr(void);
 
+uint64_t AA64ReadCsselr(void);
+
+void AA64WriteCsselr(uint64_t write_data);
+
 uint64_t AA64ReadClidr(void);
 
 uint64_t ArmReadDfr0(void);
@@ -222,6 +227,8 @@ uint64_t AA64ReadSp(void);
 uint64_t AA64WriteSp(uint64_t write_data);
 
 uint64_t AA64ReadFar2(void);
+
+void ArmCallWFI(void);
 
 void SpeProgramUnderProfiling(uint64_t interval, uint64_t address);
 
