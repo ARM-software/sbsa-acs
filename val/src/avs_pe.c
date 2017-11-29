@@ -133,6 +133,8 @@ val_pe_reg_read(uint32_t reg_id)
           return AA64ReadVbar2();
       case CCSIDR_EL1:
           return AA64ReadCcsidr();
+      case CSSELR_EL1:
+          return AA64ReadCsselr();
       case CLIDR_EL1:
           return AA64ReadClidr();
       case ID_DFR0_EL1:
@@ -220,6 +222,9 @@ val_pe_reg_write(uint32_t reg_id, uint64_t write_data)
 {
 
   switch(reg_id) {
+      case CSSELR_EL1:
+          AA64WriteCsselr(write_data);
+          break;
       case PMCR_EL0:
           AA64WritePmcr(write_data);
           break;

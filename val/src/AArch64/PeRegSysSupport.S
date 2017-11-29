@@ -65,6 +65,8 @@ GCC_ASM_EXPORT (AA64WritePmintenset)
 GCC_ASM_EXPORT (AA64WritePmovsclr)
 GCC_ASM_EXPORT (AA64WritePmintenclr)
 GCC_ASM_EXPORT (AA64ReadCcsidr)
+GCC_ASM_EXPORT (AA64ReadCsselr)
+GCC_ASM_EXPORT (AA64WriteCsselr)
 GCC_ASM_EXPORT (AA64ReadClidr)
 GCC_ASM_EXPORT (ArmReadDfr0)
 GCC_ASM_EXPORT (ArmReadIsar0)
@@ -216,6 +218,15 @@ ASM_PFX(AA64WritePmintenclr):
 
 ASM_PFX(AA64ReadCcsidr):
   mrs   x0, ccsidr_el1
+  ret
+
+ASM_PFX(AA64ReadCsselr):
+  mrs   x0, csselr_el1
+  ret
+
+ASM_PFX(AA64WriteCsselr):
+  msr   csselr_el1, x0
+  isb
   ret
 
 ASM_PFX(AA64ReadClidr):

@@ -20,7 +20,7 @@
 
 
   #define SBSA_ACS_MAJOR_VER  1
-  #define SBSA_ACS_MINOR_VER  0
+  #define SBSA_ACS_MINOR_VER  1
 
   #define G_SBSA_LEVEL  3
   #define G_PRINT_LEVEL AVS_PRINT_TEST
