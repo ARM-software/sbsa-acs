@@ -34,7 +34,7 @@
 #define MASK_CCSIDR       0xFFFFFF0
 #define MASK_PMCR         0xFFFF
 
-#define MAX_CACHE_LEVEL   8
+#define MAX_CACHE_LEVEL   7
 
 uint64_t rd_data_array[NUM_OF_REGISTERS];
 uint64_t cache_list[MAX_CACHE_LEVEL];
