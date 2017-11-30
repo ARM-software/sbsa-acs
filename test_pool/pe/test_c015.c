@@ -31,7 +31,7 @@
 #define MASK_MIDR         0x00F0FFFF
 #define MASK_MPIDR        0xFF3FFFFFFF
 #define MASK_CTR          0xC000
-#define MASK_CCSIDR       0xFFFFFF0
+#define MASK_CCSIDR       0xFFFFFF8
 #define MASK_PMCR         0xFFFF
 
 #define MAX_CACHE_LEVEL   7
