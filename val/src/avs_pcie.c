@@ -307,7 +307,8 @@ val_pcie_get_info(PCIE_INFO_e type, uint32_t index)
 uint32_t
 val_get_msi_vectors (uint32_t bdf, PERIPHERAL_VECTOR_LIST **mvector)
 {
-  return pal_get_msi_vectors (PCIE_EXTRACT_BDF_BUS (bdf),
+  return pal_get_msi_vectors (PCIE_EXTRACT_BDF_SEG (bdf),
+                              PCIE_EXTRACT_BDF_BUS (bdf),
                               PCIE_EXTRACT_BDF_DEV (bdf),
                               PCIE_EXTRACT_BDF_FUNC (bdf),
                               mvector);
@@ -324,7 +325,8 @@ val_get_msi_vectors (uint32_t bdf, PERIPHERAL_VECTOR_LIST **mvector)
 uint32_t
 val_pci_get_legacy_irq_map (uint32_t bdf, PERIPHERAL_IRQ_MAP *irq_map)
 {
-  return pal_pcie_get_legacy_irq_map (PCIE_EXTRACT_BDF_BUS (bdf),
+  return pal_pcie_get_legacy_irq_map (PCIE_EXTRACT_BDF_SEG (bdf),
+                                      PCIE_EXTRACT_BDF_BUS (bdf),
                                       PCIE_EXTRACT_BDF_DEV (bdf),
                                       PCIE_EXTRACT_BDF_FUNC (bdf),
                                       irq_map);
@@ -338,9 +340,10 @@ val_pci_get_legacy_irq_map (uint32_t bdf, PERIPHERAL_IRQ_MAP *irq_map)
 uint32_t
 val_pcie_is_device_behind_smmu(uint32_t bdf)
 {
-  return pal_pcie_is_device_behind_smmu(PCIE_EXTRACT_BDF_BUS (bdf),
-                                      PCIE_EXTRACT_BDF_DEV (bdf),
-                                      PCIE_EXTRACT_BDF_FUNC (bdf));
+  return pal_pcie_is_device_behind_smmu(PCIE_EXTRACT_BDF_SEG (bdf),
+                                        PCIE_EXTRACT_BDF_BUS (bdf),
+                                        PCIE_EXTRACT_BDF_DEV (bdf),
+                                        PCIE_EXTRACT_BDF_FUNC (bdf));
 }
 /**
   @brief   This API returns the bdf of root port
