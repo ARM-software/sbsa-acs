@@ -331,6 +331,7 @@ val_pci_get_legacy_irq_map (uint32_t bdf, PERIPHERAL_IRQ_MAP *irq_map)
                                       PCIE_EXTRACT_BDF_FUNC (bdf),
                                       irq_map);
 }
+
 /**
   @brief   This API checks if device is behind SMMU
            1. Caller       -  Test Suite
@@ -345,6 +346,26 @@ val_pcie_is_device_behind_smmu(uint32_t bdf)
                                         PCIE_EXTRACT_BDF_DEV (bdf),
                                         PCIE_EXTRACT_BDF_FUNC (bdf));
 }
+
+/**
+  @brief   This API checks if device is capable of 64-bit DMA
+           1. Caller       -  Test Suite
+  @param   bdf      - PCIe BUS/Device/Function
+  @return  0 -> not 64-bit DMA capable, 1 -> 64-bit DMA capable
+**/
+uint32_t
+val_pcie_is_devicedma_64bit(uint32_t bdf)
+{
+
+  uint32_t seg  = PCIE_EXTRACT_BDF_SEG (bdf);
+  uint32_t bus  = PCIE_EXTRACT_BDF_BUS (bdf);
+  uint32_t dev  = PCIE_EXTRACT_BDF_DEV (bdf);
+  uint32_t func = PCIE_EXTRACT_BDF_FUNC (bdf);
+
+  return (pal_pcie_is_devicedma_64bit(seg, bus, dev, func));
+}
+
+
 /**
   @brief   This API returns the bdf of root port
   @param   bdf             - PCIe BUS/Device/Function
@@ -376,7 +397,10 @@ val_pcie_get_root_port_bdf(uint32_t *bdf)
 uint32_t
 val_pcie_get_device_type(uint32_t bdf)
 {
-  return pal_pcie_get_device_type(PCIE_EXTRACT_BDF_BUS (bdf), PCIE_EXTRACT_BDF_DEV (bdf), PCIE_EXTRACT_BDF_FUNC (bdf));
+  return pal_pcie_get_device_type(PCIE_EXTRACT_BDF_SEG (bdf),
+                                  PCIE_EXTRACT_BDF_BUS (bdf),
+                                  PCIE_EXTRACT_BDF_DEV (bdf),
+                                  PCIE_EXTRACT_BDF_FUNC (bdf));
 }
 
 /**
@@ -390,7 +414,10 @@ val_pcie_get_device_type(uint32_t bdf)
 uint32_t
 val_pcie_get_snoop_bit(uint32_t bdf)
 {
-  return pal_pcie_get_snoop_bit(PCIE_EXTRACT_BDF_BUS (bdf), PCIE_EXTRACT_BDF_DEV (bdf), PCIE_EXTRACT_BDF_FUNC (bdf));
+  return pal_pcie_get_snoop_bit(PCIE_EXTRACT_BDF_SEG (bdf),
+                                PCIE_EXTRACT_BDF_BUS (bdf),
+                                PCIE_EXTRACT_BDF_DEV (bdf),
+                                PCIE_EXTRACT_BDF_FUNC (bdf));
 }
 
 /**
@@ -404,7 +431,10 @@ val_pcie_get_snoop_bit(uint32_t bdf)
 uint32_t
 val_pcie_get_dma_support(uint32_t bdf)
 {
-  return pal_pcie_get_dma_support(PCIE_EXTRACT_BDF_BUS (bdf), PCIE_EXTRACT_BDF_DEV (bdf), PCIE_EXTRACT_BDF_FUNC (bdf));
+  return pal_pcie_get_dma_support(PCIE_EXTRACT_BDF_SEG (bdf),
+                                  PCIE_EXTRACT_BDF_BUS (bdf),
+                                  PCIE_EXTRACT_BDF_DEV (bdf),
+                                  PCIE_EXTRACT_BDF_FUNC (bdf));
 }
 
 /**
@@ -418,6 +448,9 @@ val_pcie_get_dma_support(uint32_t bdf)
 uint32_t
 val_pcie_get_dma_coherent(uint32_t bdf)
 {
-  return pal_pcie_get_dma_coherent(PCIE_EXTRACT_BDF_BUS (bdf), PCIE_EXTRACT_BDF_DEV (bdf), PCIE_EXTRACT_BDF_FUNC (bdf));
+  return pal_pcie_get_dma_coherent(PCIE_EXTRACT_BDF_SEG (bdf),
+                                   PCIE_EXTRACT_BDF_BUS (bdf),
+                                   PCIE_EXTRACT_BDF_DEV (bdf),
+                                   PCIE_EXTRACT_BDF_FUNC (bdf));
 }
 
