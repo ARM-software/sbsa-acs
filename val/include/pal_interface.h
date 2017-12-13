@@ -372,7 +372,7 @@ typedef struct PERIPHERAL_VECTOR_LIST_STRUCT
   struct PERIPHERAL_VECTOR_LIST_STRUCT *next;
 }PERIPHERAL_VECTOR_LIST;
 
-uint32_t pal_get_msi_vectors (uint32_t bus, uint32_t dev, uint32_t fn, PERIPHERAL_VECTOR_LIST **mvector);
+uint32_t pal_get_msi_vectors (uint32_t seg, uint32_t bus, uint32_t dev, uint32_t fn, PERIPHERAL_VECTOR_LIST **mvector);
 
 #define LEGACY_PCI_IRQ_CNT 4  // Legacy PCI IRQ A, B, C. and D
 #define MAX_IRQ_CNT 0xFFFF    // This value is arbitrary and may have to be adjusted
@@ -388,14 +388,14 @@ typedef struct {
 
 #define DEVCTL_SNOOP_BIT 11        // Device control register no snoop bit
 
-uint32_t pal_pcie_get_legacy_irq_map(uint32_t bus, uint32_t dev, uint32_t fn, PERIPHERAL_IRQ_MAP *irq_map);
-uint32_t pal_pcie_is_device_behind_smmu(uint32_t bus, uint32_t dev, uint32_t fn);
+uint32_t pal_pcie_get_legacy_irq_map(uint32_t seg, uint32_t bus, uint32_t dev, uint32_t fn, PERIPHERAL_IRQ_MAP *irq_map);
+uint32_t pal_pcie_is_device_behind_smmu(uint32_t seg, uint32_t bus, uint32_t dev, uint32_t fn);
 uint32_t pal_pcie_get_root_port_bdf(uint32_t *seg, uint32_t *bus, uint32_t *dev, uint32_t *func);
-uint32_t pal_pcie_get_device_type(uint32_t bus, uint32_t dev, uint32_t fn);
-uint32_t pal_pcie_get_snoop_bit(uint32_t bus, uint32_t dev, uint32_t fn);
-uint32_t pal_pcie_get_dma_support(uint32_t bus, uint32_t dev, uint32_t fn);
-uint32_t pal_pcie_get_dma_coherent(uint32_t bus, uint32_t dev, uint32_t fn);
-
+uint32_t pal_pcie_get_device_type(uint32_t seg, uint32_t bus, uint32_t dev, uint32_t fn);
+uint32_t pal_pcie_get_snoop_bit(uint32_t seg, uint32_t bus, uint32_t dev, uint32_t fn);
+uint32_t pal_pcie_get_dma_support(uint32_t seg, uint32_t bus, uint32_t dev, uint32_t fn);
+uint32_t pal_pcie_get_dma_coherent(uint32_t seg, uint32_t bus, uint32_t dev, uint32_t fn);
+uint32_t pal_pcie_is_devicedma_64bit(uint32_t seg, uint32_t bus, uint32_t dev, uint32_t fn);
 /**
   @brief DMA controllers info structure
 **/
