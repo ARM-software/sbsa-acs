@@ -181,6 +181,12 @@ typedef struct {
   UINT64 base;              ///< SMMU Controller base address
 }SMMU_INFO_BLOCK;
 
+typedef struct {
+	UINT32 segment;
+	UINT32 ats_attr;
+	UINT32 cca;			//Cache Coherency Attribute
+}IOVIRT_RC_INFO_BLOCK;
+
 typedef enum {
   IOVIRT_NODE_ITS_GROUP = 0x00,
   IOVIRT_NODE_NAMED_COMPONENT = 0x01,
@@ -209,7 +215,7 @@ typedef union {
 
 typedef union {
   CHAR8 name[16];
-  UINT32 segment;
+  IOVIRT_RC_INFO_BLOCK rc;
   UINT32 its_count;
   SMMU_INFO_BLOCK smmu;
 }NODE_DATA;
@@ -232,6 +238,7 @@ typedef struct {
 }IOVIRT_INFO_TABLE;
 
 #define IOVIRT_NEXT_BLOCK(b) (IOVIRT_BLOCK *)((UINT8*)(&b->data_map[0]) + b->num_data_map * sizeof(NODE_DATA_MAP))
+#define IOVIRT_CCA_MASK ~((UINT32)0)
 
 /**
   @brief SMMU Info Table

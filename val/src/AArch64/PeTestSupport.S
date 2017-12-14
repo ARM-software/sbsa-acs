@@ -19,9 +19,14 @@
 .text
 .align 3
 
+GCC_ASM_EXPORT (ArmCallWFI)
 GCC_ASM_EXPORT (SpeProgramUnderProfiling)
 GCC_ASM_EXPORT (DisableSpe)
 GCC_ASM_EXPORT (BigEndianCheck)
+
+ASM_PFX(ArmCallWFI):
+  wfi
+  ret
 
 ASM_PFX(SpeProgramUnderProfiling):
   mov   x2,#12    // No of instructions in the loop

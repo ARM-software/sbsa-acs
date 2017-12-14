@@ -31,10 +31,13 @@
 #define MASK_MIDR         0x00F0FFFF
 #define MASK_MPIDR        0xFF3FFFFFFF
 #define MASK_CTR          0xC000
-#define MASK_CCSIDR       0xFFFFFF0
+#define MASK_CCSIDR       0xFFFFFF8
 #define MASK_PMCR         0xFFFF
 
+#define MAX_CACHE_LEVEL   7
+
 uint64_t rd_data_array[NUM_OF_REGISTERS];
+uint64_t cache_list[MAX_CACHE_LEVEL];
 
 typedef struct{
     uint32_t reg_name;
@@ -44,6 +47,7 @@ typedef struct{
 }reg_details;
 
 reg_details reg_list[] = {
+    {CCSIDR_EL1,       MASK_CCSIDR,    "CCSIDR_EL1"      , 0x0 },
     {ID_AA64PFR0_EL1,  0x0,            "ID_AA64PFR0_EL1" , 0x0 },
     {ID_AA64PFR1_EL1,  0x0,            "ID_AA64PFR1_EL1" , 0x0 },
     {ID_AA64DFR0_EL1,  0x0,            "ID_AA64DFR0_EL1" , 0x0 },
@@ -56,7 +60,6 @@ reg_details reg_list[] = {
     {ID_AA64ISAR1_EL1, 0x0,            "ID_AA64ISAR1_EL1", 0x0 },
     {MPIDR_EL1,        MASK_MPIDR,     "MPIDR_EL1"       , 0x0 },
     {MIDR_EL1,         MASK_MIDR,      "MIDR_EL1"        , 0x0 },
-    {CCSIDR_EL1,       MASK_CCSIDR,    "CCSIDR_EL1"      , 0x0 },
     {ID_DFR0_EL1,      0x0,            "ID_DFR0_EL1"     , AA32},
     {ID_ISAR0_EL1,     0x0,            "ID_ISAR0_EL1"    , AA32},
     {ID_ISAR1_EL1,     0x0,            "ID_ISAR1_EL1"    , AA32},
@@ -145,10 +148,26 @@ id_regs_check(void)
 {
   uint64_t reg_read_data;
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
-  uint32_t i;
+  uint32_t i = 0;
 
-  for (i = 0; i < NUM_OF_REGISTERS; i++)
-  {
+  /* Loop CLIDR to check if a cache level is implemented before comparing */
+  while (i < MAX_CACHE_LEVEL) {
+      reg_read_data = val_pe_reg_read(CLIDR_EL1);
+      if (reg_read_data & ((0x7) << (i * 3))) {
+          /* Select the correct cache in csselr register */
+          val_pe_reg_write(CSSELR_EL1, i << 1);
+          reg_read_data = return_reg_value(reg_list[0].reg_name, reg_list[i].dependency);
+
+          if ((reg_read_data & (~reg_list[0].reg_mask)) != (cache_list[i] & (~reg_list[0].reg_mask))) {
+              val_set_test_data(index, (reg_read_data & (~reg_list[i].reg_mask)), 0);
+              val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
+              return;
+          }
+      }
+      i++;
+  }
+
+  for (i = 1; i < NUM_OF_REGISTERS; i++) {
       reg_read_data = return_reg_value(reg_list[i].reg_name, reg_list[i].dependency);
 
       if((reg_read_data & (~reg_list[i].reg_mask)) != (rd_data_array[i] & (~reg_list[i].reg_mask)))
@@ -171,7 +190,7 @@ payload(uint32_t num_pe)
   uint32_t my_index = val_pe_get_index_mpid(val_pe_get_mpid());
   uint32_t i;
   uint32_t timeout;
-  uint64_t debug_data=0, array_index=0;
+  uint64_t reg_read_data, debug_data=0, array_index=0;
 
   if (num_pe == 1) {
       val_print(AVS_PRINT_WARN, "\n       Skipping as num of PE is 1        ", 0);
@@ -179,7 +198,20 @@ payload(uint32_t num_pe)
       return;
   }
 
-  for (i = 0; i < NUM_OF_REGISTERS; i++) {
+  /* Loop CLIDR to check if a cache level is implemented */
+  i = 0;
+  while (i < MAX_CACHE_LEVEL) {
+      reg_read_data = val_pe_reg_read(CLIDR_EL1);
+      if (reg_read_data & ((0x7) << (i * 3))) {
+         /* Select the correct cache level in csselr register */
+         val_pe_reg_write(CSSELR_EL1, i << 1);
+         cache_list[i] = return_reg_value(reg_list[0].reg_name, reg_list[i].dependency);
+         val_print(AVS_PRINT_INFO, "\n      cache size read is %x ", cache_list[i]);
+      }
+      i++;
+  }
+
+  for (i = 1; i < NUM_OF_REGISTERS; i++) {
       rd_data_array[i] = return_reg_value(reg_list[i].reg_name, reg_list[i].dependency);
       val_data_cache_ops_by_va((addr_t)(rd_data_array + i), CLEAN_AND_INVALIDATE);
   }
