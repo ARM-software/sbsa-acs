@@ -1,3 +1,12 @@
+v17.10_REL1.2
+
+* Test #61: Bug fixed in reading PCIE RC Cache Coherency attributes from IORT.
+* Test #15: Improved test robustness w.r.t caches.
+* Test #70: Made wakeup test architecturally consistent by using WFI to suspend a PE.
+* Test #58: Removed MSI vector uniqueness test from runlist. Will be added back after design fix.
+* Test #81: Fixed incorrect looping condition in main test loop.
+* Test #63: Read DMA mask instead of BAR attributes to test addressabilty of masters.
+
 v17.10_REL1.1
 
 * Enhanced PSCI_CPU_ON error handling to wait for a pending PSCI_CPU_OFF operation to complete.
