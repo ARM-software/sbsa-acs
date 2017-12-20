@@ -65,7 +65,12 @@ dump_block(IOVIRT_BLOCK *block) {
       break;
       case IOVIRT_NODE_SMMU:
       case IOVIRT_NODE_SMMU_V3:
-      sbsa_print(AVS_PRINT_INFO, L"\nSMMU:\n Major Rev:%d\n Base Address:0x%x\n", block->data.smmu.arch_major_rev, block->data.smmu.base);
+      sbsa_print(AVS_PRINT_INFO, L"\nSMMU:\n Major Rev:%d\n Base Address:0x%x\n",
+                 block->data.smmu.arch_major_rev, block->data.smmu.base);
+      break;
+      case IOVIRT_NODE_PMCG:
+      sbsa_print(AVS_PRINT_INFO, L"\nPMCG:\n Base:0x%x\n Overflow GSIV:0x%x\n Node Reference:0x%x\n",
+                 block->data.pmcg.base, block->data.pmcg.overflow_gsiv, block->data.pmcg.node_ref);
       break;
   }
   sbsa_print(AVS_PRINT_INFO, L"Number of ID Mappings:%d\n", block->num_data_map);
@@ -94,6 +99,7 @@ dump_iort_table(IOVIRT_INFO_TABLE *iovirt)
 {
   UINT32 i;
   IOVIRT_BLOCK *block = &iovirt->blocks[0];
+  sbsa_print(AVS_PRINT_INFO, "Number of IOVIRT blocks = %d\n", iovirt->num_blocks);
   for(i = 0; i < iovirt->num_blocks; i++, block = IOVIRT_NEXT_BLOCK(block))
     dump_block(block);
 }
@@ -217,6 +223,10 @@ iort_add_block(IORT_TABLE *iort, IORT_NODE *iort_node, IOVIRT_INFO_TABLE *IoVirt
   NODE_DATA *data = &((*block)->data);
   VOID *node_data = &(iort_node->node_data[0]);
 
+  sbsa_print(AVS_PRINT_INFO, L"IORT node offset:%x, type: %d\n", (UINT8*)iort_node - (UINT8*)iort, iort_node->type);
+
+  SetMem(data, 0, sizeof(NODE_DATA));
+
   /* Populate the fields that are independent of node type */
   (*block)->type = iort_node->type;
   (*block)->num_data_map = iort_node->mapping_count;
@@ -252,18 +262,28 @@ iort_add_block(IORT_TABLE *iort, IORT_NODE *iort_node, IOVIRT_INFO_TABLE *IoVirt
       (*data).smmu.arch_major_rev = 3;
       count = &IoVirtTable->num_smmus;
       break;
+    case IOVIRT_NODE_PMCG:
+      (*data).pmcg.base = ((IORT_PMCG *)node_data)->base_address;
+      (*data).pmcg.overflow_gsiv = ((IORT_PMCG *)node_data)->overflow_interrupt_gsiv;
+      (*data).pmcg.node_ref = ((IORT_PMCG *)node_data)->node_reference;
+      next_block = ADD_PTR(IOVIRT_BLOCK, data_map, (*block)->num_data_map * sizeof(NODE_DATA_MAP));
+      offset = iort_add_block(iort, ADD_PTR(IORT_NODE, iort, (*data).pmcg.node_ref),
+                              IoVirtTable, &next_block);
+      (*data).pmcg.node_ref = offset;
+      count = &IoVirtTable->num_pmcgs;
+      break;
     default:
        sbsa_print(AVS_PRINT_ERR, L"Invalid IORT node type\n");
        return (UINT32) -1;
   }
 
+  (*block)->flags = 0;
   /* Have we already added this block? */
   /* If so, return the block offset */
   offset = find_block(*block, IoVirtTable);
   if(offset)
     return offset;
 
-  (*block)->flags = 0;
   /* Calculate the position where next block should be added */
   next_block = ADD_PTR(IOVIRT_BLOCK, data_map, (*block)->num_data_map * sizeof(NODE_DATA_MAP));
   if(iort_node->type == IOVIRT_NODE_SMMU) {
@@ -326,6 +346,7 @@ pal_iovirt_create_info_table(IOVIRT_INFO_TABLE *IoVirtTable)
   IoVirtTable->num_pci_rcs = 0;
   IoVirtTable->num_named_components = 0;
   IoVirtTable->num_its_groups = 0;
+  IoVirtTable->num_pmcgs = 0;
 
   if(PLATFORM_OVERRIDE_SMMU_BASE) {
     iovirt_create_override_table(IoVirtTable);

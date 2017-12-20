@@ -89,6 +89,12 @@ typedef struct {
         UINT32 gerr_gsiv;
         UINT32 sync_gsiv;
 }IORT_SMMU_V3;
+
+typedef struct {
+        UINT64 base_address;
+        UINT32 overflow_interrupt_gsiv;
+        UINT32 node_reference;
+}IORT_PMCG;
 #pragma pack()
 
 #endif
