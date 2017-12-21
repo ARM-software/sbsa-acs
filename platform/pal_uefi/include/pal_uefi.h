@@ -182,23 +182,30 @@ typedef struct {
 }SMMU_INFO_BLOCK;
 
 typedef struct {
-	UINT32 segment;
-	UINT32 ats_attr;
-	UINT32 cca;			//Cache Coherency Attribute
+  UINT32 segment;
+  UINT32 ats_attr;
+  UINT32 cca;             //Cache Coherency Attribute
 }IOVIRT_RC_INFO_BLOCK;
+
+typedef struct {
+  UINT64 base;
+  UINT32 overflow_gsiv;
+  UINT32 node_ref;
+} IOVIRT_PMCG_INFO_BLOCK;
 
 typedef enum {
   IOVIRT_NODE_ITS_GROUP = 0x00,
   IOVIRT_NODE_NAMED_COMPONENT = 0x01,
   IOVIRT_NODE_PCI_ROOT_COMPLEX = 0x02,
   IOVIRT_NODE_SMMU = 0x03,
-  IOVIRT_NODE_SMMU_V3 = 0x04
+  IOVIRT_NODE_SMMU_V3 = 0x04,
+  IOVIRT_NODE_PMCG = 0x05
 }IOVIRT_NODE_TYPE;
 
 typedef enum {
-        IOVIRT_FLAG_DEVID_OVERLAP_SHIFT,
-        IOVIRT_FLAG_STRID_OVERLAP_SHIFT,
-        IOVIRT_FLAG_SMMU_CTX_INT_SHIFT,
+  IOVIRT_FLAG_DEVID_OVERLAP_SHIFT,
+  IOVIRT_FLAG_STRID_OVERLAP_SHIFT,
+  IOVIRT_FLAG_SMMU_CTX_INT_SHIFT,
 }IOVIRT_FLAG_SHIFT;
 
 typedef struct {
@@ -216,6 +223,7 @@ typedef union {
 typedef union {
   CHAR8 name[16];
   IOVIRT_RC_INFO_BLOCK rc;
+  IOVIRT_PMCG_INFO_BLOCK pmcg;
   UINT32 its_count;
   SMMU_INFO_BLOCK smmu;
 }NODE_DATA;
@@ -234,6 +242,7 @@ typedef struct {
   UINT32 num_pci_rcs;
   UINT32 num_named_components;
   UINT32 num_its_groups;
+  UINT32 num_pmcgs;
   IOVIRT_BLOCK blocks[];
 }IOVIRT_INFO_TABLE;
 
