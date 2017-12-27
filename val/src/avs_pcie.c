@@ -31,11 +31,12 @@ pal_get_mcfg_ptr(void);
            2. Prerequisite -  val_pcie_create_info_table
   @param   bdf    - concatenated Bus(8-bits), device(8-bits) & function(8-bits)
   @param   offset - Register offset within a device PCIe config space
+  @param   *data  - 32-bit data read from the config space
 
-  @return  32-bit data read from the config space
+  @return  success/failure
 **/
 uint32_t
-val_pcie_read_cfg(uint32_t bdf, uint32_t offset)
+val_pcie_read_cfg(uint32_t bdf, uint32_t offset, uint32_t *data)
 {
   uint32_t bus     = PCIE_EXTRACT_BDF_BUS(bdf);
   uint32_t dev     = PCIE_EXTRACT_BDF_DEV(bdf);
@@ -48,12 +49,12 @@ val_pcie_read_cfg(uint32_t bdf, uint32_t offset)
 
   if ((bus >= PCIE_MAX_BUS) || (dev >= PCIE_MAX_DEV) || (func >= PCIE_MAX_FUNC)) {
      val_print(AVS_PRINT_ERR, "Invalid Bus/Dev/Func  %x \n", bdf);
-     return 0;
+     return PCIE_READ_ERR;
   }
 
   if (g_pcie_info_table == NULL) {
       val_print(AVS_PRINT_ERR, "\n    Read_PCIe_CFG: PCIE info table is not created", 0);
-      return 0;
+      return PCIE_READ_ERR;
   }
 
   while (i < val_pcie_get_info(PCIE_INFO_NUM_ECAM, 0))
@@ -70,7 +71,7 @@ val_pcie_read_cfg(uint32_t bdf, uint32_t offset)
 
   if (ecam_base == 0) {
       val_print(AVS_PRINT_ERR, "\n    Read PCIe_CFG: ECAM Base is zero ", 0);
-      return 0;
+      return PCIE_READ_ERR;
   }
 
   /* There are 8 functions / device, 32 devices / Bus and each has a 4KB config space */
@@ -79,7 +80,8 @@ val_pcie_read_cfg(uint32_t bdf, uint32_t offset)
 
   val_print(AVS_PRINT_INFO, "   calculated config address is %x \n", ecam_base + cfg_addr + offset);
 
-  return pal_mmio_read(ecam_base + cfg_addr + offset);
+  *data = pal_mmio_read(ecam_base + cfg_addr + offset);
+  return 0;
 
 }
 
@@ -90,13 +92,14 @@ val_pcie_read_cfg(uint32_t bdf, uint32_t offset)
            2. Prerequisite -  val_pcie_create_info_table
   @param   bdf    - concatenated Bus(8-bits), device(8-bits) & function(8-bits)
   @param   offset - Register offset within a device PCIe config space
+  @param   *data - 32-bit data read from the config space
 
-  @return  32-bit data read from the config space
+  @return success/failure
 **/
 uint32_t
-val_pcie_io_read_cfg(uint32_t bdf, uint32_t offset)
+val_pcie_io_read_cfg(uint32_t bdf, uint32_t offset, uint32_t *data)
 {
-    return pal_pcie_read_cfg(bdf, offset);
+    return pal_pcie_read_cfg(bdf, offset, data);
 }
 
 /**

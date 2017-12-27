@@ -27,12 +27,13 @@ void
 payload(void)
 {
 
-  uint64_t data;
+  uint32_t data;
   uint32_t num_ecam;
   uint64_t ecam_base;
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
   uint32_t bdf = 0;
   uint32_t bus, segment;
+  uint32_t ret;
 
   num_ecam = val_pcie_get_info(PCIE_INFO_NUM_ECAM, 0);
 
@@ -56,19 +57,19 @@ payload(void)
       bus = val_pcie_get_info(PCIE_INFO_START_BUS, num_ecam);
 
       bdf = PCIE_CREATE_BDF(segment, bus, 0, 0);
-      data = val_pcie_read_cfg(bdf, 0);
+      ret = val_pcie_read_cfg(bdf, 0, &data);
 
       //If this is really PCIe CFG space, Device ID and Vendor ID cannot be 0 or 0xFFFF
-      if ((data == 0) || ((data & 0xFFFF) == 0xFFFF)) {
+      if (ret == PCIE_READ_ERR || (data == 0) || ((data & 0xFFFF) == 0xFFFF)) {
           val_print(AVS_PRINT_ERR, "\n      Incorrect data at ECAM Base %4x    ", data);
           val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
           return;
       }
 
-      data = val_pcie_read_cfg(bdf, 0xC);
+      ret = val_pcie_read_cfg(bdf, 0xC, &data);
 
       //If this really is PCIe CFG, Header type[6:0] must be 01 or 00
-      if (((data >> 16) & 0x7F) > 01) {
+      if (ret == PCIE_READ_ERR || ((data >> 16) & 0x7F) > 01) {
           val_print(AVS_PRINT_ERR, "\n      Incorrect PCIe CFG Hdr type %4x    ", data);
           val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
           return;

@@ -99,7 +99,7 @@ dump_iort_table(IOVIRT_INFO_TABLE *iovirt)
 {
   UINT32 i;
   IOVIRT_BLOCK *block = &iovirt->blocks[0];
-  sbsa_print(AVS_PRINT_INFO, "Number of IOVIRT blocks = %d\n", iovirt->num_blocks);
+  sbsa_print(AVS_PRINT_INFO, L"Number of IOVIRT blocks = %d\n", iovirt->num_blocks);
   for(i = 0; i < iovirt->num_blocks; i++, block = IOVIRT_NEXT_BLOCK(block))
     dump_block(block);
 }
