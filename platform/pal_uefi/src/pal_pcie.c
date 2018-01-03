@@ -123,10 +123,11 @@ pal_pcie_create_info_table(PCIE_INFO_TABLE *PcieTable)
 
     @param   Bdf      - BDF value for the device
     @param   offset - Register offset within a device PCIe config space
-    @return  32 bit value at offset from ECAM base of the device specified by BDF value
+    @param   *data - 32 bit value at offset from ECAM base of the device specified by BDF value
+    @return  success/failure
 **/
 UINT32
-pal_pcie_read_cfg(UINT32 Bdf, UINT32 offset)
+pal_pcie_read_cfg(UINT32 Bdf, UINT32 offset, UINT32 *data)
 {
 
   EFI_STATUS                    Status;
@@ -135,15 +136,16 @@ pal_pcie_read_cfg(UINT32 Bdf, UINT32 offset)
   EFI_HANDLE                    *HandleBuffer;
   UINTN                         Seg, Bus, Dev, Func;
   UINT32                        Index;
-  UINT32                        InputBus, InputDev, InputFunc, Data;
+  UINT32                        InputSeg, InputBus, InputDev, InputFunc;
 
 
   Status = gBS->LocateHandleBuffer (ByProtocol, &gEfiPciIoProtocolGuid, NULL, &HandleCount, &HandleBuffer);
   if (EFI_ERROR (Status)) {
     sbsa_print(AVS_PRINT_INFO,L"No PCI devices found in the system\n");
-    return EFI_SUCCESS;
+    return PCIE_READ_ERR;
   }
 
+  InputSeg = PCIE_EXTRACT_BDF_SEG(Bdf);
   InputBus = PCIE_EXTRACT_BDF_BUS(Bdf);
   InputDev = PCIE_EXTRACT_BDF_DEV(Bdf);
   InputFunc = PCIE_EXTRACT_BDF_FUNC(Bdf);
@@ -152,13 +154,14 @@ pal_pcie_read_cfg(UINT32 Bdf, UINT32 offset)
     Status = gBS->HandleProtocol (HandleBuffer[Index], &gEfiPciIoProtocolGuid, (VOID **)&Pci);
     if (!EFI_ERROR (Status)) {
       Pci->GetLocation (Pci, &Seg, &Bus, &Dev, &Func);
-      if (InputBus == Bus && InputDev == Dev && InputFunc == Func) {
-          Status = Pci->Pci.Read (Pci, EfiPciIoWidthUint32, offset, 1, &Data);
+      if (InputSeg == Seg && InputBus == Bus && InputDev == Dev && InputFunc == Func) {
+          Status = Pci->Pci.Read (Pci, EfiPciIoWidthUint32, offset, 1, data);
           if (!EFI_ERROR (Status))
-            return Data;
-          break;
+            return 0;
+          else
+            return PCIE_READ_ERR;
       }
     }
   }
-  return 0;
+  return PCIE_READ_ERR;
 }

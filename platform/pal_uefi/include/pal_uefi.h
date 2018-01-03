@@ -26,6 +26,8 @@ extern UINT32 g_print_level;
 #define AVS_PRINT_DEBUG 2      /* For Debug statements. contains register dumps etc */
 #define AVS_PRINT_INFO  1      /* Print all statements. Do not use unless really needed */
 
+#define PCIE_READ_ERR -1
+
 typedef struct {
   UINT64   Arg0;
   UINT64   Arg1;
