@@ -212,6 +212,10 @@ payload1()
           val_gic_install_isr(int_id, isr);
           uart_enable_txintr();
           val_print(g_print_level, "\n       Test Message                      ", 0);
+          if (IS_RESULT_PENDING(val_get_status(index))) {
+              val_print(AVS_PRINT_ERR, "\n     Did not receive UART interrupt on %d  ", int_id);
+              val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM2, 02));
+          }
       } else {
           val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM2, 01));
       }
