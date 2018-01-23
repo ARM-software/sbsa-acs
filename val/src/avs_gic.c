@@ -43,12 +43,6 @@ val_gic_execute_tests(uint32_t level, uint32_t num_pe)
   }
 
   status = g001_entry(num_pe);
-
-  if (status != AVS_STATUS_PASS) {
-    val_print(AVS_PRINT_WARN, "\n     Skip remaining GIC tests.\n ",0);
-    return status;
-  }
-
   if (level > 1) {
     status |= g002_entry(num_pe);
     if (level > 2) {
@@ -157,7 +151,7 @@ val_gic_get_info(uint32_t type)
       case GIC_INFO_VERSION:
           if (g_gic_info_table->header.gic_version != 0) {
              val_print(AVS_PRINT_INFO, "\n       gic version from ACPI table = %d ", g_gic_info_table->header.gic_version);
-              return g_gic_info_table->header.gic_version;
+                return g_gic_info_table->header.gic_version;
           }
 
           return ((val_mmio_read(val_get_gicd_base() + 0xFE8) >> 4) & 0xF);

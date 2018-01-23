@@ -189,7 +189,7 @@ payload4()
 
   timer_num = val_wd_get_info(0, WD_INFO_COUNT);
   if(!timer_num){
-      val_print(AVS_PRINT_WARN, "\n       No watchdog implemented   ", 0);
+      val_print(AVS_PRINT_WARN, "\n       No watchdog implemented           ", 0);
       val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM4, 01));
       return;
   }
