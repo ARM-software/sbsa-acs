@@ -20,7 +20,7 @@
 #include "val/include/sbsa_avs_iovirt.h"
 
 #define TEST_NUM   (AVS_SMMU_TEST_NUM_BASE + 6)
-#define TEST_DESC  "Unique stream id for each req id  "
+#define TEST_DESC  "Unique stream id for each req id   "
 
 static
 void

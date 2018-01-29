@@ -44,10 +44,6 @@ val_wd_execute_tests(uint32_t level, uint32_t num_pe)
 
 
   status = w001_entry(num_pe);
-  if (status != AVS_STATUS_PASS) {
-    val_print(AVS_PRINT_WARN, "\n      Watchdog not present. Skip remaining tests.. \n", 0);
-    return AVS_STATUS_SKIP;
-  }
   status |= w002_entry(num_pe);
 
   if (status != 0)
@@ -75,7 +71,7 @@ val_wd_get_info(uint32_t index, WD_INFO_TYPE_e info_type)
 
   switch (info_type) {
     case WD_INFO_COUNT:
-      return g_wd_info_table->header.num_wd;
+        return g_wd_info_table->header.num_wd;
     case WD_INFO_CTRL_BASE:
       return g_wd_info_table->wd_info[index].wd_ctrl_base;
     case WD_INFO_REFRESH_BASE:

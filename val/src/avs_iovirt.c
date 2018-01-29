@@ -41,7 +41,7 @@ val_iovirt_get_smmu_info(SMMU_INFO_e type, uint32_t index)
   }
 
   if(type == SMMU_NUM_CTRL)
-      return g_iovirt_info_table->num_smmus;
+       return g_iovirt_info_table->num_smmus;
 
   /* Go through the table return the relevant field value for the SMMU block */
   /* at the index position */
