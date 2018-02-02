@@ -1,3 +1,9 @@
+v18.02_REL1.3
+
+* Test #84: Fix issue where Uart interrupt test returns garbage value when interrupt is not generated.
+* Test #62: Made a logical change to the PCI test loop and the error conditions.
+* Test #59: Fixed the issue where bdf=0 was treated as an invalid configuration.
+
 v17.10_REL1.2
 
 * Test #61: Bug fixed in reading PCIE RC Cache Coherency attributes from IORT.
