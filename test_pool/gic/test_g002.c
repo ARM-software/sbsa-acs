@@ -35,6 +35,12 @@ payload()
   num_ecam = val_pcie_get_info(PCIE_INFO_NUM_ECAM, 0);
 
   if (num_ecam != 0) {
+      data = val_gic_get_info(GIC_INFO_VERSION);
+      if (data < 2) {
+          val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
+          return;
+      }
+
       data = val_gic_get_info(GIC_INFO_NUM_ITS);
 
       if (data == 0) {

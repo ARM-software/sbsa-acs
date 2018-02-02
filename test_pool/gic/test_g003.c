@@ -30,6 +30,12 @@ payload()
   uint32_t data;
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
 
+  data = val_gic_get_info(GIC_INFO_VERSION);
+  if (data < 3) {
+     val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
+     return;
+  }
+
   data = val_gic_get_info(GIC_INFO_SEC_STATES);
 
   if (data != 0)

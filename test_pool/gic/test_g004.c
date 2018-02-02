@@ -53,6 +53,12 @@ payload()
   uint32_t timeout = 0x100000;
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
 
+  data = val_gic_get_info(GIC_INFO_VERSION);
+  if (data < 3) {
+     val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
+     return;
+  }
+
   val_gic_install_isr(int_id, isr);
 
   // Write to GIC registers which will generate Maintenance interrupt

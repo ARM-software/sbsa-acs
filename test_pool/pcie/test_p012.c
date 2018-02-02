@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2017, ARM Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2018, Arm Limited or its affiliates. All rights reserved.
 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -61,59 +61,65 @@ payload (void)
 
   /* get legacy IRQ info from PCI devices */
   while (count > 0 && status == 0) {
-    if (val_peripheral_get_info (ANY_GSIV, count-1)) {
-      dev_bdf = val_peripheral_get_info (ANY_BDF, count-1);
+    count--;
+    if (val_peripheral_get_info (ANY_GSIV, count)) {
+      dev_bdf = val_peripheral_get_info (ANY_BDF, count);
       status = val_pci_get_legacy_irq_map (dev_bdf, irq_map);
 
       switch (status) {
       case 0:
         break;
       case 1:
-        val_print (AVS_STATUS_ERR, "\n       Unable to access PCI bridge device", 0);
+        val_print (AVS_PRINT_WARN, "\n       Unable to access PCI bridge device", 0);
         break;
       case 2:
-        val_print (AVS_STATUS_ERR, "\n       Unable to fetch _PRT ACPI handle", 0);
-        break;
+        val_print (AVS_PRINT_WARN, "\n       Unable to fetch _PRT ACPI handle", 0);
+        /* Not a fatal error, just skip this device */
+        status = 0;
+        continue;
       case 3:
-        val_print (AVS_STATUS_ERR, "\n       Unable to access _PRT ACPI object", 0);
-        break;
+        val_print (AVS_PRINT_WARN, "\n       Unable to access _PRT ACPI object", 0);
+        /* Not a fatal error, just skip this device */
+        status = 0;
+        continue;
       case 4:
-        val_print (AVS_STATUS_ERR, "\n       Interrupt hard-wire error", 0);
-        break;
+        val_print (AVS_PRINT_WARN, "\n       Interrupt hard-wire error", 0);
+        /* Not a fatal error, just skip this device */
+        status = 0;
+        continue;
       case 5:
-        val_print (AVS_STATUS_ERR, "\n       Legacy interrupt out of range", 0);
+        val_print (AVS_PRINT_ERR, "\n       Legacy interrupt out of range", 0);
         break;
       case 6:
-        val_print (AVS_STATUS_ERR, "\n       Maximum number of interrupts has been reached", 0);
+        val_print (AVS_PRINT_ERR, "\n       Maximum number of interrupts has been reached", 0);
         break;
       default:
-        val_print (AVS_STATUS_ERR, "\n       Unknown error", 0);
+        val_print (AVS_PRINT_ERR, "\n       Unknown error", 0);
         break;
       }
     }
-    count--;
-  }
 
-  /* Compare IRQ routings */
-  if (!status) {
-    while (current_irq_pin < LEGACY_PCI_IRQ_CNT && status == 0) {
-      while (next_irq_pin < LEGACY_PCI_IRQ_CNT && status == 0) {
+    /* Compare IRQ routings */
+    if (!status) {
+      while (current_irq_pin < LEGACY_PCI_IRQ_CNT && status == 0) {
+        while (next_irq_pin < LEGACY_PCI_IRQ_CNT && status == 0) {
 
-        for (ccnt = 0; (ccnt < irq_map->legacy_irq_map[current_irq_pin].irq_count) && (status == 0); ccnt++) {
-          for (ncnt = 0; (ncnt < irq_map->legacy_irq_map[next_irq_pin].irq_count) && (status == 0); ncnt++) {
-            if (irq_map->legacy_irq_map[current_irq_pin].irq_list[ccnt] ==
-                irq_map->legacy_irq_map[next_irq_pin].irq_list[ncnt]) {
-              status = 7;
-              val_print (AVS_STATUS_ERR, "\n       Legacy interrupt %c routing", pin_name(current_irq_pin));
-              val_print (AVS_STATUS_ERR, "\n       is the same as %c routing", pin_name(next_irq_pin));
+          for (ccnt = 0; (ccnt < irq_map->legacy_irq_map[current_irq_pin].irq_count) && (status == 0); ccnt++) {
+            for (ncnt = 0; (ncnt < irq_map->legacy_irq_map[next_irq_pin].irq_count) && (status == 0); ncnt++) {
+              if (irq_map->legacy_irq_map[current_irq_pin].irq_list[ccnt] ==
+                  irq_map->legacy_irq_map[next_irq_pin].irq_list[ncnt]) {
+                status = 7;
+                val_print (AVS_STATUS_ERR, "\n       Legacy interrupt %c routing", pin_name(current_irq_pin));
+                val_print (AVS_STATUS_ERR, "\n       is the same as %c routing", pin_name(next_irq_pin));
+              }
             }
           }
-        }
 
-        next_irq_pin++;
+          next_irq_pin++;
+        }
+        current_irq_pin++;
+        next_irq_pin = current_irq_pin + 1;
       }
-      current_irq_pin++;
-      next_irq_pin = current_irq_pin + 1;
     }
   }
 

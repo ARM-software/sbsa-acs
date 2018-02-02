@@ -56,10 +56,7 @@ val_smmu_execute_tests(uint32_t level, uint32_t num_pe)
 {
   uint32_t status, i;
 
-  if (val_smmu_get_info(SMMU_NUM_CTRL, 0) == 0) {
-      val_print(AVS_PRINT_WARN, "      SMMU controller not present. Skipping tests..\n", 0);
-      return AVS_STATUS_SKIP;
-  }
+
 
   for (i=0 ; i<MAX_TEST_SKIP_NUM ; i++){
       if (g_skip_test_num[i] == AVS_SMMU_TEST_NUM_BASE) {
@@ -71,12 +68,6 @@ val_smmu_execute_tests(uint32_t level, uint32_t num_pe)
   status = i001_entry(num_pe);
   status |= i002_entry(num_pe);
   status |= i003_entry(num_pe);
-
-  if (status != AVS_STATUS_PASS) {
-      val_print(AVS_PRINT_WARN, "\n     *** Skipping remaining IO-VIRT tests *** \n", 0);
-      return status;
-  }
-
   status |= i004_entry(num_pe);
   status |= i005_entry(num_pe);
   status |= i006_entry(num_pe);

@@ -39,6 +39,7 @@
 #define TIMEOUT_MEDIUM   0x100000
 #define TIMEOUT_SMALL    0x1000
 
+#define PCIE_READ_ERR  -1
 
 /**  PE Test related Definitions **/
 
@@ -221,7 +222,7 @@ typedef struct {
 
 uint64_t pal_pcie_get_mcfg_ecam(void);
 void     pal_pcie_create_info_table(PCIE_INFO_TABLE *PcieTable);
-uint32_t pal_pcie_read_cfg(uint32_t bdf, uint32_t offset);
+uint32_t pal_pcie_read_cfg(uint32_t bdf, uint32_t offset, uint32_t *data);
 
 /**
   @brief  Instance of SMMU INFO block
@@ -232,23 +233,30 @@ typedef struct {
 }SMMU_INFO_BLOCK;
 
 typedef struct {
-	uint32_t segment;
-	uint32_t ats_attr;
-	uint32_t cca;          //Cache Coherency Attribute
+  uint32_t segment;
+  uint32_t ats_attr;
+  uint32_t cca;          //Cache Coherency Attribute
 }IOVIRT_RC_INFO_BLOCK;
 
+typedef struct {
+  uint64_t base;
+  uint32_t overflow_gsiv;
+  uint32_t node_ref;
+} IOVIRT_PMCG_INFO_BLOCK;
+
 typedef enum {
-        IOVIRT_NODE_ITS_GROUP = 0x00,
-        IOVIRT_NODE_NAMED_COMPONENT = 0x01,
-        IOVIRT_NODE_PCI_ROOT_COMPLEX = 0x02,
-        IOVIRT_NODE_SMMU = 0x03,
-        IOVIRT_NODE_SMMU_V3 = 0x04
+  IOVIRT_NODE_ITS_GROUP = 0x00,
+  IOVIRT_NODE_NAMED_COMPONENT = 0x01,
+  IOVIRT_NODE_PCI_ROOT_COMPLEX = 0x02,
+  IOVIRT_NODE_SMMU = 0x03,
+  IOVIRT_NODE_SMMU_V3 = 0x04,
+  IOVIRT_NODE_PMCG = 0x05
 }IOVIRT_NODE_TYPE;
 
 typedef enum {
-        IOVIRT_FLAG_DEVID_OVERLAP_SHIFT,
-        IOVIRT_FLAG_STRID_OVERLAP_SHIFT,
-        IOVIRT_FLAG_SMMU_CTX_INT_SHIFT,
+  IOVIRT_FLAG_DEVID_OVERLAP_SHIFT,
+  IOVIRT_FLAG_STRID_OVERLAP_SHIFT,
+  IOVIRT_FLAG_SMMU_CTX_INT_SHIFT,
 }IOVIRT_FLAG_SHIFT;
 
 typedef struct {
@@ -266,6 +274,7 @@ typedef union {
 typedef union {
   char name[16];
   IOVIRT_RC_INFO_BLOCK rc;
+  IOVIRT_PMCG_INFO_BLOCK pmcg;
   uint32_t its_count;
   SMMU_INFO_BLOCK smmu;
 }NODE_DATA;
@@ -287,6 +296,7 @@ typedef struct {
   uint32_t num_pci_rcs;
   uint32_t num_named_components;
   uint32_t num_its_groups;
+  uint32_t num_pmcgs;
   IOVIRT_BLOCK blocks[];
 }IOVIRT_INFO_TABLE;
 
