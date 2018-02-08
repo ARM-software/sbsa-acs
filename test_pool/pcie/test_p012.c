@@ -73,17 +73,17 @@ payload (void)
         val_print (AVS_PRINT_WARN, "\n       Unable to access PCI bridge device", 0);
         break;
       case 2:
-        val_print (AVS_PRINT_WARN, "\n       Unable to fetch _PRT ACPI handle", 0);
+        val_print (AVS_PRINT_DEBUG, "\n       Unable to fetch _PRT ACPI handle", 0);
         /* Not a fatal error, just skip this device */
         status = 0;
         continue;
       case 3:
-        val_print (AVS_PRINT_WARN, "\n       Unable to access _PRT ACPI object", 0);
+        val_print (AVS_PRINT_DEBUG, "\n       Unable to access _PRT ACPI object", 0);
         /* Not a fatal error, just skip this device */
         status = 0;
         continue;
       case 4:
-        val_print (AVS_PRINT_WARN, "\n       Interrupt hard-wire error", 0);
+        val_print (AVS_PRINT_DEBUG, "\n       Interrupt hard-wire error", 0);
         /* Not a fatal error, just skip this device */
         status = 0;
         continue;
