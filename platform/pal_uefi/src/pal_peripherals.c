@@ -104,7 +104,7 @@ pal_peripheral_create_info_table(PERIPHERAL_INFO_TABLE *peripheralInfoTable)
   if (spcr) {
     peripheralInfoTable->header.num_uart++;
     per_info->base0 = spcr->BaseAddress.Address;
-    per_info->irq   = spcr->Irq;
+    per_info->irq   = spcr->GlobalSystemInterrupt;
     per_info->type  = PERIPHERAL_TYPE_UART;
     per_info++;
   }

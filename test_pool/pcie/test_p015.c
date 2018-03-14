@@ -31,6 +31,7 @@ payload (void)
   uint32_t no_snoop_set;
   uint32_t status;
   uint64_t dev_bdf;
+  uint32_t dev_type;
 
   status = 0;
   no_snoop_set = 0;
@@ -46,6 +47,11 @@ payload (void)
   while (count > 0) {
     count--;
     dev_bdf = val_peripheral_get_info (ANY_BDF, count);
+    dev_type = val_pcie_get_device_type(dev_bdf);
+    /* Skipping snoop bit check for type-1 and type-2 headers */
+    if ((!dev_type) || (dev_type > 1))
+        continue;
+
     if (val_pcie_get_dma_support (dev_bdf) == 1) {
       val_print (AVS_PRINT_INFO, "    have DMA support on %X", dev_bdf);
       if (val_pcie_get_dma_coherent(dev_bdf) == 1) {
