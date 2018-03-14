@@ -1,3 +1,9 @@
+v18.03_REL1.4
+
+* Test #65: Exclude pci-pci bridges and host bridge from no_snoop bit test.
+* Test #84: Bug fix - Use GSIV from SPCR table to generate UART interrupts.
+* Test #63: Bug fix - Use device class to identify PCI host bridge device. 
+
 v18.02_REL1.3
 
 * Test #84: Fix issue where Uart interrupt test returns garbage value when interrupt is not generated.
