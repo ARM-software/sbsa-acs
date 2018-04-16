@@ -374,6 +374,7 @@ typedef struct {
   uint32_t         vector_data;       ///< Base Address of the controller
   uint32_t         vector_control;    ///< IRQ to install an ISR
   uint32_t         vector_irq_base;   ///< Base IRQ for the vectors in the block
+  uint32_t         vector_n_irqs;     ///< Number of irq vectors in the block
 }PERIPHERAL_VECTOR_BLOCK;
 
 typedef struct PERIPHERAL_VECTOR_LIST_STRUCT
