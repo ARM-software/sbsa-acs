@@ -26,35 +26,41 @@ void
 payload(void)
 {
 
-  uint32_t count = val_peripheral_get_info(NUM_SATA, 0);
+  uint32_t count = val_peripheral_get_info(NUM_ALL, 0);
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
   uint32_t data;
+  uint32_t dev_type;
+  uint64_t dev_bdf;
+  uint32_t status = 0;
 
   if (!count){
-      val_print(AVS_PRINT_WARN, "\n       Skipping because no SATA controller present ", 0);
       val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
       return;
   }
 
-  while (count != 0) {
-      data = val_peripheral_get_info(SATA_FLAGS, count - 1);
+  while (count > 0) {
+      count--;
+      dev_bdf = val_peripheral_get_info(ANY_BDF, count);
+      /* Check for pcie device */
+      if (!val_peripheral_is_pcie(dev_bdf))
+          continue;
+
+      dev_type = val_pcie_get_device_type(dev_bdf);
+      /* Skipping MSI check for type-1 and type-2 headers */
+      if ((!dev_type) || (dev_type > 1))
+          continue;
+
+      data = val_peripheral_get_info(ANY_FLAGS, count);
 
       if ((data & PER_FLAG_MSI_ENABLED) == 0) {
           val_print(AVS_STATUS_ERR, "\n       MSI should be enabled for a PCIe device ", 0);
           val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
+          status = 1;
           break;
-      } else {
-          if (val_peripheral_get_info(SATA_GSIV, count - 1))
-              val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
-          else {
-              val_print(AVS_STATUS_ERR, "\n       IRQ not assigned to the Device ", 0);
-              val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
-              break;
-          }
       }
-      count--;
   }
-
+  if (!status)
+      val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
 }
 
 uint32_t

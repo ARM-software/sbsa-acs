@@ -238,6 +238,7 @@ void     val_peripheral_create_info_table(uint64_t *peripheral_info_table);
 void     val_peripheral_free_info_table(void);
 uint32_t val_peripheral_execute_tests(uint32_t level, uint32_t num_pe);
 uint64_t val_peripheral_get_info(PERIPHERAL_INFO_e info_type, uint32_t index);
+uint32_t val_peripheral_is_pcie(uint32_t bdf);
 
 /* Memory Tests APIs */
 typedef enum {
