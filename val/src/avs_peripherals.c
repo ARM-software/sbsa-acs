@@ -17,7 +17,7 @@
 #include "include/sbsa_avs_val.h"
 #include "include/sbsa_avs_peripherals.h"
 #include "include/sbsa_avs_common.h"
-
+#include "include/sbsa_avs_pcie.h"
 
 PERIPHERAL_INFO_TABLE  *g_peripheral_info_table;
 
@@ -224,5 +224,21 @@ void
 val_peripheral_free_info_table()
 {
   pal_mem_free((void *)g_peripheral_info_table);
+}
+
+/**
+  @brief   Check if PCI device is PCI Express capable
+           1. Caller       -  Test Suite
+  @param   bdf      - PCIe BUS/Device/Function
+  @return  1 -> PCIe capable  0 -> no PCIe capable
+**/
+uint32_t val_peripheral_is_pcie(uint32_t bdf)
+{
+  uint32_t seg  = PCIE_EXTRACT_BDF_SEG (bdf);
+  uint32_t bus  = PCIE_EXTRACT_BDF_BUS (bdf);
+  uint32_t dev  = PCIE_EXTRACT_BDF_DEV (bdf);
+  uint32_t func = PCIE_EXTRACT_BDF_FUNC (bdf);
+
+  return pal_peripheral_is_pcie(seg, bus, dev, func);
 }
 

@@ -368,7 +368,6 @@ val_pcie_is_devicedma_64bit(uint32_t bdf)
   return (pal_pcie_is_devicedma_64bit(seg, bus, dev, func));
 }
 
-
 /**
   @brief   This API returns the bdf of root port
   @param   bdf             - PCIe BUS/Device/Function

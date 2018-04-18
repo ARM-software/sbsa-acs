@@ -363,6 +363,7 @@ typedef struct {
 }PERIPHERAL_INFO_TABLE;
 
 void  pal_peripheral_create_info_table(PERIPHERAL_INFO_TABLE *per_info_table);
+uint32_t pal_peripheral_is_pcie(uint32_t seg, uint32_t bus, uint32_t dev, uint32_t fn);
 
 /**
   @brief MSI(X) controllers info structure
