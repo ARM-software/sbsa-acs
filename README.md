@@ -17,8 +17,8 @@ A few tests are executed by running the SBSA ACS Linux application which in turn
 
 
 ## Release details
- - Code Quality: REL v1.4
- - The tests are written for version 3.0 of the SBSA specification.
+ - Code Quality: V2.0 DEV
+ - The tests are written for version 5.0 of the SBSA specification.
  - The compliance suite is not a substitute for design verification.
  - To review the SBSA ACS logs, ARM licensees can contact ARM directly through their partner managers.
  - To know about the gaps in the test coverage, see [Testcase checklist](docs/testcase-checklist.md).

@@ -1,5 +1,6 @@
 /** @file
- * Copyright (c) 2016, ARM Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018, Arm Limited or its affiliates. All rights reserved.
+ * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -408,6 +409,8 @@ uint32_t pal_pcie_get_snoop_bit(uint32_t seg, uint32_t bus, uint32_t dev, uint32
 uint32_t pal_pcie_get_dma_support(uint32_t seg, uint32_t bus, uint32_t dev, uint32_t fn);
 uint32_t pal_pcie_get_dma_coherent(uint32_t seg, uint32_t bus, uint32_t dev, uint32_t fn);
 uint32_t pal_pcie_is_devicedma_64bit(uint32_t seg, uint32_t bus, uint32_t dev, uint32_t fn);
+uint32_t pal_pcie_scan_bridge_devices_and_check_memtype(uint32_t seg, uint32_t bus,
+                                                            uint32_t dev, uint32_t fn);
 /**
   @brief DMA controllers info structure
 **/
@@ -435,6 +438,9 @@ uint32_t pal_dma_start_from_device(void *dma_target_buf, uint32_t length,
                           void *host, void *dev);
 uint64_t
 pal_dma_mem_alloc(void **buffer, uint32_t length, void *dev, uint32_t flags);
+
+void
+pal_dma_mem_free(void *buffer, addr_t mem_dma, unsigned int length, void *port, unsigned int flags);
 
 uint32_t pal_dma_start_to_device(void *dma_source_buf, uint32_t length,
                          void *host, void *target, uint32_t timeout);

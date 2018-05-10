@@ -1,5 +1,6 @@
 /** @file
- * Copyright (c) 2016, ARM Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018, Arm Limited or its affiliates. All rights reserved.
+ * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +19,14 @@
 #include "include/sbsa_avs_gic.h"
 #include "include/sbsa_avs_gic_support.h"
 #include "include/sbsa_avs_common.h"
+
+#define GICD_ISENABLER      0x100
+#define GICD_ICENABLER      0x180
+#define GICD_ISPENDR        0x200
+#define GICD_ISACTIVER0     0x300
+#define GICD_ICPENDR0       0x280
+#define GICD_ICACTIVER0     0x380
+#define GICD_IROUTER        0x6000
 
 GIC_INFO_TABLE  *g_gic_info_table;
 
@@ -206,7 +215,7 @@ val_gic_install_isr(uint32_t int_id, void (*isr)(void))
   if (int_id > 31) {
       /**** UEFI GIC code is not enabling interrupt in the Distributor ***/
       /**** So, do this here as a fail-safe. Remove if PAL guarantees this ***/
-      val_mmio_write(val_get_gicd_base() + 0x100 + (4 * reg_offset), 1 << reg_shift);
+      val_mmio_write(val_get_gicd_base() + GICD_ISENABLER + (4 * reg_offset), 1 << reg_shift);
   }
 
   return 0;
@@ -239,7 +248,7 @@ uint32_t val_gic_route_interrupt_to_pe(uint32_t int_id, uint64_t mpidr)
 {
   if (int_id > 31) {
       mpidr &= 0xF80FFFFFF;
-      val_mmio_write(val_get_gicd_base() + 0x6000 + (8 * int_id), mpidr);
+      val_mmio_write(val_get_gicd_base() + GICD_IROUTER + (8 * int_id), mpidr);
   }
   else{
       val_print(AVS_PRINT_ERR, "\n    Only SPIs can be routed, interrupt with INTID = %d cannot be routed", int_id);
@@ -259,12 +268,13 @@ uint32_t val_gic_get_interrupt_state(uint32_t int_id)
 {
   uint32_t reg_offset = int_id / 32;
   uint32_t reg_shift  = int_id % 32;
+  uint32_t mask = (1 << reg_shift);
   uint32_t active, pending;
 
-  pending = val_mmio_read(val_get_gicd_base() + 0x200 + (4 * reg_offset));
-  active = val_mmio_read(val_get_gicd_base() + 0x300 + (4 * reg_offset));
+  pending = val_mmio_read(val_get_gicd_base() + GICD_ISPENDR + (4 * reg_offset));
+  active = val_mmio_read(val_get_gicd_base() + GICD_ISACTIVER0 + (4 * reg_offset));
 
-  return ((reg_shift & active) || (reg_shift & pending));
+  return ((mask & active) || (mask & pending));
 }
 
 /**
@@ -276,11 +286,15 @@ uint32_t val_gic_get_interrupt_state(uint32_t int_id)
 **/
 void val_gic_clear_interrupt(uint32_t int_id)
 {
-  uint32_t reg_offset = int_id / 32;
-  uint32_t reg_shift  = int_id % 32;
+    uint32_t reg_offset = int_id / 32;
+    uint32_t reg_shift  = int_id % 32;
 
-  val_mmio_write(val_get_gicd_base() + 0x280 + (4 * reg_offset), reg_shift);
-  val_mmio_write(val_get_gicd_base() + 0x380 + (4 * reg_offset), reg_shift);
+    if ((int_id > 31) && (int_id < 1020)) {
+        val_mmio_write(val_get_gicd_base() + GICD_ICPENDR0 + (4 * reg_offset), (1 << reg_shift));
+        val_mmio_write(val_get_gicd_base() + GICD_ICACTIVER0 + (4 * reg_offset), (1 << reg_shift));
+    }
+    else
+        val_print(AVS_PRINT_ERR, "\n    Invalid SPI interrupt ID number %d", int_id);
 }
 
 /**

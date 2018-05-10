@@ -1,5 +1,6 @@
 /** @file
- * Copyright (c) 2016, ARM Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018, Arm Limited or its affiliates. All rights reserved.
+ * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -66,7 +67,6 @@ val_pe_execute_tests(uint32_t level, uint32_t num_pe)
   status |= c014_entry(num_pe);
   status |= c015_entry(num_pe);
 
-
   if (level > 2) {
       status |= c016_entry(num_pe);
       status |= c017_entry(num_pe);
@@ -75,6 +75,16 @@ val_pe_execute_tests(uint32_t level, uint32_t num_pe)
   if (level > 1) {
       status |= c018_entry(num_pe);
   }
+
+  status |= c019_entry(num_pe);
+  status |= c020_entry(num_pe);
+  status |= c021_entry(num_pe);
+  status |= c022_entry(num_pe);
+  status |= c023_entry(num_pe);
+  status |= c024_entry(num_pe);
+  status |= c025_entry(num_pe);
+  status |= c026_entry(num_pe);
+  status |= c027_entry(num_pe);
 
   if (status != AVS_STATUS_PASS)
       val_print(AVS_PRINT_TEST, "\n      *** One or more PE tests have failed... *** \n", 0);
@@ -201,6 +211,8 @@ val_pe_reg_read(uint32_t reg_id)
           return AA64ReadEsr2();
       case FAR_EL2:
           return AA64ReadFar2();
+      case RDVL:
+          return ArmRdvl();
       default:
            val_report_status(val_pe_get_index_mpid(val_pe_get_mpid()), RESULT_FAIL(g_sbsa_level, 0, 0x78));
   }

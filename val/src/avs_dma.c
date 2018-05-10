@@ -1,5 +1,6 @@
 /** @file
- * Copyright (c) 2017, ARM Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018, Arm Limited or its affiliates. All rights reserved.
+ * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,6 +36,24 @@ val_dma_mem_alloc(void **buffer, uint32_t size, uint32_t dev_index, uint32_t fla
 
   ap = (void *)val_dma_get_info(DMA_PORT_INFO, dev_index);
   return pal_dma_mem_alloc(buffer, size, ap, flags);
+
+}
+
+/**
+  @brief  free memory which is to used for DMA
+
+  @param  None
+
+  @result None
+**/
+void
+val_dma_mem_free(void *buffer, dma_addr_t mem_dma, uint32_t size, uint32_t dev_index, uint32_t flags)
+{
+
+  void *ap = NULL;
+
+  ap = (void *)val_dma_get_info(DMA_PORT_INFO, dev_index);
+  pal_dma_mem_free(buffer, mem_dma, size, ap, flags);
 
 }
 

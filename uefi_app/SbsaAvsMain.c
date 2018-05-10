@@ -1,5 +1,6 @@
 /** @file
- * Copyright (c) 2017, ARM Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018, Arm Limited or its affiliates. All rights reserved.
+ * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -329,7 +330,7 @@ ShellAppMain (
     g_sbsa_level = G_SBSA_LEVEL;
   } else {
     g_sbsa_level = StrDecimalToUintn(CmdLineArg);
-    if (g_sbsa_level > 3) {
+    if (g_sbsa_level > SBSA_MAX_LEVEL_SUPPORTED) {
       g_sbsa_level = G_SBSA_LEVEL;
     }
   }
