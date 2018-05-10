@@ -1,5 +1,6 @@
 /** @file
- * Copyright (c) 2017, ARM Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018, Arm Limited or its affiliates. All rights reserved.
+ * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +20,8 @@
 #define __SBSA_APP_LINUX_H__
 
 
-#define SBSA_APP_VERSION_MAJOR  1
-#define SBSA_APP_VERSION_MINOR  6
+#define SBSA_APP_VERSION_MAJOR  2
+#define SBSA_APP_VERSION_MINOR  0
 
 #include "sbsa_drv_intf.h"
 

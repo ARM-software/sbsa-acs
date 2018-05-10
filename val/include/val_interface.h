@@ -1,5 +1,6 @@
 /** @file
- * Copyright (c) 2016, ARM Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018, Arm Limited or its affiliates. All rights reserved.
+ * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,6 +33,8 @@
 #define AVS_STATUS_ERR  0xEDCB1234  //some impropable value?
 #define AVS_STATUS_SKIP 0x10000000
 #define AVS_STATUS_PASS 0x0
+
+#define VAL_EXTRACT_BITS(data, start, end) ((data >> start) & ((1ul << (end-start+1))-1))
 
 /* GENERIC VAL APIs */
 void val_allocate_shared_mem(void);
@@ -136,6 +139,7 @@ void     val_pcie_create_info_table(uint64_t *pcie_info_table);
 void     val_pcie_free_info_table(void);
 uint32_t val_pcie_execute_tests(uint32_t level, uint32_t num_pe);
 uint32_t val_pcie_is_devicedma_64bit(uint32_t bdf);
+uint32_t val_pcie_scan_bridge_devices_and_check_memtype(uint32_t bdf);
 
 /* IO-VIRT APIs */
 typedef enum {
