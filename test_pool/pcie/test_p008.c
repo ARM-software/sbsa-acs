@@ -62,17 +62,20 @@ check_list_duplicates (PERIPHERAL_VECTOR_LIST *list_one, PERIPHERAL_VECTOR_LIST 
 
   uint32_t fcount = 0;
   uint32_t scount = 0;
+  uint32_t irq_start1, irq_end1;
+  uint32_t irq_start2, irq_end2;
 
   flist_node = list_one;
   slist_node = list_two;
 
   while (flist_node != NULL) {
     while (slist_node != NULL) {
-      if ((flist_node->vector.vector_lower_addr == slist_node->vector.vector_lower_addr) &&
-          (flist_node->vector.vector_upper_addr == slist_node->vector.vector_upper_addr) &&
-          (flist_node->vector.vector_data == slist_node->vector.vector_data)) {
+      irq_start1 = flist_node->vector.vector_irq_base;
+      irq_end1 = flist_node->vector.vector_irq_base + flist_node->vector.vector_n_irqs - 1;
+      irq_start2 = slist_node->vector.vector_irq_base;
+      irq_end2 = slist_node->vector.vector_irq_base + slist_node->vector.vector_n_irqs - 1;
+      if (!(irq_end1 < irq_start2 || irq_start1 > irq_end2))
         return 1;
-      }
       slist_node = slist_node->next;
       scount++;
     }

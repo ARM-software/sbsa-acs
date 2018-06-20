@@ -70,7 +70,7 @@ uart_enable_txintr()
 {
   uint32_t data;
 
-  /* unmask TX interrupt bit 5 in */
+  /* Enable TX interrupt by setting mask bit[5] in UARTIMSC */
   data = uart_reg_read(SBSA_UARTIMSC, WIDTH_BIT32);
   data = data | (1<<5);
   uart_reg_write(SBSA_UARTIMSC, WIDTH_BIT32, data);
@@ -81,7 +81,7 @@ uart_disable_txintr()
 {
   uint32_t data;
 
-  /* mask TX interrupt bit 5 in */
+  /* Disable TX interrupt by clearing mask bit[5] in UARTIMSC */
   data = uart_reg_read(SBSA_UARTIMSC, WIDTH_BIT32);
   data = data & (~(1<<5));
   uart_reg_write(SBSA_UARTIMSC, WIDTH_BIT32, data);
@@ -94,9 +94,10 @@ static
 void
 isr()
 {
+  uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
   uart_disable_txintr();
   val_print(AVS_PRINT_DEBUG, "\n      Received interrupt      ", 0);
-  val_set_status(0, RESULT_PASS(g_sbsa_level, TEST_NUM, 0x01));
+  val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 0x01));
   val_gic_end_of_interrupt(int_id);
 }
 
@@ -195,6 +196,7 @@ payload1()
 {
   uint32_t count = val_peripheral_get_info(NUM_UART, 0);
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
+  uint32_t timeout = TIMEOUT_MEDIUM;
 
   if (count == 0) {
       val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM2, 01));
@@ -211,10 +213,14 @@ payload1()
           val_set_status(index, RESULT_PENDING(g_sbsa_level, TEST_NUM2));
           val_gic_install_isr(int_id, isr);
           uart_enable_txintr();
-          val_print(g_print_level, "\n       Test Message                      ", 0);
-          if (IS_RESULT_PENDING(val_get_status(index))) {
+          val_print_raw(g_print_level, "\n       Test Message                      ", 0);
+
+          while ((--timeout > 0) && (IS_RESULT_PENDING(val_get_status(index))));
+
+          if (timeout == 0) {
               val_print(AVS_PRINT_ERR, "\n     Did not receive UART interrupt on %d  ", int_id);
               val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM2, 02));
+              return;
           }
       } else {
           val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM2, 01));

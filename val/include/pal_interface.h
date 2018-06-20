@@ -363,6 +363,7 @@ typedef struct {
 }PERIPHERAL_INFO_TABLE;
 
 void  pal_peripheral_create_info_table(PERIPHERAL_INFO_TABLE *per_info_table);
+uint32_t pal_peripheral_is_pcie(uint32_t seg, uint32_t bus, uint32_t dev, uint32_t fn);
 
 /**
   @brief MSI(X) controllers info structure
@@ -374,6 +375,7 @@ typedef struct {
   uint32_t         vector_data;       ///< Base Address of the controller
   uint32_t         vector_control;    ///< IRQ to install an ISR
   uint32_t         vector_irq_base;   ///< Base IRQ for the vectors in the block
+  uint32_t         vector_n_irqs;     ///< Number of irq vectors in the block
 }PERIPHERAL_VECTOR_BLOCK;
 
 typedef struct PERIPHERAL_VECTOR_LIST_STRUCT
