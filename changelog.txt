@@ -1,3 +1,9 @@
+v18.03_REL1.5
+
+* Test #84: Bug fix - Print using UART base address from SPCR table to trigger interrupt.
+* Test #57: Bug fix - Check all PCI devices for MSI support instead of just SATA and USB controllers.
+* Test #58: Bug fix - Refer physical interrupt number instead of MSI vector data to check MSI uniqueness.
+
 v18.03_REL1.4
 
 * Test #65: Exclude pci-pci bridges and host bridge from no_snoop bit test.
