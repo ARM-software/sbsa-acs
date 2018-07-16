@@ -141,36 +141,28 @@ payload (void)
     if (check_msi_status (count - 1)) {
       /* Get BDF of a device */
       current_dev_bdf = val_peripheral_get_info (ANY_BDF, count - 1);
-      if (current_dev_bdf) {
-        val_print (AVS_PRINT_INFO, "       Checking PCI device with BDF %4X\n", current_dev_bdf);
-        /* Read MSI(X) vectors */
-        if (val_get_msi_vectors (current_dev_bdf, &current_dev_mvec)) {
-
-          /* Pull other PCI devices left in the devices list */
-          while (count_next > 0 && !status) {
-            if (check_msi_status (count_next - 1)) {
-              /* Get BDF of a device */
-              next_dev_bdf = val_peripheral_get_info (ANY_BDF, count_next - 1);
-              /* Read MSI(X) vectors */
-              if (val_get_msi_vectors (next_dev_bdf, &next_dev_mvec)) {
-                /* Compare two lists of MSI(X) vectors */
-                if(check_list_duplicates (current_dev_mvec, next_dev_mvec)) {
-                  val_print (AVS_STATUS_ERR, "\n       Allocated MSIs are not unique", 0);
-                  val_set_status (index, RESULT_FAIL (g_sbsa_level, TEST_NUM, 02));
-                  status = 1;
-                }
-                clean_msi_list (next_dev_mvec);
+      val_print (AVS_PRINT_INFO, "       Checking PCI device with BDF %4X\n", current_dev_bdf);
+      /* Read MSI(X) vectors */
+      if (val_get_msi_vectors (current_dev_bdf, &current_dev_mvec)) {
+        /* Pull other PCI devices left in the devices list */
+        while (count_next > 0 && !status) {
+          if (check_msi_status (count_next - 1)) {
+            /* Get BDF of a device */
+            next_dev_bdf = val_peripheral_get_info (ANY_BDF, count_next - 1);
+            /* Read MSI(X) vectors */
+            if (val_get_msi_vectors (next_dev_bdf, &next_dev_mvec)) {
+              /* Compare two lists of MSI(X) vectors */
+              if (check_list_duplicates (current_dev_mvec, next_dev_mvec)) {
+                val_print (AVS_STATUS_ERR, "\n       Allocated MSIs are not unique", 0);
+                val_set_status (index, RESULT_FAIL (g_sbsa_level, TEST_NUM, 02));
+                status = 1;
               }
+              clean_msi_list (next_dev_mvec);
             }
-            count_next--;
           }
-
-          clean_msi_list (current_dev_mvec);
+          count_next--;
         }
-      } else {
-        val_print (AVS_STATUS_ERR, "\n       Failed to get address of PCI device", 0);
-        val_set_status (index, RESULT_FAIL (g_sbsa_level, TEST_NUM, 01));
-        status = 1;
+        clean_msi_list (current_dev_mvec);
       }
     }
     count--;
