@@ -1,3 +1,7 @@
+v18.08_REL1.6
+
+* Test #58: Bug fix - Corrected the handling of BDF values.
+
 v18.03_REL1.5
 
 * Test #84: Bug fix - Print using UART base address from SPCR table to trigger interrupt.
