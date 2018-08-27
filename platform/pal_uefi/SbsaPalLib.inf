@@ -37,6 +37,7 @@
   src/pal_iovirt.c
   src/pal_pcie_enumeration.c
   src/pal_peripherals.c
+  src/pal_exerciser.c
 
 [Packages]
   MdePkg/MdePkg.dec
