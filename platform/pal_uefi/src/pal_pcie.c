@@ -166,3 +166,92 @@ pal_pcie_read_cfg(UINT32 Bdf, UINT32 offset, UINT32 *data)
   }
   return PCIE_READ_ERR;
 }
+
+/**
+    @brief   Get the PCIe device type
+
+    @param   bus        PCI bus address
+    @param   dev        PCI device address
+    @param   fn         PCI function number
+
+    @return  staus code:
+             1: Normal PCIe device, 2: PCIe Host bridge,
+             3: PCIe bridge device, else: INVALID
+**/
+UINT32
+pal_pcie_get_device_type (
+  UINT32 seg,
+  UINT32 bus,
+  UINT32 dev,
+  UINT32 fn
+  )
+{
+    return 1;
+}
+
+/**
+    @brief   Get the PCIe device snoop bit transaction attribute
+
+    @param   bus        PCI bus address
+    @param   dev        PCI device address
+    @param   fn         PCI function number
+
+    @return  0 snoop
+             1 no snoop
+             2 device error
+**/
+UINT32
+pal_pcie_get_snoop_bit (
+  UINT32 seg,
+  UINT32 bus,
+  UINT32 dev,
+  UINT32 fn
+  )
+{
+  /* Extract bit 11 (Enable No Snoop) from Device Control Register */
+  return 0;
+}
+
+/**
+    @brief   Get the PCIe device DMA support
+
+    @param   bus        PCI bus address
+    @param   dev        PCI device address
+    @param   fn         PCI function number
+
+    @return  0 no support
+             1 support
+             2 device error
+**/
+UINT32
+pal_pcie_get_dma_support (
+  UINT32 seg,
+  UINT32 bus,
+  UINT32 dev,
+  UINT32 fn
+  )
+{
+  return 1;
+}
+
+/**
+    @brief   Get the PCIe device DMA coherency support
+
+    @param   bus        PCI bus address
+    @param   dev        PCI device address
+    @param   fn         PCI function number
+
+    @return  0 DMA is not coherent
+             1 DMA is coherent
+             2 device error
+**/
+UINT32
+pal_pcie_get_dma_coherent (
+  UINT32 seg,
+  UINT32 bus,
+  UINT32 dev,
+  UINT32 fn
+  )
+{
+  return 1;
+}

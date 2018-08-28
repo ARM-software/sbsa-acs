@@ -15,8 +15,7 @@
  * limitations under the License.
  **/
 
-#include "include/val_exerciser.h"
-
+#include "include/sbsa_avs_val.h"
 
 /**
   @brief   This API popultaes information from all the PCIe stimulus generation IP available
@@ -97,7 +96,7 @@ uint32_t val_exerciser_get_state(EXERCISER_STATE state, uint64_t *value, uint32_
   @param   instance     - Stimulus hardware instance number
   @return  status       - SUCCESS if the operation is successfully performed using the hardware
 **/
-uint32_t val_exerciser_do_ops(EXERCISER_OPS ops, uint64_t param, uint32_t instance)
+uint32_t val_exerciser_ops(EXERCISER_OPS ops, uint64_t param, uint32_t instance)
 {
-    return pal_exerciser_do_ops(ops, param, instance);
+    return pal_exerciser_ops(ops, param, instance);
 }

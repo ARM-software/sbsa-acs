@@ -18,8 +18,6 @@
 #ifndef __PAL_EXERCISER_H__
 #define __PAL_EXERCISER_H__
 
-#include <linux/kernel.h>
-
 #define MAX_ARRAY_SIZE 32
 
 typedef struct {
@@ -34,6 +32,11 @@ typedef struct {
 typedef enum {
     EXERCISER_NUM_CARDS = 0x1
 } EXERCISER_INFO_TYPE;
+
+enum SNOOP {
+    DISABLE_NO_SNOOP = 0x0,
+    ENABLE_NO_SNOOP  = 0x1
+};
 
 typedef enum {
     SNOOP_ATTRIBUTES = 0x1,
@@ -53,8 +56,8 @@ typedef enum {
 typedef enum {
     START_DMA     = 0x1,
     GENERATE_INTR = 0x2,
-    DO_READ       = 0x3,
-    DOWRITE       = 0x4
+    MEM_READ      = 0x3,
+    MEM_WRITE     = 0x4
 } EXERCISER_OPS;
 
 VOID pal_exerciser_create_info_table (EXERCISER_INFO_TABLE *ExerciserInfoTable);
@@ -63,6 +66,6 @@ UINT32 pal_exerciser_set_param(EXERCISER_PARAM_TYPE Type, UINT64 Value1, UINT64 
 UINT32 pal_exerciser_get_param(EXERCISER_PARAM_TYPE Type, UINT64 *Value1, UINT64 *Value2, UINT32 Instance);
 UINT32 pal_exerciser_set_state(EXERCISER_STATE State, UINT64 *Value, UINT32 Instance);
 UINT32 pal_exerciser_get_state(EXERCISER_STATE State, UINT64 *Value, UINT32 Instance);
-UINT32 pal_exerciser_do_ops(EXERCISER_OPS Ops, UINT64 Param, UINT32 Instance);
+UINT32 pal_exerciser_ops(EXERCISER_OPS Ops, UINT64 Param, UINT32 Instance);
 
 #endif

@@ -18,9 +18,13 @@
 #include "val/include/val_interface.h"
 
 #include "val/include/sbsa_avs_pcie.h"
+#include "val/include/sbsa_avs_exerciser.h"
 
 #define TEST_NUM   (AVS_PCIE_TEST_NUM_BASE + 15)
 #define TEST_DESC  "PCIe No Snoop transaction attr    "
+
+#define VALUE1 0xDEADDEAD
+#define VALUE2 0xDEADDEAF
 
 static
 void
@@ -33,6 +37,10 @@ payload (void)
   uint32_t status;
   uint64_t dev_bdf;
   uint32_t dev_type;
+  uint32_t instance;
+  uint32_t data;
+  uint32_t size;
+  void *addr = NULL;
 
   status = 0;
   no_snoop_set = 0;
@@ -75,6 +83,44 @@ payload (void)
     val_set_status (index, RESULT_PASS (g_sbsa_level, TEST_NUM, status));
   }
 
+  instance = val_exerciser_get_info(EXERCISER_NUM_CARDS, 0);
+
+  if (instance == 0) {
+      val_print(AVS_PRINT_INFO, "    No exerciser cards in the system %x", 0);
+      return;
+  }
+
+  size = sizeof(uint32_t);
+  while (instance-- != 0)
+  {
+      addr  = val_mem_alloc(size);
+      *((uint32_t *)addr) = VALUE1;
+      val_data_cache_ops_by_va((addr_t)addr, CLEAN_AND_INVALIDATE);
+
+      /* Set Enable No Snoop bit (bit 11) to 0 in Exerciser Device Control Register */
+      val_exerciser_set_param(SNOOP_ATTRIBUTES, DISABLE_NO_SNOOP, 0, instance);
+
+      data = val_exerciser_ops(MEM_READ, (uint64_t)addr, instance);
+      if (data != VALUE1) {
+          val_print(AVS_PRINT_ERR, "\n SETUP error - did not receive the expected value %x ", instance);
+	      val_set_status (index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 3));
+	      val_mem_free(addr, size);
+	      return;
+      }
+
+      *((uint32_t *)addr) = VALUE2;
+      data = val_exerciser_ops(MEM_READ, (uint64_t)addr, instance);
+      if (data != VALUE2) {
+          val_print (AVS_PRINT_ERR, "\n SNOOP from stimulus card did not receive the correct value %x", instance);
+          val_set_status (index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 4));
+	      val_mem_free(addr, size);
+	      return;
+      }
+      val_mem_free(addr, size);
+  }
+
+  val_set_status (index, RESULT_PASS(g_sbsa_level, TEST_NUM, 0));
+  return;
 }
 
 uint32_t

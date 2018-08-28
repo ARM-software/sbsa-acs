@@ -202,3 +202,54 @@ pal_mem_free_shared()
 {
   gBS->FreePool ((VOID *)gSharedMemory);
 }
+
+/**
+ @brief  Allocates requested buffer size @bytes in a contiguous memory
+          and returns the base address of the range
+
+ @param  Size         allocation size in bytes
+ @retval if SUCCESS   pointer to allocated memory
+ @retval if FAILURE   NULL
+**/
+VOID *
+pal_mem_alloc (
+  UINTN Size
+  )
+{
+
+  EFI_STATUS            Status;
+  EFI_PHYSICAL_ADDRESS  BaseAddr;
+  VOID                  *Buffer;
+
+  Buffer = NULL;
+  Status = gBS->AllocatePages (
+                     AllocateAnyPages,
+                     EfiBootServicesData,
+                     EFI_SIZE_TO_PAGES (Size),
+                     &BaseAddr
+                    );
+
+  if (EFI_ERROR(Status)) {
+    sbsa_print(AVS_PRINT_ERR, L"AllocatePages failed %x \n", Status);
+  } else {
+    Buffer = (VOID *) (UINTN) BaseAddr;
+  }
+
+  return Buffer;
+}
+
+/**
+  @brief  Free the s memory region allocated in pal_mem_alloc
+
+  @param  Buffer    - Buffer to be freed
+  @param  size      - Buffer size to be freed
+  @return  None
+**/
+VOID
+pal_free_mem (
+  VOID *Buffer,
+  UINTN Size
+  )
+{
+  gBS->FreePages ((EFI_PHYSICAL_ADDRESS)(UINTN)Buffer, EFI_SIZE_TO_PAGES (Size));
+}

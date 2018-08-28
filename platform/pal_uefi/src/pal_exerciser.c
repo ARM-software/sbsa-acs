@@ -125,7 +125,7 @@ pal_exerciser_get_state (
   @return  Status       - SUCCESS if the operation is successfully performed using the hardware
 **/
 UINT32
-pal_exerciser_do_ops (
+pal_exerciser_ops (
   EXERCISER_OPS Ops,
   UINT64 Param,
   UINT32 Instance
