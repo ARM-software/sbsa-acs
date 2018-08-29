@@ -484,6 +484,7 @@ void     pal_print_raw(uint64_t addr, char8_t *string, uint64_t data);
 
 void     *pal_mem_alloc(uint32_t size);
 void     pal_mem_free(void *buffer);
+void     pal_free_mem(void *buffer, uint32_t size);
 
 void     pal_mem_allocate_shared(uint32_t num_pe, uint32_t sizeofentry);
 void     pal_mem_free_shared(void);
@@ -500,6 +501,57 @@ void     pal_pe_data_cache_ops_by_va(uint64_t addr, uint32_t type);
 #define CLEAN_AND_INVALIDATE  0x1
 #define CLEAN                 0x2
 #define INVALIDATE            0x3
+
+/* Exerciser Definitions */
+#define MAX_ARRAY_SIZE 32
+
+typedef struct {
+    uint64_t buf[MAX_ARRAY_SIZE];
+} EXERCISER_INFO_BLOCK;
+
+typedef struct {
+    uint32_t                num_exerciser_cards;
+    EXERCISER_INFO_BLOCK    info[];  //Array of information blocks - per stimulus generation controller
+} EXERCISER_INFO_TABLE;
+
+typedef enum {
+    EXERCISER_NUM_CARDS = 0x1
+} EXERCISER_INFO_TYPE;
+
+enum SNOOP {
+    DISABLE_NO_SNOOP = 0x0,
+    ENABLE_NO_SNOOP  = 0x1
+};
+
+typedef enum {
+    SNOOP_ATTRIBUTES = 0x1,
+    LEGACY_IRQ       = 0x2,
+    MSIX_ATTRIBUTES  = 0x3,
+    DMA_ATTRIBUTES   = 0x4,
+    P2P_ATTRIBUTES   = 0x5
+} EXERCISER_PARAM_TYPE;
+
+typedef enum {
+    EXERCISER_RESET = 0x1,
+    EXERCISER_ON    = 0x2,
+    EXERCISER_OFF   = 0x3,
+    EXERCISER_ERROR = 0x4
+} EXERCISER_STATE;
+
+typedef enum {
+    START_DMA     = 0x1,
+    GENERATE_INTR = 0x2,
+    MEM_READ      = 0x3,
+    MEM_WRITE     = 0x4
+} EXERCISER_OPS;
+
+void pal_exerciser_create_info_table(EXERCISER_INFO_TABLE *exerciser_info_table);
+uint32_t pal_exerciser_get_info(EXERCISER_INFO_TYPE type, uint32_t instance);
+uint32_t pal_exerciser_set_param(EXERCISER_PARAM_TYPE type, uint64_t value1, uint64_t value2, uint32_t instance);
+uint32_t pal_exerciser_get_param(EXERCISER_PARAM_TYPE type, uint64_t *value1, uint64_t *value2, uint32_t instance);
+uint32_t pal_exerciser_set_state(EXERCISER_STATE state, uint64_t *value, uint32_t instance);
+uint32_t pal_exerciser_get_state(EXERCISER_STATE state, uint64_t *value, uint32_t instance);
+uint32_t pal_exerciser_ops(EXERCISER_OPS ops, uint64_t param, uint32_t instance);
 
 #endif
 

@@ -79,6 +79,7 @@
   ../test_pool/pcie/test_p001.c
   ../test_pool/pcie/test_p002.c
   ../test_pool/pcie/test_p003.c
+  ../test_pool/pcie/test_p015.c
   ../test_pool/io_virt/test_i001.c
   ../test_pool/io_virt/test_i002.c
   ../test_pool/io_virt/test_i003.c
