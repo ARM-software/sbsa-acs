@@ -13,30 +13,29 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
-**/
+ **/
 
-#ifndef __PAL_EXERCISER_H__
-#define __PAL_EXERCISER_H__
+#ifndef __VAL_EXERCISER_H__
+#define __VAL_EXERCISER_H__
+
 
 #define MAX_ARRAY_SIZE 32
 
+typedef unsigned int uint32_t;
+typedef unsigned long uint64_t;
+
 typedef struct {
-    UINT64 buf[MAX_ARRAY_SIZE];
+    uint64_t buf[MAX_ARRAY_SIZE];
 } EXERCISER_INFO_BLOCK;
 
 typedef struct {
-    UINT32                  num_exerciser_cards;
+    uint32_t                num_exerciser_cards;
     EXERCISER_INFO_BLOCK    info[];  //Array of information blocks - per stimulus generation controller
 } EXERCISER_INFO_TABLE;
 
 typedef enum {
     EXERCISER_NUM_CARDS = 0x1
 } EXERCISER_INFO_TYPE;
-
-enum SNOOP {
-    DISABLE_NO_SNOOP = 0x0,
-    ENABLE_NO_SNOOP  = 0x1
-};
 
 typedef enum {
     SNOOP_ATTRIBUTES = 0x1,
@@ -56,17 +55,16 @@ typedef enum {
 typedef enum {
     START_DMA     = 0x1,
     GENERATE_INTR = 0x2,
-    MEM_READ      = 0x3,
-    MEM_WRITE     = 0x4
+    DO_READ       = 0x3,
+    DOWRITE       = 0x4
 } EXERCISER_OPS;
 
-VOID pal_exerciser_create_info_table (EXERCISER_INFO_TABLE *ExerciserInfoTable);
-UINT32 pal_exerciser_get_info(EXERCISER_INFO_TYPE Type, UINT32 Instance);
-UINT32 pal_exerciser_set_param(EXERCISER_PARAM_TYPE Type, UINT64 Value1, UINT64 Value2, UINT32 Instance);
-UINT32 pal_exerciser_get_param(EXERCISER_PARAM_TYPE Type, UINT64 *Value1, UINT64 *Value2, UINT32 Instance);
-UINT32 pal_exerciser_set_state(EXERCISER_STATE State, UINT64 *Value, UINT32 Instance);
-UINT32 pal_exerciser_get_state(EXERCISER_STATE State, UINT64 *Value, UINT32 Instance);
-UINT32 pal_exerciser_ops(EXERCISER_OPS Ops, UINT64 Param, UINT32 Instance);
-
+void pal_exerciser_create_info_table(EXERCISER_INFO_TABLE *exerciser_info_table);
+uint32_t pal_exerciser_get_info(EXERCISER_INFO_TYPE type, uint32_t instance);
+uint32_t pal_exerciser_set_param(EXERCISER_PARAM_TYPE type, uint64_t value1, uint64_t value2, uint32_t instance);
+uint32_t pal_exerciser_get_param(EXERCISER_PARAM_TYPE type, uint64_t *value1, uint64_t *value2, uint32_t instance);
+uint32_t pal_exerciser_set_state(EXERCISER_STATE state, uint64_t *value, uint32_t instance);
+uint32_t pal_exerciser_get_state(EXERCISER_STATE state, uint64_t *value, uint32_t instance);
+uint32_t pal_exerciser_do_ops(EXERCISER_OPS ops, uint64_t param, uint32_t instance);
 
 #endif
