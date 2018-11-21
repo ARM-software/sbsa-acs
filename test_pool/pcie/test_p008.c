@@ -17,10 +17,33 @@
 #include "val/include/sbsa_avs_val.h"
 #include "val/include/val_interface.h"
 
+#include "val/include/sbsa_avs_pcie_enumeration.h"
 #include "val/include/sbsa_avs_pcie.h"
+#include "val/include/sbsa_avs_exerciser.h"
 
 #define TEST_NUM   (AVS_PCIE_TEST_NUM_BASE + 8)
 #define TEST_DESC  "Check MSI(X) vectors uniqueness   "
+
+#define EBUSY 16  /* Device or resource busy */
+
+static uint32_t instance;
+static uint32_t irq_num;
+static uint32_t mapped_irq_num;
+static uint32_t irq_pending;
+
+static
+int
+intr_handler(void)
+{
+  /* Call exerciser specific function to handle the interrupt */
+  val_exerciser_ops(HANDLE_INTR, irq_num, instance);
+
+  /* Clear the interrupt pending state */
+  irq_pending = 0;
+
+  val_print(AVS_PRINT_DEBUG, "\n       Received MSI interrupt %d           ", irq_num);
+  return 0;
+}
 
 /**
     @brief   Returns MSI(X) status of the device
@@ -122,6 +145,15 @@ payload (void)
   uint64_t current_dev_bdf;
   uint64_t next_dev_bdf;
   uint32_t count_next;
+  uint32_t e_bdf = 0;
+  uint32_t start_bus;
+  uint32_t start_segment;
+  uint32_t start_bdf;
+  uint32_t irq_offset;
+  uint32_t timeout;
+  int32_t ret_val;
+  PERIPHERAL_VECTOR_LIST *e_mvec;
+  PERIPHERAL_VECTOR_LIST *temp_mvec;
 
   if(!count) {
      val_set_status (index, RESULT_SKIP (g_sbsa_level, TEST_NUM, 3));
@@ -156,7 +188,7 @@ payload (void)
               if (val_get_msi_vectors (next_dev_bdf, &next_dev_mvec)) {
                 /* Compare two lists of MSI(X) vectors */
                 if(check_list_duplicates (current_dev_mvec, next_dev_mvec)) {
-                  val_print (AVS_STATUS_ERR, "\n       Allocated MSIs are not unique", 0);
+                  val_print (AVS_PRINT_ERR, "\n       Allocated MSIs are not unique", 0);
                   val_set_status (index, RESULT_FAIL (g_sbsa_level, TEST_NUM, 02));
                   status = 1;
                 }
@@ -169,7 +201,7 @@ payload (void)
           clean_msi_list (current_dev_mvec);
         }
       } else {
-        val_print (AVS_STATUS_ERR, "\n       Failed to get address of PCI device", 0);
+        val_print (AVS_PRINT_ERR, "\n       Failed to get address of PCI device", 0);
         val_set_status (index, RESULT_FAIL (g_sbsa_level, TEST_NUM, 01));
         status = 1;
       }
@@ -180,6 +212,96 @@ payload (void)
   if (!status) {
     val_set_status (index, RESULT_PASS (g_sbsa_level, TEST_NUM, 01));
   }
+
+  /* Read the number of excerciser cards */
+  instance = val_exerciser_get_info(EXERCISER_NUM_CARDS, 0);
+
+  if (instance == 0) {
+      val_print(AVS_PRINT_INFO, "    No exerciser cards in the system %x", 0);
+      return;
+  }
+
+  /* Set start_bdf segment and bus numbers to 1st ecam region values */
+  start_segment = val_pcie_get_info(PCIE_INFO_SEGMENT, 0);
+  start_bus = val_pcie_get_info(PCIE_INFO_START_BUS, 0);
+  start_bdf = PCIE_CREATE_BDF(start_segment, start_bus, 0, 0);
+
+  while (instance-- != 0) {
+
+    /* Get the exerciser BDF */
+    e_bdf = val_pcie_get_bdf(EXERCISER_CLASSCODE, start_bdf);
+    start_bdf = val_pcie_increment_bdf(e_bdf);
+
+    e_mvec = NULL;
+
+    /* Read the MSI vectors for this exerciser instance */
+    if (val_get_msi_vectors(e_bdf, &e_mvec)) {
+
+        /* Check the uniqueness of MSI vectors for this instance */
+        if(check_list_duplicates(e_mvec, e_mvec->next)) {
+            val_print (AVS_PRINT_ERR, "\n       MSIs are not unique for instance %4x", instance);
+            val_set_status (index, RESULT_FAIL (g_sbsa_level, TEST_NUM, 02));
+            return;
+        }
+
+        temp_mvec = e_mvec;
+
+        while (e_mvec) {
+
+            for (irq_offset = 0; irq_offset < e_mvec->vector.vector_n_irqs; irq_offset++) {
+
+                irq_num = e_mvec->vector.vector_irq_base + irq_offset;
+                mapped_irq_num = e_mvec->vector.vector_mapped_irq_base + irq_offset;
+
+                /* Register the interrupt handler */
+                ret_val = val_gic_request_irq(irq_num, mapped_irq_num, intr_handler);
+
+                if (ret_val == -EBUSY) {
+                    val_print(AVS_PRINT_WARN, "\n       IRQ is already in use for instance %4x", instance);
+                    continue;
+                } else if ((ret_val != -EBUSY) && (ret_val != 0)) {
+                    val_print(AVS_PRINT_ERR, "\n       IRQ registration failed for instance %4x", instance);
+                    val_set_status(index, RESULT_FAIL (g_sbsa_level, TEST_NUM, 02));
+                    clean_msi_list(temp_mvec);
+                    return;
+                }
+
+                /* Set the interrupt trigger status to pending */
+                irq_pending = 1;
+
+                /* Trigger the interrupt */
+                val_exerciser_ops(GENERATE_MSI, irq_num, instance);
+
+                /* PE busy polls to check the completion of interrupt service routine */
+                timeout = TIMEOUT_LARGE;
+                while ((--timeout > 0) && irq_pending);
+
+                if (timeout == 0) {
+                    val_print(AVS_PRINT_ERR, "\n Interrupt trigger failed for instance %4x   ", instance);
+                    val_set_status(index, RESULT_FAIL (g_sbsa_level, TEST_NUM, 02));
+                    val_gic_free_interrupt(irq_num, mapped_irq_num);
+                    clean_msi_list(temp_mvec);
+                    return;
+                }
+
+                /* Return the interrupt */
+                val_gic_free_interrupt(irq_num, mapped_irq_num);
+            }
+
+            e_mvec = e_mvec->next;
+        }
+
+        /* Return this instance dynamic memory to the heap manager */
+        clean_msi_list(temp_mvec);
+
+    } else {
+        val_print(AVS_PRINT_ERR, "\n       Failed to get MSI vectors for instance %4x", instance);
+        val_set_status(index, RESULT_FAIL (g_sbsa_level, TEST_NUM, 02));
+        return;
+    }
+
+  }
+
 }
 
 uint32_t

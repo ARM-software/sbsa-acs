@@ -29,6 +29,9 @@
 #define PCIE_MAX_DEV    32
 #define PCIE_MAX_FUNC    8
 
+#define PCIE_INTERRUPT_LINE  0x3c
+#define PCIE_INTERRUPT_PIN   0x3d
+
 void     val_pcie_write_cfg(uint32_t bdf, uint32_t offset, uint32_t data);
 uint32_t val_pcie_read_cfg(uint32_t bdf, uint32_t offset, uint32_t *data);
 uint32_t val_get_msi_vectors (uint32_t bdf, PERIPHERAL_VECTOR_LIST **mvector);
@@ -68,6 +71,12 @@ val_pcie_get_dma_coherent(uint32_t bdf);
 
 uint32_t
 val_pcie_io_read_cfg(uint32_t bdf, uint32_t offset, uint32_t *data);
+
+void
+val_pci_read_config_byte(uint32_t bdf, uint8_t offset, uint8_t *val);
+
+void
+val_pci_write_config_byte(uint32_t bdf, uint8_t offset, uint8_t val);
 
 uint32_t
 p001_entry(uint32_t num_pe);

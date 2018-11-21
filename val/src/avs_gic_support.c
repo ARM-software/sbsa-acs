@@ -13,13 +13,15 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
-**/
+ **/
 
 #include "include/sbsa_avs_val.h"
+#include "include/sbsa_avs_gic.h"
 #include "include/sbsa_avs_gic_support.h"
 #include "include/sbsa_avs_common.h"
 
 
+#ifndef TARGET_LINUX
 /**
   @brief   This API provides a 'C' interface to call GIC System register reads
            1. Caller       -  Test Suite
@@ -43,6 +45,7 @@ val_gic_reg_read(uint32_t reg_id)
   return 0x0;
 
 }
+
 /**
   @brief   This API provides a 'C' interface to call GIC System register writes
            1. Caller       -  Test Suite
@@ -73,4 +76,63 @@ val_gic_reg_write(uint32_t reg_id, uint64_t write_data)
   }
 
 }
+#endif
 
+/**
+  @brief   This function is installs the ISR pointed by the function pointer
+           the input Interrupt ID.
+           1. Caller       -  Test Suite
+           2. Prerequisite -  val_gic_create_info_table
+  @param   int_id Interrupt ID to install the ISR
+  @param   isr    Function pointer of the ISR
+  @return  status
+**/
+uint32_t
+val_gic_install_isr(uint32_t int_id, void (*isr)(void))
+{
+  uint32_t      ret_val;
+#ifndef TARGET_LINUX
+  uint32_t      reg_offset = int_id / 32;
+  uint32_t      reg_shift  = int_id % 32;
+
+  if ((int_id > val_get_max_intid()) || (int_id == 0)) {
+      val_print(AVS_PRINT_ERR, "\n    Invalid Interrupt ID number %d ", int_id);
+      return AVS_STATUS_ERR;
+  }
+#endif
+
+  ret_val = pal_gic_install_isr(int_id, isr);
+
+#ifndef TARGET_LINUX
+  if (int_id > 31) {
+      /**** UEFI GIC code is not enabling interrupt in the Distributor ***/
+      /**** So, do this here as a fail-safe. Remove if PAL guarantees this ***/
+      val_mmio_write(val_get_gicd_base() + GICD_ISENABLER + (4 * reg_offset), 1 << reg_shift);
+  }
+#endif
+
+  return ret_val;
+}
+
+/**
+ * @brief   This function registers the specified interrupt
+ * @param   irq_num         hardware irq number
+ * @param   mapped_irq_num  Mapped irq number
+ * @param   isr             Interrupt service routine
+ * @return  status
+ */
+int32_t val_gic_request_irq(uint32_t irq_num, uint32_t mapped_irq_num, void *isr)
+{
+  return pal_gic_request_irq(irq_num, mapped_irq_num, isr);
+}
+
+/**
+ * @brief   This function free the registered interrupt line
+ * @param   irq_num         hardware irq number
+ * @param   mapped_irq_num  Mapped irq number
+ * @return  none
+ */
+void val_gic_free_interrupt(uint32_t irq_num, uint32_t mapped_irq_num)
+{
+    pal_gic_free_interrupt(irq_num, mapped_irq_num);
+}

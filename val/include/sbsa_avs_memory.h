@@ -21,6 +21,7 @@
 addr_t val_memory_ioremap(void *addr, uint32_t size, uint64_t attr);
 
 void val_memory_unmap(void *ptr);
-
+void *val_memory_alloc(uint32_t size);
+void val_memory_free(void *addr);
 
 #endif // __SBSA_AVS_PERIPHERAL_H__

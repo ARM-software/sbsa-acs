@@ -16,15 +16,30 @@
  **/
 #include "val/include/sbsa_avs_val.h"
 #include "val/include/val_interface.h"
+#include "val/include/sbsa_avs_memory.h"
+#include "val/include/sbsa_avs_exerciser.h"
 
 #include "val/include/sbsa_avs_pcie.h"
-#include "val/include/sbsa_avs_exerciser.h"
+#include "val/include/sbsa_avs_pcie_enumeration.h"
 
 #define TEST_NUM   (AVS_PCIE_TEST_NUM_BASE + 15)
 #define TEST_DESC  "PCIe No Snoop transaction attr    "
+#define TEST_DATA_BLK_SIZE  512
+#define TEST_DATA 0xDE
 
-#define VALUE1 0xDEADDEAD
-#define VALUE2 0xDEADDEAF
+#define MEM_ATTR_CACHEABLE_SHAREABLE 0
+#define MEM_ATTR_NON_CACHEABLE 1
+
+void init_source_buf_data(void *buf, uint32_t size)
+{
+
+  uint32_t index;
+
+  for (index = 0; index < size; index++) {
+    *((char8_t *)buf + index) = TEST_DATA;
+  }
+
+}
 
 static
 void
@@ -38,9 +53,10 @@ payload (void)
   uint64_t dev_bdf;
   uint32_t dev_type;
   uint32_t instance;
-  uint32_t data;
-  uint32_t size;
-  void *addr = NULL;
+  uint32_t dma_len;
+  void *source_buf;
+  void *dest_buf;
+  exerciser_data_t e_data;
 
   status = 0;
   no_snoop_set = 0;
@@ -77,12 +93,13 @@ payload (void)
   }
 
   if(no_snoop_set) {
-    val_print (AVS_STATUS_ERR, "\n       PCIe no snoop bit set to %d for a device with coherent DMA", no_snoop_set);
+    val_print (AVS_PRINT_ERR, "\n       PCIe no snoop bit set to %d for a device with coherent DMA", no_snoop_set);
     val_set_status (index, RESULT_FAIL (g_sbsa_level, TEST_NUM, 1));
   } else {
     val_set_status (index, RESULT_PASS (g_sbsa_level, TEST_NUM, status));
   }
 
+    /* Read the number of excerciser cards */
   instance = val_exerciser_get_info(EXERCISER_NUM_CARDS, 0);
 
   if (instance == 0) {
@@ -90,37 +107,80 @@ payload (void)
       return;
   }
 
-  size = sizeof(uint32_t);
-  while (instance-- != 0)
-  {
-      addr  = val_mem_alloc(size);
-      *((uint32_t *)addr) = VALUE1;
-      val_data_cache_ops_by_va((addr_t)addr, CLEAN_AND_INVALIDATE);
+  while (instance-- != 0) {
 
-      /* Set Enable No Snoop bit (bit 11) to 0 in Exerciser Device Control Register */
-      val_exerciser_set_param(SNOOP_ATTRIBUTES, DISABLE_NO_SNOOP, 0, instance);
+    /*
+     * Set the buf size required in a non-cacheable DDR memory region.
+     * The test expects PAL to allocate a buffer of TEST_DATA_BLK_SIZE.
+     */
+    e_data.nc_ddr.size = TEST_DATA_BLK_SIZE;
+    e_data.nc_ddr.phy_addr = NULL;
+    e_data.nc_ddr.virt_addr = NULL;
 
-      data = val_exerciser_ops(MEM_READ, (uint64_t)addr, instance);
-      if (data != VALUE1) {
-          val_print(AVS_PRINT_ERR, "\n SETUP error - did not receive the expected value %x ", instance);
-	      val_set_status (index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 3));
-	      val_mem_free(addr, size);
-	      return;
-      }
+    /* Get a non-caheable DDR Buffer of size indicated above */
+    if (val_exerciser_get_data(EXERCISER_DATA_NC_DDR_SPACE, &e_data, instance)) {
+      val_print(AVS_PRINT_ERR, "\n      DDR memory allocation failure for inst %4x", instance);
+      val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
+      return;
+    }
 
-      *((uint32_t *)addr) = VALUE2;
-      data = val_exerciser_ops(MEM_READ, (uint64_t)addr, instance);
-      if (data != VALUE2) {
-          val_print (AVS_PRINT_ERR, "\n SNOOP from stimulus card did not receive the correct value %x", instance);
-          val_set_status (index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 4));
-	      val_mem_free(addr, size);
-	      return;
-      }
-      val_mem_free(addr, size);
-  }
+    /* Check if the buffer parameters are proper */
+    if (e_data.nc_ddr.virt_addr == NULL) {
+      val_print(AVS_PRINT_ERR, "\n      Unexpected DDR region for exerciser %4x", instance);
+      val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
+      return;
+    }
 
-  val_set_status (index, RESULT_PASS(g_sbsa_level, TEST_NUM, 0));
+    /* Program exerciser to start sending TLPs  with No Snoop attribute header.
+     * This includes setting Enable No snoop bit in exerciser Control register.
+     */
+    if(val_exerciser_ops(NO_SNOOP_TLP_START, 0, instance)) {
+      val_print(AVS_PRINT_ERR, "\n       Exerciser %x No Snoop enable error", instance);
+      goto coherence_test_failure;
+    }
+
+    /* Set virtual addres for the test buffer */
+    source_buf = e_data.nc_ddr.virt_addr;
+    dest_buf = source_buf + (TEST_DATA_BLK_SIZE / 2);
+    dma_len = TEST_DATA_BLK_SIZE / 2;
+
+    /* Initialize source buffer with test specific data */
+    init_source_buf_data(source_buf, dma_len);
+
+    /* Program Exerciser DMA controller with the source buffer information */
+    val_exerciser_set_param(DMA_ATTRIBUTES, (uint64_t)source_buf, dma_len, instance);
+    if (val_exerciser_ops(START_DMA, EDMA_TO_DEVICE, instance)) {
+      val_print(AVS_PRINT_ERR, "\n      DMA write failure to exerciser %4x", instance);
+      goto coherence_test_failure;
+    }
+
+    /* READ Back from Exerciser to validate above DMA write */
+    val_exerciser_set_param(DMA_ATTRIBUTES, (uint64_t)dest_buf, dma_len, instance);
+    if (val_exerciser_ops(START_DMA, EDMA_FROM_DEVICE, instance)) {
+      val_print(AVS_PRINT_ERR, "\n      DMA read failure from exerciser %4x", instance);
+      goto coherence_test_failure;
+    }
+
+    if (memcmp(source_buf, dest_buf, dma_len)) {
+      val_print(AVS_PRINT_ERR, "\n        SW corency failure with no snoop for Exerciser %4x", instance);
+      goto coherence_test_failure;
+    }
+
+    /* Stop exerciser sending TLPs with No Snoop attribute header */
+    if (val_exerciser_ops(NO_SNOOP_TLP_STOP, 0, instance)) {
+        val_print(AVS_PRINT_ERR, "\n       Exerciser %x No snoop TLP disable error", instance);
+        goto coherence_test_failure;
+    }
+
+}
+
+  val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 0));
   return;
+
+coherence_test_failure:
+  val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
+  return;
+
 }
 
 uint32_t

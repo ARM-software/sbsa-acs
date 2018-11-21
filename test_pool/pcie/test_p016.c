@@ -64,7 +64,7 @@ static void payload(void)
                 /* Extract mem type */
                 data = VAL_EXTRACT_BITS(bar_data, 1, 2);
                 if (data != 0) {
-                    val_print(AVS_STATUS_ERR, "\n       NP type-1 pcie is not 32-bit mem type", 0);
+                    val_print(AVS_PRINT_ERR, "\n       NP type-1 pcie is not 32-bit mem type", 0);
                     val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
                     status = 2;
                     break;
@@ -72,7 +72,7 @@ static void payload(void)
                 /* Scan the all PCIe bridge devices and check memory type */
                 ret = val_pcie_scan_bridge_devices_and_check_memtype(dev_bdf);
                 if (ret) {
-                    val_print(AVS_STATUS_ERR, "\n       NP type-1 pcie bridge end device"
+                    val_print(AVS_PRINT_ERR, "\n       NP type-1 pcie bridge end device"
                                                                  "is not 32-bit mem type", 0);
                     val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
                     status = 2;

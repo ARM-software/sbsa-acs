@@ -18,10 +18,13 @@
 #include "val/include/sbsa_avs_val.h"
 #include "val/include/val_interface.h"
 
+#include "val/include/sbsa_avs_pcie_enumeration.h"
 #include "val/include/sbsa_avs_pcie.h"
+#include "val/include/sbsa_avs_exerciser.h"
 
 #define TEST_NUM   (AVS_PCIE_TEST_NUM_BASE + 3)
 #define TEST_DESC  "Check ECAM Memory accessibility   "
+
 
 static
 void
@@ -33,8 +36,14 @@ payload(void)
   uint64_t ecam_base;
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
   uint32_t bdf = 0;
+  uint32_t start_bus;
+  uint32_t start_segment;
+  uint32_t start_bdf;
   uint32_t bus, segment;
   uint32_t ret;
+  uint32_t instance;
+  uint32_t reg_index;
+  exerciser_data_t config_space;
 
   num_ecam = val_pcie_get_info(PCIE_INFO_NUM_ECAM, 0);
 
@@ -75,6 +84,48 @@ payload(void)
           val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
           return;
       }
+  }
+
+  instance = val_exerciser_get_info(EXERCISER_NUM_CARDS, 0);
+
+  if (instance == 0) {
+      val_print(AVS_PRINT_INFO, "    No exerciser cards in the system %x", 0);
+      return;
+  }
+
+  /* Set start_bdf segment and bus numbers to 1st ecam region values */
+  start_segment = val_pcie_get_info(PCIE_INFO_SEGMENT, 0);
+  start_bus = val_pcie_get_info(PCIE_INFO_START_BUS, 0);
+  start_bdf = PCIE_CREATE_BDF(start_segment, start_bus, 0, 0);
+
+  while (instance-- != 0) {
+
+    ret = val_exerciser_get_data(EXERCISER_DATA_CFG_SPACE, &config_space, instance);
+    if (ret) {
+        val_print(AVS_PRINT_ERR, "\n      Exerciser config space Read error %4x    ", ret);
+        val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
+        return;
+    }
+
+    bdf = val_pcie_get_bdf(EXERCISER_CLASSCODE, start_bdf);
+    start_bdf = val_pcie_increment_bdf(bdf);
+
+    /* Validate ECAM config register read/write */
+    for (reg_index = 0; reg_index < MAX_REG_COUNT; reg_index++) {
+
+        if (config_space.ecam.reg[reg_index].attribute == ACCESS_TYPE_RW) {
+            val_pcie_write_cfg(bdf, config_space.ecam.reg[reg_index].offset, config_space.ecam.reg[reg_index].value);
+        }
+
+        ret = val_pcie_read_cfg(bdf, config_space.ecam.reg[reg_index].offset, &data);
+        if ((ret == PCIE_READ_ERR) || (data != config_space.ecam.reg[reg_index].value)) {
+            val_print(AVS_PRINT_ERR, "\n      Exerciser config data validation error %4x    ", ret);
+            val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
+            return;
+        }
+
+    }
+
   }
 
   val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));

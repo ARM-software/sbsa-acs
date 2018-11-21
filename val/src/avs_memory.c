@@ -179,3 +179,15 @@ val_memory_unmap(void *ptr)
 {
   pal_memory_unmap(ptr);
 }
+
+void *
+val_memory_alloc(uint32_t size)
+{
+  return pal_mem_alloc(size) ;
+}
+
+void
+val_memory_free(void *addr)
+{
+  pal_mem_free(addr);
+}

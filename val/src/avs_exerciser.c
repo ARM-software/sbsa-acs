@@ -17,6 +17,7 @@
 
 #include "include/sbsa_avs_val.h"
 
+
 /**
   @brief   This API popultaes information from all the PCIe stimulus generation IP available
            in the system into exerciser_info_table structure
@@ -99,4 +100,16 @@ uint32_t val_exerciser_get_state(EXERCISER_STATE state, uint64_t *value, uint32_
 uint32_t val_exerciser_ops(EXERCISER_OPS ops, uint64_t param, uint32_t instance)
 {
     return pal_exerciser_ops(ops, param, instance);
+}
+
+/**
+  @brief   This API returns test specific data from the PCIe stimulus generation hardware
+  @param   type         - data type for which the data needs to be returned
+  @param   data         - test specific data to be be filled by pal layer
+  @param   instance     - Stimulus hardware instance number
+  @return  status       - SUCCESS if the requested data is successfully filled
+**/
+uint32_t val_exerciser_get_data(EXERCISER_DATA_TYPE type, exerciser_data_t *data, uint32_t instance)
+{
+    return pal_exerciser_get_data(type, data, instance);
 }

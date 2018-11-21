@@ -31,6 +31,7 @@
   typedef UINT8  uint8_t;
   typedef UINT16 uint16_t;
   typedef UINT32 uint32_t;
+  typedef INT32  int32_t;
   typedef UINT64 uint64_t;
   typedef UINT64 addr_t;
 
@@ -126,7 +127,9 @@ typedef struct {
 
 void     pal_gic_create_info_table(GIC_INFO_TABLE *gic_info_table);
 uint32_t pal_gic_install_isr(uint32_t int_id, void (*isr)(void));
-uint32_t pal_gic_end_of_interrupt(uint32_t int_id);
+void pal_gic_end_of_interrupt(uint32_t int_id);
+int32_t pal_gic_request_irq(unsigned int irq_num, unsigned int mapped_irq_num, void *isr);
+void pal_gic_free_interrupt(unsigned int irq_num, unsigned int mapped_irq_num);
 
 
 /** Timer tests related definitions **/
@@ -224,6 +227,9 @@ typedef struct {
 uint64_t pal_pcie_get_mcfg_ecam(void);
 void     pal_pcie_create_info_table(PCIE_INFO_TABLE *PcieTable);
 uint32_t pal_pcie_read_cfg(uint32_t bdf, uint32_t offset, uint32_t *data);
+uint32_t pal_pcie_get_bdf_wrapper(uint32_t class_code, uint32_t start_bdf);
+void pal_pci_read_config_byte(uint32_t bdf, uint8_t offset, uint8_t *val);
+void pal_pci_write_config_byte(uint32_t bdf, uint8_t offset, uint8_t val);
 
 /**
   @brief  Instance of SMMU INFO block
@@ -377,6 +383,7 @@ typedef struct {
   uint32_t         vector_control;    ///< IRQ to install an ISR
   uint32_t         vector_irq_base;   ///< Base IRQ for the vectors in the block
   uint32_t         vector_n_irqs;     ///< Number of irq vectors in the block
+  uint32_t         vector_mapped_irq_base; ///< Mapped IRQ number base for this MSI
 }PERIPHERAL_VECTOR_BLOCK;
 
 typedef struct PERIPHERAL_VECTOR_LIST_STRUCT
@@ -484,7 +491,6 @@ void     pal_print_raw(uint64_t addr, char8_t *string, uint64_t data);
 
 void     *pal_mem_alloc(uint32_t size);
 void     pal_mem_free(void *buffer);
-void     pal_free_mem(void *buffer, uint32_t size);
 
 void     pal_mem_allocate_shared(uint32_t num_pe, uint32_t sizeofentry);
 void     pal_mem_free_shared(void);
@@ -502,8 +508,11 @@ void     pal_pe_data_cache_ops_by_va(uint64_t addr, uint32_t type);
 #define CLEAN                 0x2
 #define INVALIDATE            0x3
 
-/* Exerciser Definitions */
+/* Exerciser definitions */
+#define EXERCISER_CLASSCODE 0x010203
 #define MAX_ARRAY_SIZE 32
+#define MAX_REG_COUNT 10
+#define MAX_DMA_CAP_REGION_CNT 10
 
 typedef struct {
     uint64_t buf[MAX_ARRAY_SIZE];
@@ -518,17 +527,21 @@ typedef enum {
     EXERCISER_NUM_CARDS = 0x1
 } EXERCISER_INFO_TYPE;
 
-enum SNOOP {
-    DISABLE_NO_SNOOP = 0x0,
-    ENABLE_NO_SNOOP  = 0x1
-};
+typedef enum {
+    EDMA_NO_SUPPORT   = 0x0,
+    EDMA_COHERENT     = 0x1,
+    EDMA_NOT_COHERENT = 0x2,
+    EDMA_FROM_DEVICE  = 0x3,
+    EDMA_TO_DEVICE    = 0x4
+} EXERCISER_DMA_ATTR;
 
 typedef enum {
     SNOOP_ATTRIBUTES = 0x1,
     LEGACY_IRQ       = 0x2,
     MSIX_ATTRIBUTES  = 0x3,
     DMA_ATTRIBUTES   = 0x4,
-    P2P_ATTRIBUTES   = 0x5
+    P2P_ATTRIBUTES   = 0x5,
+    PASID_ATTRIBUTES = 0x6
 } EXERCISER_PARAM_TYPE;
 
 typedef enum {
@@ -540,10 +553,87 @@ typedef enum {
 
 typedef enum {
     START_DMA     = 0x1,
-    GENERATE_INTR = 0x2,
-    MEM_READ      = 0x3,
-    MEM_WRITE     = 0x4
+    GENERATE_MSI  = 0x2,
+    GENERATE_L_INTR = 0x3,  //Legacy interrupt
+    MEM_READ      = 0x4,
+    MEM_WRITE     = 0x5,
+    HANDLE_INTR   = 0x6,
+    PASID_TLP_START = 0x7,
+    PASID_TLP_STOP  = 0x8,
+    NO_SNOOP_TLP_START = 0x9,
+    NO_SNOOP_TLP_STOP  = 0xa
 } EXERCISER_OPS;
+
+typedef enum {
+    ACCESS_TYPE_RD = 0x0,
+    ACCESS_TYPE_RW = 0x1
+} ECAM_REG_ATTRIBUTE;
+
+struct ecam_reg_data {
+    uint32_t offset;    //Offset into 4096 bytes ecam config reg space
+    uint32_t attribute;
+    uint32_t value;
+};
+
+struct exerciser_data_ecam {
+    struct ecam_reg_data reg[MAX_REG_COUNT];
+};
+
+typedef enum {
+    DEVICE_nGnRnE = 0x0,
+    DEVICE_nGnRE  = 0x1,
+    DEVICE_nGRE   = 0x2,
+    DEVICE_GRE    = 0x3
+} ARM_DEVICE_MEM;
+
+typedef enum {
+    NORMAL_NC = 0x4,
+    NORMAL_WT = 0x5
+} ARM_NORMAL_MEM;
+
+typedef enum {
+    MMIO_PREFETCHABLE = 0x0,
+    MMIO_NON_PREFETCHABLE = 0x1
+} BAR_MEM_TYPE;
+
+struct exerciser_data_bar {
+    void *base_addr;
+    BAR_MEM_TYPE type;
+};
+
+struct ddr_addr_dma_cap {
+    void *phy_addr;
+    void *virt_addr;
+    uint32_t size;
+};
+
+struct exerciser_data_mul_ddr {
+    struct ddr_addr_dma_cap base[MAX_DMA_CAP_REGION_CNT];    //DMA capable ddr regions
+    uint32_t base_cnt_dma_cap;
+};
+
+struct exerciser_data_ddr {
+    void *phy_addr;
+    void *virt_addr;
+    uint32_t size;
+};
+
+typedef union exerciser_data {
+    struct exerciser_data_ecam ecam;
+    struct exerciser_data_bar bar;
+    struct exerciser_data_mul_ddr ddr;
+    struct exerciser_data_ddr cs_ddr;
+    struct exerciser_data_ddr nc_ddr;
+} exerciser_data_t;
+
+typedef enum {
+    EXERCISER_DATA_CFG_SPACE = 0x1,
+    EXERCISER_DATA_BAR0_SPACE = 0x2,
+    EXERCISER_DATA_MCS_DDR_SPACE = 0x3, //Multiple cacheable, shareable regions
+    EXERCISER_DATA_CS_DDR_SPACE = 0x4,  //Single cacheable, shareable region
+    EXERCISER_DATA_NC_DDR_SPACE = 0x5   //Single non-cacheable region
+} EXERCISER_DATA_TYPE;
+
 
 void pal_exerciser_create_info_table(EXERCISER_INFO_TABLE *exerciser_info_table);
 uint32_t pal_exerciser_get_info(EXERCISER_INFO_TYPE type, uint32_t instance);
@@ -552,6 +642,7 @@ uint32_t pal_exerciser_get_param(EXERCISER_PARAM_TYPE type, uint64_t *value1, ui
 uint32_t pal_exerciser_set_state(EXERCISER_STATE state, uint64_t *value, uint32_t instance);
 uint32_t pal_exerciser_get_state(EXERCISER_STATE state, uint64_t *value, uint32_t instance);
 uint32_t pal_exerciser_ops(EXERCISER_OPS ops, uint64_t param, uint32_t instance);
+uint32_t pal_exerciser_get_data(EXERCISER_DATA_TYPE type, exerciser_data_t *data, uint32_t instance);
 
 #endif
 

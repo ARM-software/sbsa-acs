@@ -19,11 +19,25 @@
 
 #include "val/include/sbsa_avs_dma.h"
 #include "val/include/sbsa_avs_smmu.h"
+#include "val/include/sbsa_avs_memory.h"
+#include "val/include/sbsa_avs_exerciser.h"
 
 #define TEST_NUM   (AVS_PCIE_TEST_NUM_BASE + 5)
 #define TEST_DESC  "DMA Address translations (SATA)   "
 
 #define TEST_DATA_BLK_SIZE  512
+#define TEST_DATA 0xDE
+
+void write_test_data(void *buf, uint32_t size)
+{
+
+  uint32_t index;
+
+  for (index = 0; index < size; index++) {
+    *((char8_t *)buf + index) = TEST_DATA;
+  }
+
+}
 
 /* For all DMA masters populated in the Info table, Verify functional DMA,
    before we proceed with other tests */
@@ -38,6 +52,11 @@ payload(void)
   uint32_t target_dev_index;
   uint64_t dma_addr;
   uint32_t dma_len;
+  uint32_t base_index;
+  uint32_t status = 0;
+  uint32_t instance;
+  uint64_t dma_attr;
+  exerciser_data_t e_data;
 
   target_dev_index = val_dma_get_info(DMA_NUM_CTRL, 0);
 
@@ -136,7 +155,116 @@ payload(void)
       kfree(new_buffer);
       kfree(backup);
   }
-  val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 02));
+
+  /* Read the number of excerciser cards */
+  instance = val_exerciser_get_info(EXERCISER_NUM_CARDS, 0);
+
+  if (instance == 0) {
+      val_print(AVS_PRINT_INFO, "    No exerciser cards in the system %x", 0);
+      val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 0));
+      return;
+  }
+
+  while (instance-- != 0) {
+
+    /* Check if the exerciser DMA is of coherent type */
+    if ((val_exerciser_get_param(DMA_ATTRIBUTES, &dma_attr, NULL, instance) != EDMA_COHERENT)) {
+        val_print(AVS_PRINT_ERR, "\n       All PCIe end points must be IO-Coherent. .. ", 0);
+        status = 1;
+        continue;
+    }
+
+    /*
+     * Set the size required in each DMA capable region in the DDR.
+     * The test expects PAL to allocate a buffer of TEST_DATA_BLK_SIZE
+     * in each DMA-able region. Finding non-contiguous DDR regions is
+     * PAL specific.
+     */
+    for (base_index = 0; base_index < MAX_DMA_CAP_REGION_CNT; base_index++) {
+
+        e_data.ddr.base[base_index].size = TEST_DATA_BLK_SIZE;
+        e_data.ddr.base[base_index].phy_addr = NULL;
+        e_data.ddr.base[base_index].virt_addr = NULL;
+        e_data.ddr.base_cnt_dma_cap = 0;
+    }
+
+    /* Get the DDR DMA capable regions information */
+    if (val_exerciser_get_data(EXERCISER_DATA_MCS_DDR_SPACE, &e_data, instance)) {
+        val_print(AVS_PRINT_ERR, "\n      Error while getting DMA capability info for inst %4x    ", instance);
+        status = 1;
+        continue;
+    }
+
+    for (base_index = 0; base_index < e_data.ddr.base_cnt_dma_cap; base_index++) {
+
+        /* Check if the DDR region is a valid one */
+        if (e_data.ddr.base[base_index].virt_addr == NULL) {
+            val_print(AVS_PRINT_ERR, "\n      Unexpected DDR region for exerciser %4x", instance);
+            status = 1;
+            continue;
+        }
+
+        /* Set the virtual addresses for test buffers */
+        orig_buffer = e_data.ddr.base[base_index].virt_addr;
+        new_buffer = orig_buffer + (TEST_DATA_BLK_SIZE / 4);
+        backup = orig_buffer + (TEST_DATA_BLK_SIZE / 2);
+        dma_len = TEST_DATA_BLK_SIZE / 4;
+
+        /* Take back up of data from a fixed location on the Exerciser card */
+        val_exerciser_set_param(DMA_ATTRIBUTES, (uint64_t)backup, dma_len, instance);
+        if (val_exerciser_ops(START_DMA, EDMA_FROM_DEVICE, instance)) {
+            val_print(AVS_PRINT_ERR, "\n      DMA read failure from exerciser %4x", instance);
+            val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));;
+            return;
+        }
+
+        /* Initialize the sender buffer with test specific data */
+        write_test_data(orig_buffer, dma_len);
+
+        /* Program Exerciser DMA controller with the sender buffer information */
+        val_exerciser_set_param(DMA_ATTRIBUTES, (uint64_t)orig_buffer, dma_len, instance);
+        if (val_exerciser_ops(START_DMA, EDMA_TO_DEVICE, instance)) {
+            val_print(AVS_PRINT_ERR, "\n      DMA write failure to exerciser %4x", instance);
+            status = 1;
+            goto restore_backup_data;
+        }
+
+        /* READ Back from Exerciser to validate above DMA write */
+        val_exerciser_set_param(DMA_ATTRIBUTES, (uint64_t)new_buffer, dma_len, instance);
+        if (val_exerciser_ops(START_DMA, EDMA_FROM_DEVICE, instance)) {
+            val_print(AVS_PRINT_ERR, "\n      DMA read failure from exerciser %4x", instance);
+            status = 1;
+            goto restore_backup_data;
+        }
+
+        if (memcmp(orig_buffer, new_buffer, dma_len)) {
+            val_print(AVS_PRINT_ERR, "\n        Data Comparasion failure for Exerciser %4x", instance);
+            status = 1;
+        }
+
+restore_backup_data:
+        /* Restore the original data */
+        val_exerciser_set_param(DMA_ATTRIBUTES, (uint64_t)backup, dma_len, instance);
+        if (val_exerciser_ops(START_DMA, EDMA_TO_DEVICE, instance)) {
+            val_print(AVS_PRINT_ERR, "\n      DMA write failure to exerciser %4x", instance);
+            val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
+            return;
+        }
+
+    }
+
+    /* Return the buffers to the heap manager */
+    for (base_index = 0; base_index < e_data.ddr.base_cnt_dma_cap; base_index++) {
+        val_memory_free(e_data.ddr.base[base_index].virt_addr);
+    }
+
+  }
+
+  if(!status)
+      val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 0));
+  else
+      val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
+
 }
 
 

@@ -39,8 +39,6 @@
 /* GENERIC VAL APIs */
 void val_allocate_shared_mem(void);
 void val_free_shared_mem(void);
-void *val_mem_alloc(uint32_t size);
-void val_mem_free(void *buffer, uint32_t size);
 void val_print(uint32_t level, char8_t *string, uint64_t data);
 void val_print_raw(uint32_t level, char8_t *string, uint64_t data);
 void val_set_test_data(uint32_t index, uint64_t addr, uint64_t test_data);
@@ -85,6 +83,8 @@ uint32_t val_gic_route_interrupt_to_pe(uint32_t int_id, uint64_t mpidr);
 uint32_t val_gic_get_interrupt_state(uint32_t int_id);
 void val_gic_clear_interrupt(uint32_t int_id);
 void val_gic_cpuif_init(void);
+int32_t val_gic_request_irq(uint32_t irq_num, uint32_t mapped_irq_num, void *isr);
+void val_gic_free_interrupt(uint32_t irq_num, uint32_t mapped_irq_num);
 
 /*TIMER VAL APIs */
 typedef enum {

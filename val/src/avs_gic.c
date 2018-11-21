@@ -60,7 +60,6 @@ val_gic_execute_tests(uint32_t level, uint32_t num_pe)
     status |= g004_entry(num_pe);
   }
 
-
   if (status != AVS_STATUS_PASS)
     val_print(AVS_PRINT_ERR, "\n      One or more GIC tests failed. Check Log \n", 0);
   else
@@ -189,36 +188,6 @@ uint32_t
 val_get_max_intid(void)
 {
   return 32 * ((val_mmio_read(val_get_gicd_base() + 0x004) & 0x1F) + 1);
-}
-
-/**
-  @brief   This function is installs the ISR pointed by the function pointer
-           the input Interrupt ID.
-           1. Caller       -  Test Suite
-           2. Prerequisite -  val_gic_create_info_table
-  @param   int_id Interrupt ID to install the ISR
-  @param   isr    Function pointer of the ISR
-  @return  status
-**/
-uint32_t
-val_gic_install_isr(uint32_t int_id, void (*isr)(void))
-{
-  uint32_t      reg_offset = int_id / 32;
-  uint32_t      reg_shift  = int_id % 32;
-  if ((int_id > val_get_max_intid()) || (int_id == 0)) {
-      val_print(AVS_PRINT_ERR, "\n    Invalid Interrupt ID number %d ", int_id);
-      return AVS_STATUS_ERR;
-  }
-
-  pal_gic_install_isr(int_id, isr);
-
-  if (int_id > 31) {
-      /**** UEFI GIC code is not enabling interrupt in the Distributor ***/
-      /**** So, do this here as a fail-safe. Remove if PAL guarantees this ***/
-      val_mmio_write(val_get_gicd_base() + GICD_ISENABLER + (4 * reg_offset), 1 << reg_shift);
-  }
-
-  return 0;
 }
 
 /**

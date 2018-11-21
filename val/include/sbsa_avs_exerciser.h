@@ -25,5 +25,6 @@ uint32_t val_exerciser_get_param(EXERCISER_PARAM_TYPE type, uint64_t *value1, ui
 uint32_t val_exerciser_set_state(EXERCISER_STATE state, uint64_t *value, uint32_t instance);
 uint32_t val_exerciser_get_state(EXERCISER_STATE state, uint64_t *value, uint32_t instance);
 uint32_t val_exerciser_ops(EXERCISER_OPS ops, uint64_t param, uint32_t instance);
+uint32_t val_exerciser_get_data(EXERCISER_DATA_TYPE type, exerciser_data_t *data, uint32_t instance);
 
 #endif
