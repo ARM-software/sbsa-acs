@@ -1,5 +1,6 @@
 /** @file
- * Copyright (c) 2016, ARM Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018, Arm Limited or its affiliates. All rights reserved.
+ * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -90,7 +91,8 @@ typedef enum {
   PMBPTR_EL1,
   PMBLIMITR_EL1,
   ESR_EL2,
-  FAR_EL2
+  FAR_EL2,
+  RDVL
 }SBSA_AVS_PE_REGS;
 
 
@@ -228,6 +230,8 @@ uint64_t AA64WriteSp(uint64_t write_data);
 
 uint64_t AA64ReadFar2(void);
 
+uint64_t ArmRdvl(void);
+
 void ArmCallWFI(void);
 
 void SpeProgramUnderProfiling(uint64_t interval, uint64_t address);
@@ -272,6 +276,16 @@ uint32_t c015_entry(uint32_t num_pe);
 uint32_t c016_entry(uint32_t num_pe);
 uint32_t c017_entry(uint32_t num_pe);
 uint32_t c018_entry(uint32_t num_pe);
+uint32_t c019_entry(uint32_t num_pe);
+uint32_t c020_entry(uint32_t num_pe);
+uint32_t c021_entry(uint32_t num_pe);
+uint32_t c022_entry(uint32_t num_pe);
+uint32_t c023_entry(uint32_t num_pe);
+uint32_t c024_entry(uint32_t num_pe);
+uint32_t c025_entry(uint32_t num_pe);
+uint32_t c026_entry(uint32_t num_pe);
+uint32_t c027_entry(uint32_t num_pe);
+uint32_t c028_entry(uint32_t num_pe);
 
 #endif
 

@@ -1,5 +1,6 @@
 /** @file
- * Copyright (c) 2016, ARM Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018, Arm Limited or its affiliates. All rights reserved.
+ * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,14 +26,14 @@
 #define TEST_NAME(x,y) TEST_NAME_HELPER(x,y)
 
 #define AVS_PE_TEST_NUM_BASE         0
-#define AVS_GIC_TEST_NUM_BASE        20
-#define AVS_TIMER_TEST_NUM_BASE      30
-#define AVS_WD_TEST_NUM_BASE         40
-#define AVS_PCIE_TEST_NUM_BASE       50
-#define AVS_WAKEUP_TEST_NUM_BASE     70
-#define AVS_PER_TEST_NUM_BASE        80
-#define AVS_SMMU_TEST_NUM_BASE       90
-#define AVS_SECURE_TEST_NUM_BASE    900
+#define AVS_GIC_TEST_NUM_BASE        100
+#define AVS_TIMER_TEST_NUM_BASE      200
+#define AVS_WD_TEST_NUM_BASE         300
+#define AVS_PCIE_TEST_NUM_BASE       400
+#define AVS_WAKEUP_TEST_NUM_BASE     500
+#define AVS_PER_TEST_NUM_BASE        600
+#define AVS_SMMU_TEST_NUM_BASE       700
+#define AVS_SECURE_TEST_NUM_BASE     900
 
 #define STATE_BIT   28
 #define STATE_MASK 0xF

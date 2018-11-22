@@ -1,5 +1,6 @@
 /** @file
- * Copyright (c) 2016, ARM Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018, Arm Limited or its affiliates. All rights reserved.
+ * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,7 +35,8 @@ typedef enum {
   SBSA_SECURE_TEST_FINISH,
   SBSA_SECURE_INFRA_INIT,
   SBSA_SECURE_PLATFORM_ADDRESS,
-  SBSA_SECURE_PMBIRQ
+  SBSA_SECURE_PMBIRQ,
+  SBSA_SECURE_UPDATE_SVE_REG
 }SBSA_SECURE_TEST_INDEX_e;
 
 

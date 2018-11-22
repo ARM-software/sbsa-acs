@@ -1,5 +1,6 @@
 /** @file
- * Copyright (c) 2016, ARM Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018, Arm Limited or its affiliates. All rights reserved.
+ * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,6 +34,8 @@
 #define PCI_EP_MASK 0xF00
 
 addr_t val_dma_mem_alloc(void **buffer, uint32_t size, uint32_t dev_index, uint32_t flags);
+
+void val_dma_mem_free(void *buffer, dma_addr_t mem_dma, uint32_t size, uint32_t dev_index, uint32_t flags);
 
 void val_dma_free_info_table(void);
 
