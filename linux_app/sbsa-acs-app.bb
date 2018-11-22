@@ -16,7 +16,7 @@ SRC_URI = "file://sbsa_app_main.c \
            file://include/sbsa_app.h \
            https://raw.githubusercontent.com/ARM-software/sbsa-acs/master/val/include/sbsa_avs_common.h \
            "
-SRC_URI[md5sum] = "3bff44b2755c130da1c74fbf2a0223d5"
+SRC_URI[md5sum] = "67ac822ba7b3a74c355c81663d8c7f21"
 
 S = "${WORKDIR}"
 

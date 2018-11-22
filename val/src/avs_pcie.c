@@ -1,5 +1,6 @@
 /** @file
- * Copyright (c) 2016, ARM Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018, Arm Limited or its affiliates. All rights reserved.
+ * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -209,6 +210,7 @@ val_pcie_execute_tests(uint32_t level, uint32_t num_pe)
   status |= p013_entry(num_pe);
   status |= p014_entry(num_pe);
   status |= p015_entry(num_pe);
+  status |= p016_entry(num_pe);
 #endif
 
   if (status != AVS_STATUS_PASS) {
@@ -366,6 +368,23 @@ val_pcie_is_devicedma_64bit(uint32_t bdf)
   uint32_t func = PCIE_EXTRACT_BDF_FUNC (bdf);
 
   return (pal_pcie_is_devicedma_64bit(seg, bus, dev, func));
+}
+
+/**
+  @brief   This API scans bridge devices and checks memory type
+           1. Caller       -  Test Suite
+  @param   bdf      - PCIe BUS/Device/Function
+
+  @return  0 -> 32-bit mem type, 1 -> 64-bit mem type
+**/
+uint32_t val_pcie_scan_bridge_devices_and_check_memtype(uint32_t bdf)
+{
+    uint32_t seg  = PCIE_EXTRACT_BDF_SEG (bdf);
+    uint32_t bus  = PCIE_EXTRACT_BDF_BUS (bdf);
+    uint32_t dev  = PCIE_EXTRACT_BDF_DEV (bdf);
+    uint32_t func = PCIE_EXTRACT_BDF_FUNC (bdf);
+
+    return pal_pcie_scan_bridge_devices_and_check_memtype(seg, bus, dev, func);
 }
 
 /**

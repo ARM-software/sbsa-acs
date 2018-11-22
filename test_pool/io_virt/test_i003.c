@@ -1,6 +1,7 @@
 /** @file
- * Copyright (c) 2016, ARM Limited or its affiliates. All rights reserved.
-
+ * Copyright (c) 2016-2018, Arm Limited or its affiliates. All rights reserved.
+ * SPDX-License-Identifier : Apache-2.0
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -22,61 +23,85 @@
 #define TEST_NUM   (AVS_SMMU_TEST_NUM_BASE + 3)
 #define TEST_DESC  "SMMU Compatibility Check          "
 
-static
-void
-payload()
+static void payload()
 {
 
-  uint64_t data;
-  uint32_t num_smmu;
-  uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
+    uint64_t data;
+    uint32_t num_smmu;
+    uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
 
-  num_smmu = val_smmu_get_info(SMMU_NUM_CTRL, 0);
+    num_smmu = val_smmu_get_info(SMMU_NUM_CTRL, 0);
 
-  if (num_smmu == 0) {
-      val_print(AVS_PRINT_ERR, "\n       No SMMU Controllers are discovered ", 0);
-      val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
-      return;
-  }
+    if (num_smmu == 0) {
+        val_print(AVS_PRINT_ERR, "\n       No SMMU Controllers are discovered ", 0);
+        val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
+        return;
+    }
 
-  while (num_smmu--)
-  {
-      if (val_smmu_get_info(SMMU_CTRL_ARCH_MAJOR_REV, num_smmu) == 2) {
-          val_print(AVS_PRINT_INFO, "\n\t Detected SMMUv2 ", 0);
-          data = val_smmu_read_cfg(SMMUv2_IDR0, num_smmu);
-          if ((data & BIT29) == 0) {
-              val_print(AVS_PRINT_ERR, "\n\t Stage 2 Translation not supported ", 0);
-              val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
-              return;
-          }
-      }
-      else{
-          val_print(AVS_PRINT_INFO, "\n\t Detected SMMUv3 ", 0);
-          data = val_smmu_read_cfg(SMMUv3_IDR0, num_smmu);
-          //Check Stage2 translation support
-          if ((data & BIT0) == 0) {
-              val_print(AVS_PRINT_ERR, "\n\t Stage 2 Translation not supported ", 0);
-              val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
-              return;
-          }
+    while (num_smmu--)
+    {
+        if (val_smmu_get_info(SMMU_CTRL_ARCH_MAJOR_REV, num_smmu) == 2) {
+            val_print(AVS_PRINT_INFO, "\n\t Detected SMMUv2 ", 0);
 
-          // Check COHACC
-          if ((data & BIT4) == 0) {
-              val_print(AVS_PRINT_ERR, "\n\t IO-Coherent access not supported  ", 0);
-              val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 03));
-              return;
-          }
+            if (g_sbsa_level > 3) {
+                val_print(AVS_PRINT_ERR, "\n\t Smmuv3 should be supported Level %x", g_sbsa_level);
+                val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
+                return;
+            }
 
-          data = val_smmu_read_cfg(SMMUv3_AIDR, num_smmu);
-          if (((data & 0xFF) != 0) && ((data & 0xFF) != 0x1)) {
-              val_print(AVS_PRINT_ERR, "\n\t Invalid Architecture Revision %x  ", data);
-              val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 04));
-              return;
-          }
-      }
+            data = val_smmu_read_cfg(SMMUv2_IDR0, num_smmu);
+            if ((data & BIT29) == 0) {
+                val_print(AVS_PRINT_ERR, "\n\t Stage 2 Translation not supported ", 0);
+                val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
+                return;
+            }
 
-      val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
-  }
+        } else {
+            val_print(AVS_PRINT_INFO, "\n\t Detected SMMUv3 ", 0);
+            data = val_smmu_read_cfg(SMMUv3_IDR0, num_smmu);
+            /* Check Stage2 translation support */
+            if ((data & BIT0) == 0) {
+                val_print(AVS_PRINT_ERR, "\n\t Stage 2 Translation not supported ", 0);
+                val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
+                return;
+            }
+
+            /* Check Stage1 translation support for level > 3 */
+            if (g_sbsa_level > 3) {
+                if ((data & BIT1) == 0) {
+                    val_print(AVS_PRINT_ERR, "\n\t Stage 1 Translation not supported ", 0);
+                    val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
+                    return;
+                }
+            }
+
+            // Check COHACC
+            if ((data & BIT4) == 0) {
+                val_print(AVS_PRINT_ERR, "\n\t IO-Coherent access not supported  ", 0);
+                val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 03));
+                return;
+            }
+
+            data = val_smmu_read_cfg(SMMUv3_AIDR, num_smmu);
+
+            if (g_sbsa_level < 5) {
+                if (((data & 0xFF) != 0) && ((data & 0xFF) != 0x1) && ((data & 0xFF) != 0x2)) {
+                    val_print(AVS_PRINT_ERR, "\n\t Invalid Architecture Revision %x  ", data);
+                    val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 04));
+                    return;
+                }
+            } else {
+                if ((data & 0xFF) < 0x2) {
+                    /* Smmuv3.2 or higher not implemented */
+                    val_print(AVS_PRINT_ERR, "\n\t Level %x should support Smmuv3.2 or higher  ",
+                                             g_sbsa_level);
+                    val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 04));
+                    return;
+                }
+            }
+        }
+        val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
+    }
 
 }
 
