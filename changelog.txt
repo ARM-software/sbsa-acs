@@ -1,3 +1,9 @@
+v18.11_REL2.0
+
+* SBSA 5.0 compliance tests added.
+* Test number scheme changed.
+* Check docs/testcase-checklist.md for details.
+
 v18.08_REL1.6
 
 * Test #58: Bug fix - Corrected the handling of BDF values.
