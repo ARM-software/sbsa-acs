@@ -491,6 +491,7 @@ void     pal_print_raw(uint64_t addr, char8_t *string, uint64_t data);
 
 void     *pal_mem_alloc(uint32_t size);
 void     pal_mem_free(void *buffer);
+void     pal_free_mem(void *buffer, uint32_t size);
 
 void     pal_mem_allocate_shared(uint32_t num_pe, uint32_t sizeofentry);
 void     pal_mem_free_shared(void);
@@ -633,7 +634,6 @@ typedef enum {
     EXERCISER_DATA_CS_DDR_SPACE = 0x4,  //Single cacheable, shareable region
     EXERCISER_DATA_NC_DDR_SPACE = 0x5   //Single non-cacheable region
 } EXERCISER_DATA_TYPE;
-
 
 void pal_exerciser_create_info_table(EXERCISER_INFO_TABLE *exerciser_info_table);
 uint32_t pal_exerciser_get_info(EXERCISER_INFO_TYPE type, uint32_t instance);

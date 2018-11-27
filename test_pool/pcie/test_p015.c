@@ -41,6 +41,9 @@ void init_source_buf_data(void *buf, uint32_t size)
 
 }
 
+#define VALUE1 0xDEADDEAD
+#define VALUE2 0xDEADDEAF
+
 static
 void
 payload (void)
@@ -180,7 +183,6 @@ payload (void)
 coherence_test_failure:
   val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
   return;
-
 }
 
 uint32_t

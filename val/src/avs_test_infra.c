@@ -170,6 +170,35 @@ val_free_shared_mem()
 }
 
 /**
+ * @brief   Creates a buffer with length equal to size
+ *
+ * @param   size    - Buffer size to be created
+ *
+ * @result  Buffer address if SUCCESSFUL, else NULL
+ */
+void *val_mem_alloc(uint32_t size)
+{
+    return pal_mem_alloc(size);
+}
+
+/**
+  @brief  Free the memory which was allocated by alloc_mem
+        1. Caller       - Application Layer
+        2. Prerequisite - val_allocate_shared_mem
+
+  @param  buffer    - Buffer to be freed
+  @param  size      - Buffer size to be freed
+
+  @result None
+**/
+void val_mem_free(void *buffer, uint32_t size)
+{
+  pal_free_mem(buffer, size);
+}
+
+
+
+/**
   @brief  This function sets the address of the test entry and the test
           argument to the shared address space which is picked up by the
           secondary PE identified by index.
