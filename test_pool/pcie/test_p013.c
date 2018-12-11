@@ -61,9 +61,9 @@ payload (void)
       data = val_pcie_is_devicedma_64bit(dev_bdf);
       if (data == 0) {
           if(!val_pcie_is_device_behind_smmu(dev_bdf)) {
-              val_print (AVS_STATUS_ERR, "\n       The device with bdf=0x%x doesn't support 64 bit addressing", dev_bdf);
-              val_print (AVS_STATUS_ERR, "\n       and is not behind SMMU", 0);
-              val_print (AVS_STATUS_ERR, "\n       The device is of type = %d", dev_type);
+              val_print (AVS_PRINT_ERR, "\n       The device with bdf=0x%x doesn't support 64 bit addressing", dev_bdf);
+              val_print (AVS_PRINT_ERR, "\n       and is not behind SMMU", 0);
+              val_print (AVS_PRINT_ERR, "\n       The device is of type = %d", dev_type);
               val_set_status (index, RESULT_FAIL (g_sbsa_level, TEST_NUM, 1));
               return;
           }

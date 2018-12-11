@@ -179,3 +179,33 @@ val_memory_unmap(void *ptr)
 {
   pal_memory_unmap(ptr);
 }
+
+void *
+val_memory_alloc(uint32_t size)
+{
+  return pal_mem_alloc(size);
+}
+
+void *
+val_memory_alloc_coherent(void *dev, uint32_t size, void *pa)
+{
+  return pal_mem_alloc_coherent(dev, size, pa);
+}
+
+void
+val_memory_free(void *addr)
+{
+  pal_mem_free(addr);
+}
+
+void
+val_memory_free_coherent(void *dev, uint32_t size, void *va, void *pa)
+{
+  pal_mem_free_coherent(dev, size, va, pa);
+}
+
+void *
+val_memory_virt_to_phys(void *va)
+{
+  return pal_mem_virt_to_phys(va);
+}

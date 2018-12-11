@@ -32,6 +32,14 @@
 #ifndef __SBSA_AVS_GIC_H__
 #define __SBSA_AVS_GIC_H__
 
+#define GICD_ISENABLER      0x100
+#define GICD_ICENABLER      0x180
+#define GICD_ISPENDR        0x200
+#define GICD_ISACTIVER0     0x300
+#define GICD_ICPENDR0       0x280
+#define GICD_ICACTIVER0     0x380
+#define GICD_IROUTER        0x6000
+
 uint32_t
 g001_entry(uint32_t num_pe);
 uint32_t
@@ -41,4 +49,9 @@ g003_entry(uint32_t num_pe);
 uint32_t
 g004_entry(uint32_t num_pe);
 
+uint32_t
+val_get_max_intid(void);
+
+addr_t
+val_get_gicd_base(void);
 #endif

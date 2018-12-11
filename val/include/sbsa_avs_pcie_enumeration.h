@@ -98,3 +98,7 @@ typedef struct {
   PCI_BRIDGE_CONTROL_REGISTER   Bridge;
 } PCI_TYPE01;
 
+uint32_t val_pcie_increment_busdev(uint32_t start_bdf);
+uint32_t val_pcie_increment_bdf(uint32_t bdf);
+uint32_t val_pcie_get_bdf(uint32_t class_code, uint32_t start_bdf);
+void *val_pci_bdf_to_dev(uint32_t bdf);

@@ -64,6 +64,7 @@ main (int argc, char **argv)
     int   c = 0,i=0;
     char *endptr, *pt;
     int   status;
+    int   run_exerciser = 0;
 
     struct option long_opt[] =
     {
@@ -73,7 +74,7 @@ main (int argc, char **argv)
     };
 
     /* Process Command Line arguments */
-    while ((c = getopt_long(argc, argv, "hv:l:", long_opt, NULL)) != -1)
+    while ((c = getopt_long(argc, argv, "hv:l:e:", long_opt, NULL)) != -1)
     {
        switch (c)
        {
@@ -94,6 +95,9 @@ main (int argc, char **argv)
            g_skip_test_num[i++] = a;
            pt = strtok(NULL, ",");
          }
+         break;
+       case 'e':
+         run_exerciser = 1;
          break;
        case '?':
          if (isprint (optopt))
@@ -122,9 +126,13 @@ main (int argc, char **argv)
         return 0;
     }
 
-    printf("\n      *** Starting PCIe tests ***  \n");
-    execute_tests_pcie(1, g_sbsa_level, g_print_level);
-
+    if (run_exerciser) {
+        printf("\n      *** Starting PCIe Exerciser tests ***  \n");
+        execute_tests_exerciser(1, g_sbsa_level, g_print_level);
+    } else {
+        printf("\n      *** Starting PCIe tests ***  \n");
+        execute_tests_pcie(1, g_sbsa_level, g_print_level);
+    }
 
     printf("\n                    *** SBSA tests complete *** \n\n");
 
