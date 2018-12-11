@@ -83,6 +83,9 @@ uint32_t val_gic_route_interrupt_to_pe(uint32_t int_id, uint64_t mpidr);
 uint32_t val_gic_get_interrupt_state(uint32_t int_id);
 void val_gic_clear_interrupt(uint32_t int_id);
 void val_gic_cpuif_init(void);
+uint32_t val_gic_request_irq(uint32_t irq_num, uint32_t mapped_irq_num, void *isr);
+void val_gic_free_interrupt(uint32_t irq_num, uint32_t mapped_irq_num);
+void val_gic_set_intr_trigger(uint32_t int_id, INTR_TRIGGER_INFO_TYPE_e trigger_type);
 
 /*TIMER VAL APIs */
 typedef enum {
@@ -124,7 +127,8 @@ typedef enum {
   WD_INFO_CTRL_BASE,
   WD_INFO_REFRESH_BASE,
   WD_INFO_GSIV,
-  WD_INFO_ISSECURE
+  WD_INFO_ISSECURE,
+  WD_INFO_IS_EDGE
 }WD_INFO_TYPE_e;
 
 void     val_wd_create_info_table(uint64_t *wd_info_table);
@@ -140,6 +144,10 @@ void     val_pcie_free_info_table(void);
 uint32_t val_pcie_execute_tests(uint32_t level, uint32_t num_pe);
 uint32_t val_pcie_is_devicedma_64bit(uint32_t bdf);
 uint32_t val_pcie_scan_bridge_devices_and_check_memtype(uint32_t bdf);
+void val_pcie_read_ext_cap_word(uint32_t bdf, uint32_t ext_cap_id, uint8_t offset, uint16_t *val);
+uint32_t val_pcie_get_pcie_type(uint32_t bdf);
+uint32_t val_pcie_p2p_support(uint32_t bdf);
+uint32_t val_pcie_multifunction_support(uint32_t bdf);
 
 /* IO-VIRT APIs */
 typedef enum {
