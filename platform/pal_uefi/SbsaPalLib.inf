@@ -61,6 +61,7 @@
   gHardwareInterruptProtocolGuid                ## CONSUMES
   gEfiCpuArchProtocolGuid                       ## CONSUMES
   gEfiPciIoProtocolGuid                         ## CONSUMES
+  gHardwareInterrupt2ProtocolGuid               ## CONSUMES
 
 [Guids]
   gEfiAcpi20TableGuid

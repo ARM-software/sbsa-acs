@@ -22,12 +22,14 @@
 #include "Include/IndustryStandard/Acpi61.h"
 #include <Protocol/AcpiTable.h>
 #include <Protocol/HardwareInterrupt.h>
+#include <Protocol/HardwareInterrupt2.h>
 
 #include "include/pal_uefi.h"
 
 static EFI_ACPI_6_1_MULTIPLE_APIC_DESCRIPTION_TABLE_HEADER *gMadtHdr;
 
 EFI_HARDWARE_INTERRUPT_PROTOCOL *gInterrupt = NULL;
+EFI_HARDWARE_INTERRUPT2_PROTOCOL *gInterrupt2 = NULL;
 
 
 UINT64
@@ -179,3 +181,34 @@ pal_gic_end_of_interrupt(UINT32 int_id)
   return 0;
 }
 
+/**
+  @brief  Set Trigger type Edge/Level
+
+  @param  int_id  Interrupt ID which needs to be enabled and service routine installed for
+  @param  trigger_type  Interrupt Trigger Type Edge/Trigger
+
+  @return Status of the operation
+**/
+UINT32
+pal_gic_set_intr_trigger(UINT32 int_id, INTR_TRIGGER_INFO_TYPE_e trigger_type)
+{
+
+  EFI_STATUS  Status;
+
+  /* Find the interrupt protocol. */
+  Status = gBS->LocateProtocol (&gHardwareInterrupt2ProtocolGuid, NULL, (VOID **)&gInterrupt2);
+  if (EFI_ERROR(Status)) {
+    return 0xFFFFFFFF;
+  }
+
+  Status = gInterrupt2->SetTriggerType (
+                   gInterrupt2,
+                   int_id,
+                   trigger_type
+                   );
+
+  if (EFI_ERROR(Status))
+    return 0xFFFFFFFF;
+
+  return 0;
+}
