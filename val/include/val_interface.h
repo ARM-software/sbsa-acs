@@ -80,6 +80,7 @@ uint32_t val_gic_route_interrupt_to_pe(uint32_t int_id, uint64_t mpidr);
 uint32_t val_gic_get_interrupt_state(uint32_t int_id);
 void val_gic_clear_interrupt(uint32_t int_id);
 void val_gic_cpuif_init(void);
+void val_gic_set_intr_trigger(uint32_t int_id, INTR_TRIGGER_INFO_TYPE_e trigger_type);
 
 /*TIMER VAL APIs */
 typedef enum {
@@ -121,7 +122,8 @@ typedef enum {
   WD_INFO_CTRL_BASE,
   WD_INFO_REFRESH_BASE,
   WD_INFO_GSIV,
-  WD_INFO_ISSECURE
+  WD_INFO_ISSECURE,
+  WD_INFO_IS_EDGE
 }WD_INFO_TYPE_e;
 
 void     val_wd_create_info_table(uint64_t *wd_info_table);

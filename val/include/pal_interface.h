@@ -107,6 +107,14 @@ typedef enum {
   ENTRY_TYPE_GICITS
 }GIC_INFO_TYPE_e;
 
+/* Interrupt Trigger Type */
+typedef enum {
+  INTR_TRIGGER_INFO_LEVEL_LOW,
+  INTR_TRIGGER_INFO_LEVEL_HIGH,
+  INTR_TRIGGER_INFO_EDGE_FALLING,
+  INTR_TRIGGER_INFO_EDGE_RISING
+}INTR_TRIGGER_INFO_TYPE_e;
+
 /**
   @brief  structure instance for GIC entry
 **/
@@ -126,6 +134,7 @@ typedef struct {
 void     pal_gic_create_info_table(GIC_INFO_TABLE *gic_info_table);
 uint32_t pal_gic_install_isr(uint32_t int_id, void (*isr)(void));
 uint32_t pal_gic_end_of_interrupt(uint32_t int_id);
+uint32_t pal_gic_set_intr_trigger(uint32_t int_id, INTR_TRIGGER_INFO_TYPE_e trigger_type);
 
 
 /** Timer tests related definitions **/

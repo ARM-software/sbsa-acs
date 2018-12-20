@@ -81,6 +81,14 @@ typedef enum {
   ENTRY_TYPE_GICITS
 }GIC_INFO_TYPE_e;
 
+/* Interrupt Trigger Type */
+typedef enum {
+  INTR_TRIGGER_INFO_LEVEL_LOW,
+  INTR_TRIGGER_INFO_LEVEL_HIGH,
+  INTR_TRIGGER_INFO_EDGE_FALLING,
+  INTR_TRIGGER_INFO_EDGE_RISING
+}INTR_TRIGGER_INFO_TYPE_e;
+
 /**
   @brief  structure instance for GIC entry
 **/

@@ -297,3 +297,22 @@ void val_gic_cpuif_init(void)
   val_gic_reg_write(ICC_BPR1_EL1, 0x7);
   val_gic_reg_write(ICC_PMR_EL1, 0xff);
 }
+
+/**
+  @brief   This function will Set the trigger type Edge/Level based on the GTDT table
+           1. Caller       -  Test Suite
+           2. Prerequisite -  val_gic_create_info_table
+  @param   int_id Interrupt ID
+  @param   trigger_type Interrupt Trigger Type
+  @return  none
+**/
+void val_gic_set_intr_trigger(uint32_t int_id, INTR_TRIGGER_INFO_TYPE_e trigger_type)
+{
+  uint32_t status;
+
+  val_print(AVS_PRINT_DEBUG, "\n    Setting Trigger type as %d  ", trigger_type);
+  status = pal_gic_set_intr_trigger(int_id, trigger_type);
+
+  if (status)
+    val_print(AVS_PRINT_ERR, "\n    Error Could Not Configure Trigger Type", 0);
+}
