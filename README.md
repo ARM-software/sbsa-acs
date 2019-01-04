@@ -3,7 +3,7 @@
 
 
 ## Server Base System Architecture
-**Server Base System Architecture** (SBSA) specification specifies a hardware system architecture based on the ARM 64-bit architecture. Server system software such as operating systems, hypervisors, and firmware rely on this. It addresses processing element features and key aspects of system architecture. 
+**Server Base System Architecture** (SBSA) specification specifies a hardware system architecture based on the ARM 64-bit architecture. Server system software such as operating systems, hypervisors, and firmware rely on this. It addresses processing element features and key aspects of system architecture.
 
 For more information, download the [SBSA specification](http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.den0029b/index.html)
 
@@ -29,8 +29,8 @@ A few tests are executed by running the SBSA ACS Linux application which in turn
   - To get the latest version of the code with bug fixes and new features, use the master branch.
 
 ## Additional reading
-  - For details on the SBSA ACS UEFI Shell Application, see [SBSA ACS User Guide](docs/SBSA_ACS_User_Guide.pdf).
-  - For details on the Design of the SBSA ACS, see [Validation Methodology Document](docs/SBSA_Val_Methodolgy.pdf).
+  - For details on the SBSA ACS UEFI Shell Application, see [SBSA ACS User Guide](docs/Arm_SBSA_Architecture_Compliance_User_Guide.pdf).
+  - For details on the Design of the SBSA ACS, see [Validation Methodology Document](docs/Arm_SBSA_Architecture_Compliance_Validation_Methodology.pdf).
   - For information about the test coverage scenarios that are implemented in the current release of ACS and the scenarios that are   planned for the future releases, see [Testcase checklist](docs/testcase-checklist.md).
 
 
