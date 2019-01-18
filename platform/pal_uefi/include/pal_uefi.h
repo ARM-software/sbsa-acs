@@ -1,5 +1,6 @@
 /** @file
- * Copyright (c) 2017, ARM Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2019, Arm Limited or its affiliates. All rights reserved.
+ * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -230,8 +231,10 @@ typedef union {
   ID_MAP map;
 }NODE_DATA_MAP;
 
+#define MAX_NAMED_COMP_LENGTH 256
+
 typedef union {
-  CHAR8 name[16];
+  CHAR8 name[MAX_NAMED_COMP_LENGTH];
   IOVIRT_RC_INFO_BLOCK rc;
   IOVIRT_PMCG_INFO_BLOCK pmcg;
   UINT32 its_count;

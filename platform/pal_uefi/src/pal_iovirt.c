@@ -1,5 +1,6 @@
 /** @file
- * Copyright (c) 2017, ARM Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2019, Arm Limited or its affiliates. All rights reserved.
+ * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -225,7 +226,7 @@ iort_add_block(IORT_TABLE *iort, IORT_NODE *iort_node, IOVIRT_INFO_TABLE *IoVirt
 
   sbsa_print(AVS_PRINT_INFO, L"IORT node offset:%x, type: %d\n", (UINT8*)iort_node - (UINT8*)iort, iort_node->type);
 
-  SetMem(data, 0, sizeof(NODE_DATA));
+  SetMem(data, sizeof(NODE_DATA), 0);
 
   /* Populate the fields that are independent of node type */
   (*block)->type = iort_node->type;
@@ -243,7 +244,8 @@ iort_add_block(IORT_TABLE *iort, IORT_NODE *iort_node, IOVIRT_INFO_TABLE *IoVirt
       count = &IoVirtTable->num_its_groups;
       break;
     case IOVIRT_NODE_NAMED_COMPONENT:
-      AsciiStrnCpyS((CHAR8*)(*data).name, 16, (CHAR8*)((IORT_NAMED_COMPONENT*)node_data)->device_name, 16);
+      AsciiStrnCpyS((CHAR8*)(*data).name, MAX_NAMED_COMP_LENGTH,
+                    (CHAR8*)((IORT_NAMED_COMPONENT*)node_data)->device_name, (MAX_NAMED_COMP_LENGTH -1));
       count = &IoVirtTable->num_named_components;
       break;
     case IOVIRT_NODE_PCI_ROOT_COMPLEX:
