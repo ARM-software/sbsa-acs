@@ -54,7 +54,7 @@ payload(void)
       data = val_peripheral_get_info(ANY_FLAGS, count);
 
       if ((data & PER_FLAG_MSI_ENABLED) == 0) {
-          val_print(AVS_STATUS_ERR, "\n       MSI should be enabled for a PCIe device ", 0);
+          val_print(AVS_PRINT_ERR, "\n       MSI should be enabled for a PCIe device ", 0);
           val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
           status = 1;
           break;
