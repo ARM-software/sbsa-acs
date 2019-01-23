@@ -81,6 +81,8 @@ val_wd_get_info(uint32_t index, WD_INFO_TYPE_e info_type)
       return g_wd_info_table->wd_info[index].wd_gsiv;
     case WD_INFO_ISSECURE:
       return ((g_wd_info_table->wd_info[index].wd_flags >> 2) & 1);
+    case WD_INFO_IS_EDGE:
+      return ((g_wd_info_table->wd_info[index].wd_flags) & 1);
     default:
       return 0;
   }

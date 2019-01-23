@@ -21,7 +21,7 @@
 
 
 #define SBSA_APP_VERSION_MAJOR  2
-#define SBSA_APP_VERSION_MINOR  0
+#define SBSA_APP_VERSION_MINOR  1
 
 #include "sbsa_drv_intf.h"
 
@@ -30,5 +30,8 @@ typedef unsigned char     char8_t;
 
 int
 execute_tests_pcie(int num_pe, int level, unsigned int print_level);
+
+int
+execute_tests_exerciser(int num_pe, int level, unsigned int print_level);
 
 #endif

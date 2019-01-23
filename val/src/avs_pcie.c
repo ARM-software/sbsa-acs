@@ -203,14 +203,26 @@ val_pcie_execute_tests(uint32_t level, uint32_t num_pe)
   status |= p006_entry(num_pe);
   status |= p007_entry(num_pe);
   status |= p008_entry(num_pe);
-  status |= p009_entry(num_pe);
-  status |= p010_entry(num_pe);
   status |= p011_entry(num_pe);
   status |= p012_entry(num_pe);
-  status |= p013_entry(num_pe);
-  status |= p014_entry(num_pe);
   status |= p015_entry(num_pe);
-  status |= p016_entry(num_pe);
+
+  if (level > 1) {
+    status |= p009_entry(num_pe);
+  }
+
+  if (level > 2) {
+    status |= p010_entry(num_pe);
+    status |= p013_entry(num_pe);
+    status |= p014_entry(num_pe);
+  }
+
+  if (level > 3) {
+    status |= p016_entry(num_pe);
+    status |= p017_entry(num_pe);
+    status |= p018_entry(num_pe);
+    status |= p019_entry(num_pe);
+  }
 #endif
 
   if (status != AVS_STATUS_PASS) {
@@ -408,6 +420,7 @@ val_pcie_get_root_port_bdf(uint32_t *bdf)
   *bdf = PCIE_CREATE_BDF(seg, bus, dev, func);
   return 0;
 }
+
 /**
   @brief   This API returns the PCIe device type
            1. Caller       -  Test Suite
@@ -422,6 +435,51 @@ val_pcie_get_device_type(uint32_t bdf)
                                   PCIE_EXTRACT_BDF_BUS (bdf),
                                   PCIE_EXTRACT_BDF_DEV (bdf),
                                   PCIE_EXTRACT_BDF_FUNC (bdf));
+}
+
+/**
+  @brief   This API checks the PCIe device P2P support
+           1. Caller       -  Test Suite
+  @param   bdf      - PCIe BUS/Device/Function
+  @return  1 - P2P feature not supported 0 - P2P feature supported
+**/
+uint32_t
+val_pcie_p2p_support(uint32_t bdf)
+{
+  return pal_pcie_p2p_support(PCIE_EXTRACT_BDF_SEG (bdf),
+                                    PCIE_EXTRACT_BDF_BUS (bdf),
+                                    PCIE_EXTRACT_BDF_DEV (bdf),
+                                    PCIE_EXTRACT_BDF_FUNC (bdf));
+}
+
+/**
+  @brief   This API checks the PCIe device multifunction support
+           1. Caller       -  Test Suite
+  @param   bdf      - PCIe BUS/Device/Function
+  @return  1 - Multifunction not supported 0 - Multifunction supported
+**/
+uint32_t
+val_pcie_multifunction_support(uint32_t bdf)
+{
+  return pal_pcie_multifunction_support(PCIE_EXTRACT_BDF_SEG (bdf),
+                                        PCIE_EXTRACT_BDF_BUS (bdf),
+                                        PCIE_EXTRACT_BDF_DEV (bdf),
+                                        PCIE_EXTRACT_BDF_FUNC (bdf));
+}
+
+/**
+  @brief   This API returns the PCIe device/port type
+           1. Caller       -  Test Suite
+  @param   bdf      - PCIe BUS/Device/Function
+  @return  Returns the PCIe device/port type
+**/
+uint32_t
+val_pcie_get_pcie_type(uint32_t bdf)
+{
+  return pal_pcie_get_pcie_type(PCIE_EXTRACT_BDF_SEG (bdf),
+                                PCIE_EXTRACT_BDF_BUS (bdf),
+                                PCIE_EXTRACT_BDF_DEV (bdf),
+                                PCIE_EXTRACT_BDF_FUNC (bdf));
 }
 
 /**
@@ -475,3 +533,129 @@ val_pcie_get_dma_coherent(uint32_t bdf)
                                    PCIE_EXTRACT_BDF_FUNC (bdf));
 }
 
+/**
+  @brief  Increment the Dev/Bus number to the next valid value.
+  @param  start_bdf - Segment/Bus/Dev/Func in the format of PCIE_CREATE_BDF
+  @return the new incremented BDF
+**/
+uint32_t
+val_pcie_increment_busdev(uint32_t start_bdf)
+{
+
+  uint32_t seg = PCIE_EXTRACT_BDF_SEG(start_bdf);
+  uint32_t bus = PCIE_EXTRACT_BDF_BUS(start_bdf);
+  uint32_t dev = PCIE_EXTRACT_BDF_DEV(start_bdf);
+
+  if (dev != PCIE_MAX_DEV) {
+      dev++;
+  } else {
+      bus++;
+      dev = 0;
+  }
+
+  return PCIE_CREATE_BDF(seg, bus, dev, 0);
+}
+
+/**
+  @brief  Increment the segment/Bus/Dev/Bus number to the next valid value.
+  @param  bdf - Segment/Bus/Dev/Func in the format of PCIE_CREATE_BDF
+  @return the new incremented BDF, else 0 to indicate incorrect input
+**/
+uint32_t
+val_pcie_increment_bdf(uint32_t bdf)
+{
+
+  uint32_t seg;
+  uint32_t bus;
+  uint32_t dev;
+  uint32_t func;
+  uint32_t ecam_cnt;
+  uint32_t ecam_index = 0;
+
+  seg = PCIE_EXTRACT_BDF_SEG(bdf);
+  bus = PCIE_EXTRACT_BDF_BUS(bdf);
+  dev = PCIE_EXTRACT_BDF_DEV(bdf);
+  func = PCIE_EXTRACT_BDF_FUNC(bdf);
+
+  /* Derive the ecam index to which sbdf belongs */
+  ecam_cnt = val_pcie_get_info(PCIE_INFO_NUM_ECAM, 0);
+  while (ecam_cnt--) {
+      if (seg == val_pcie_get_info(PCIE_INFO_SEGMENT, ecam_cnt)) {
+          ecam_index = ecam_cnt;
+          break;
+      }
+  }
+
+  /* Return 0 to indicate incorrect input sbdf */
+  if (ecam_cnt < 0)
+    return 0;
+
+  /* Find the next Segment/Bus/Dev/Func */
+  if (func < (PCIE_MAX_FUNC-1)) {
+      func++;
+  } else {
+      func = 0;
+      if (dev < (PCIE_MAX_DEV-1)) {
+          dev++;
+      } else {
+          dev = 0;
+          if (bus < val_pcie_get_info(PCIE_INFO_END_BUS, ecam_index)) {
+              bus++;
+          } else {
+              if ((ecam_index+1) < val_pcie_get_info(PCIE_INFO_NUM_ECAM, 0)) {
+                  bus = val_pcie_get_info(PCIE_INFO_START_BUS, ecam_index+1);
+                  seg = val_pcie_get_info(PCIE_INFO_SEGMENT, ecam_index+1);
+              }
+              else {
+                  return 0;
+              }
+          }
+     }
+  }
+
+  return PCIE_CREATE_BDF(seg, bus, dev, func);
+}
+
+/**
+    @brief   Returns the Bus, Dev, Function in the form (seg<<24 | bus<<16 | Dev <<8 | func)
+    @param   class_code - is a 32bit value of format ClassCode << 16 | sub_class_code
+    @param   start_bdf  - is 0     : start enumeration from Host bridge
+                          is not 0 : start enumeration from the input segment, bus, dev
+                          this is needed as multiple controllers with same class code are
+                          potentially present in a system.
+    @return  the BDF of the device matching the class code
+**/
+uint32_t
+val_pcie_get_bdf(uint32_t class_code, uint32_t start_bdf)
+{
+
+  return pal_pcie_get_bdf_wrapper(class_code, start_bdf);
+}
+
+void *
+val_pci_bdf_to_dev(uint32_t bdf)
+{
+  return pal_pci_bdf_to_dev(bdf);
+}
+
+void
+val_pcie_read_ext_cap_word(uint32_t bdf, uint32_t ext_cap_id, uint8_t offset, uint16_t *val)
+{
+  pal_pcie_read_ext_cap_word(PCIE_EXTRACT_BDF_SEG (bdf),
+                             PCIE_EXTRACT_BDF_BUS(bdf),
+                             PCIE_EXTRACT_BDF_DEV(bdf),
+                             PCIE_EXTRACT_BDF_FUNC(bdf),
+                             ext_cap_id, offset, val);
+}
+
+void
+val_pci_read_config_byte(uint32_t bdf, uint8_t offset, uint8_t *val)
+{
+  pal_pci_read_config_byte(bdf, offset, val);
+}
+
+void
+val_pci_write_config_byte(uint32_t bdf, uint8_t offset, uint8_t val)
+{
+  pal_pci_write_config_byte(bdf, offset, val);
+}

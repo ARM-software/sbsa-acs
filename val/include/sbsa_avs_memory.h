@@ -21,6 +21,10 @@
 addr_t val_memory_ioremap(void *addr, uint32_t size, uint64_t attr);
 
 void val_memory_unmap(void *ptr);
-
+void *val_memory_alloc(uint32_t size);
+void *val_memory_alloc_coherent(void *dev, uint32_t size, void *pa);
+void val_memory_free(void *addr);
+void val_memory_free_coherent(void *dev, uint32_t size, void *va, void *pa);
+void *val_memory_virt_to_phys(void *va);
 
 #endif // __SBSA_AVS_PERIPHERAL_H__

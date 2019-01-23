@@ -55,7 +55,7 @@ payload (void)
 
   irq_map = kzalloc(sizeof(PERIPHERAL_IRQ_MAP), GFP_KERNEL);
   if (!irq_map) {
-    val_print (AVS_STATUS_ERR, "\n       Memory allocation error", 0);
+    val_print (AVS_PRINT_ERR, "\n       Memory allocation error", 0);
     val_set_status (index, RESULT_FAIL (g_sbsa_level, TEST_NUM, 01));
     return;
   }
@@ -110,8 +110,8 @@ payload (void)
               if (irq_map->legacy_irq_map[current_irq_pin].irq_list[ccnt] ==
                   irq_map->legacy_irq_map[next_irq_pin].irq_list[ncnt]) {
                 status = 7;
-                val_print (AVS_STATUS_ERR, "\n       Legacy interrupt %c routing", pin_name(current_irq_pin));
-                val_print (AVS_STATUS_ERR, "\n       is the same as %c routing", pin_name(next_irq_pin));
+                val_print (AVS_PRINT_ERR, "\n       Legacy interrupt %c routing", pin_name(current_irq_pin));
+                val_print (AVS_PRINT_ERR, "\n       is the same as %c routing", pin_name(next_irq_pin));
               }
             }
           }
