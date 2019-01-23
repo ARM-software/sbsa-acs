@@ -1,3 +1,11 @@
+v19.01_REL2.1
+
+* SBSA: Minor fixes in PCIe test cases 407, 412, 413, 415 and 416.
+* SBSA: Add new PCIe test cases 417, 418, 419 as per SBSA 5.0
+* SBSA: Add exerciser based tests 801 - 807 for some PCIe test scenarios. Refer to testcase-checklist.md for details.
+* SBSA: Bug fix in IORT parsing code.
+* SBBR: Bug fix in SMBIOS 3.0 table loading code.
+
 v18.11_REL2.0
 
 * SBSA 5.0 compliance tests added.
