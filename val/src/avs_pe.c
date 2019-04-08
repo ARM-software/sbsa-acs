@@ -365,16 +365,3 @@ val_pe_spe_disable(void)
 {
   DisableSpe();
 }
-
-/**
-  @brief   This API will check functional behavior of endianness.
-           1. Caller       -  Test Suite
-           2. Prerequisite -  None
-  @param   Memory location
-  @return  pass/fail status
-**/
-uint32_t
-val_pe_bigend_check(uint64_t *ptr)
-{
-  return BigEndianCheck(ptr);
-}

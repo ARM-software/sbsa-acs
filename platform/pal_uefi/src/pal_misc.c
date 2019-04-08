@@ -43,7 +43,7 @@ pal_mmio_read(UINT64 addr)
   }
   data = (*(volatile UINT32 *)addr);
 
-  sbsa_print(AVS_PRINT_INFO, L" pal_mmio_read Address = %8x  Data = %x \n", addr, data);
+  sbsa_print(AVS_PRINT_INFO, L" pal_mmio_read Address = %lx  Data = %x \n", addr, data);
 
   return data;
 }
@@ -60,7 +60,7 @@ pal_mmio_read(UINT64 addr)
 VOID
 pal_mmio_write(UINT64 addr, UINT32 data)
 {
-  sbsa_print(AVS_PRINT_INFO, L" pal_mmio_write Address = %8x  Data = %x \n", addr, data);
+  sbsa_print(AVS_PRINT_INFO, L" pal_mmio_write Address = %lx  Data = %x \n", addr, data);
   *(volatile UINT32 *)addr = data;
 
 }
