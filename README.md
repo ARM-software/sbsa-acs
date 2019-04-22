@@ -17,7 +17,7 @@ A few tests are executed by running the SBSA ACS Linux application which in turn
 
 
 ## Release details
- - Code Quality: REL v2.1
+ - Code Quality: REL v2.2
  - The tests are written for version 5.0 of the SBSA specification.
  - The compliance suite is not a substitute for design verification.
  - To review the SBSA ACS logs, ARM licensees can contact ARM directly through their partner managers.
@@ -49,7 +49,7 @@ Prebuilt images for each release are available in the prebuilt_images folder of 
     Before starting the ACS build, ensure that the following requirements are met.
 
 - Any mainstream Linux based OS distribution.
-- git clone [EDK2 tree](https://github.com/tianocore/edk2).
+- git clone the UDK2018 branch of [EDK2 tree](https://github.com/tianocore/edk2).
 - Install GCC 5.3 or later toolchain for Linux from [here](https://releases.linaro.org/components/toolchain/binaries/).
 - Install the build prerequisite packages to build EDK2. 
 Note: The details of the packages are beyond the scope of this document.
