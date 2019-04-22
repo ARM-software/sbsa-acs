@@ -1,3 +1,9 @@
+v19.04_REL2.2
+
+* SBSA: Support for SBSA baremetal template code with documentations
+* SBBR: Remove dependency UEFI membership for checking out SCT code
+* Improve flexibility in arm-enterprise-acs build process
+
 v19.01_REL2.1
 
 * SBSA: Minor fixes in PCIe test cases 407, 412, 413, 415 and 416.
