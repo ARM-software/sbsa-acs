@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2019, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -77,9 +77,9 @@ val_pcie_read_cfg(uint32_t bdf, uint32_t offset, uint32_t *data)
 
   /* There are 8 functions / device, 32 devices / Bus and each has a 4KB config space */
   cfg_addr = (bus * PCIE_MAX_DEV * PCIE_MAX_FUNC * 4096) + \
-               (dev * PCIE_MAX_FUNC * 4096) + func;
+               (dev * PCIE_MAX_FUNC * 4096) + (func * 4096);
 
-  val_print(AVS_PRINT_INFO, "   calculated config address is %x \n", ecam_base + cfg_addr + offset);
+  val_print(AVS_PRINT_INFO, "   calculated config address is %lx \n", ecam_base + cfg_addr + offset);
 
   *data = pal_mmio_read(ecam_base + cfg_addr + offset);
   return 0;
@@ -155,7 +155,7 @@ val_pcie_write_cfg(uint32_t bdf, uint32_t offset, uint32_t data)
 
   /* There are 8 functions / device, 32 devices / Bus and each has a 4KB config space */
   cfg_addr = (bus * PCIE_MAX_DEV * PCIE_MAX_FUNC * 4096) + \
-               (dev * PCIE_MAX_FUNC * 4096) + func;
+               (dev * PCIE_MAX_FUNC * 4096) + (func * 4096);
 
   pal_mmio_write(ecam_base + cfg_addr + offset, data);
 }

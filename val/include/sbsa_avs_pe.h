@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2019, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -238,8 +238,6 @@ void SpeProgramUnderProfiling(uint64_t interval, uint64_t address);
 
 void DisableSpe(void);
 
-uint32_t BigEndianCheck(uint64_t *ptr);
-
 void val_pe_update_elr(void *context, uint64_t offset);
 
 uint64_t val_pe_get_esr(void *context);
@@ -249,8 +247,6 @@ uint64_t val_pe_get_far(void *context);
 void val_pe_spe_program_under_profiling(uint64_t interval, addr_t address);
 
 void val_pe_spe_disable(void);
-
-uint32_t val_pe_bigend_check(uint64_t *ptr);
 
 void val_pe_context_save(uint64_t sp, uint64_t elr);
 void val_pe_initialize_default_exception_handler(void (*esr)(uint64_t, void *));

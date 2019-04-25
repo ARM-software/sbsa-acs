@@ -1,5 +1,5 @@
 #/** @file
-# Copyright (c) 2016-2018, Arm Limited or its affiliates. All rights reserved.
+# Copyright (c) 2016-2019, Arm Limited or its affiliates. All rights reserved.
 # SPDX-License-Identifier : Apache-2.0
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,7 +23,6 @@
 GCC_ASM_EXPORT (ArmCallWFI)
 GCC_ASM_EXPORT (SpeProgramUnderProfiling)
 GCC_ASM_EXPORT (DisableSpe)
-GCC_ASM_EXPORT (BigEndianCheck)
 
 ASM_PFX(ArmCallWFI):
   wfi
@@ -65,25 +64,3 @@ ASM_PFX(DisableSpe):
   isb
 
   ret
-
-ASM_PFX(BigEndianCheck):
-  ldr   x1,[x0]
-  ubfx  x1,x1,#24,#8
-  mrs   x2,sctlr_el2
-  ldr   x3,=0x02000000
-  eor   x2,x2,x3
-  msr   sctlr_el2,x2  // Flip the endianness
-  dsb   sy
-  isb
-  ldr   x4,[x0]
-  ubfx  x4,x4,#32,#8
-  cmp   x1,x4
-  cset  x0,eq
-
-  eor   x2,x2,x3
-  msr   sctlr_el2,x2  // Restore the endianness
-  dsb   sy
-  isb
-
-  ret
-
