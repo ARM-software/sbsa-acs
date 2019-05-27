@@ -143,6 +143,7 @@ val_platform_timer_get_entry_index(uint64_t instance, uint32_t *block, uint32_t 
       *block   = *block + 1;
   }
 }
+
 /**
   @brief   This API enables the Architecture timer whose register is given as the input parameter.
            1. Caller       -  VAL
@@ -159,6 +160,7 @@ ArmGenericTimerEnableTimer (
   uint64_t timer_ctrl_reg;
 
   timer_ctrl_reg = ArmArchTimerReadReg (reg);
+  timer_ctrl_reg &= (~ARM_ARCH_TIMER_IMASK);
   timer_ctrl_reg |= ARM_ARCH_TIMER_ENABLE;
   ArmArchTimerWriteReg (reg, &timer_ctrl_reg);
 }
@@ -179,6 +181,7 @@ ArmGenericTimerDisableTimer (
   uint64_t timer_ctrl_reg;
 
   timer_ctrl_reg = ArmArchTimerReadReg (reg);
+  timer_ctrl_reg |= ARM_ARCH_TIMER_IMASK;
   timer_ctrl_reg &= ~ARM_ARCH_TIMER_ENABLE;
   ArmArchTimerWriteReg (reg, &timer_ctrl_reg);
 }
