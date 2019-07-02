@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2019, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -102,6 +102,7 @@ typedef enum {
   TIMER_INFO_IS_PLATFORM_TIMER_SECURE,
   TIMER_INFO_SYS_CNTL_BASE,
   TIMER_INFO_SYS_CNT_BASE_N,
+  TIMER_INFO_FRAME_NUM,
   TIMER_INFO_SYS_INTID,
   TIMER_INFO_SYS_TIMER_STATUS
 }TIMER_INFO_e;

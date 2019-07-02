@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2019, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -110,7 +110,8 @@ pal_timer_create_info_table(TIMER_INFO_TABLE *TimerTable)
       sbsa_print(AVS_PRINT_DEBUG, L"CNTCTLBase = %x \n", GtEntry->block_cntl_base);
       GtBlockTimer = (EFI_ACPI_6_1_GTDT_GT_BLOCK_TIMER_STRUCTURE *)(((UINT8 *)Entry) + Entry->GTBlockTimerOffset);
       for (i = 0; i < GtEntry->timer_count; i++) {
-      sbsa_print(AVS_PRINT_INFO, L"Found timer entry \n");
+        sbsa_print(AVS_PRINT_INFO, L"Found timer entry \n");
+        GtEntry->frame_num[i]    = GtBlockTimer->GTFrameNumber;
         GtEntry->GtCntBase[i]    = GtBlockTimer->CntBaseX;
         GtEntry->GtCntEl0Base[i] = GtBlockTimer->CntEL0BaseX;
         GtEntry->gsiv[i]         = GtBlockTimer->GTxPhysicalTimerGSIV;
