@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2018, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2018-2019, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -27,7 +27,7 @@
 #define TEST_NUM   (AVS_EXERCISER_TEST_NUM_BASE + 5)
 #define TEST_DESC  "Generate PASID PCIe transactions  "
 
-#define MIN_PASID_SUPPORT (1 << 16)
+#define TEST_PASID_VALUE ((1 << 16) + (1 << 12))
 #define TEST_DATA_BLK_SIZE  512
 #define TEST_DATA 0xDE
 
@@ -55,6 +55,7 @@ payload(void)
   uint32_t start_segment;
   uint32_t start_bdf;
   uint32_t dma_len;
+  uint32_t smmu_index;
   void *src_buf_virt;
   void *src_buf_phys;
   void *dest_buf_virt;
@@ -85,6 +86,24 @@ payload(void)
     /* Increment the exerciser count with pasid support */
     e_valid_cnt++;
 
+    /* Find SMMU node index for this pcie endpoint */
+    smmu_index = val_iovirt_get_rc_smmu_index(PCIE_EXTRACT_BDF_SEG(e_bdf));
+    if (smmu_index == AVS_INVALID_INDEX) {
+        continue;
+    }
+
+    /* If the smmu already support the requested pasid,
+     * return success. Else, PAL layer has to set up the
+     * corresponding page tables correctlyi and then return
+     * to support e_pasid. Upon success return zero, else one.
+     */
+    e_pasid = TEST_PASID_VALUE;
+    if(val_smmu_create_pasid_entry(smmu_index, e_pasid)) {
+        val_print(AVS_PRINT_ERR, "\n       Exerciser %x smmu PASID enable error", instance);
+        val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
+        return;
+    }
+
     /* Program exerciser and it's root port to start sending TLPs
      * with PASID TLP Prefixes. This includes setting PASID Enable bit
      * in exerciser PASID Control register and the implementation specific
@@ -92,13 +111,6 @@ payload(void)
      */
     if(val_exerciser_ops(PASID_TLP_START, (uint64_t)&e_pasid, instance)) {
         val_print(AVS_PRINT_ERR, "\n       Exerciser %x PASID TLP Prefix enable error", instance);
-        val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
-        return;
-    }
-
-    /* Check if exerciser PASID is of minimum 16-bits width */
-    if(e_pasid < MIN_PASID_SUPPORT) {
-        val_print(AVS_PRINT_ERR, "\n       Exerciser %x PASID less than 16-bits width", instance);
         val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
         return;
     }
@@ -144,7 +156,7 @@ payload(void)
         goto test_fail;
     }
 
-    if (memcmp(src_buf_virt, dest_buf_virt, dma_len)) {
+    if (val_memory_compare(src_buf_virt, dest_buf_virt, dma_len)) {
         val_print(AVS_PRINT_ERR, "\n        Data Comparison failure for Exerciser %4x", instance);
         goto test_fail;
     }
