@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2019, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -132,7 +132,7 @@ uint32_t val_gic_request_irq(uint32_t irq_num, uint32_t mapped_irq_num, void *is
  * @param   mapped_irq_num  Mapped irq number
  * @return  none
  */
-void val_gic_free_interrupt(uint32_t irq_num, uint32_t mapped_irq_num)
+void val_gic_free_irq(uint32_t irq_num, uint32_t mapped_irq_num)
 {
-    pal_gic_free_interrupt(irq_num, mapped_irq_num);
+    pal_gic_free_irq(irq_num, mapped_irq_num);
 }

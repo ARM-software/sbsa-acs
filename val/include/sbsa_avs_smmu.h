@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2019, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -37,7 +37,17 @@ uint64_t
 val_smmu_ops(SMMU_OPS_e ops, uint32_t index, void *param1, void *param2);
 
 uint32_t
-val_smmu_max_pasids(uint64_t smmu_base);
+val_smmu_max_pasids(uint32_t smmu_index);
+
+uint32_t
+val_smmu_create_pasid_entry(uint32_t smmu_index, uint32_t pasid);
+
+uint32_t
+val_smmu_disable(uint32_t smmu_index);
+
+uint64_t
+val_smmu_pa2iova(uint32_t smmu_index, uint64_t pa);
+
 
 uint32_t
 i001_entry(uint32_t num_pe);

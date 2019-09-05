@@ -647,15 +647,3 @@ val_pcie_read_ext_cap_word(uint32_t bdf, uint32_t ext_cap_id, uint8_t offset, ui
                              PCIE_EXTRACT_BDF_FUNC(bdf),
                              ext_cap_id, offset, val);
 }
-
-void
-val_pci_read_config_byte(uint32_t bdf, uint8_t offset, uint8_t *val)
-{
-  pal_pci_read_config_byte(bdf, offset, val);
-}
-
-void
-val_pci_write_config_byte(uint32_t bdf, uint8_t offset, uint8_t val)
-{
-  pal_pci_write_config_byte(bdf, offset, val);
-}

@@ -220,6 +220,8 @@ iort_add_block(IORT_TABLE *iort, IORT_NODE *iort_node, IOVIRT_INFO_TABLE *IoVirt
 {
   UINT32 offset, *count;
   IOVIRT_BLOCK *next_block;
+  IOVIRT_BLOCK *temp_block;
+  NODE_DATA *temp_data;
   NODE_DATA_MAP *data_map = &((*block)->data_map[0]);
   NODE_DATA *data = &((*block)->data);
   VOID *node_data = &(iort_node->node_data[0]);
@@ -316,6 +318,20 @@ iort_add_block(IORT_TABLE *iort, IORT_NODE *iort_node, IOVIRT_INFO_TABLE *IoVirt
       (*data_map).map.output_ref = offset;
       data_map++;
       map++;
+
+      /* Derive the smmu base to which this RC node is connected.
+       * If the RC is behind a SMMU, save SMMU base to RC structure.
+       * Else save NULL pointer.
+       */
+      temp_block = ADD_PTR(IOVIRT_BLOCK, IoVirtTable, offset);
+      (*data).rc.smmu_base = 0;
+      if (((*block)->type == IOVIRT_NODE_PCI_ROOT_COMPLEX) &&
+           ((temp_block->type == IOVIRT_NODE_SMMU) ||
+            (temp_block->type == IOVIRT_NODE_SMMU_V3))) {
+        temp_data = &(temp_block->data);
+        (*data).rc.smmu_base = (*temp_data).smmu.base;
+      }
+
     }
   }
   /* So we successfully added a new block. Calculate its offset */
@@ -367,6 +383,7 @@ pal_iovirt_create_info_table(IOVIRT_INFO_TABLE *IoVirtTable)
   /* Point to the first IORT node */
   iort_node = ADD_PTR(IORT_NODE, iort, iort->node_offset);
   iort_end = ADD_PTR(IORT_NODE, iort, iort->header.Length);
+
   /* Create iovirt block for each IORT node*/
   for (i = 0; i < iort->node_count; i++) {
     if (iort_node >= iort_end) {
@@ -413,4 +430,31 @@ pal_iovirt_unique_rid_strid_map(UINT64 rc_block)
   if(block->flags & (1 << IOVIRT_FLAG_STRID_OVERLAP_SHIFT))
     return 0;
   return 1;
+}
+
+UINT64
+pal_iovirt_get_rc_smmu_base (
+  IOVIRT_INFO_TABLE *Iovirt,
+  UINT32 RcSegmentNum
+  )
+{
+  UINT32 i;
+  IOVIRT_BLOCK *block;
+
+  /* As per IORT acpi table, it is assumed that
+   * PCI segment numbers have a one-to-one mapping
+   * with root complexes. Each segment number can
+   * represent only one root complex.
+   */
+  block = &(Iovirt->blocks[0]);
+  for(i = 0; i < Iovirt->num_blocks; i++, block = IOVIRT_NEXT_BLOCK(block)) {
+    if (block->data.rc.segment == RcSegmentNum) {
+      return block->data.rc.smmu_base;
+    }
+  }
+
+  /* The Root Complex represented by rc_seg_num
+   * is not behind any SMMU. Return NULL pointer
+   */
+  return 0;
 }

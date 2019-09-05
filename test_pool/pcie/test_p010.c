@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2019, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -56,7 +56,7 @@ payload(void)
      {
          if(val_smmu_get_info(SMMU_CTRL_ARCH_MAJOR_REV, num_smmu) == 3)
          {
-             if((max_pasids = val_smmu_max_pasids(val_smmu_get_info(SMMU_CTRL_BASE, num_smmu))) > 0)
+             if((max_pasids = val_smmu_max_pasids(num_smmu)) > 0)
              {
                  skip = 0;
                  if(max_pasids < MIN_PASID_SUPPORT)

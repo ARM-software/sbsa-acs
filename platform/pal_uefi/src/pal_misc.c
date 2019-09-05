@@ -19,6 +19,8 @@
 #include  <Library/UefiLib.h>
 #include  <Library/ShellLib.h>
 #include  <Library/PrintLib.h>
+#include  <Library/BaseMemoryLib.h>
+
 
 #include "include/pal_uefi.h"
 
@@ -147,6 +149,42 @@ pal_mem_free(VOID *Buffer)
 }
 
 /**
+  @brief  Compare the contents of the src and dest buffers
+  @param  Src   - source buffer to be compared
+  @param  Dest  - destination buffer to be compared
+  @param  Len   - Length of the comparison to be performed
+
+  @return Zero if the buffer contecnts are same, else Nonzero
+**/
+UINT32
+pal_mem_compare (
+  VOID *Src,
+  VOID *Dest,
+  UINT32 Len
+  )
+{
+  return CompareMem (Src, Dest, Len);
+}
+
+/**
+  @brie a buffer with a known specified input value
+  @param  Buf   - Pointer to the buffer to fill
+  @param  Size  - Number of bytes in buffer to fill
+  @param  Value - Value to fill buffer with
+
+  @return None
+**/
+VOID
+pal_mem_set (
+  VOID *Buf,
+  UINT32 Size,
+  UINT8 Value
+  )
+{
+  SetMem(Buf, Size, Value);
+}
+
+/**
   @brief  Allocate memory which is to be used to share data across PEs
 
   @param  num_pe      - Number of PEs in the system
@@ -201,4 +239,41 @@ VOID
 pal_mem_free_shared()
 {
   gBS->FreePool ((VOID *)gSharedMemory);
+}
+
+VOID *
+pal_mem_alloc (
+  UINT32 Size
+  )
+{
+  return NULL;
+}
+
+VOID *
+pal_mem_alloc_coherent (
+  UINT32 Bdf,
+  UINT32 Size,
+  VOID *Pa
+  )
+{
+  return NULL;
+}
+
+VOID
+pal_mem_free_coherent (
+  UINT32 Bdf,
+  UINT32 Size,
+  VOID *Va,
+  VOID *Pa
+  )
+{
+
+}
+
+VOID *
+pal_mem_virt_to_phys (
+  VOID *Va
+  )
+{
+  return NULL;
 }

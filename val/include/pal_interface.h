@@ -136,7 +136,7 @@ void     pal_gic_create_info_table(GIC_INFO_TABLE *gic_info_table);
 uint32_t pal_gic_install_isr(uint32_t int_id, void (*isr)(void));
 void pal_gic_end_of_interrupt(uint32_t int_id);
 uint32_t pal_gic_request_irq(unsigned int irq_num, unsigned int mapped_irq_num, void *isr);
-void pal_gic_free_interrupt(unsigned int irq_num, unsigned int mapped_irq_num);
+void pal_gic_free_irq(unsigned int irq_num, unsigned int mapped_irq_num);
 uint32_t pal_gic_set_intr_trigger(uint32_t int_id, INTR_TRIGGER_INFO_TYPE_e trigger_type);
 
 
@@ -257,6 +257,7 @@ typedef struct {
   uint32_t segment;
   uint32_t ats_attr;
   uint32_t cca;          //Cache Coherency Attribute
+  uint64_t smmu_base;
 }IOVIRT_RC_INFO_BLOCK;
 
 typedef struct {
@@ -326,6 +327,7 @@ typedef struct {
 void pal_iovirt_create_info_table(IOVIRT_INFO_TABLE *iovirt);
 uint32_t pal_iovirt_check_unique_ctx_intid(uint64_t smmu_block);
 uint32_t pal_iovirt_unique_rid_strid_map(uint64_t rc_block);
+uint64_t pal_iovirt_get_rc_smmu_base(IOVIRT_INFO_TABLE *iovirt, uint32_t rc_seg_num);
 
 /**
   @brief SMMU Info Table
@@ -340,6 +342,9 @@ uint32_t pal_smmu_check_device_iova(void *port, uint64_t dma_addr);
 void     pal_smmu_device_start_monitor_iova(void *port);
 void     pal_smmu_device_stop_monitor_iova(void *port);
 uint32_t pal_smmu_max_pasids(uint64_t smmu_base);
+uint32_t pal_smmu_create_pasid_entry(uint64_t smmu_base, uint32_t pasid);
+uint32_t pal_smmu_disable(uint64_t smmu_base);
+uint64_t pal_smmu_pa2iova(uint64_t smmu_base, uint64_t pa);
 
 
 /** Peripheral Tests related definitions **/
@@ -506,9 +511,11 @@ void     pal_print_raw(uint64_t addr, char8_t *string, uint64_t data);
 
 
 void    *pal_mem_alloc(uint32_t size);
-void    *pal_mem_alloc_coherent(void *dev, unsigned int size, void *pa);
+void    *pal_mem_alloc_coherent(uint32_t bdf, uint32_t size, void *pa);
 void     pal_mem_free(void *buffer);
-void     pal_mem_free_coherent(void *dev, unsigned int size, void *va, void *pa);
+int      pal_mem_compare(void *src, void *dest, uint32_t len);
+void     pal_mem_set(void *buf, uint32_t size, uint8_t value);
+void     pal_mem_free_coherent(uint32_t bdf, unsigned int size, void *va, void *pa);
 void    *pal_mem_virt_to_phys(void *va);
 
 void     pal_mem_allocate_shared(uint32_t num_pe, uint32_t sizeofentry);
@@ -531,7 +538,7 @@ void     pal_pe_data_cache_ops_by_va(uint64_t addr, uint32_t type);
 #define EXERCISER_CLASSCODE 0x010203
 #define MAX_ARRAY_SIZE 32
 #define TEST_REG_COUNT 10
-#define TEST_DDR_REGION_CNT 5
+#define TEST_DDR_REGION_CNT 16
 
 typedef struct {
     uint64_t buf[MAX_ARRAY_SIZE];
@@ -579,8 +586,8 @@ typedef enum {
     CLEAR_INTR    = 0x6,
     PASID_TLP_START = 0x7,
     PASID_TLP_STOP  = 0x8,
-    NO_SNOOP_TLP_START = 0x9,
-    NO_SNOOP_TLP_STOP  = 0xa
+    NO_SNOOP_CLEAR_TLP_START = 0x9,
+    NO_SNOOP_CLEAR_TLP_STOP  = 0xa
 } EXERCISER_OPS;
 
 typedef enum {
