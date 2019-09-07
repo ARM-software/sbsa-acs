@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2018, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2018-2019, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,6 +19,7 @@
 
 #include "val/include/sbsa_avs_pcie_enumeration.h"
 #include "val/include/sbsa_avs_pcie.h"
+#include "val/include/sbsa_avs_memory.h"
 #include "val/include/sbsa_avs_exerciser.h"
 
 #define TEST_NUM   (AVS_EXERCISER_TEST_NUM_BASE + 4)
@@ -59,7 +60,7 @@ free_msi_list (PERIPHERAL_VECTOR_LIST *list)
   current_node = list;
   while (current_node != NULL) {
     next_node = current_node->next;
-    kfree (current_node);
+    val_memory_free(current_node);
     current_node = next_node;
   }
 }
@@ -71,9 +72,6 @@ payload (void)
 
   uint32_t count = val_peripheral_get_info (NUM_ALL, 0);
   uint32_t index = val_pe_get_index_mpid (val_pe_get_mpid());
-  uint8_t status;
-  PERIPHERAL_VECTOR_LIST *current_dev_mvec;
-  PERIPHERAL_VECTOR_LIST *next_dev_mvec;
   uint32_t e_bdf = 0;
   uint32_t start_bus;
   uint32_t start_segment;
@@ -88,10 +86,6 @@ payload (void)
      val_set_status (index, RESULT_SKIP (g_sbsa_level, TEST_NUM, 3));
      return;
   }
-
-  status = 0;
-  current_dev_mvec = NULL;
-  next_dev_mvec = NULL;
 
   /* Read the number of excerciser cards */
   instance = val_exerciser_get_info(EXERCISER_NUM_CARDS, 0);
@@ -143,13 +137,13 @@ payload (void)
                 if (timeout == 0) {
                     val_print(AVS_PRINT_ERR, "\n Interrupt trigger failed for instance %4x   ", instance);
                     val_set_status(index, RESULT_FAIL (g_sbsa_level, TEST_NUM, 02));
-                    val_gic_free_interrupt(irq_num, mapped_irq_num);
+                    val_gic_free_irq(irq_num, mapped_irq_num);
                     free_msi_list(temp_mvec);
                     return;
                 }
 
                 /* Return the interrupt */
-                val_gic_free_interrupt(irq_num, mapped_irq_num);
+                val_gic_free_irq(irq_num, mapped_irq_num);
             }
 
             e_mvec = e_mvec->next;

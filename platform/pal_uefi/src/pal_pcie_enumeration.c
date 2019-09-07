@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2019, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -53,7 +53,6 @@ incrementBusDev(UINT32 StartBdf)
 
   return PCIE_CREATE_BDF(Seg, Bus, Dev, 0);
 }
-
 
 /**
     @brief   Returns the Bus, Dev, Function (in the form seg<<24 | bus<<16 | Dev <<8 | func)
@@ -124,6 +123,26 @@ palPcieGetBdf(UINT32 ClassCode, UINT32 StartBdf)
   return 0;
 }
 
+/**
+    @brief   Returns the Bus, Dev, Function (in the form seg<<24 | bus<<16 | Dev <<8 | func)
+             for a matching class code.
+
+    @param   ClassCode  - is a 32bit value of format ClassCode << 16 | sub_class_code
+    @param   StartBdf   - is 0     : start enumeration from Host bridge
+                          is not 0 : start enumeration from the input segment, bus, dev
+                          this is needed as multiple controllers with same class code are
+                          potentially present in a system.
+    @return  the BDF of the device matching the class code
+**/
+UINT32
+pal_pcie_get_bdf_wrapper (
+  UINT32 ClassCode,
+  UINT32 StartBdf
+  )
+{
+
+  return palPcieGetBdf(ClassCode, StartBdf);
+}
 
 /**
   @brief  This API returns the Base Address Register value for a given BDF and index
@@ -176,3 +195,20 @@ palPcieGetBase(UINT32 bdf, UINT32 bar_index)
   return 0;
 }
 
+VOID *
+pal_pci_bdf_to_dev (
+ UINT32 Bdf
+  )
+{
+  return NULL;
+}
+
+VOID
+pal_pci_read_config_byte (
+  UINT32 Bdf,
+  UINT8 Offset,
+  UINT8 *Val
+  )
+{
+
+}
