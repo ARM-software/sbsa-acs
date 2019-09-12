@@ -129,6 +129,8 @@ val_pe_reg_read(uint32_t reg_id)
           return AA64ReadSctlr3();
       case SCTLR_EL2:
           return AA64ReadSctlr2();
+      case SCTLR_EL1:
+          return AA64ReadSctlr1();
       case PMCR_EL0:
           return AA64ReadPmcr();
       case ID_AA64DFR0_EL1:
