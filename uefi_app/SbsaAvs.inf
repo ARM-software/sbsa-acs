@@ -1,5 +1,5 @@
 ## @file
-#  Copyright (c) 2016-2018, Arm Limited or its affiliates. All rights reserved.
+#  Copyright (c) 2016-2019, Arm Limited or its affiliates. All rights reserved.
 #  SPDX-License-Identifier : Apache-2.0
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
@@ -92,6 +92,13 @@
   ../test_pool/peripherals/test_d003.c
   ../test_pool/peripherals/test_m001.c
   ../test_pool/peripherals/test_m002.c
+  ../test_pool/exerciser/test_e001.c
+  ../test_pool/exerciser/test_e002.c
+  ../test_pool/exerciser/test_e003.c
+  ../test_pool/exerciser/test_e004.c
+  ../test_pool/exerciser/test_e005.c
+  ../test_pool/exerciser/test_e006.c
+  ../test_pool/exerciser/test_e007.c
 
 [Packages]
   EmbeddedPkg/EmbeddedPkg.dec

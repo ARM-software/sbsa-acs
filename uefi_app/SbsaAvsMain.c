@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2019, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -432,6 +432,9 @@ ShellAppMain (
 
   Print(L"\n      *** Starting IO Virtualization tests ***  \n");
   Status |= val_smmu_execute_tests(g_sbsa_level, val_pe_get_num());
+
+  Print(L"\n      *** Starting PCIe Exerciser tests ***  \n");
+  Status |= val_exerciser_execute_tests(g_sbsa_level);
 
 print_test_status:
   val_print(AVS_PRINT_TEST, "\n     ------------------------------------------------------- \n", 0);

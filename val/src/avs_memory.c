@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2019, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -187,9 +187,9 @@ val_memory_alloc(uint32_t size)
 }
 
 void *
-val_memory_alloc_coherent(void *dev, uint32_t size, void *pa)
+val_memory_alloc_coherent(uint32_t bdf, uint32_t size, void *pa)
 {
-  return pal_mem_alloc_coherent(dev, size, pa);
+  return pal_mem_alloc_coherent(bdf, size, pa);
 }
 
 void
@@ -198,10 +198,22 @@ val_memory_free(void *addr)
   pal_mem_free(addr);
 }
 
-void
-val_memory_free_coherent(void *dev, uint32_t size, void *va, void *pa)
+int
+val_memory_compare(void *src, void *dest, uint32_t len)
 {
-  pal_mem_free_coherent(dev, size, va, pa);
+  return pal_mem_compare(src, dest, len);
+}
+
+void
+val_memory_set(void *buf, uint32_t size, uint8_t value)
+{
+  pal_mem_set(buf, size, value);
+}
+
+void
+val_memory_free_coherent(uint32_t bdf, uint32_t size, void *va, void *pa)
+{
+  pal_mem_free_coherent(bdf, size, va, pa);
 }
 
 void *

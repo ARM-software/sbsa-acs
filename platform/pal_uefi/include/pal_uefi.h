@@ -82,6 +82,14 @@ typedef enum {
   ENTRY_TYPE_GICITS
 }GIC_INFO_TYPE_e;
 
+/* Interrupt Trigger Type */
+typedef enum {
+  INTR_TRIGGER_INFO_LEVEL_LOW,
+  INTR_TRIGGER_INFO_LEVEL_HIGH,
+  INTR_TRIGGER_INFO_EDGE_FALLING,
+  INTR_TRIGGER_INFO_EDGE_RISING
+}INTR_TRIGGER_INFO_TYPE_e;
+
 /**
   @brief  structure instance for GIC entry
 **/
@@ -176,6 +184,9 @@ typedef struct {
   PCIE_INFO_BLOCK block[];
 }PCIE_INFO_TABLE;
 
+VOID *pal_pci_bdf_to_dev(UINT32 bdf);
+VOID pal_pci_read_config_byte(UINT32 bdf, UINT8 offset, UINT8 *data);
+
 /**
   @brief  Instance of SMMU INFO block
 **/
@@ -188,6 +199,7 @@ typedef struct {
   UINT32 segment;
   UINT32 ats_attr;
   UINT32 cca;             //Cache Coherency Attribute
+  UINT64 smmu_base;
 }IOVIRT_RC_INFO_BLOCK;
 
 typedef struct {
@@ -300,6 +312,42 @@ typedef struct {
   PERIPHERAL_INFO_BLOCK   info[]; ///< Array of Information blocks - instantiated for each peripheral
 }PERIPHERAL_INFO_TABLE;
 
+/**
+  @brief MSI(X) controllers info structure
+**/
+
+typedef struct {
+  UINT32         vector_upper_addr; ///< Bus Device Function
+  UINT32         vector_lower_addr; ///< Base Address of the controller
+  UINT32         vector_data;       ///< Base Address of the controller
+  UINT32         vector_control;    ///< IRQ to install an ISR
+  UINT32         vector_irq_base;   ///< Base IRQ for the vectors in the block
+  UINT32         vector_n_irqs;     ///< Number of irq vectors in the block
+  UINT32         vector_mapped_irq_base; ///< Mapped IRQ number base for this MSI
+}PERIPHERAL_VECTOR_BLOCK;
+
+typedef struct PERIPHERAL_VECTOR_LIST_STRUCT
+{
+  PERIPHERAL_VECTOR_BLOCK vector;
+  struct PERIPHERAL_VECTOR_LIST_STRUCT *next;
+}PERIPHERAL_VECTOR_LIST;
+
+UINT32 pal_get_msi_vectors (UINT32 seg, UINT32 bus, UINT32 dev, UINT32 fn, PERIPHERAL_VECTOR_LIST **mvector);
+
+#define LEGACY_PCI_IRQ_CNT 4  // Legacy PCI IRQ A, B, C. and D
+#define MAX_IRQ_CNT 0xFFFF    // This value is arbitrary and may have to be adjusted
+
+typedef struct {
+  UINT32  irq_list[MAX_IRQ_CNT];
+  UINT32  irq_count;
+} PERIFERAL_IRQ_LIST;
+
+typedef struct {
+  PERIFERAL_IRQ_LIST  legacy_irq_map[LEGACY_PCI_IRQ_CNT];
+} PERIPHERAL_IRQ_MAP;
+
+UINT32 pal_pcie_get_root_port_bdf(UINT32 *seg, UINT32 *bus, UINT32 *dev, UINT32 *func);
+
 /* Memory INFO table */
 typedef enum {
   MEMORY_TYPE_DEVICE = 0x1000,
@@ -327,5 +375,10 @@ typedef struct {
 
 
 VOID  pal_memory_create_info_table(MEMORY_INFO_TABLE *memoryInfoTable);
+
+VOID    *pal_mem_alloc(UINT32 size);
+VOID    *pal_mem_alloc_coherent(UINT32 bdf, UINT32 size, VOID *pa);
+VOID    pal_mem_free_coherent(UINT32 bdf, UINT32 size, VOID *va, VOID *pa);
+VOID    *pal_mem_virt_to_phys(VOID *va);
 
 #endif

@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2019, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,6 +16,7 @@
  **/
 
 #include "val/include/sbsa_avs_val.h"
+#include "val/include/sbsa_avs_pe.h"
 #include "val/include/val_interface.h"
 
 #include "val/include/sbsa_avs_wakeup.h"
@@ -303,10 +304,13 @@ u001_entry(uint32_t num_pe)
       val_run_test_payload(TEST_NUM2, num_pe, payload2, 0);
   status |= val_check_for_error(TEST_NUM2, num_pe);
 
-  status_test = val_initialize_test(TEST_NUM3, TEST_DESC3, num_pe, g_sbsa_level);
-  if (status_test != AVS_STATUS_SKIP)
-      val_run_test_payload(TEST_NUM3, num_pe, payload3, 0);
-  status |= val_check_for_error(TEST_NUM3, num_pe);
+  /* Run this test if current exception level is EL2 */
+  if (val_pe_reg_read(CurrentEL) == AARCH64_EL2) {
+      status_test = val_initialize_test(TEST_NUM3, TEST_DESC3, num_pe, g_sbsa_level);
+      if (status_test != AVS_STATUS_SKIP)
+          val_run_test_payload(TEST_NUM3, num_pe, payload3, 0);
+      status |= val_check_for_error(TEST_NUM3, num_pe);
+  }
 
   status_test = val_initialize_test(TEST_NUM4, TEST_DESC4, num_pe, g_sbsa_level);
   if (status_test != AVS_STATUS_SKIP)
