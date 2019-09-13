@@ -21,7 +21,7 @@
 
 
   #define SBSA_ACS_MAJOR_VER  2
-  #define SBSA_ACS_MINOR_VER  2
+  #define SBSA_ACS_MINOR_VER  3
 
   #define G_SBSA_LEVEL  3
   #define SBSA_MAX_LEVEL_SUPPORTED 5
