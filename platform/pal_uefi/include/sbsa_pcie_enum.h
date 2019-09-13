@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2019, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -35,5 +35,11 @@ palPcieGetBdf(UINT32 class_code, UINT32 start_busdev);
 
 UINT64
 palPcieGetBase(UINT32 bdf, UINT32 bar_index);
+
+VOID *
+pal_pci_bdf_to_dev(UINT32 bdf);
+
+VOID
+pal_pci_read_config_byte(UINT32 bdf, UINT8 offset, UINT8 *val);
 
 #endif

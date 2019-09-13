@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2019, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -33,6 +33,8 @@
 #define AVS_STATUS_ERR  0xEDCB1234  //some impropable value?
 #define AVS_STATUS_SKIP 0x10000000
 #define AVS_STATUS_PASS 0x0
+
+#define AVS_INVALID_INDEX 0xFFFFFFFF
 
 #define VAL_EXTRACT_BITS(data, start, end) ((data >> start) & ((1ul << (end-start+1))-1))
 
@@ -84,7 +86,7 @@ uint32_t val_gic_get_interrupt_state(uint32_t int_id);
 void val_gic_clear_interrupt(uint32_t int_id);
 void val_gic_cpuif_init(void);
 uint32_t val_gic_request_irq(uint32_t irq_num, uint32_t mapped_irq_num, void *isr);
-void val_gic_free_interrupt(uint32_t irq_num, uint32_t mapped_irq_num);
+void val_gic_free_irq(uint32_t irq_num, uint32_t mapped_irq_num);
 void val_gic_set_intr_trigger(uint32_t int_id, INTR_TRIGGER_INFO_TYPE_e trigger_type);
 
 /*TIMER VAL APIs */
@@ -102,6 +104,7 @@ typedef enum {
   TIMER_INFO_IS_PLATFORM_TIMER_SECURE,
   TIMER_INFO_SYS_CNTL_BASE,
   TIMER_INFO_SYS_CNT_BASE_N,
+  TIMER_INFO_FRAME_NUM,
   TIMER_INFO_SYS_INTID,
   TIMER_INFO_SYS_TIMER_STATUS
 }TIMER_INFO_e;
@@ -180,9 +183,9 @@ typedef enum {
 
 void     val_iovirt_create_info_table(uint64_t *iovirt_info_table);
 void     val_iovirt_free_info_table(void);
+uint32_t val_iovirt_get_rc_smmu_index(uint32_t rc_seg_num);
 uint32_t val_smmu_execute_tests(uint32_t level, uint32_t num_pe);
 uint64_t val_smmu_get_info(SMMU_INFO_e, uint32_t index);
-
 
 typedef enum {
     DMA_NUM_CTRL = 1,
@@ -290,5 +293,8 @@ void     val_secure_call_smc(SBSA_SMC_t *smc);
 uint32_t val_secure_get_result(SBSA_SMC_t *smc, uint32_t timeout);
 uint32_t val_secure_execute_tests(uint32_t level, uint32_t num_pe);
 uint32_t val_secure_trusted_firmware_init(void);
+
+/* PCIe Exerciser tests */
+uint32_t val_exerciser_execute_tests(uint32_t level);
 
 #endif

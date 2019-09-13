@@ -29,6 +29,9 @@
 #define EXCEPT_AARCH64_FIQ                       2
 #define EXCEPT_AARCH64_SERROR                    3
 
+// AArch64 Exception Level
+#define AARCH64_EL2  0x8
+#define AARCH64_EL1  0x4
 
 typedef enum {
   MPIDR_EL1 = 1,
@@ -44,6 +47,7 @@ typedef enum {
   ID_AA64ISAR1_EL1,
   SCTLR_EL3,
   SCTLR_EL2,
+  SCTLR_EL1,
   PMCR_EL0,
   PMOVSSET_EL0,
   PMOVSCLR_EL0,
@@ -117,6 +121,8 @@ uint64_t AA64ReadIsar1(void);
 uint64_t AA64ReadSctlr3(void);
 
 uint64_t AA64ReadSctlr2(void);
+
+uint64_t AA64ReadSctlr1(void);
 
 uint64_t AA64ReadPmcr(void);
 

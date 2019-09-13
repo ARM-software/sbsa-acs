@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2019, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -263,4 +263,24 @@ void
 val_iovirt_free_info_table()
 {
   pal_mem_free((void *)g_iovirt_info_table);
+}
+
+uint32_t
+val_iovirt_get_rc_smmu_index(uint32_t rc_seg_num)
+{
+
+  uint32_t num_smmu;
+  uint64_t smmu_base;
+
+  smmu_base = pal_iovirt_get_rc_smmu_base(g_iovirt_info_table, rc_seg_num);
+  if (smmu_base) {
+      num_smmu = val_smmu_get_info(SMMU_NUM_CTRL, 0);
+      while (num_smmu--) {
+          if (smmu_base == val_smmu_get_info(SMMU_CTRL_BASE, num_smmu))
+              return num_smmu;
+      }
+  }
+
+  val_print(AVS_PRINT_ERR, "RC with segment number %d is not behind any SMMU", rc_seg_num);
+  return AVS_INVALID_INDEX;
 }

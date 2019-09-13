@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2019, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,6 +16,7 @@
  **/
 
 #include "include/sbsa_avs_val.h"
+#include "include/sbsa_avs_pe.h"
 #include "include/sbsa_avs_timer_support.h"
 #include "include/sbsa_avs_timer.h"
 #include "include/sbsa_avs_common.h"
@@ -46,7 +47,12 @@ val_timer_execute_tests(uint32_t level, uint32_t num_pe)
   status = t001_entry(num_pe);
   status |= t002_entry(num_pe);
   status |= t003_entry(num_pe);
-  status |= t004_entry(num_pe);
+
+  /* Run this test if current exception level is EL2 */
+  if (val_pe_reg_read(CurrentEL) == AARCH64_EL2) {
+      status |= t004_entry(num_pe);
+  }
+
   status |= t005_entry(num_pe);
   status |= t006_entry(num_pe);
   status_sys_timer = t007_entry(num_pe);
@@ -110,6 +116,10 @@ val_timer_get_info(TIMER_INFO_e info_type, uint64_t instance)
           val_platform_timer_get_entry_index (instance, &block_num, &block_index);
           if (block_num != 0xFFFF)
               return g_timer_info_table->gt_info[block_num].GtCntBase[block_index];
+      case TIMER_INFO_FRAME_NUM:
+	  val_platform_timer_get_entry_index (instance, &block_num, &block_index);
+          if (block_num != 0xFFFF)
+              return g_timer_info_table->gt_info[block_num].frame_num[block_index];
       case TIMER_INFO_SYS_INTID:
           val_platform_timer_get_entry_index (instance, &block_num, &block_index);
           if (block_num != 0xFFFF)
@@ -143,6 +153,7 @@ val_platform_timer_get_entry_index(uint64_t instance, uint32_t *block, uint32_t 
       *block   = *block + 1;
   }
 }
+
 /**
   @brief   This API enables the Architecture timer whose register is given as the input parameter.
            1. Caller       -  VAL
@@ -159,6 +170,7 @@ ArmGenericTimerEnableTimer (
   uint64_t timer_ctrl_reg;
 
   timer_ctrl_reg = ArmArchTimerReadReg (reg);
+  timer_ctrl_reg &= (~ARM_ARCH_TIMER_IMASK);
   timer_ctrl_reg |= ARM_ARCH_TIMER_ENABLE;
   ArmArchTimerWriteReg (reg, &timer_ctrl_reg);
 }
@@ -179,6 +191,7 @@ ArmGenericTimerDisableTimer (
   uint64_t timer_ctrl_reg;
 
   timer_ctrl_reg = ArmArchTimerReadReg (reg);
+  timer_ctrl_reg |= ARM_ARCH_TIMER_IMASK;
   timer_ctrl_reg &= ~ARM_ARCH_TIMER_ENABLE;
   ArmArchTimerWriteReg (reg, &timer_ctrl_reg);
 }
@@ -342,16 +355,20 @@ val_timer_skip_if_cntbase_access_not_allowed(uint64_t index)
 {
   uint64_t cnt_ctl_base;
   uint32_t data;
+  uint32_t frame_num = 0;
 
   cnt_ctl_base = val_timer_get_info(TIMER_INFO_SYS_CNTL_BASE, index);
+  frame_num = val_timer_get_info(TIMER_INFO_FRAME_NUM, index);
+
   if(cnt_ctl_base){
-      data = val_mmio_read(cnt_ctl_base + 0x40);
+      /* should we also check if this frame is non-secure before accessing this register? */
+      data = val_mmio_read(cnt_ctl_base + 0x40 + frame_num * 4);
       if((data & 0x1) == 0x1)
           return 0;
       else{
           data |= 0x1;
-          val_mmio_write(cnt_ctl_base + 0x40, data);
-          data = val_mmio_read(cnt_ctl_base + 0x40);
+          val_mmio_write(cnt_ctl_base + 0x40 + frame_num * 4, data);
+          data = val_mmio_read(cnt_ctl_base + 0x40 + frame_num * 4);
           if((data & 0x1) == 1)
               return 0;
           else

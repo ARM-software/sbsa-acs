@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2018, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2018-2019, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,33 +14,136 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  **/
+
+
+/* First test sequence - Initialize a main memory region marked as WB,
+ * outer shareable by the PE page tables. CPU Write to this region with
+ * new data and ensure that the new data is cached in the CPU caches.
+ * Read the same data locations from the Exerciser with NS=0. The
+ * exerciser should get the latest data (hardware enforced cache coherency
+ * expected).
+ *
+ * Second test sequence - Initialize a main memory region marked as WB,
+ * outer shareable by the PE page tables. CPU reads these locations and
+ * ensures that the data is cached in its caches. Exerciser Writes to
+ * this region with new data and with NS=0. CPU reads the same data
+ * locations. The CPU should get the latest data (hardware enforced
+ * cache coherency expected).
+ *
+ * The above cases verify exerciser dma data check (both read and write)
+ * The test assume PCIe RC addr space is within PE outer shareable domain.
+ */
+
 #include "val/include/sbsa_avs_val.h"
 #include "val/include/val_interface.h"
 #include "val/include/sbsa_avs_memory.h"
 #include "val/include/sbsa_avs_exerciser.h"
 
+#include "val/include/sbsa_avs_smmu.h"
 #include "val/include/sbsa_avs_pcie.h"
 #include "val/include/sbsa_avs_pcie_enumeration.h"
 
 #define TEST_NUM   (AVS_EXERCISER_TEST_NUM_BASE + 7)
 #define TEST_DESC  "Check PCI Express I/O Coherency   "
 
-#define TEST_DATA_BLK_SIZE  512
-#define TEST_DATA 0xDE
+#define TEST_DATA_BLK_SIZE  (4*1024)
+#define KNOWN_DATA 0xDE
+#define NEW_DATA 0xAD
 
-#define MEM_ATTR_CACHEABLE_SHAREABLE 0
-#define MEM_ATTR_NON_CACHEABLE 1
 
-void init_source_buf_data(void *buf, uint32_t size)
+uint32_t test_sequence2(void *dram_buf1_virt, void *dram_buf1_phys, uint32_t e_bdf, uint32_t instance)
 {
 
-  uint32_t index;
+  uint32_t dma_len;
+  void *dram_buf2_virt;
+  void *dram_buf2_phys;
 
-  for (index = 0; index < size; index++) {
-    *((char8_t *)buf + index) = TEST_DATA;
+  /* Set up a second dram buffer to send NEW_DATA to exerciser memory */
+  dram_buf2_virt = dram_buf1_virt + (TEST_DATA_BLK_SIZE / 2);
+  dram_buf2_phys = dram_buf1_phys + (TEST_DATA_BLK_SIZE / 2);
+  dma_len = TEST_DATA_BLK_SIZE / 2;
+
+  /* Write dram_buf1 with known data, this causes caching of the buffer */
+  val_memory_set(dram_buf1_virt, dma_len, KNOWN_DATA);
+
+  /* Write dram_buf2 with known data and flush the buffer to main memory */
+  val_memory_set(dram_buf2_virt, dma_len, NEW_DATA);
+  val_data_cache_ops_by_va((addr_t)dram_buf2_virt, CLEAN_AND_INVALIDATE);
+
+  /* Perform DMA OUT to copy contents of dram_buf2 to exerciser memory */
+  val_exerciser_set_param(DMA_ATTRIBUTES, (uint64_t)dram_buf2_phys, dma_len, instance);
+  if (val_exerciser_ops(START_DMA, EDMA_TO_DEVICE, instance)) {
+      val_print(AVS_PRINT_ERR, "\n      DMA write failure to exerciser %4x", instance);
+      return 1;
   }
 
+  /* Perform DMA IN to copy content back from exerciser memory to dram_buf1 */
+  val_exerciser_set_param(DMA_ATTRIBUTES, (uint64_t)dram_buf1_phys, dma_len, instance);
+  if (val_exerciser_ops(START_DMA, EDMA_FROM_DEVICE, instance)) {
+      val_print(AVS_PRINT_ERR, "\n      DMA read failure from exerciser %4x", instance);
+      return 1;
+  }
+
+  /* Invalidate dram_buf1 and dram_buf2 contents present in CPU caches */
+  val_data_cache_ops_by_va((addr_t)dram_buf1_virt, INVALIDATE);
+  val_data_cache_ops_by_va((addr_t)dram_buf2_virt, INVALIDATE);
+
+  /* Compare the contents of ddr_buf1 and ddr_buf2 for NEW_DATA */
+  if (val_memory_compare(dram_buf1_virt, dram_buf2_virt, dma_len)) {
+      val_print(AVS_PRINT_ERR, "\n        I/O coherency failure for Exerciser %4x", instance);
+      return 1;
+  }
+
+  /* Return success */
+  return 0;
 }
+
+uint32_t test_sequence1(void *dram_buf1_virt, void *dram_buf1_phys, uint32_t e_bdf, uint32_t instance)
+{
+
+  uint32_t dma_len;
+  void *dram_buf2_virt;
+
+  dram_buf2_virt = dram_buf1_virt + (TEST_DATA_BLK_SIZE / 2);
+  dma_len = TEST_DATA_BLK_SIZE / 2;
+
+  /* Write dram_buf1 with known data and flush the buffer to main memory */
+  val_memory_set(dram_buf1_virt, dma_len, KNOWN_DATA);
+  val_data_cache_ops_by_va((addr_t)dram_buf1_virt, CLEAN_AND_INVALIDATE);
+
+  /* Write dram_buf1 cache with new data, don't flush the data to main memory */
+  val_memory_set(dram_buf1_virt, dma_len, NEW_DATA);
+
+  /* Perform DMA OUT to copy contents of dram_buf1 to exerciser memory */
+  val_exerciser_set_param(DMA_ATTRIBUTES, (uint64_t)dram_buf1_phys, dma_len, instance);
+  if (val_exerciser_ops(START_DMA, EDMA_TO_DEVICE, instance)) {
+      val_print(AVS_PRINT_ERR, "\n      DMA write failure to exerciser %4x", instance);
+      return 1;
+  }
+
+  /* Perform DMA IN to copy the content from exerciser memory to dram_buf1 */
+  val_exerciser_set_param(DMA_ATTRIBUTES, (uint64_t)dram_buf1_phys, dma_len, instance);
+  if (val_exerciser_ops(START_DMA, EDMA_FROM_DEVICE, instance)) {
+      val_print(AVS_PRINT_ERR, "\n      DMA read failure from exerciser %4x", instance);
+      return 1;
+  }
+
+  /* Write dram_buf2 with NEW_DATA to compare dram_buf1 content */
+  val_memory_set(dram_buf2_virt, dma_len, NEW_DATA);
+
+  /* Invalidate dram_buf1 contents present in CPU caches */
+  val_data_cache_ops_by_va((addr_t)dram_buf1_virt, INVALIDATE);
+
+  /* Compare the contents of ddr_buf1 and ddr_buf2 for NEW_DATA */
+  if (val_memory_compare(dram_buf1_virt, dram_buf2_virt, dma_len)) {
+      val_print(AVS_PRINT_ERR, "\n        I/O coherency failure for Exerciser %4x", instance);
+      return 1;
+  }
+
+  /* Return success */
+  return 0;
+}
+
 
 static
 void
@@ -49,20 +152,17 @@ payload (void)
 
   uint32_t pe_index;
   uint32_t instance;
-  uint32_t dma_len;
   uint32_t e_bdf;
   uint32_t start_segment;
   uint32_t start_bus;
   uint32_t start_bdf;
-  void *e_dev;
-  void *src_buf_virt;
-  void *src_buf_phys;
-  void *dest_buf_virt;
-  void *dest_buf_phys;
+  uint32_t smmu_index;
+  void *dram_buf1_virt;
+  void *dram_buf1_phys;
 
-  e_dev = NULL;
-  src_buf_virt = NULL;
-  src_buf_phys = NULL;
+  dram_buf1_virt = NULL;
+  dram_buf1_phys = NULL;
+
   pe_index = val_pe_get_index_mpid (val_pe_get_mpid());
 
   /* Read the number of excerciser cards */
@@ -79,67 +179,62 @@ payload (void)
     e_bdf = val_pcie_get_bdf(EXERCISER_CLASSCODE, start_bdf);
     start_bdf = val_pcie_increment_bdf(e_bdf);
 
-    /* Derive exerciser device structure from its bdf */
-    e_dev = val_pci_bdf_to_dev(e_bdf);
+    /* Find SMMU node index for this exerciser instance */
+    smmu_index = val_iovirt_get_rc_smmu_index(PCIE_EXTRACT_BDF_SEG(e_bdf));
 
-    /* Get a non-caheable DDR Buffer of size TEST_DATA_BLK_SIZE */
-    src_buf_virt = val_memory_alloc_coherent(e_dev, TEST_DATA_BLK_SIZE, src_buf_phys);
-    if (!src_buf_virt) {
-      val_print(AVS_PRINT_ERR, "\n      Non-cacheable mem alloc failure %x", 02);
+    /* Disable SMMU globally so that the transaction passes
+     * through the SMMU without any address modification.
+     * Global attributes, such as memory type or Shareability,
+     * might be applied from the SMMU_GBPA register of the SMMU.
+     * Or, the SMMU_GBPA register might be configured to abort
+     * all transactions. Do this only if the RC is behind an SMMU.
+     */
+    if (smmu_index != AVS_INVALID_INDEX) {
+        if(val_smmu_disable(smmu_index)) {
+            val_print(AVS_PRINT_ERR, "\n       Exerciser %x smmu disable error", instance);
+            val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
+            return;
+        }
+    }
+
+    /* Get a WB, outer shareable DDR Buffer of size TEST_DATA_BLK_SIZE */
+    dram_buf1_virt = val_memory_alloc_coherent(e_bdf, TEST_DATA_BLK_SIZE, dram_buf1_phys);
+    if (!dram_buf1_virt) {
+      val_print(AVS_PRINT_ERR, "\n      WB and OSH mem alloc failure %x", 02);
       val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
       return;
     }
 
-    /* Program exerciser to start sending TLPs  with No Snoop attribute header.
-     * This includes setting Enable No snoop bit in exerciser control register.
+    /* Program exerciser hierarchy to start sending/receiving TLPs
+     * with No Snoop attribute header. This includes enabling
+     * No snoop bit in exerciser control register.
      */
-    if(val_exerciser_ops(NO_SNOOP_TLP_START, 0, instance)) {
-      val_print(AVS_PRINT_ERR, "\n       Exerciser %x No Snoop enable error", instance);
-      goto test_fail;
+    if (val_exerciser_ops(NO_SNOOP_CLEAR_TLP_START, 0, instance)) {
+       val_print(AVS_PRINT_ERR, "\n       Exerciser %x No Snoop enable error", instance);
+       goto test_fail;
     }
 
-    /* Set VA and PA addresses for the destination buffer and DMA size */
-    dest_buf_virt = src_buf_virt + (TEST_DATA_BLK_SIZE / 2);
-    dest_buf_phys = src_buf_phys + (TEST_DATA_BLK_SIZE / 2);
-    dma_len = TEST_DATA_BLK_SIZE / 2;
+    if (test_sequence1(dram_buf1_virt, dram_buf1_phys, e_bdf, instance) ||
+            test_sequence2(dram_buf1_virt, dram_buf1_phys, e_bdf, instance))
+        goto test_fail;
 
-    /* Initialize source buffer with test specific data */
-    init_source_buf_data(src_buf_virt, dma_len);
-
-    /* Program Exerciser DMA controller with the source buffer information */
-    val_exerciser_set_param(DMA_ATTRIBUTES, (uint64_t)src_buf_phys, dma_len, instance);
-    if (val_exerciser_ops(START_DMA, EDMA_TO_DEVICE, instance)) {
-      val_print(AVS_PRINT_ERR, "\n      DMA write failure to exerciser %4x", instance);
-      goto test_fail;
-    }
-
-    /* READ Back from Exerciser to validate above DMA write */
-    val_exerciser_set_param(DMA_ATTRIBUTES, (uint64_t)dest_buf_phys, dma_len, instance);
-    if (val_exerciser_ops(START_DMA, EDMA_FROM_DEVICE, instance)) {
-      val_print(AVS_PRINT_ERR, "\n      DMA read failure from exerciser %4x", instance);
-      goto test_fail;
-    }
-
-    if (memcmp(src_buf_virt, dest_buf_virt, dma_len)) {
-      val_print(AVS_PRINT_ERR, "\n        I/O coherency failure for Exerciser %4x", instance);
-      goto test_fail;
-    }
-
-    /* Stop exerciser sending TLPs with No Snoop attribute header */
-    if (val_exerciser_ops(NO_SNOOP_TLP_STOP, 0, instance)) {
+    /* Stop exerciser hierarchy sending/receiving TLPs with No Snoop attribute header */
+    if (val_exerciser_ops(NO_SNOOP_CLEAR_TLP_STOP, 0, instance)) {
         val_print(AVS_PRINT_ERR, "\n       Exerciser %x No snoop TLP disable error", instance);
         goto test_fail;
     }
 
+    /* Return this exerciser dma memory back to the heap manager */
+    val_memory_free_coherent(e_bdf, TEST_DATA_BLK_SIZE, dram_buf1_virt, dram_buf1_phys);
+
   }
 
   val_set_status(pe_index, RESULT_PASS(g_sbsa_level, TEST_NUM, 0));
-  val_memory_free_coherent(e_dev, TEST_DATA_BLK_SIZE, src_buf_virt, src_buf_phys);
   return;
 
 test_fail:
   val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
-  val_memory_free_coherent(e_dev, TEST_DATA_BLK_SIZE, src_buf_virt, src_buf_phys);
+  val_memory_free_coherent(e_bdf, TEST_DATA_BLK_SIZE, dram_buf1_virt, dram_buf1_phys);
   return;
 }
 

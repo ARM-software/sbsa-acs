@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2019, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -165,4 +165,48 @@ pal_pcie_read_cfg(UINT32 Bdf, UINT32 offset, UINT32 *data)
     }
   }
   return PCIE_READ_ERR;
+}
+
+/* Place holder function. Need to be
+ * implemented if needed in later releases
+ */
+UINT32
+pal_get_msi_vectors (
+  UINT32 Seg,
+  UINT32 Bus,
+  UINT32 Dev,
+  UINT32 Fn,
+  PERIPHERAL_VECTOR_LIST **MVector
+  )
+{
+  return 0;
+}
+
+/* Place holder function. Need to be
+ * implemented if needed in later releases
+ */
+UINT32
+pal_pcie_get_legacy_irq_map (
+  UINT32 Seg,
+  UINT32 Bus,
+  UINT32 Dev,
+  UINT32 Fn,
+  PERIPHERAL_IRQ_MAP *IrqMap
+  )
+{
+  return 0;
+}
+
+/* Place holder function. Need to be
+ * implemented if needed in later releases
+ */
+UINT32
+pal_pcie_get_root_port_bdf (
+  UINT32 *Seg,
+  UINT32 *Bus,
+  UINT32 *Dev,
+  UINT32 *Func
+  )
+{
+  return 0;
 }
