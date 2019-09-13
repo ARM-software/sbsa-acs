@@ -1,3 +1,7 @@
+v19.09_REL2.3
+* SBSA: PCI Express Exerciser Enhancements
+* SBSA: EL1 Exception Level Support for QEMU Default Configurations
+
 v19.04_REL2.2
 
 * SBSA: Support for baremetal templates with documentation.
