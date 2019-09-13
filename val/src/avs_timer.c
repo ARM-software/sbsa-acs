@@ -16,6 +16,7 @@
  **/
 
 #include "include/sbsa_avs_val.h"
+#include "include/sbsa_avs_pe.h"
 #include "include/sbsa_avs_timer_support.h"
 #include "include/sbsa_avs_timer.h"
 #include "include/sbsa_avs_common.h"
@@ -46,7 +47,12 @@ val_timer_execute_tests(uint32_t level, uint32_t num_pe)
   status = t001_entry(num_pe);
   status |= t002_entry(num_pe);
   status |= t003_entry(num_pe);
-  status |= t004_entry(num_pe);
+
+  /* Run this test if current exception level is EL2 */
+  if (val_pe_reg_read(CurrentEL) == AARCH64_EL2) {
+      status |= t004_entry(num_pe);
+  }
+
   status |= t005_entry(num_pe);
   status |= t006_entry(num_pe);
   status_sys_timer = t007_entry(num_pe);

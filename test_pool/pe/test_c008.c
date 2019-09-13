@@ -29,7 +29,12 @@ payload()
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
 
   /* Check the current endianness setting of SCTLR.EE */
-  data = val_pe_reg_read(SCTLR_EL2);
+  if (val_pe_reg_read(CurrentEL) == AARCH64_EL2) {
+      data = val_pe_reg_read(SCTLR_EL2);
+  } else if (val_pe_reg_read(CurrentEL) == AARCH64_EL1) {
+      data = val_pe_reg_read(SCTLR_EL1);
+  }
+
   if (((data >> 25) & 1) == 0) //Bit 25 must be 0
       val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 02));
   else
