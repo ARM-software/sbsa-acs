@@ -89,7 +89,7 @@ edk2_path /Build/Shell/DEBUG_GCC49/AARCH64/Sbsa.efi
 
 The execution of the compliance suite varies depending on the test environment. These steps assume that the test suite is invoked through the ACS UEFI shell application.
 
-For details about the SBSA ACS UEFI Shell application, see [SBSA ACS USER Guide](docs/SBSA_ACS_User_Guide.pdf)
+For details about the SBSA ACS UEFI Shell application, see [SBSA ACS USER Guide](docs/Arm_SBSA_Architecture_Compliance_User_Guide.pdf)
 
 ### Post-Silicon
 
@@ -101,7 +101,7 @@ On a system where a USB port is available and functional, perform the following 
 4. To determine the file system number of the plugged in USB drive, execute 'map -r' command. 
 5. Type 'fsx' where 'x' is replaced by the number determined in step 4.
 6. To start the compliance tests, run the executable Sbsa.efi with the appropriate parameters. 
-   For details on the parameters, refer to [SBSA ACS User Guide](docs/SBSA_ACS_User_Guide.pdf)
+   For details on the parameters, refer to [SBSA ACS User Guide](docs/Arm_SBSA_Architecture_Compliance_User_Guide.pdf)
 7. Copy the UART console output to a log file for analysis and certification.
 
 
@@ -118,7 +118,7 @@ On an emulation environment with secondary storage, perform the following steps:
 4. To determine the file system number of the secondary storage, execute 'map -r' command. 
 5. Type 'fsx' where 'x' is replaced by the number determined in step 4.
 6. To start the compliance tests, run the executable Sbsa.efi with the appropriate parameters. 
-   For details on the parameters, see [SBSA ACS User Guide](docs/SBSA_ACS_User_Guide.pdf)
+   For details on the parameters, see [SBSA ACS User Guide](docs/Arm_SBSA_Architecture_Compliance_User_Guide.pdf)
 7. Copy the UART console output to a log file for analysis and certification.
 
 
@@ -129,12 +129,14 @@ On an Emulation platform where secondary storage is not available, perform the f
 1. Add the path to 'Sbsa.efi' file in the UEFI FD file.
 2. Build UEFI image including the UEFI Shell.
 3. Boot the system to UEFI shell.
-4. Run the executable 'Sbsa.efi' to start the compliance tests. For details about the parameters, see [SBSA ACS User Guide](docs/SBSA_ACS_User_Guide.pdf).
+4. Run the executable 'Sbsa.efi' to start the compliance tests. For details about the parameters,
+   see [SBSA ACS User Guide](docs/Arm_SBSA_Architecture_Compliance_User_Guide.pdf).
 5. Copy the UART console output to a log file for analysis and certification.
 
 
 ## Linux OS-based tests
-Certain PCIe and IOMMU tests require Linux operating system with kernel version 4.10 or above. The procedure to build and run these tests is described in [SBSA ACS User Guide](docs/SBSA_ACS_User_Guide.pdf).
+Certain PCIe and IOMMU tests require Linux operating system with kernel version 4.10 or above.
+The procedure to build and run these tests is described in [SBSA ACS User Guide](docs/Arm_SBSA_Architecture_Compliance_User_Guide.pdf).
 
 
 ## License
