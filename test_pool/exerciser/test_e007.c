@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2018-2019, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2018-2020, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -153,9 +153,6 @@ payload (void)
   uint32_t pe_index;
   uint32_t instance;
   uint32_t e_bdf;
-  uint32_t start_segment;
-  uint32_t start_bus;
-  uint32_t start_bdf;
   uint32_t smmu_index;
   void *dram_buf1_virt;
   void *dram_buf1_phys;
@@ -168,16 +165,10 @@ payload (void)
   /* Read the number of excerciser cards */
   instance = val_exerciser_get_info(EXERCISER_NUM_CARDS, 0);
 
-  /* Set start_bdf segment and bus numbers to 1st ecam region values */
-  start_segment = val_pcie_get_info(PCIE_INFO_SEGMENT, 0);
-  start_bus = val_pcie_get_info(PCIE_INFO_START_BUS, 0);
-  start_bdf = PCIE_CREATE_BDF(start_segment, start_bus, 0, 0);
-
   while (instance-- != 0) {
 
     /* Get the exerciser BDF */
-    e_bdf = val_pcie_get_bdf(EXERCISER_CLASSCODE, start_bdf);
-    start_bdf = val_pcie_increment_bdf(e_bdf);
+    e_bdf = val_exerciser_get_bdf(instance);
 
     /* Find SMMU node index for this exerciser instance */
     smmu_index = val_iovirt_get_rc_smmu_index(PCIE_EXTRACT_BDF_SEG(e_bdf));
@@ -200,7 +191,7 @@ payload (void)
     /* Get a WB, outer shareable DDR Buffer of size TEST_DATA_BLK_SIZE */
     dram_buf1_virt = val_memory_alloc_coherent(e_bdf, TEST_DATA_BLK_SIZE, dram_buf1_phys);
     if (!dram_buf1_virt) {
-      val_print(AVS_PRINT_ERR, "\n      WB and OSH mem alloc failure %x", 02);
+      val_print(AVS_PRINT_ERR, "\n       WB and OSH mem alloc failure %x", 02);
       val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
       return;
     }

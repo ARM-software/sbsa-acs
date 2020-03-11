@@ -67,7 +67,7 @@ payload(void)
 
       bdf = PCIE_CREATE_BDF(segment, bus, 0, 0);
       ret = val_pcie_read_cfg(bdf, PCIE_VENDOR_ID_REG_OFFSET, &data);
-      if (data == 0xFFFFFFFF) {
+      if (data == PCIE_UNKNOWN_RESPONSE) {
           val_print(AVS_PRINT_ERR, "\n      First device in a ECAM space is not a valid device", 0);
            val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, (bus << 8)));
            return;
@@ -81,7 +81,7 @@ payload(void)
            ret = val_pcie_read_cfg(bdf, PCIE_VENDOR_ID_REG_OFFSET, &data);
 
            //If this is really PCIe CFG space, Device ID and Vendor ID cannot be 0 or 0xFFFF
-           if (ret == PCIE_READ_ERR || (data == 0) || ((data != 0xFFFFFFFF) && ((data & 0xFFFF) == 0xFFFF))) {
+           if (ret == PCIE_NO_MAPPING || (data == 0) || ((data & 0xFFFF) == 0xFFFF)) {
               val_print(AVS_PRINT_ERR, "\n      Incorrect data at ECAM Base %4x    ", data);
               val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, (bus_index << 8)|dev_index));
               return;
@@ -90,7 +90,7 @@ payload(void)
            ret = val_pcie_read_cfg(bdf, PCIE_CACHE_LINE_SIZE_REG_OFFSET, &data);
 
            //If this really is PCIe CFG, Header type[6:0] must be 01 or 00
-           if (ret == PCIE_READ_ERR || ((data != 0xFFFFFFFF) && (((data >> 16) & 0x7F) > 01))) {
+           if (ret == PCIE_NO_MAPPING || (((data >> 16) & 0x7F) > 01)) {
               val_print(AVS_PRINT_ERR, "\n      Incorrect PCIe CFG Hdr type %4x    ", data);
               val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, (bus_index << 8)|dev_index));
               return;

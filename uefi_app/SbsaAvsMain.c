@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2019, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2020, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -31,8 +31,10 @@
 
 
 UINT32  g_sbsa_level;
+UINT32  g_enable_pcie_tests;
 UINT32  g_print_level;
 UINT32  g_execute_secure;
+UINT32  g_execute_nist;
 UINT32  g_skip_test_num[3] = {10000, 10000, 10000};
 UINT32  g_sbsa_tests_total;
 UINT32  g_sbsa_tests_pass;
@@ -238,7 +240,7 @@ HelpMsg (
   VOID
   )
 {
-  Print (L"\nUsage: Sbsa.efi [-v <n>] | [-l <n>] | [-f <filename>] | [-s] | [-skip <n>]\n"
+  Print (L"\nUsage: Sbsa.efi [-v <n>] | [-l <n>] | [-f <filename>] | [-s] | [-skip <n>] | [-nist] | [-p <n>]\n"
          "Options:\n"
          "-v      Verbosity of the Prints\n"
          "        1 shows all prints, 5 shows Errors\n"
@@ -250,6 +252,9 @@ HelpMsg (
          "        Refer to section 4 of SBSA_ACS_User_Guide\n"
          "        To skip a module, use Model_ID as mentioned in user guide\n"
          "        To skip a particular test within a module, use the exact testcase number\n"
+	 "-nist   Enable the NIST Statistical test suite\n"
+         "-p      Enable/disable PCIe SBSA 6.0 (RCiEP) compliance tests\n"
+         "        1 - enables PCIe tests, 0 - disables PCIe tests\n"
   );
 }
 
@@ -261,9 +266,10 @@ STATIC CONST SHELL_PARAM_ITEM ParamList[] = {
   {L"-skip" , TypeValue},    // -skip # test(s) to skip execution
   {L"-help" , TypeFlag},     // -help # help : info about commands
   {L"-h"    , TypeFlag},     // -h    # help : info about commands
+  {L"-nist" , TypeFlag},     // -nist # Binary Flag to enable the execution of NIST STS
+  {L"-p"    , TypeValue},    // -p    # Enable/disable PCIe SBSA 6.0 (RCiEP) compliance tests.
   {NULL     , TypeMax}
   };
-
 
 /***
   SBSA Compliance Suite Entry Point.
@@ -275,7 +281,7 @@ STATIC CONST SHELL_PARAM_ITEM ParamList[] = {
 ***/
 INTN
 EFIAPI
-ShellAppMain (
+ShellAppMainsbsa (
   IN UINTN Argc,
   IN CHAR16 **Argv
   )
@@ -301,30 +307,25 @@ ShellAppMain (
     return SHELL_INVALID_PARAMETER;
   }
 
-  for (i=1 ; i<Argc ; i++) {
-    if(StrCmp(Argv[i], L"-skip") == 0){
-      CmdLineArg = Argv[i+1];
-      i = 0;
-      break;
-    }
-  }
-
-  if (i == 0){
-    for (i=0 ; i < StrLen(CmdLineArg) ; i++){
-      g_skip_test_num[0] = StrDecimalToUintn((CONST CHAR16 *)(CmdLineArg+0));
-      if(*(CmdLineArg+i) == L','){
-        g_skip_test_num[++j] = StrDecimalToUintn((CONST CHAR16 *)(CmdLineArg+i+1));
+  // Options with Values
+  if (ShellCommandLineGetFlag (ParamPackage, L"-skip")) {
+      CmdLineArg  = ShellCommandLineGetValue (ParamPackage, L"-skip");
+      for (i=0 ; i < StrLen(CmdLineArg) ; i++){
+        g_skip_test_num[0] = StrDecimalToUintn((CONST CHAR16 *)(CmdLineArg+0));
+          if(*(CmdLineArg+i) == L','){
+              g_skip_test_num[++j] = StrDecimalToUintn((CONST CHAR16 *)(CmdLineArg+i+1));
+          }
       }
-    }
   }
 
+  // Options with Flag
   if (ShellCommandLineGetFlag (ParamPackage, L"-s")) {
     g_execute_secure = TRUE;
   } else {
     g_execute_secure = FALSE;
   }
 
-    // Options with Values
+  // Options with Values
   CmdLineArg  = ShellCommandLineGetValue (ParamPackage, L"-l");
   if (CmdLineArg == NULL) {
     g_sbsa_level = G_SBSA_LEVEL;
@@ -361,10 +362,32 @@ ShellAppMain (
   }
 
 
-    // Options with Values
+  // Options with Flags
   if ((ShellCommandLineGetFlag (ParamPackage, L"-help")) || (ShellCommandLineGetFlag (ParamPackage, L"-h"))){
      HelpMsg();
      return 0;
+  }
+
+  // Options with Flags
+  if (ShellCommandLineGetFlag (ParamPackage, L"-nist")) {
+    g_execute_nist = TRUE;
+  } else {
+    g_execute_nist = FALSE;
+  }
+
+  // Options with Values
+  CmdLineArg  = ShellCommandLineGetValue (ParamPackage, L"-p");
+  if (CmdLineArg == NULL) {
+      if (g_sbsa_level >= 4)
+          g_enable_pcie_tests = 1;
+      else
+          g_enable_pcie_tests = 0;
+  } else {
+      g_enable_pcie_tests = StrDecimalToUintn(CmdLineArg);
+      if (g_enable_pcie_tests != 1 && g_enable_pcie_tests != 0) {
+          Print(L"Invalid PCIe option.\nEnter \"-p 1\" to enable or \"-p 0\" to disable PCIe SBSA 6.0 (RCiEP) tests\n", g_enable_pcie_tests);
+          return 0;
+      }
   }
 
   //
@@ -376,7 +399,6 @@ ShellAppMain (
 
   Print(L"\n\n SBSA Architecture Compliance Suite \n");
   Print(L"    Version %d.%d  \n", SBSA_ACS_MAJOR_VER, SBSA_ACS_MINOR_VER);
-
 
   Print(L"\n Starting tests for level %2d (Print level is %2d)\n\n", g_sbsa_level, g_print_level);
 
@@ -422,7 +444,7 @@ ShellAppMain (
   Status |= val_wd_execute_tests(g_sbsa_level, val_pe_get_num());
 
   Print(L"\n      *** Starting PCIe tests ***  \n");
-  Status |= val_pcie_execute_tests(g_sbsa_level, val_pe_get_num());
+  Status |= val_pcie_execute_tests(g_enable_pcie_tests, g_sbsa_level, val_pe_get_num());
 
   Print(L"\n      *** Starting Power and Wakeup semantic tests ***  \n");
   Status |= val_wakeup_execute_tests(g_sbsa_level, val_pe_get_num());
@@ -435,6 +457,13 @@ ShellAppMain (
 
   Print(L"\n      *** Starting PCIe Exerciser tests ***  \n");
   Status |= val_exerciser_execute_tests(g_sbsa_level);
+
+  #ifdef ENABLE_NIST
+  if (g_execute_nist == TRUE) {
+    Print(L"\n      ***  Starting NIST statistical tests***  \n");
+    Status |= val_nist_execute_tests(g_sbsa_level, val_pe_get_num());
+  }
+  #endif
 
 print_test_status:
   val_print(AVS_PRINT_TEST, "\n     ------------------------------------------------------- \n", 0);
@@ -455,3 +484,24 @@ print_test_status:
 
   return(0);
 }
+
+#ifndef ENABLE_NIST
+/***
+  SBSA Compliance Suite Entry Point. This function is to
+  support compilation of SBSA without NIST changes in edk2
+
+  Call the Entry points of individual modules.
+
+  @retval  0         The application exited normally.
+  @retval  Other     An error occurred.
+***/
+INTN
+EFIAPI
+ShellAppMain(
+  IN UINTN Argc,
+  IN CHAR16 **Argv
+  )
+{
+ return ShellAppMainsbsa(Argc, Argv);
+}
+#endif

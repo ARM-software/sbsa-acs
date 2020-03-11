@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2019, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2020, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -29,12 +29,12 @@
 #define AVS_PRINT_INFO  1      /* Print all statements. Do not use unless really needed */
 
 
-#define AVS_STATUS_FAIL 0x90000000
-#define AVS_STATUS_ERR  0xEDCB1234  //some impropable value?
-#define AVS_STATUS_SKIP 0x10000000
-#define AVS_STATUS_PASS 0x0
-
-#define AVS_INVALID_INDEX 0xFFFFFFFF
+#define AVS_STATUS_FAIL      0x90000000
+#define AVS_STATUS_ERR       0xEDCB1234  //some impropable value?
+#define AVS_STATUS_SKIP      0x10000000
+#define AVS_STATUS_PASS      0x0
+#define AVS_STATUS_NIST_PASS 0x1
+#define AVS_INVALID_INDEX    0xFFFFFFFF
 
 #define VAL_EXTRACT_BITS(data, start, end) ((data >> start) & ((1ul << (end-start+1))-1))
 
@@ -45,8 +45,10 @@ void val_print(uint32_t level, char8_t *string, uint64_t data);
 void val_print_raw(uint32_t level, char8_t *string, uint64_t data);
 void val_set_test_data(uint32_t index, uint64_t addr, uint64_t test_data);
 void val_get_test_data(uint32_t index, uint64_t *data0, uint64_t *data1);
+uint32_t val_strncmp(char8_t *str1, char8_t *str2, uint32_t len);
+void    *val_memcpy(void *dest_buffer, void *src_buffer, uint32_t len);
 
-
+uint64_t val_time_delay_ms(uint64_t time_ms);
 
 /* VAL PE APIs */
 uint32_t val_pe_execute_tests(uint32_t level, uint32_t num_pe);
@@ -88,6 +90,8 @@ void val_gic_cpuif_init(void);
 uint32_t val_gic_request_irq(uint32_t irq_num, uint32_t mapped_irq_num, void *isr);
 void val_gic_free_irq(uint32_t irq_num, uint32_t mapped_irq_num);
 void val_gic_set_intr_trigger(uint32_t int_id, INTR_TRIGGER_INFO_TYPE_e trigger_type);
+uint32_t val_gic_request_msi(uint32_t bdf, uint32_t IntID, uint32_t msi_index);
+void val_gic_free_msi(uint32_t bdf, uint32_t IntID, uint32_t msi_index);
 
 /*TIMER VAL APIs */
 typedef enum {
@@ -143,14 +147,35 @@ void     val_wd_set_ws0(uint32_t index, uint32_t timeout);
 
 /* PCIE VAL APIs */
 void     val_pcie_create_info_table(uint64_t *pcie_info_table);
+uint32_t val_pcie_create_device_bdf_table(void);
+addr_t val_pcie_get_ecam_base(uint32_t rp_bdf);
+void *val_pcie_bdf_table_ptr(void);
 void     val_pcie_free_info_table(void);
-uint32_t val_pcie_execute_tests(uint32_t level, uint32_t num_pe);
+uint32_t val_pcie_execute_tests(uint32_t enable_pcie, uint32_t level, uint32_t num_pe);
 uint32_t val_pcie_is_devicedma_64bit(uint32_t bdf);
 uint32_t val_pcie_scan_bridge_devices_and_check_memtype(uint32_t bdf);
 void val_pcie_read_ext_cap_word(uint32_t bdf, uint32_t ext_cap_id, uint8_t offset, uint16_t *val);
 uint32_t val_pcie_get_pcie_type(uint32_t bdf);
 uint32_t val_pcie_p2p_support(uint32_t bdf);
 uint32_t val_pcie_multifunction_support(uint32_t bdf);
+uint32_t val_pcie_is_onchip_peripheral(uint32_t bdf);
+uint32_t val_pcie_device_port_type(uint32_t bdf);
+uint32_t val_pcie_find_capability(uint32_t bdf, uint32_t cid_type,
+                                           uint32_t cid, uint32_t *cid_offset);
+void val_pcie_disable_bme(uint32_t bdf);
+void val_pcie_enable_bme(uint32_t bdf);
+void val_pcie_disable_msa(uint32_t bdf);
+void val_pcie_enable_msa(uint32_t bdf);
+void val_pcie_clear_urd(uint32_t bdf);
+uint32_t val_pcie_is_urd(uint32_t bdf);
+void val_pcie_disable_eru(uint32_t bdf);
+uint32_t val_pcie_bitfield_check(uint32_t bdf, uint64_t *bf_entry);
+uint32_t val_pcie_register_bitfields_check(uint64_t *bf_info_table, uint32_t table_size);
+uint32_t val_pcie_function_header_type(uint32_t bdf);
+void val_pcie_get_mmio_bar(uint32_t bdf, void *base);
+uint32_t val_pcie_get_downstream_function(uint32_t bdf, uint32_t *dsf_bdf);
+uint32_t val_pcie_get_rootport(uint32_t bdf, uint32_t *rp_bdf);
+uint8_t val_pcie_parent_is_rootport(uint32_t dsf_bdf, uint32_t *rp_bdf);
 
 /* IO-VIRT APIs */
 typedef enum {
@@ -297,4 +322,7 @@ uint32_t val_secure_trusted_firmware_init(void);
 /* PCIe Exerciser tests */
 uint32_t val_exerciser_execute_tests(uint32_t level);
 
+/* NIST Statistical tests */
+uint32_t val_nist_execute_tests(uint32_t level, uint32_t num_pe);
+uint32_t val_nist_generate_rng(uint32_t *rng_buffer);
 #endif

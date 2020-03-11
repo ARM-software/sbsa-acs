@@ -27,7 +27,11 @@ extern UINT32 g_print_level;
 #define AVS_PRINT_DEBUG 2      /* For Debug statements. contains register dumps etc */
 #define AVS_PRINT_INFO  1      /* Print all statements. Do not use unless really needed */
 
-#define PCIE_READ_ERR -1
+#define PCIE_SUCCESS            0x00000000  /* Operation completed successfully */
+#define PCIE_NO_MAPPING         0x10000001  /* A mapping to a Function does not exist */
+#define PCIE_CAP_NOT_FOUND      0x10000010  /* The specified capability was not found */
+#define PCIE_UNKNOWN_RESPONSE   0xFFFFFFFF  /* Function not found or UR response from completer */
+
 
 typedef struct {
   UINT64   Arg0;

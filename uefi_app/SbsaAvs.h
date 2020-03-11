@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2019, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2020, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,9 +21,9 @@
 
 
   #define SBSA_ACS_MAJOR_VER  2
-  #define SBSA_ACS_MINOR_VER  3
+  #define SBSA_ACS_MINOR_VER  4
 
-  #define G_SBSA_LEVEL  3
+  #define G_SBSA_LEVEL  4
   #define SBSA_MAX_LEVEL_SUPPORTED 5
   #define G_PRINT_LEVEL AVS_PRINT_TEST
 
@@ -36,5 +36,9 @@
   #define PERIPHERAL_INFO_TBL_SZ 1024 /*Supports maximum 20 PCIe EPs (USB and SATA controllers only) */
   #define PCIE_INFO_TBL_SZ       512  /*Supports maximum 20 RC's*/
 
+  #ifdef _AARCH64_BUILD_
+  unsigned long __stack_chk_guard = 0xBAAAAAAD;
+  unsigned long __stack_chk_fail =  0xBAAFAAAD;
+  #endif
 
 #endif

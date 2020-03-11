@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2019, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2020, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -237,4 +237,29 @@ pal_gic_free_irq (
   )
 {
 
+}
+
+/* Place holder function. Need to be
+ * implemented if needed in later releases
+ */
+UINT32
+pal_gic_request_msi (
+  UINT32    bdf,
+  UINT32    IntID,
+  UINT32    msi_index
+  )
+{
+    return 0xFFFFFFFF;
+}
+
+/* Place holder function. Need to be
+ * implemented if needed in later releases
+ */
+VOID
+pal_gic_free_msi (
+  UINT32    bdf,
+  UINT32    IntID,
+  UINT32    msi_index
+  )
+{
 }

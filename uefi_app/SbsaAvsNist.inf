@@ -1,0 +1,164 @@
+## @file
+#  Copyright (c) 2020, Arm Limited or its affiliates. All rights reserved.
+#  SPDX-License-Identifier : Apache-2.0
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+##
+
+
+[Defines]
+  INF_VERSION                    = 0x00010006
+  BASE_NAME                      = Sbsa
+  FILE_GUID                      = a912f198-7f0e-4803-b908-b757b806ec83
+  MODULE_TYPE                    = UEFI_APPLICATION
+  VERSION_STRING                 = 0.1
+  ENTRY_POINT                    = ShellCEntryLib
+
+#
+#  VALID_ARCHITECTURES           = AARCH64
+#
+
+[Sources.AARCH64]
+  ../
+  SbsaAvsMain.c
+  ../test_pool/secure/test_s001.c
+  ../test_pool/secure/test_s002.c
+  ../test_pool/secure/test_s003.c
+  ../test_pool/pe/test_c001.c
+  ../test_pool/pe/test_c002.c
+  ../test_pool/pe/test_c003.c
+  ../test_pool/pe/test_c004.c
+  ../test_pool/pe/test_c005.c
+  ../test_pool/pe/test_c006.c
+  ../test_pool/pe/test_c007.c
+  ../test_pool/pe/test_c008.c
+  ../test_pool/pe/test_c009.c
+  ../test_pool/pe/test_c010.c
+  ../test_pool/pe/test_c011.c
+  ../test_pool/pe/test_c012.c
+  ../test_pool/pe/test_c013.c
+  ../test_pool/pe/test_c014.c
+  ../test_pool/pe/test_c015.c
+  ../test_pool/pe/test_c016.c
+  ../test_pool/pe/test_c017.c
+  ../test_pool/pe/test_c018.c
+  ../test_pool/pe/test_c019.c
+  ../test_pool/pe/test_c020.c
+  ../test_pool/pe/test_c021.c
+  ../test_pool/pe/test_c022.c
+  ../test_pool/pe/test_c023.c
+  ../test_pool/pe/test_c024.c
+  ../test_pool/pe/test_c025.c
+  ../test_pool/pe/test_c026.c
+  ../test_pool/pe/test_c027.c
+  ../test_pool/pe/test_c028.c
+  ../test_pool/gic/test_g001.c
+  ../test_pool/gic/test_g002.c
+  ../test_pool/gic/test_g003.c
+  ../test_pool/gic/test_g004.c
+  ../test_pool/timer_wd/test_t001.c
+  ../test_pool/timer_wd/test_t002.c
+  ../test_pool/timer_wd/test_t003.c
+  ../test_pool/timer_wd/test_t004.c
+  ../test_pool/timer_wd/test_t005.c
+  ../test_pool/timer_wd/test_t006.c
+  ../test_pool/timer_wd/test_t007.c
+  ../test_pool/timer_wd/test_t008.c
+  ../test_pool/timer_wd/test_w001.c
+  ../test_pool/timer_wd/test_w002.c
+  ../test_pool/pcie/test_p001.c
+  ../test_pool/pcie/test_p002.c
+  ../test_pool/pcie/test_p020.c
+  ../test_pool/pcie/test_p021.c
+  ../test_pool/pcie/test_p022.c
+  ../test_pool/pcie/test_p023.c
+  ../test_pool/pcie/test_p024.c
+  ../test_pool/pcie/test_p025.c
+  ../test_pool/pcie/test_p026.c
+  ../test_pool/pcie/test_p027.c
+  ../test_pool/pcie/test_p028.c
+  ../test_pool/pcie/test_p029.c
+  ../test_pool/pcie/test_p030.c
+  ../test_pool/pcie/test_p031.c
+  ../test_pool/pcie/test_p032.c
+  ../test_pool/pcie/test_p033.c
+  ../test_pool/pcie/test_p034.c
+  ../test_pool/pcie/test_p035.c
+  ../test_pool/pcie/test_p036.c
+  ../test_pool/pcie/test_p037.c
+  ../test_pool/pcie/test_p038.c
+  ../test_pool/pcie/test_p039.c
+  ../test_pool/pcie/test_p040.c
+  ../test_pool/pcie/test_p041.c
+  ../test_pool/pcie/test_p042.c
+  ../test_pool/pcie/test_p043.c
+  ../test_pool/pcie/test_p044.c
+  ../test_pool/pcie/test_p045.c
+  ../test_pool/io_virt/test_i001.c
+  ../test_pool/io_virt/test_i002.c
+  ../test_pool/io_virt/test_i003.c
+  ../test_pool/io_virt/test_i004.c
+  ../test_pool/io_virt/test_i005.c
+  ../test_pool/io_virt/test_i006.c
+  ../test_pool/power_wakeup/test_u001.c
+  ../test_pool/power_wakeup/test_u002.c
+  ../test_pool/peripherals/test_d001.c
+  ../test_pool/peripherals/test_d002.c
+  ../test_pool/peripherals/test_d003.c
+  ../test_pool/peripherals/test_m001.c
+  ../test_pool/peripherals/test_m002.c
+  ../test_pool/exerciser/test_e001.c
+  ../test_pool/exerciser/test_e002.c
+  ../test_pool/exerciser/test_e003.c
+  ../test_pool/exerciser/test_e004.c
+  ../test_pool/exerciser/test_e005.c
+  ../test_pool/exerciser/test_e006.c
+  ../test_pool/exerciser/test_e007.c
+  ../test_pool/exerciser/test_e008.c
+  ../test_pool/exerciser/test_e009.c
+  ../test_pool/exerciser/test_e010.c
+  ../test_pool/nist_sts/test_n001.c
+
+[Packages]
+  StdLib/StdLib.dec
+  EmbeddedPkg/EmbeddedPkg.dec
+  MdePkg/MdePkg.dec
+  MdeModulePkg/MdeModulePkg.dec
+  ShellPkg/ShellPkg.dec
+  EdkCompatibilityPkg/EdkCompatibilityPkg.dec
+
+[LibraryClasses]
+  SbsaNistLib
+  SbsaValNistLib
+  SbsaPalNistLib
+  UefiLib
+  ShellLib
+  DebugLib
+  BaseMemoryLib
+  ShellCEntryLib
+  UefiBootServicesTableLib
+  UefiRuntimeServicesTableLib
+
+[Protocols]
+  gEfiAcpiTableProtocolGuid                     ## CONSUMES
+  gHardwareInterruptProtocolGuid                ## CONSUMES
+  gEfiCpuArchProtocolGuid                       ## CONSUMES
+  gEfiPciIoProtocolGuid                         ## CONSUMES
+  gEfiLoadedImageProtocolGuid                   ## CONSUMES
+
+[Guids]
+  gEfiAcpi20TableGuid
+  gEfiAcpiTableGuid
+
+[BuildOptions]
+  GCC:*_*_*_ASM_FLAGS  =  -march=armv8.1-a
