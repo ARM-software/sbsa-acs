@@ -51,9 +51,6 @@ payload(void)
   uint32_t e_valid_cnt;
   uint32_t e_pasid;
   uint64_t e_pasid_support;
-  uint32_t start_bus;
-  uint32_t start_segment;
-  uint32_t start_bdf;
   uint32_t dma_len;
   uint32_t smmu_index;
   void *src_buf_virt;
@@ -66,16 +63,10 @@ payload(void)
   pe_index = val_pe_get_index_mpid (val_pe_get_mpid());
   instance = val_exerciser_get_info(EXERCISER_NUM_CARDS, 0);
 
-  /* Set start_bdf segment and bus numbers to 1st ecam region values */
-  start_segment = val_pcie_get_info(PCIE_INFO_SEGMENT, 0);
-  start_bus = val_pcie_get_info(PCIE_INFO_START_BUS, 0);
-  start_bdf = PCIE_CREATE_BDF(start_segment, start_bus, 0, 0);
-
   while (instance-- != 0) {
 
     /* Get exerciser bdf */
-    e_bdf = val_pcie_get_bdf(EXERCISER_CLASSCODE, start_bdf);
-    start_bdf = val_pcie_increment_bdf(e_bdf);
+    e_bdf = val_exerciser_get_bdf(instance);
 
     /* Check if exerciser and it's root port have PASID TLP Prefix support */
     val_exerciser_get_param(PASID_ATTRIBUTES, &e_bdf, &e_pasid_support, instance);

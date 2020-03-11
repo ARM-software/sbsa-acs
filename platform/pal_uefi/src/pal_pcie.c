@@ -143,7 +143,7 @@ pal_pcie_read_cfg(UINT32 Bdf, UINT32 offset, UINT32 *data)
   Status = gBS->LocateHandleBuffer (ByProtocol, &gEfiPciIoProtocolGuid, NULL, &HandleCount, &HandleBuffer);
   if (EFI_ERROR (Status)) {
     sbsa_print(AVS_PRINT_INFO,L"No PCI devices found in the system\n");
-    return PCIE_READ_ERR;
+    return PCIE_NO_MAPPING;
   }
 
   InputSeg = PCIE_EXTRACT_BDF_SEG(Bdf);
@@ -160,11 +160,11 @@ pal_pcie_read_cfg(UINT32 Bdf, UINT32 offset, UINT32 *data)
           if (!EFI_ERROR (Status))
             return 0;
           else
-            return PCIE_READ_ERR;
+            return PCIE_NO_MAPPING;
       }
     }
   }
-  return PCIE_READ_ERR;
+  return PCIE_NO_MAPPING;
 }
 
 /* Place holder function. Need to be
