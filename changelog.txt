@@ -1,4 +1,13 @@
+v20.03_REL2.4
+
+* SBSA: Add SBSA Version 6.0 Generic PCIe New Tests (RCiEP Rules only)
+* SBSA: Add new PCIe Exerciser Tests
+* SBSA: Integration of Random Number Generator Test Suite (NIST)
+* SBSA: Default Test Execution Level Changed to Level 4
+* SBSA: Added Commandline options to run new PCIe RCiEP tests with Level 3 and above
+
 v19.09_REL2.3
+
 * SBSA: PCI Express Exerciser Enhancements
 * SBSA: EL1 Exception Level Support for QEMU Default Configurations
 
