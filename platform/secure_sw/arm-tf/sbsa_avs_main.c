@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016, ARM Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2017, ARM Limited or its affiliates. All rights reserved.
 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -396,6 +396,34 @@ sbsa_acs_pmbirq(int arg01)
     sbsa_acs_set_status(ACS_STATUS_PASS, SBSA_SMC_INIT_SIGN);
     return 0;
 }
+
+/**
+  @brief   This API sets bits required for enabling access to SVE functionality
+**/
+int
+sbsa_acs_update_sve_reg()
+{
+    uint64_t data = 0;
+
+    /* Set CPTR_EL3.EZ */
+    data = read_cptr_el3();
+    data |= SBSA_SVE_CPTR_EL3_EZ_MASK;
+    write_cptr_el3(data);
+
+    /* Set ZCR_EL3.LEN */
+    write_zcr_el3(SBSA_SVE_ZCR_LEN_MASK);
+
+    /* Set CPTR_EL2.EZ */
+    data = read_cptr_el2();
+    data |= SBSA_SVE_CPTR_EL2_ZEN_MASK;
+    write_cptr_el2(data);
+
+    /* Set ZCR_EL2.LEN */
+    write_zcr_el2(SBSA_SVE_ZCR_LEN_MASK);
+
+    sbsa_acs_set_status(ACS_STATUS_PASS, SBSA_SMC_INIT_SIGN);
+    return 0;
+}
 /**
   @brief   This API contains secure initialization code which SBSA test rely upon
 **/
@@ -480,6 +508,9 @@ uint64_t sbsa_smc_handler(uint32_t smc_fid,
 
         case SBSA_SECURE_PMBIRQ:
             SMC_RET1(handle, sbsa_acs_pmbirq(x2));
+
+        case SBSA_SECURE_UPDATE_SVE_REG:
+            SMC_RET1(handle, sbsa_acs_update_sve_reg());
 
         case SBSA_SECURE_PLATFORM_ADDRESS:
             SMC_RET1(handle, sbsa_acs_secure_platform_address(x2));

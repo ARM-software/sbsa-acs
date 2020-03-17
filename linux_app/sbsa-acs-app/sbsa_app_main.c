@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018, 2020 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -24,7 +24,7 @@
 #include "include/sbsa_app.h"
 #include <getopt.h>
 
-int  g_sbsa_level = 3;
+int  g_sbsa_level = 4;
 int  g_print_level = 3;
 int  g_skip_test_num[3] = {10000, 10000, 10000};
 unsigned long int  g_exception_ret_addr;
@@ -127,8 +127,8 @@ main (int argc, char **argv)
     }
 
     if (run_exerciser) {
-        printf("\n      *** Starting PCIe Exerciser tests ***  \n");
-        execute_tests_exerciser(1, g_sbsa_level, g_print_level);
+        printf("\n      *** PCIe Exerciser tests only runs on UEFI ***  \n");
+        //execute_tests_exerciser(1, g_sbsa_level, g_print_level);
     } else {
         printf("\n      *** Starting PCIe tests ***  \n");
         execute_tests_pcie(1, g_sbsa_level, g_print_level);

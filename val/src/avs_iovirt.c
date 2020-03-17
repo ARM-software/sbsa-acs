@@ -281,6 +281,6 @@ val_iovirt_get_rc_smmu_index(uint32_t rc_seg_num)
       }
   }
 
-  val_print(AVS_PRINT_ERR, "RC with segment number %d is not behind any SMMU", rc_seg_num);
+  val_print(AVS_PRINT_INFO, "RC with segment number %d is not behind any SMMU", rc_seg_num);
   return AVS_INVALID_INDEX;
 }

@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2019, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2020, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -135,4 +135,47 @@ uint32_t val_gic_request_irq(uint32_t irq_num, uint32_t mapped_irq_num, void *is
 void val_gic_free_irq(uint32_t irq_num, uint32_t mapped_irq_num)
 {
     pal_gic_free_irq(irq_num, mapped_irq_num);
+}
+
+/**
+  @brief   This function writes to end of interrupt register for relevant
+           interrupt group.
+           1. Caller       -  Test Suite
+           2. Prerequisite -  val_gic_create_info_table
+  @param   int_id Interrupt ID for which to disable the interrupt
+  @return  status
+**/
+uint32_t val_gic_end_of_interrupt(uint32_t int_id)
+{
+  pal_gic_end_of_interrupt(int_id);
+
+  return 0;
+}
+
+/**
+  @brief   This function clear the MSI related mappings.
+
+  @param   bdf          B:D:F for the device
+  @param   IntID        Interrupt ID
+  @param   msi_index    msi index in the table
+
+  @return  status
+**/
+void val_gic_free_msi(uint32_t bdf, uint32_t IntID, uint32_t msi_index)
+{
+    pal_gic_free_msi(bdf, IntID, msi_index);
+}
+
+/**
+  @brief   This function creates the MSI mappings, and programs the MSI Table.
+
+  @param   bdf          B:D:F for the device
+  @param   IntID        Interrupt ID
+  @param   msi_index    msi index in the table
+
+  @return  status
+**/
+uint32_t val_gic_request_msi(uint32_t bdf, uint32_t IntID, uint32_t msi_index)
+{
+  return pal_gic_request_msi(bdf, IntID, msi_index);
 }

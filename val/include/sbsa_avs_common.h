@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2020, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -35,16 +35,18 @@
 #define AVS_SMMU_TEST_NUM_BASE       700
 #define AVS_EXERCISER_TEST_NUM_BASE  800
 #define AVS_SECURE_TEST_NUM_BASE     900
+#define AVS_NIST_TEST_NUM_BASE       1000
 
 #define STATE_BIT   28
 #define STATE_MASK 0xF
-  //These are the states a test can be in */
-  #define TEST_START_VAL   0x1
-  #define TEST_END_VAL     0x2
-  #define TEST_PASS_VAL    0x4
-  #define TEST_FAIL_VAL    0x8
-  #define TEST_SKIP_VAL    0x9
-  #define TEST_PENDING_VAL 0xA
+
+//These are the states a test can be in */
+#define TEST_START_VAL   0x1
+#define TEST_END_VAL     0x2
+#define TEST_PASS_VAL    0x4
+#define TEST_FAIL_VAL    0x8
+#define TEST_SKIP_VAL    0x9
+#define TEST_PENDING_VAL 0xA
 
 #define CPU_NUM_BIT  32
 #define CPU_NUM_MASK 0xFFFFFFFF
@@ -52,9 +54,10 @@
 #define LEVEL_BIT    24
 #define LEVEL_MASK  0xF
 
-#define TEST_NUM_BIT	16
-#define TEST_NUM_MASK   0xFF
+#define STATUS_MASK 0xFFF
 
+#define TEST_NUM_BIT    12
+#define TEST_NUM_MASK   0xFFF
 
 /* TEST start and Stop defines */
 

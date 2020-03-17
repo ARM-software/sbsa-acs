@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2018, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2018-2019, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -34,9 +34,6 @@ payload(void)
   uint32_t pe_index;
   uint32_t data;
   uint32_t bdf;
-  uint32_t start_bus;
-  uint32_t start_segment;
-  uint32_t start_bdf;
   uint32_t instance;
   uint32_t reg_index;
   exerciser_data_t e_data;
@@ -44,36 +41,37 @@ payload(void)
   pe_index = val_pe_get_index_mpid(val_pe_get_mpid());
   instance = val_exerciser_get_info(EXERCISER_NUM_CARDS, 0);
 
-  /* Set start_bdf segment and bus numbers to 1st ecam region values */
-  start_segment = val_pcie_get_info(PCIE_INFO_SEGMENT, 0);
-  start_bus = val_pcie_get_info(PCIE_INFO_START_BUS, 0);
-  start_bdf = PCIE_CREATE_BDF(start_segment, start_bus, 0, 0);
 
   while (instance-- != 0) {
+
+      /* if init fail moves to next exerciser */
+      if (val_exerciser_init(instance))
+          continue;
 
     if (val_exerciser_get_data(EXERCISER_DATA_CFG_SPACE, &e_data, instance)) {
         val_print(AVS_PRINT_ERR, "\n      Exerciser %d data read error     ", instance);
         goto check_fail;
     }
 
-    bdf = val_pcie_get_bdf(EXERCISER_CLASSCODE, start_bdf);
-    start_bdf = val_pcie_increment_bdf(bdf);
+    bdf = val_exerciser_get_bdf(instance);
 
     /* Check ECAM config register read/write */
     for (reg_index = 0; reg_index < TEST_REG_COUNT; reg_index++) {
 
         if (e_data.cfg_space.reg[reg_index].attribute == ACCESS_TYPE_RW) {
-            val_pcie_write_cfg(bdf, e_data.cfg_space.reg[reg_index].offset, e_data.cfg_space.reg[reg_index].value);
-        }
+            val_pcie_write_cfg(bdf, e_data.cfg_space.reg[reg_index].offset,
+                                         e_data.cfg_space.reg[reg_index].value);
 
-        if (val_pcie_read_cfg(bdf, e_data.cfg_space.reg[reg_index].offset, &data) == PCIE_READ_ERR) {
-            val_print(AVS_PRINT_ERR, "\n      Exerciser %d cfg reg read error  ", instance);
-            goto check_fail;
-        }
+            if (val_pcie_read_cfg(bdf, e_data.cfg_space.reg[reg_index].offset, &data)
+                                                                   == PCIE_NO_MAPPING) {
+                val_print(AVS_PRINT_ERR, "\n      Exerciser %d cfg reg read error  ", instance);
+                goto check_fail;
+            }
 
-        if (data != e_data.cfg_space.reg[reg_index].value) {
-            val_print(AVS_PRINT_ERR, "\n      Exerciser cfg reg read write mismatch %d   ", data);
-            goto check_fail;
+            if (data != e_data.cfg_space.reg[reg_index].value) {
+                val_print(AVS_PRINT_ERR, "\n      Exerciser cfg reg read write mismatch %d", data);
+                goto check_fail;
+            }
         }
 
     }

@@ -1,0 +1,78 @@
+## @file
+#  Copyright (c) 2020, Arm Limited or its affiliates. All rights reserved.
+#  SPDX-License-Identifier : Apache-2.0
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+##
+
+[Defines]
+  INF_VERSION                    = 0x00010005
+  BASE_NAME                      = SbsaNistLib
+  FILE_GUID                      = 27cb25d8-396b-4088-9d31-905ed0be3390
+  MODULE_TYPE                    = UEFI_APPLICATION
+  VERSION_STRING                 = 1.0
+  LIBRARY_CLASS                  = SbsaNistLib|UEFI_APPLICATION UEFI_DRIVER
+
+[Sources.common]
+  sts-2.1.2/sts-2.1.2/src/approximateEntropy.c
+  sts-2.1.2/sts-2.1.2/src/assess.c
+  sts-2.1.2/sts-2.1.2/src/blockFrequency.c
+  sts-2.1.2/sts-2.1.2/src/cephes.c
+  sts-2.1.2/sts-2.1.2/src/cusum.c
+  sts-2.1.2/sts-2.1.2/src/dfft.c
+  sts-2.1.2/sts-2.1.2/src/discreteFourierTransform.c
+  sts-2.1.2/sts-2.1.2/src/frequency.c
+  sts-2.1.2/sts-2.1.2/src/generators.c
+  sts-2.1.2/sts-2.1.2/src/genutils.c
+  sts-2.1.2/sts-2.1.2/src/linearComplexity.c
+  sts-2.1.2/sts-2.1.2/src/longestRunOfOnes.c
+  sts-2.1.2/sts-2.1.2/src/matrix.c
+  sts-2.1.2/sts-2.1.2/src/nonOverlappingTemplateMatchings.c
+  sts-2.1.2/sts-2.1.2/src/overlappingTemplateMatchings.c
+  sts-2.1.2/sts-2.1.2/src/randomExcursions.c
+  sts-2.1.2/sts-2.1.2/src/randomExcursionsVariant.c
+  sts-2.1.2/sts-2.1.2/src/rank.c
+  sts-2.1.2/sts-2.1.2/src/runs.c
+  sts-2.1.2/sts-2.1.2/src/serial.c
+  sts-2.1.2/sts-2.1.2/src/universal.c
+  sts-2.1.2/sts-2.1.2/src/utilities.c
+
+[Packages]
+  StdLib/StdLib.dec
+  MdePkg/MdePkg.dec
+  ShellPkg/ShellPkg.dec
+  EmbeddedPkg/EmbeddedPkg.dec
+  MdeModulePkg/MdeModulePkg.dec
+  EdkCompatibilityPkg/EdkCompatibilityPkg.dec
+  SecurityPkg/SecurityPkg.dec
+
+[LibraryClasses]
+  LibC
+  LibStdLib
+  LibStdio
+  LibMath
+  DevShell
+  SbsaValLib
+  SbsaPalLib
+  BaseLib
+  IoLib
+  UefiLib
+  ShellLib
+  DebugLib
+  BaseMemoryLib
+  ShellCEntryLib
+  UefiBootServicesTableLib
+  UefiRuntimeServicesTableLib
+
+[BuildOptions]
+  GCC:*_*_*_ASM_FLAGS  =  -march=armv8.2-a

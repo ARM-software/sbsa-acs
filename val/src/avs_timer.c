@@ -117,7 +117,7 @@ val_timer_get_info(TIMER_INFO_e info_type, uint64_t instance)
           if (block_num != 0xFFFF)
               return g_timer_info_table->gt_info[block_num].GtCntBase[block_index];
       case TIMER_INFO_FRAME_NUM:
-	  val_platform_timer_get_entry_index (instance, &block_num, &block_index);
+          val_platform_timer_get_entry_index (instance, &block_num, &block_index);
           if (block_num != 0xFFFF)
               return g_timer_info_table->gt_info[block_num].frame_num[block_index];
       case TIMER_INFO_SYS_INTID:
@@ -361,13 +361,12 @@ val_timer_skip_if_cntbase_access_not_allowed(uint64_t index)
   frame_num = val_timer_get_info(TIMER_INFO_FRAME_NUM, index);
 
   if(cnt_ctl_base){
-      /* should we also check if this frame is non-secure before accessing this register? */
       data = val_mmio_read(cnt_ctl_base + 0x40 + frame_num * 4);
       if((data & 0x1) == 0x1)
           return 0;
       else{
           data |= 0x1;
-          val_mmio_write(cnt_ctl_base + 0x40 + frame_num * 4, data);
+          val_mmio_write(cnt_ctl_base + 0x40 + frame_num *4, data);
           data = val_mmio_read(cnt_ctl_base + 0x40 + frame_num * 4);
           if((data & 0x1) == 1)
               return 0;
