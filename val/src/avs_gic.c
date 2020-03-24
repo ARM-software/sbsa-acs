@@ -191,21 +191,6 @@ val_get_max_intid(void)
 }
 
 /**
-  @brief   This function writes to end of interrupt register for relevant
-           interrupt group.
-           1. Caller       -  Test Suite
-           2. Prerequisite -  val_gic_create_info_table
-  @param   int_id Interrupt ID for which to disable the interrupt
-  @return  status
-**/
-uint32_t val_gic_end_of_interrupt(uint32_t int_id)
-{
-  pal_gic_end_of_interrupt(int_id);
-
-  return 0;
-}
-
-/**
   @brief   This function routes interrupt to specific PE.
            1. Caller       -  Test Suite
            2. Prerequisite -  val_gic_create_info_table

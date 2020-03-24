@@ -3,7 +3,7 @@
 
 
 ## Server Base System Architecture
-**Server Base System Architecture** (SBSA) specification specifies a hardware system architecture based on the ARM 64-bit architecture. Server system software such as operating systems, hypervisors, and firmware rely on this. It addresses processing element features and key aspects of system architecture.
+**Server Base System Architecture** (SBSA) specification specifies a hardware system architecture based on the Arm 64-bit architecture. Server system software such as operating systems, hypervisors, and firmware rely on this. It addresses processing element features and key aspects of system architecture.
 
 For more information, download the [SBSA specification](http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.den0029b/index.html)
 
@@ -11,16 +11,17 @@ For more information, download the [SBSA specification](http://infocenter.arm.co
 ## SBSA - Architecture Compliance Suite
 
 SBSA **Architecture Compliance Suite** (ACS) is a collection of self-checking, portable C-based tests.
-This suite includes a set of examples of the invariant behaviours that are provided by the [SBSA](http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.den0029b/index.html) specification, so that implementers can verify if these behaviours have been interpreted correctly.
+This suite includes a set of examples of the invariant behaviors that are provided by the [SBSA](http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.den0029b/index.html) specification, so that implementers can verify if these behaviours have been interpreted correctly.
 Most of the tests are executed from UEFI Shell by executing the SBSA UEFI shell application.
 A few tests are executed by running the SBSA ACS Linux application which in turn depends on the SBSA ACS Linux kernel module.
 
 
 ## Release details
- - Code Quality: REL v2.3
+ - Code Quality: REL v2.4
  - The tests are written for version 5.0 of the SBSA specification.
+ - PCIe RCiEP tests for Appendix E of SBSA 6.0 specification are also included.
  - The compliance suite is not a substitute for design verification.
- - To review the SBSA ACS logs, ARM licensees can contact ARM directly through their partner managers.
+ - To review the SBSA ACS logs, Arm licensees can contact Arm directly through their partner managers.
  - To know about the gaps in the test coverage, see [Testcase checklist](docs/testcase-checklist.md).
  - Refer to changelog.txt to know about the changes.
 
@@ -49,7 +50,7 @@ Prebuilt images for each release are available in the prebuilt_images folder of 
 ### Prerequisites
     Before starting the ACS build, ensure that the following requirements are met.
 
-- Any mainstream Linux based OS distribution.
+- Any mainstream Linux based OS distribution running on a x86 or aarch64 machine.
 - git clone the UDK2018 branch of [EDK2 tree](https://github.com/tianocore/edk2).
 - Install GCC 5.3 or later toolchain for Linux from [here](https://releases.linaro.org/components/toolchain/binaries/).
 - Install the build prerequisite packages to build EDK2. 
@@ -66,7 +67,7 @@ To start the ACS build, perform the following steps:
 
 ### Linux build environment
 If the build environment is Linux, perform the following steps:
-1.  export GCC49_AARCH64_PREFIX= GCC5.3 toolchain path pointing to /bin/aarch64-linux-gnu-
+1.  export GCC49_AARCH64_PREFIX= GCC5.3 toolchain path pointing to /bin/aarch64-linux-gnu- in case of x86 machine. For aarch64 build it should point to /usr/bin/
 2.  source edksetup.sh
 3.  make -C BaseTools/Source/C
 4.  source AppPkg/Applications/sbsa-acs/tools/scripts/avsbuild.sh
@@ -80,17 +81,18 @@ If the build environment is Windows, perform the following steps:
    build -a AARCH64 -t GCC49 -p ShellPkg/ShellPkg.dsc -m
    AppPkg/Applications/sbsa-acs/uefi_app/SbsaAvs.inf
 
+**Note:** To build the ACS with NIST Statistical Test Suite, see [SBSA_NIST_User_Guide](docs/Arm_SBSA_NIST_User_Guide.md)
+
 ### Build output
 
-The EFI executable file is generated at 
-edk2_path /Build/Shell/DEBUG_GCC49/AARCH64/Sbsa.efi
+The EFI executable file is generated at <edk2_path>/Build/Shell/DEBUG_GCC49/AARCH64/Sbsa.efi
 
 
 ## Test suite execution
 
 The execution of the compliance suite varies depending on the test environment. These steps assume that the test suite is invoked through the ACS UEFI shell application.
 
-For details about the SBSA ACS UEFI Shell application, see [SBSA ACS USER Guide](docs/SBSA_ACS_User_Guide.pdf)
+For details about the SBSA ACS UEFI Shell application, see [SBSA ACS USER Guide](docs/Arm_SBSA_Architecture_Compliance_User_Guide.pdf)
 
 ### Post-Silicon
 
@@ -102,7 +104,7 @@ On a system where a USB port is available and functional, perform the following 
 4. To determine the file system number of the plugged in USB drive, execute 'map -r' command. 
 5. Type 'fsx' where 'x' is replaced by the number determined in step 4.
 6. To start the compliance tests, run the executable Sbsa.efi with the appropriate parameters. 
-   For details on the parameters, refer to [SBSA ACS User Guide](docs/SBSA_ACS_User_Guide.pdf)
+   For details on the parameters, refer to [SBSA ACS User Guide](docs/Arm_SBSA_Architecture_Compliance_User_Guide.pdf)
 7. Copy the UART console output to a log file for analysis and certification.
 
 
@@ -119,7 +121,7 @@ On an emulation environment with secondary storage, perform the following steps:
 4. To determine the file system number of the secondary storage, execute 'map -r' command. 
 5. Type 'fsx' where 'x' is replaced by the number determined in step 4.
 6. To start the compliance tests, run the executable Sbsa.efi with the appropriate parameters. 
-   For details on the parameters, see [SBSA ACS User Guide](docs/SBSA_ACS_User_Guide.pdf)
+   For details on the parameters, see [SBSA ACS User Guide](docs/Arm_SBSA_Architecture_Compliance_User_Guide.pdf)
 7. Copy the UART console output to a log file for analysis and certification.
 
 
@@ -130,12 +132,17 @@ On an Emulation platform where secondary storage is not available, perform the f
 1. Add the path to 'Sbsa.efi' file in the UEFI FD file.
 2. Build UEFI image including the UEFI Shell.
 3. Boot the system to UEFI shell.
-4. Run the executable 'Sbsa.efi' to start the compliance tests. For details about the parameters, see [SBSA ACS User Guide](docs/SBSA_ACS_User_Guide.pdf).
+4. Run the executable 'Sbsa.efi' to start the compliance tests. For details about the parameters,
+   see [SBSA ACS User Guide](docs/Arm_SBSA_Architecture_Compliance_User_Guide.pdf).
 5. Copy the UART console output to a log file for analysis and certification.
 
 
 ## Linux OS-based tests
-Certain PCIe and IOMMU tests require Linux operating system with kernel version 4.10 or above. The procedure to build and run these tests is described in [SBSA ACS User Guide](docs/SBSA_ACS_User_Guide.pdf).
+Certain PCIe and IOMMU tests require Linux operating system with kernel version 4.10 or above.
+The procedure to build and run these tests is described in [SBSA ACS User Guide](docs/Arm_SBSA_Architecture_Compliance_User_Guide.pdf).
+
+## Security implication
+Arm Enterprise ACS test suite may run at higher privilege level. An attacker may utilize these tests as a means to elevate privilege which can potentially reveal the platform security assets. To prevent the leakage of secure information, it is strongly recommended that the ACS test suite is run only on development platforms. If it is run on production systems, the system should be scrubbed after running the test suite.
 
 
 ## License
@@ -146,5 +153,9 @@ SBSA ACS is distributed under Apache v2.0 License.
 
  - For feedback, use the GitHub Issue Tracker that is associated with this repository.
  - For support, please send an email to "support-enterprise-acs@arm.com" with details.
- - ARM licensees can contact ARM directly through their partner managers.
- - ARM welcomes code contributions through GitHub pull requests. See GitHub documentation on how to raise pull requests.
+ - Arm licensees may contact Arm directly through their partner managers.
+ - Arm welcomes code contributions through GitHub pull requests. See GitHub documentation on how to raise pull requests.
+
+--------------
+
+*Copyright (c) 2018-2020, Arm Limited and Contributors. All rights reserved.*

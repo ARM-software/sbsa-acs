@@ -241,15 +241,35 @@ pal_mem_free_shared()
   gBS->FreePool ((VOID *)gSharedMemory);
 }
 
-/* Place holder function. Need to be
- * implemented if needed in later releases
+/**
+ * @brief  Allocates requested buffer size in bytes in a contiguous memory
+ *         and returns the base address of the range.
+ *
+ * @param  Size         allocation size in bytes
+ * @retval if SUCCESS   pointer to allocated memory
+ * @retval if FAILURE   NULL
  */
 VOID *
 pal_mem_alloc (
   UINT32 Size
   )
 {
-  return NULL;
+
+  EFI_STATUS            Status;
+  VOID                  *Buffer;
+
+  Buffer = NULL;
+  Status = gBS->AllocatePool (EfiBootServicesData,
+                              Size,
+                              (VOID **) &Buffer);
+  if (EFI_ERROR(Status))
+  {
+    sbsa_print(AVS_PRINT_ERR, L"Allocate Pool failed %x \n", Status);
+    return NULL;
+  }
+
+  return Buffer;
+
 }
 
 /* Place holder function. Need to be
@@ -287,5 +307,60 @@ pal_mem_virt_to_phys (
   VOID *Va
   )
 {
-  return NULL;
+  return Va;
+}
+
+/**
+  @brief  Compares two strings
+
+  @param  FirstString   The pointer to a Null-terminated ASCII string.
+  @param  SecondString  The pointer to a Null-terminated ASCII string.
+  @param  Length        The maximum number of ASCII characters for compare.
+
+  @return Zero if strings are identical, else non-zero value
+**/
+UINT32
+pal_strncmp (
+  CHAR8 *FirstString,
+  CHAR8 *SecondString,
+  UINT32 Length
+  )
+{
+  return AsciiStrnCmp(FirstString, SecondString, Length);
+}
+
+/**
+  Copies a source buffer to a destination buffer, and returns the destination buffer.
+
+  @param  DestinationBuffer   The pointer to the destination buffer of the memory copy.
+  @param  SourceBuffer        The pointer to the source buffer of the memory copy.
+  @param  Length              The number of bytes to copy from SourceBuffer to DestinationBuffer.
+
+  @return DestinationBuffer.
+
+**/
+VOID *
+pal_memcpy (
+  VOID *DestinationBuffer,
+  VOID *SourceBuffer,
+  UINT32 Length
+  )
+{
+  return CopyMem (DestinationBuffer, SourceBuffer, Length);
+}
+
+/**
+  Stalls the CPU for the number of microseconds specified by MicroSeconds.
+
+  @param  MicroSeconds  The minimum number of microseconds to delay.
+
+  @return The value of MicroSeconds inputted.
+
+**/
+UINT64
+pal_time_delay_ms (
+  UINT64 MicroSeconds
+  )
+{
+  return gBS->Stall(MicroSeconds);
 }

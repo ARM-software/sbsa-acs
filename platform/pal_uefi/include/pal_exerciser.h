@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2019, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2020, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,27 +14,83 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
 **/
+/**
+ * This file contains REFERENCE CODE for Exerciser PAL layer.
+ * The API's and MACROS needs to be populate as per platform config.
+**/
 
 #ifndef __PAL_EXERCISER_H__
 #define __PAL_EXERCISER_H__
 
-#define EXERCISER_CLASSCODE 0x010203
-#define MAX_ARRAY_SIZE 32
+#define EXERCISER_ID  0xED0113B5 //device id + vendor id
 #define TEST_REG_COUNT 10
 #define TEST_DDR_REGION_CNT 16
 
-typedef struct {
-    UINT64 buf[MAX_ARRAY_SIZE];
-} EXERCISER_INFO_BLOCK;
+#define BUS_MEM_EN_MASK 0x06
 
-typedef struct {
-    UINT32                  num_exerciser_cards;
-    EXERCISER_INFO_BLOCK    info[];  //Array of information blocks - per stimulus generation controller
-} EXERCISER_INFO_TABLE;
+/* PCIe Config space Offset */
+#define BAR0_OFFSET        0x10
+#define COMMAND_REG_OFFSET 0x04
+#define CAP_PTR_OFFSET     0x34
+#define PCIE_CAP_OFFSET    0x100
+
+#define PCIE_CAP_CTRL_OFFSET 0x4// offset from the extended capability header
+
+/* Exerciser MMIO Offsets */
+#define INTXCTL      0x004
+#define MSICTL       0x000
+#define DMACTL1      0x08
+#define DMA_BUS_ADDR 0x010
+#define DMA_LEN      0x018
+#define DMASTATUS    0x01C
+#define PCI_MAX_BUS     255
+#define PCI_MAX_DEVICE  31
+
+#define PCI_EXT_CAP_ID 0x10
+#define PASID          0x1B
+#define PCIE           0x1
+#define PCI            0x0
+
+/* PCI/PCIe express extended capability structure's
+   next capability pointer mask and cap ID mask */
+#define PCIE_NXT_CAP_PTR_MASK 0x0FFF
+#define PCIE_CAP_ID_MASK      0xFFFF
+#define PCI_CAP_ID_MASK       0x00FF
+#define PCI_NXT_CAP_PTR_MASK  0x00FF
+#define CAP_PTR_MASK          0x00FF
+
+#define CLR_INTR_MASK       0xFFFFFFFE
+#define PASID_TLP_STOP_MASK 0xFFFFFFBF
+#define PASID_LEN_MASK      0xFFFFFC7F
+#define DMA_TO_DEVICE_MASK  0xFFFFFFEF
+
+/* shift_bit */
+#define SHIFT_1BIT             1
+#define SHIFT_2BIT             2
+#define SHIFT_4BIT             4
+#define SHITT_8BIT             8
+#define MASK_BIT               1
+#define PREFETCHABLE_BIT_SHIFT 3
+
+#define PCI_CAP_PTR_OFFSET 8
+#define PCIE_CAP_PTR_OFFSET 20
+
+#define NO_SNOOP_START_MASK 0x20
+#define NO_SNOOP_STOP_MASK  0xFFFFFFDF
+#define PCIE_CAP_DIS_MASK 0xFFFEFFFF
+#define PCIE_CAP_EN_MASK (1 << 16)
+#define PASID_EN_MASK    (1 << 6)
+
 
 typedef enum {
-    EXERCISER_NUM_CARDS = 0x1
-} EXERCISER_INFO_TYPE;
+    TYPE0 = 0x0,
+    TYPE1 = 0x1,
+} EXERCISER_CFG_HEADER_TYPE;
+
+typedef enum {
+    CFG_READ   = 0x0,
+    CFG_WRITE  = 0x1,
+} EXERCISER_CFG_TXN_ATTR;
 
 typedef enum {
     EDMA_NO_SUPPORT   = 0x0,
@@ -50,7 +106,8 @@ typedef enum {
     MSIX_ATTRIBUTES  = 0x3,
     DMA_ATTRIBUTES   = 0x4,
     P2P_ATTRIBUTES   = 0x5,
-    PASID_ATTRIBUTES = 0x6
+    PASID_ATTRIBUTES = 0x6,
+    CFG_TXN_ATTRIBUTES = 0x7
 } EXERCISER_PARAM_TYPE;
 
 typedef enum {
@@ -70,7 +127,9 @@ typedef enum {
     PASID_TLP_START = 0x7,
     PASID_TLP_STOP  = 0x8,
     NO_SNOOP_CLEAR_TLP_START = 0x9,
-    NO_SNOOP_CLEAR_TLP_STOP  = 0xa
+    NO_SNOOP_CLEAR_TLP_STOP  = 0xa,
+    START_TXN_MONITOR        = 0xb,
+    STOP_TXN_MONITOR         = 0xc
 } EXERCISER_OPS;
 
 typedef enum {
@@ -120,13 +179,11 @@ typedef enum {
     EXERCISER_DATA_BAR0_SPACE = 0x2,
 } EXERCISER_DATA_TYPE;
 
-VOID pal_exerciser_create_info_table (EXERCISER_INFO_TABLE *ExerciserInfoTable);
-UINT32 pal_exerciser_get_info(EXERCISER_INFO_TYPE Type, UINT32 Instance);
-UINT32 pal_exerciser_set_param(EXERCISER_PARAM_TYPE Type, UINT64 Value1, UINT64 Value2, UINT32 Instance);
-UINT32 pal_exerciser_get_param(EXERCISER_PARAM_TYPE Type, UINT64 *Value1, UINT64 *Value2, UINT32 Instance);
-UINT32 pal_exerciser_set_state(EXERCISER_STATE State, UINT64 *Value, UINT32 Instance);
-UINT32 pal_exerciser_get_state(EXERCISER_STATE State, UINT64 *Value, UINT32 Instance);
-UINT32 pal_exerciser_ops(EXERCISER_OPS Ops, UINT64 Param, UINT32 Instance);
-UINT32 pal_exerciser_get_data(EXERCISER_DATA_TYPE Type, exerciser_data_t *Data, UINT32 Instance);
+UINT32 pal_exerciser_set_param(EXERCISER_PARAM_TYPE Type, UINT64 Value1, UINT64 Value2, UINT32 Bdf);
+UINT32 pal_exerciser_get_param(EXERCISER_PARAM_TYPE Type, UINT64 *Value1, UINT64 *Value2, UINT32 Bdf);
+UINT32 pal_exerciser_set_state(EXERCISER_STATE State, UINT64 *Value, UINT32 Bdf);
+UINT32 pal_exerciser_get_state(EXERCISER_STATE *State, UINT32 Bdf);
+UINT32 pal_exerciser_ops(EXERCISER_OPS Ops, UINT64 Param, UINT32 Bdf);
+UINT32 pal_exerciser_get_data(EXERCISER_DATA_TYPE Type, exerciser_data_t *Data, UINT32 Bdf, UINT64 Ecam);
 
 #endif

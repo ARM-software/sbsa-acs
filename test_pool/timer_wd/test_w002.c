@@ -71,6 +71,12 @@ payload()
 
       val_gic_install_isr(int_id, isr);
 
+      /* Set Interrupt Type Edge/Level Trigger */
+      if (val_wd_get_info(wd_num, WD_INFO_IS_EDGE))
+          val_gic_set_intr_trigger(int_id, INTR_TRIGGER_INFO_EDGE_RISING);
+      else
+          val_gic_set_intr_trigger(int_id, INTR_TRIGGER_INFO_LEVEL_HIGH);
+
       val_wd_set_ws0(wd_num, timer_expire_ticks);
 
       while ((--timeout > 0) && (IS_RESULT_PENDING(val_get_status(index))));

@@ -24,6 +24,10 @@
 #define PCIE_EXTRACT_BDF_DEV(bdf)  ((bdf >> 8) & 0xFF)
 #define PCIE_EXTRACT_BDF_FUNC(bdf) (bdf & 0xFF)
 
+#define PCIE_MAX_BUS   256
+#define PCIE_MAX_DEV    32
+#define PCIE_MAX_FUNC    8
+
 #define PCIE_CREATE_BDF(Seg, Bus, Dev, Func) ((Seg << 24) | (Bus << 16) | (Dev << 8) | Func)
 
 

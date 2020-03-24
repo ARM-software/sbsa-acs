@@ -46,6 +46,10 @@ payload(void)
 
   while (instance-- != 0) {
 
+      /* if init fail moves to next exerciser */
+      if (val_exerciser_init(instance))
+          continue;
+
     /* Get BAR 0 details for this instance */
     if (val_exerciser_get_data(EXERCISER_DATA_BAR0_SPACE, &e_data, instance)) {
         val_print(AVS_PRINT_ERR, "\n      Exerciser %d data read error     ", instance);

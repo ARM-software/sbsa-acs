@@ -1,5 +1,5 @@
 ## @file
- # Copyright (c) 2016-2018, Arm Limited or its affiliates. All rights reserved.
+ # Copyright (c) 2016-2020, Arm Limited or its affiliates. All rights reserved.
  # SPDX-License-Identifier : Apache-2.0
  #
  # Licensed under the Apache License, Version 2.0 (the "License");
@@ -38,7 +38,8 @@ sbsa_acs_test-objs += $(TEST_POOL)/pcie/test_p001.o \
     $(TEST_POOL)/exerciser/test_e001.o $(TEST_POOL)/exerciser/test_e002.o \
     $(TEST_POOL)/exerciser/test_e003.o $(TEST_POOL)/exerciser/test_e004.o \
     $(TEST_POOL)/exerciser/test_e005.o $(TEST_POOL)/exerciser/test_e006.o \
-    $(TEST_POOL)/exerciser/test_e007.o
+    $(TEST_POOL)/exerciser/test_e007.o $(TEST_POOL)/exerciser/test_e008.o \
+    $(TEST_POOL)/exerciser/test_e009.o $(TEST_POOL)/exerciser/test_e010.o \
 
 ccflags-y=-I$(PWD)/$(ACS_DIR)/.. -I$(PWD)/$(ACS_DIR)/val/ -I$(PWD)/$(ACS_DIR)/ -DTARGET_LINUX -Wall -Werror
 

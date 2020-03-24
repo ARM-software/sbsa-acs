@@ -1,5 +1,5 @@
 ## @file
-#  Copyright (c) 2016-2019, Arm Limited or its affiliates. All rights reserved.
+#  Copyright (c) 2016-2020, Arm Limited or its affiliates. All rights reserved.
 #  SPDX-License-Identifier : Apache-2.0
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
@@ -78,7 +78,32 @@
   ../test_pool/timer_wd/test_w002.c
   ../test_pool/pcie/test_p001.c
   ../test_pool/pcie/test_p002.c
-  ../test_pool/pcie/test_p003.c
+  ../test_pool/pcie/test_p020.c
+  ../test_pool/pcie/test_p021.c
+  ../test_pool/pcie/test_p022.c
+  ../test_pool/pcie/test_p023.c
+  ../test_pool/pcie/test_p024.c
+  ../test_pool/pcie/test_p025.c
+  ../test_pool/pcie/test_p026.c
+  ../test_pool/pcie/test_p027.c
+  ../test_pool/pcie/test_p028.c
+  ../test_pool/pcie/test_p029.c
+  ../test_pool/pcie/test_p030.c
+  ../test_pool/pcie/test_p031.c
+  ../test_pool/pcie/test_p032.c
+  ../test_pool/pcie/test_p033.c
+  ../test_pool/pcie/test_p034.c
+  ../test_pool/pcie/test_p035.c
+  ../test_pool/pcie/test_p036.c
+  ../test_pool/pcie/test_p037.c
+  ../test_pool/pcie/test_p038.c
+  ../test_pool/pcie/test_p039.c
+  ../test_pool/pcie/test_p040.c
+  ../test_pool/pcie/test_p041.c
+  ../test_pool/pcie/test_p042.c
+  ../test_pool/pcie/test_p043.c
+  ../test_pool/pcie/test_p044.c
+  ../test_pool/pcie/test_p045.c
   ../test_pool/io_virt/test_i001.c
   ../test_pool/io_virt/test_i002.c
   ../test_pool/io_virt/test_i003.c
@@ -99,8 +124,12 @@
   ../test_pool/exerciser/test_e005.c
   ../test_pool/exerciser/test_e006.c
   ../test_pool/exerciser/test_e007.c
+  ../test_pool/exerciser/test_e008.c
+  ../test_pool/exerciser/test_e009.c
+  ../test_pool/exerciser/test_e010.c
 
 [Packages]
+  StdLib/StdLib.dec
   EmbeddedPkg/EmbeddedPkg.dec
   MdePkg/MdePkg.dec
   MdeModulePkg/MdeModulePkg.dec

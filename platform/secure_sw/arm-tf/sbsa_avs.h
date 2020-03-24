@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016, ARM Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2017, ARM Limited or its affiliates. All rights reserved.
 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -61,11 +61,15 @@ typedef enum {
   SBSA_SECURE_TEST_FINISH,
   SBSA_SECURE_INFRA_INIT,
   SBSA_SECURE_PLATFORM_ADDRESS,
-  SBSA_SECURE_PMBIRQ
+  SBSA_SECURE_PMBIRQ,
+  SBSA_SECURE_UPDATE_SVE_REG
 }SBSA_SECURE_TEST_INDEX_e;
 
 #define SBSA_SMC_INIT_SIGN          0x9abcdef9
 #define SBSA_SECURE_GET_RESULT      0x9000
+#define SBSA_SVE_ZCR_LEN_MASK       0xF
+#define SBSA_SVE_CPTR_EL3_EZ_MASK   0x100
+#define SBSA_SVE_CPTR_EL2_ZEN_MASK  0x30000
 
 #define SBSA_GENERIC             0xA
 #define SP805                    0xB
