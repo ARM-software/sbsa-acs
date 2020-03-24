@@ -53,9 +53,6 @@ payload(void)
   uint32_t dma_len;
   uint32_t base_index;
   uint32_t instance;
-  uint32_t start_bus;
-  uint32_t start_segment;
-  uint32_t start_bdf;
   uint32_t e_bdf;
   uint32_t smmu_index;
   void *dram_buf1_virt;
@@ -68,16 +65,14 @@ payload(void)
   pe_index = val_pe_get_index_mpid(val_pe_get_mpid());
   instance = val_exerciser_get_info(EXERCISER_NUM_CARDS, 0);
 
-  /* Set start_bdf segment and bus numbers to 1st ecam region values */
-  start_segment = val_pcie_get_info(PCIE_INFO_SEGMENT, 0);
-  start_bus = val_pcie_get_info(PCIE_INFO_START_BUS, 0);
-  start_bdf = PCIE_CREATE_BDF(start_segment, start_bus, 0, 0);
-
   while (instance-- != 0) {
 
+      /* if init fail moves to next exerciser */
+      if (val_exerciser_init(instance))
+          continue;
+
     /* Get exerciser bdf */
-    e_bdf = val_pcie_get_bdf(EXERCISER_CLASSCODE, start_bdf);
-    start_bdf = val_pcie_increment_bdf(e_bdf);
+    e_bdf = val_exerciser_get_bdf(instance);
 
     /* Get SMMU node index for this exerciser instance */
     smmu_index = val_iovirt_get_rc_smmu_index(PCIE_EXTRACT_BDF_SEG(e_bdf));
@@ -110,14 +105,23 @@ payload(void)
          * As exerciser is not behind SMMU, IOVA is same as PA. Use PA to
          * program the exerciser DMA.
          */
-        val_exerciser_set_param(DMA_ATTRIBUTES, (uint64_t)dram_buf1_phys, dma_len, instance);
+
+        if (val_exerciser_set_param(DMA_ATTRIBUTES, (uint64_t)dram_buf1_phys, dma_len, instance)) {
+            val_print(AVS_PRINT_ERR, "\n      DMA attributes setting failure %4x", instance);
+            goto test_fail;
+        }
+
         if (val_exerciser_ops(START_DMA, EDMA_TO_DEVICE, instance)) {
             val_print(AVS_PRINT_ERR, "\n      DMA write failure to exerciser %4x", instance);
             goto test_fail;
         }
 
-        /* READ Back from Exerciser to validate above DMA write */
-        val_exerciser_set_param(DMA_ATTRIBUTES, (uint64_t)dram_buf2_iova, dma_len, instance);
+       /* READ Back from Exerciser to validate above DMA write */
+        if (val_exerciser_set_param(DMA_ATTRIBUTES, (uint64_t)dram_buf2_iova, dma_len, instance)) {
+            val_print(AVS_PRINT_ERR, "\n      DMA attributes setting failure %4x", instance);
+            goto test_fail;
+        }
+
         if (val_exerciser_ops(START_DMA, EDMA_FROM_DEVICE, instance)) {
             val_print(AVS_PRINT_ERR, "\n      DMA read failure from exerciser %4x", instance);
             goto test_fail;

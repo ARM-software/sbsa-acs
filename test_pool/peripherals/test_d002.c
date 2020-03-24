@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2019, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -44,11 +44,11 @@ payload()
       bdf = val_peripheral_get_info(SATA_BDF, count - 1);
       ret = val_pcie_read_cfg(bdf, 0x8, &interface);
       interface = (interface >> 8) & 0xFF;
-      if (ret == PCIE_READ_ERR || interface != 0x01) {
+      if (ret == PCIE_NO_MAPPING || interface != 0x01) {
           val_print(AVS_PRINT_WARN, "\n       WARN: SATA CTRL ECAM access failed %x  ", interface);
           val_print(AVS_PRINT_WARN, "\n       Re-checking SATA CTRL using PciIo protocol       ", 0);
           ret = val_pcie_io_read_cfg(bdf, 0x8, &interface);
-          if (ret == PCIE_READ_ERR) {
+          if (ret == PCIE_NO_MAPPING) {
               val_print(AVS_PRINT_ERR, "\n       Reading device class code using PciIo protocol failed ", 0);
               val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
               return;

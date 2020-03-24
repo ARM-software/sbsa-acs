@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2019, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2020, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -40,7 +40,12 @@
 #define TIMEOUT_MEDIUM   0x100000
 #define TIMEOUT_SMALL    0x1000
 
-#define PCIE_READ_ERR  -1
+#define ONE_MILLISECOND 1000
+
+#define PCIE_SUCCESS            0x00000000  /* Operation completed successfully */
+#define PCIE_NO_MAPPING         0x10000001  /* A mapping to a Function does not exist */
+#define PCIE_CAP_NOT_FOUND      0x10000010  /* The specified capability was not found */
+#define PCIE_UNKNOWN_RESPONSE   0xFFFFFFFF  /* Function not found or UR response from completer */
 
 /**  PE Test related Definitions **/
 
@@ -138,7 +143,8 @@ void pal_gic_end_of_interrupt(uint32_t int_id);
 uint32_t pal_gic_request_irq(unsigned int irq_num, unsigned int mapped_irq_num, void *isr);
 void pal_gic_free_irq(unsigned int irq_num, unsigned int mapped_irq_num);
 uint32_t pal_gic_set_intr_trigger(uint32_t int_id, INTR_TRIGGER_INFO_TYPE_e trigger_type);
-
+uint32_t pal_gic_request_msi(uint32_t bdf, uint32_t IntID, uint32_t msi_index);
+void pal_gic_free_msi(uint32_t bdf, uint32_t IntID, uint32_t msi_index);
 
 /** Timer tests related definitions **/
 
@@ -508,8 +514,8 @@ void pal_memory_unmap(void *addr);
 /* Common Definitions */
 void     pal_print(char8_t *string, uint64_t data);
 void     pal_print_raw(uint64_t addr, char8_t *string, uint64_t data);
-
-
+uint32_t pal_strncmp(char8_t *str1, char8_t *str2, uint32_t len);
+void    *pal_memcpy(void *dest_buffer, void *src_buffer, uint32_t len);
 void    *pal_mem_alloc(uint32_t size);
 void    *pal_mem_alloc_coherent(uint32_t bdf, uint32_t size, void *pa);
 void     pal_mem_free(void *buffer);
@@ -518,6 +524,7 @@ void     pal_mem_set(void *buf, uint32_t size, uint8_t value);
 void     pal_mem_free_coherent(uint32_t bdf, unsigned int size, void *va, void *pa);
 void    *pal_mem_virt_to_phys(void *va);
 
+uint64_t pal_time_delay_ms(uint64_t time_ms);
 void     pal_mem_allocate_shared(uint32_t num_pe, uint32_t sizeofentry);
 void     pal_mem_free_shared(void);
 uint64_t pal_mem_get_shared_addr(void);
@@ -535,23 +542,21 @@ void     pal_pe_data_cache_ops_by_va(uint64_t addr, uint32_t type);
 #define INVALIDATE            0x3
 
 /* Exerciser definitions */
-#define EXERCISER_CLASSCODE 0x010203
 #define MAX_ARRAY_SIZE 32
 #define TEST_REG_COUNT 10
 #define TEST_DDR_REGION_CNT 16
 
-typedef struct {
-    uint64_t buf[MAX_ARRAY_SIZE];
-} EXERCISER_INFO_BLOCK;
-
-typedef struct {
-    uint32_t                num_exerciser_cards;
-    EXERCISER_INFO_BLOCK    info[];  //Array of information blocks - per stimulus generation controller
-} EXERCISER_INFO_TABLE;
+#define EXERCISER_ID   0xED0113B5 //device id + vendor id
 
 typedef enum {
-    EXERCISER_NUM_CARDS = 0x1
-} EXERCISER_INFO_TYPE;
+    TYPE0 = 0x0,
+    TYPE1 = 0x1,
+} EXERCISER_CFG_HEADER_TYPE;
+
+typedef enum {
+    CFG_READ   = 0x0,
+    CFG_WRITE  = 0x1,
+} EXERCISER_CFG_TXN_ATTR;
 
 typedef enum {
     EDMA_NO_SUPPORT   = 0x0,
@@ -567,7 +572,8 @@ typedef enum {
     MSIX_ATTRIBUTES  = 0x3,
     DMA_ATTRIBUTES   = 0x4,
     P2P_ATTRIBUTES   = 0x5,
-    PASID_ATTRIBUTES = 0x6
+    PASID_ATTRIBUTES = 0x6,
+    CFG_TXN_ATTRIBUTES = 0x7
 } EXERCISER_PARAM_TYPE;
 
 typedef enum {
@@ -587,7 +593,9 @@ typedef enum {
     PASID_TLP_START = 0x7,
     PASID_TLP_STOP  = 0x8,
     NO_SNOOP_CLEAR_TLP_START = 0x9,
-    NO_SNOOP_CLEAR_TLP_STOP  = 0xa
+    NO_SNOOP_CLEAR_TLP_STOP  = 0xa,
+    START_TXN_MONITOR        = 0xb,
+    STOP_TXN_MONITOR         = 0xc
 } EXERCISER_OPS;
 
 typedef enum {
@@ -638,14 +646,13 @@ typedef enum {
 } EXERCISER_DATA_TYPE;
 
 
-void pal_exerciser_create_info_table(EXERCISER_INFO_TABLE *exerciser_info_table);
-uint32_t pal_exerciser_get_info(EXERCISER_INFO_TYPE type, uint32_t instance);
-uint32_t pal_exerciser_set_param(EXERCISER_PARAM_TYPE type, uint64_t value1, uint64_t value2, uint32_t instance);
-uint32_t pal_exerciser_get_param(EXERCISER_PARAM_TYPE type, uint64_t *value1, uint64_t *value2, uint32_t instance);
-uint32_t pal_exerciser_set_state(EXERCISER_STATE state, uint64_t *value, uint32_t instance);
-uint32_t pal_exerciser_get_state(EXERCISER_STATE state, uint64_t *value, uint32_t instance);
+uint32_t pal_exerciser_set_param(EXERCISER_PARAM_TYPE type, uint64_t value1, uint64_t value2, uint32_t bdf);
+uint32_t pal_exerciser_get_param(EXERCISER_PARAM_TYPE type, uint64_t *value1, uint64_t *value2, uint32_t bdf);
+uint32_t pal_exerciser_set_state(EXERCISER_STATE state, uint64_t *value, uint32_t bdf);
+uint32_t pal_exerciser_get_state(EXERCISER_STATE *state, uint32_t bdf);
 uint32_t pal_exerciser_ops(EXERCISER_OPS ops, uint64_t param, uint32_t instance);
-uint32_t pal_exerciser_get_data(EXERCISER_DATA_TYPE type, exerciser_data_t *data, uint32_t instance);
+uint32_t pal_exerciser_get_data(EXERCISER_DATA_TYPE type, exerciser_data_t *data, uint32_t bdf, uint64_t ecam);
 
+uint32_t pal_nist_generate_rng(uint32_t *rng_buffer);
 #endif
 
