@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2019, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2020, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,6 +20,8 @@
 
 #define MAX_NUM_PE_LEVEL0        0x8
 #define MAX_NUM_PE_LEVEL2        (2 << 27)
+
+#define MPIDR_AFF_MASK           (0xFF00FFFFFF)
 
 //
 //  AARCH64 processor exception types.
