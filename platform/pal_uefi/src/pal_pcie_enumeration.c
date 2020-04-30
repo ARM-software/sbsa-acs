@@ -212,3 +212,10 @@ pal_pci_read_config_byte (
 {
 
 }
+
+VOID pal_pcie_enumerate(VOID)
+{
+  /**Implemented functionality only for Baremetal support
+   * For uefi, enumeration is done during bootup
+   * Hence, not implemented for uefi.*/
+}

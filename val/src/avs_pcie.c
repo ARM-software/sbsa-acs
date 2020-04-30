@@ -220,6 +220,17 @@ uint32_t val_pcie_get_bdf_config_addr(uint32_t bdf)
 
 
 /**
+  @brief  This API performs the PCI enumeration
+
+**/
+void val_pcie_enumerate(void)
+{
+
+    pal_pcie_enumerate();
+
+}
+
+/**
   @brief   This API executes all the PCIe tests sequentially
            1. Caller       -  Application layer.
            2. Prerequisite -  val_pcie_create_info_table()
@@ -347,6 +358,8 @@ val_pcie_create_info_table(uint64_t *pcie_info_table)
   pal_pcie_create_info_table(g_pcie_info_table);
 
   val_print(AVS_PRINT_TEST, " PCIE_INFO: Number of ECAM regions    :    %lx \n", val_pcie_get_info(PCIE_INFO_NUM_ECAM, 0));
+
+  val_pcie_enumerate();
 }
 
 /**
