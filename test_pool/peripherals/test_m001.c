@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018, 2020 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -24,9 +24,8 @@
 #define TEST_NUM   (AVS_PER_TEST_NUM_BASE + 5)
 #define TEST_DESC  "Memory Access to Un-Populated addr"
 
-#define START_ADDR 0x4200000       // 66 MB - Randomly chosen
-#define LOOP_VAR   3               // Number of Addresses to check
-#define STEP_SIZE  0x1000000       // Step size to increment address
+#define LOOP_VAR   3          /* Number of Addresses to check */
+#define STEP_SIZE  0x1000000  /* Step size to increment address */
 
 static void *branch_to_test;
 
@@ -51,17 +50,25 @@ static
 void
 payload()
 {
-  addr_t addr = START_ADDR;
+  addr_t   addr;
   uint64_t attr;
-  uint32_t loop_var = LOOP_VAR;      //Increase to 2048 times to increase coverage
-                              //of all unpopulated regions
-
+  uint32_t instance = 0;
+  uint64_t status;
+  uint32_t loop_var = LOOP_VAR;
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
 
   val_pe_install_esr(EXCEPT_AARCH64_SYNCHRONOUS_EXCEPTIONS, esr);
 
   /* If we don't find a single un-populated address, mark this test as skipped */
   val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
+
+  /* Get the base address of unpopulated region */
+  status = val_memory_get_unpopulated_addr(&addr, instance);
+  if (status) {
+      val_print(AVS_PRINT_ERR, "\n      Error in obtaining unpopulated memory for instance 0x%d", instance);
+      return;
+  }
+
   while (loop_var > 0) {
       if (val_memory_get_info(addr, &attr) == MEM_TYPE_NOT_POPULATED) {
          /* default value of FAIL, Pass is set in the exception handler */
@@ -78,8 +85,8 @@ exception_taken:
           }
 
       }
-      addr += STEP_SIZE;   //check at 16MB hops
-      loop_var --;
+      addr += STEP_SIZE;
+      loop_var--;
   }
 
 }
@@ -109,4 +116,3 @@ m001_entry(uint32_t num_pe)
 
   return status;
 }
-

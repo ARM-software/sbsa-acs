@@ -304,7 +304,7 @@ void     val_memory_create_info_table(uint64_t *memory_info_table);
 void     val_memory_free_info_table(void);
 uint32_t val_memory_execute_tests(uint32_t level, uint32_t num_pe);
 uint64_t val_memory_get_info(addr_t addr, uint64_t *attr);
-
+uint64_t val_memory_get_unpopulated_addr(addr_t *addr, uint32_t instance);
 
 /* Secure mode EL3 Firmware tests */
 

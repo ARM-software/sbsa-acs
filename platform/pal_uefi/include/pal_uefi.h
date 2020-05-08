@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2019, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2020, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -384,5 +384,5 @@ VOID    *pal_mem_alloc(UINT32 size);
 VOID    *pal_mem_alloc_coherent(UINT32 bdf, UINT32 size, VOID *pa);
 VOID    pal_mem_free_coherent(UINT32 bdf, UINT32 size, VOID *va, VOID *pa);
 VOID    *pal_mem_virt_to_phys(VOID *va);
-
+UINT64  pal_memory_get_unpopulated_addr(UINT64 *addr, UINT32 instance);
 #endif

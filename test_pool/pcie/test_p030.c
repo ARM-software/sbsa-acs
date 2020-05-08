@@ -114,7 +114,7 @@ payload(void)
        * Function. Based on platform configuration, this may
        * even cause an sync/async exception.
        */
-      bar_data = val_mmio_read((addr_t)(bar_base));
+      bar_data = (*(volatile addr_t *)bar_base);
 
 exception_return:
       /*
