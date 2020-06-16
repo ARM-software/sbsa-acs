@@ -170,7 +170,7 @@ val_pcie_write_cfg(uint32_t bdf, uint32_t offset, uint32_t data)
 
   @return  function config space address
 **/
-uint32_t val_pcie_get_bdf_config_addr(uint32_t bdf)
+uint64_t val_pcie_get_bdf_config_addr(uint32_t bdf)
 {
   uint32_t bus      = PCIE_EXTRACT_BDF_BUS(bdf);
   uint32_t dev      = PCIE_EXTRACT_BDF_DEV(bdf);
@@ -180,7 +180,6 @@ uint32_t val_pcie_get_bdf_config_addr(uint32_t bdf)
   uint32_t num_ecam;
   addr_t   ecam_base = 0;
   uint32_t i = 0;
-
 
   if ((bus >= PCIE_MAX_BUS) || (dev >= PCIE_MAX_DEV) || (func >= PCIE_MAX_FUNC)) {
      val_print(AVS_PRINT_ERR, "Invalid Bus/Dev/Func  %x \n", bdf);
@@ -405,6 +404,7 @@ val_pcie_create_device_bdf_table()
   uint32_t ecam_index;
   uint32_t bdf;
   uint32_t reg_value;
+  uint32_t cid_offset;
 
   /* if table is already present, return success */
   if (g_pcie_bdf_table)
@@ -454,7 +454,17 @@ val_pcie_create_device_bdf_table()
 
                   /* Store the Function's BDF if there was a valid response */
                   if (reg_value != PCIE_UNKNOWN_RESPONSE)
+                  {
+                      /* Skip if the device is a host bridge */
+                      if (val_pcie_is_host_bridge(bdf))
+                          continue;
+
+                      /* Skip if the device is a PCI legacy device */
+                      if (val_pcie_find_capability(bdf, PCIE_CAP, CID_PCIECS,  &cid_offset) != PCIE_SUCCESS)
+                          continue;
+
                       g_pcie_bdf_table->device[g_pcie_bdf_table->num_entries++].bdf = bdf;
+                  }
                   else
                       /* None of the other Function's exist if zeroth Function doesn't exist */
                       if (func_index == 0)
@@ -1234,6 +1244,8 @@ uint32_t val_pcie_bitfield_check(uint32_t bdf, uint64_t *bitfield_entry)
   uint32_t temp_reg_value;
   uint32_t reg_overwrite_value;
   uint32_t alignment_byte_cnt;
+  uint32_t status = PCIE_SUCCESS;
+
   pcie_cfgreg_bitfield_entry *bf_entry;
 
   bf_entry = (pcie_cfgreg_bitfield_entry *)bitfield_entry;
@@ -1252,19 +1264,29 @@ uint32_t val_pcie_bitfield_check(uint32_t bdf, uint64_t *bitfield_entry)
           cap_base = 0;
           break;
       case PCIE_CAP:
-          val_pcie_find_capability(bdf, PCIE_CAP, bf_entry->cap_id, &cap_base);
+          status = val_pcie_find_capability(bdf, PCIE_CAP, bf_entry->cap_id, &cap_base);
           break;
       case PCIE_ECAP:
-          val_pcie_find_capability(bdf, PCIE_ECAP, bf_entry->ecap_id, &cap_base);
+          status = val_pcie_find_capability(bdf, PCIE_ECAP, bf_entry->ecap_id, &cap_base);
           break;
       default:
           val_print(AVS_PRINT_ERR, "\n      Invalid reg_type : 0x%x  ", bf_entry->reg_type);
           return 1;
   }
 
+  if (status != PCIE_SUCCESS)
+  {
+      val_print(AVS_PRINT_ERR, "\n        PCIe Capability not found for BDF 0x%x", bdf);
+      return status;
+  }
 
   /* Derive bit-field of interest from the register value */
   val_pcie_read_cfg(bdf, cap_base + reg_offset, &reg_value);
+
+  /* To prevent status bits are clear when write 1, just clear it firstly */
+  val_pcie_write_cfg(bdf, cap_base + reg_offset, reg_value);
+  val_pcie_read_cfg(bdf, cap_base + reg_offset, &reg_value);
+
   bf_value = (reg_value >> REG_SHIFT(alignment_byte_cnt, bf_entry->start)) &
                     REG_MASK(bf_entry->end, bf_entry->start);
 
@@ -1295,6 +1317,8 @@ uint32_t val_pcie_bitfield_check(uint32_t bdf, uint64_t *bitfield_entry)
           reg_overwrite_value = reg_value;
           val_pcie_write_cfg(bdf, cap_base + reg_offset, reg_overwrite_value);
           val_pcie_read_cfg(bdf, cap_base + reg_offset, &reg_overwrite_value);
+          reg_overwrite_value = (reg_overwrite_value >> REG_SHIFT(alignment_byte_cnt, bf_entry->start)) &
+                    REG_MASK(bf_entry->end, bf_entry->start);
           /* Software must return 0 when read */
           reg_value = 0;
           break;
@@ -1447,7 +1471,7 @@ val_pcie_get_mmio_bar(uint32_t bdf, void *base)
   while (index < TYPE0_MAX_BARS)
   {
       /* Read the base address register at loop index */
-      val_pcie_read_cfg(bdf, TYPE01_BAR + index, &bar_low32bits);
+      val_pcie_read_cfg(bdf, TYPE01_BAR + index * 4, &bar_low32bits);
 
       /* Check if the BAR is Memory Mapped IO type */
       if (((bar_low32bits >> BAR_MIT_SHIFT) & BAR_MIT_MASK) == MMIO)
@@ -1456,7 +1480,7 @@ val_pcie_get_mmio_bar(uint32_t bdf, void *base)
           if (((bar_low32bits >> BAR_MDT_SHIFT) & BAR_MDT_MASK) == BITS_64)
           {
               /* Read the second sequential BAR at next index */
-              val_pcie_read_cfg(bdf, TYPE01_BAR + index + 1, &bar_high32bits);
+              val_pcie_read_cfg(bdf, TYPE01_BAR + (index + 1) * 4, &bar_high32bits);
 
               /* Fill upper 32-bits of 64-bit address with second sequential BAR */
               base_ptr[1] = bar_high32bits;
@@ -1510,6 +1534,7 @@ val_pcie_get_downstream_function(uint32_t bdf, uint32_t *dsf_bdf)
   uint32_t index;
   uint32_t sec_bus;
   uint32_t sub_bus;
+  uint32_t seg;
   uint32_t reg_value;
   uint32_t type1_bdf;
   uint32_t type1_flag;
@@ -1520,11 +1545,13 @@ val_pcie_get_downstream_function(uint32_t bdf, uint32_t *dsf_bdf)
 
   /*
    * Read four bytes of config space starting from Primary Bus num
-   * register and extract the Secondary and Subordinate Bus numbers.
+   * register and extract the Secondary and Subordinate Bus numbers
+   * and the segment.
    */
   val_pcie_read_cfg(bdf, TYPE1_PBN, &reg_value);
   sec_bus = ((reg_value >> SECBN_SHIFT) & SECBN_MASK);
   sub_bus = ((reg_value >> SUBBN_SHIFT) & SUBBN_MASK);
+  seg = (PCIE_EXTRACT_BDF_SEG(bdf));
 
   /*
    * Search for a pcie Function whose bus number is within the range of
@@ -1536,7 +1563,8 @@ val_pcie_get_downstream_function(uint32_t bdf, uint32_t *dsf_bdf)
   while (index < g_pcie_bdf_table->num_entries)
   {
       if (((PCIE_EXTRACT_BDF_BUS(g_pcie_bdf_table->device[index].bdf)) >= sec_bus) &&
-          ((PCIE_EXTRACT_BDF_BUS(g_pcie_bdf_table->device[index].bdf)) <= sub_bus))
+          ((PCIE_EXTRACT_BDF_BUS(g_pcie_bdf_table->device[index].bdf)) <= sub_bus) &&
+          ((PCIE_EXTRACT_BDF_SEG(g_pcie_bdf_table->device[index].bdf)) == seg))
       {
           *dsf_bdf = g_pcie_bdf_table->device[index].bdf;
 
@@ -1663,4 +1691,23 @@ val_pcie_parent_is_rootport(uint32_t dsf_bdf, uint32_t *rp_bdf)
   }
 
   return 1;
+}
+
+/**
+  @brief  Check if BDF is PCIe Host Bridge.
+
+  @param  bdf - Function's Segment/Bus/Dev/Func in PCIE_CREATE_BDF format
+  @return 0 If not a Host Bridge, 1 If it's a Host Bridge.
+**/
+uint8_t
+val_pcie_is_host_bridge(uint32_t bdf)
+{
+  uint32_t  reg_value;
+
+  val_pcie_read_cfg(bdf, TYPE01_RIDR, &reg_value);
+  if ((HB_BASE_CLASS == ((reg_value >> CC_BASE_SHIFT) & CC_BASE_MASK)) &&
+      (HB_SUB_CLASS == ((reg_value >> CC_SUB_SHIFT) & CC_SUB_MASK)))
+    return 1;
+
+  return 0;
 }

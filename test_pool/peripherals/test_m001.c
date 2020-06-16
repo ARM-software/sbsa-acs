@@ -25,7 +25,6 @@
 #define TEST_DESC  "Memory Access to Un-Populated addr"
 
 #define LOOP_VAR   3          /* Number of Addresses to check */
-#define STEP_SIZE  0x1000000  /* Step size to increment address */
 
 static void *branch_to_test;
 
@@ -58,18 +57,26 @@ payload()
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
 
   val_pe_install_esr(EXCEPT_AARCH64_SYNCHRONOUS_EXCEPTIONS, esr);
+  val_pe_install_esr(EXCEPT_AARCH64_SERROR, esr);
+  val_pe_install_esr(EXCEPT_AARCH64_IRQ, esr);
+  val_pe_install_esr(EXCEPT_AARCH64_FIQ, esr);
 
   /* If we don't find a single un-populated address, mark this test as skipped */
   val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
 
-  /* Get the base address of unpopulated region */
-  status = val_memory_get_unpopulated_addr(&addr, instance);
-  if (status) {
-      val_print(AVS_PRINT_ERR, "\n      Error in obtaining unpopulated memory for instance 0x%d", instance);
-      return;
-  }
+  while (loop_var) {
+      /* Get the base address of unpopulated region */
+      status = val_memory_get_unpopulated_addr(&addr, instance);
+      if (status == EFI_NO_MAPPING) {
+          val_print(AVS_PRINT_INFO, "\n      All instances of unpopulated memory were obtained", 0);
+          return;
+      }
 
-  while (loop_var > 0) {
+      if (status) {
+          val_print(AVS_PRINT_ERR, "\n      Error in obtaining unpopulated memory for instance 0x%d", instance);
+          return;
+      }
+
       if (val_memory_get_info(addr, &attr) == MEM_TYPE_NOT_POPULATED) {
          /* default value of FAIL, Pass is set in the exception handler */
           val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
@@ -85,8 +92,8 @@ exception_taken:
           }
 
       }
-      addr += STEP_SIZE;
-      loop_var--;
+
+      instance++;
   }
 
 }

@@ -321,6 +321,9 @@ pal_memory_get_unpopulated_addr(UINT64 *addr, UINT32 instance)
     {
       if (Memory_instance == instance)
       {
+        if (*addr == 0)
+          continue;
+
         *addr = MemorySpaceMap->BaseAddress;
         sbsa_print(AVS_PRINT_INFO,L"Unpopulated region with base address 0x%lX found\n", *addr);
         return EFI_SUCCESS;

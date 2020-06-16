@@ -177,6 +177,7 @@ void val_pcie_get_mmio_bar(uint32_t bdf, void *base);
 uint32_t val_pcie_get_downstream_function(uint32_t bdf, uint32_t *dsf_bdf);
 uint32_t val_pcie_get_rootport(uint32_t bdf, uint32_t *rp_bdf);
 uint8_t val_pcie_parent_is_rootport(uint32_t dsf_bdf, uint32_t *rp_bdf);
+uint8_t val_pcie_is_host_bridge(uint32_t bdf);
 
 /* IO-VIRT APIs */
 typedef enum {

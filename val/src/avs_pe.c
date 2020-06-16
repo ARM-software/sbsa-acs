@@ -76,15 +76,20 @@ val_pe_execute_tests(uint32_t level, uint32_t num_pe)
       status |= c018_entry(num_pe);
   }
 
-  status |= c019_entry(num_pe);
-  status |= c020_entry(num_pe);
-  status |= c021_entry(num_pe);
-  status |= c022_entry(num_pe);
-  status |= c023_entry(num_pe);
-  status |= c024_entry(num_pe);
-  status |= c025_entry(num_pe);
-  status |= c026_entry(num_pe);
-  status |= c027_entry(num_pe);
+  if (level > 3) {
+      status |= c019_entry(num_pe);
+      status |= c020_entry(num_pe);
+      status |= c021_entry(num_pe);
+      status |= c022_entry(num_pe);
+  }
+
+  if (level > 4) {
+      status |= c023_entry(num_pe);
+      status |= c024_entry(num_pe);
+      status |= c025_entry(num_pe);
+      status |= c026_entry(num_pe);
+      status |= c027_entry(num_pe);
+  }
 
   if (status != AVS_STATUS_PASS)
       val_print(AVS_PRINT_TEST, "\n      *** One or more PE tests have failed... *** \n", 0);

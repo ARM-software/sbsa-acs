@@ -49,10 +49,14 @@ payload(void)
       bdf = bdf_tbl_ptr->device[tbl_index].bdf;
       dp_type = val_pcie_device_port_type(bdf);
 
+      /* Skip this Check for Host Bridge */
+      if (val_pcie_is_host_bridge(bdf))
+        continue;
+
       /* Check entry is endpoint or rciep */
       if ((dp_type == iEP_EP) || (dp_type == RCiEP))
       {
-          /* If MSI or MSI-X not supported, test fails */
+         /* If MSI or MSI-X not supported, test fails */
          if ((val_pcie_find_capability(bdf, PCIE_CAP, CID_MSI, &cap_base) == PCIE_CAP_NOT_FOUND) &&
              (val_pcie_find_capability(bdf, PCIE_CAP, CID_MSIX, &cap_base) == PCIE_CAP_NOT_FOUND))
               test_fails++;

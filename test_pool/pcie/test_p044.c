@@ -50,7 +50,10 @@ uint8_t func_ecam_is_rp_ecam(uint32_t dsf_bdf)
       /* Check if this table entry is a Root Port */
       if (dp_type == RP || dp_type == iEP_RP)
       {
-         /* Check if the entry's bus range covers down stream function */
+          if (PCIE_EXTRACT_BDF_SEG(bdf) != PCIE_EXTRACT_BDF_SEG(dsf_bdf))
+              continue;
+
+          /* Check if the entry's bus range covers down stream function */
           val_pcie_read_cfg(bdf, TYPE1_PBN, &reg_value);
           if ((dsf_bus >= ((reg_value >> SECBN_SHIFT) & SECBN_MASK)) &&
               (dsf_bus <= ((reg_value >> SUBBN_SHIFT) & SUBBN_MASK)))
