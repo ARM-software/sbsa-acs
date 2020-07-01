@@ -1234,6 +1234,7 @@ uint32_t val_pcie_bitfield_check(uint32_t bdf, uint64_t *bitfield_entry)
   uint32_t temp_reg_value;
   uint32_t reg_overwrite_value;
   uint32_t alignment_byte_cnt;
+  uint32_t bitfield_mask;
   pcie_cfgreg_bitfield_entry *bf_entry;
 
   bf_entry = (pcie_cfgreg_bitfield_entry *)bitfield_entry;
@@ -1278,6 +1279,9 @@ uint32_t val_pcie_bitfield_check(uint32_t bdf, uint64_t *bitfield_entry)
       return 1;
   }
 
+  bitfield_mask = (REG_MASK(bf_entry->end, bf_entry->start) <<
+                   REG_SHIFT(alignment_byte_cnt, bf_entry->start));
+
   /* Check if bit-field attribute is proper */
   switch (bf_entry->attr)
   {
@@ -1285,8 +1289,7 @@ uint32_t val_pcie_bitfield_check(uint32_t bdf, uint64_t *bitfield_entry)
       case READ_ONLY:
       case STICKY_RO:
           /* Software must not alter these bits */
-          reg_overwrite_value = reg_value ^ (REG_MASK(bf_entry->end, bf_entry->start) <<
-                                       REG_SHIFT(alignment_byte_cnt, bf_entry->start));
+          reg_overwrite_value = reg_value ^ bitfield_mask;
           val_pcie_write_cfg(bdf, cap_base + reg_offset, reg_overwrite_value);
           val_pcie_read_cfg(bdf, cap_base + reg_offset, &reg_overwrite_value);
           break;
@@ -1296,12 +1299,11 @@ uint32_t val_pcie_bitfield_check(uint32_t bdf, uint64_t *bitfield_entry)
           val_pcie_write_cfg(bdf, cap_base + reg_offset, reg_overwrite_value);
           val_pcie_read_cfg(bdf, cap_base + reg_offset, &reg_overwrite_value);
           /* Software must return 0 when read */
-          reg_value = 0;
+          reg_value &= ~bitfield_mask;
           break;
       case RSVDZ_RO:
           /* Software must use 0b to write to these bits */
-          reg_overwrite_value = reg_value & (~(REG_MASK(bf_entry->end, bf_entry->start) <<
-                                       REG_SHIFT(alignment_byte_cnt, bf_entry->start)));
+          reg_overwrite_value = reg_value & (~bitfield_mask);
           val_pcie_write_cfg(bdf, cap_base + reg_offset, reg_overwrite_value);
           val_pcie_read_cfg(bdf, cap_base + reg_offset, &reg_overwrite_value);
           break;
@@ -1309,8 +1311,7 @@ uint32_t val_pcie_bitfield_check(uint32_t bdf, uint64_t *bitfield_entry)
       case STICKY_RW:
           /* Software can alter these bits, toggle the required bits and write to register */
           temp_reg_value = reg_value;
-          reg_overwrite_value = reg_value ^ (REG_MASK(bf_entry->end, bf_entry->start) <<
-                                       REG_SHIFT(alignment_byte_cnt, bf_entry->start));
+          reg_overwrite_value = reg_value ^ bitfield_mask;
           val_pcie_write_cfg(bdf, cap_base + reg_offset, reg_overwrite_value);
           val_pcie_read_cfg(bdf, cap_base + reg_offset, &reg_value);
 	  /* Restore the original register value */
