@@ -5,7 +5,7 @@
 ## Server Base System Architecture
 **Server Base System Architecture** (SBSA) specification specifies a hardware system architecture based on the Arm 64-bit architecture. Server system software such as operating systems, hypervisors, and firmware rely on this. It addresses processing element features and key aspects of system architecture.
 
-For more information, download the [SBSA specification](http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.den0029b/index.html)
+For more information, download the [SBSA specification](https://developer.arm.com/documentation/den0029/)
 
 
 ## SBSA - Architecture Compliance Suite
