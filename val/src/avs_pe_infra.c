@@ -297,8 +297,8 @@ val_pe_default_esr(uint64_t interrupt_type, void *context)
     uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
     val_print(AVS_PRINT_WARN, "\n        Unexpected exception occured", 0);
 #ifndef TARGET_LINUX
-    val_print(AVS_PRINT_WARN, "\n        FAR reported = 0x%x", val_pe_get_far(context));
-    val_print(AVS_PRINT_WARN, "\n        ESR reported = 0x%x", val_pe_get_esr(context));
+    val_print(AVS_PRINT_WARN, "\n        FAR reported = 0x%llx", val_pe_get_far(context));
+    val_print(AVS_PRINT_WARN, "\n        ESR reported = 0x%llx", val_pe_get_esr(context));
 #endif
     val_set_status(index, RESULT_FAIL(g_sbsa_level, 0, 01));
     val_pe_update_elr(context, g_exception_ret_addr);

@@ -180,7 +180,7 @@ uint32_t val_exerciser_init(uint32_t instance)
 }
 /**
   @brief   This API performs the input operation using the PCIe stimulus generation hardware
-  @param   ops          - Operation thta needs to be performed with the stimulus hadrware
+  @param   ops          - Operation that needs to be performed with the stimulus hadrware
   @param   value        - Additional information to perform the operation
   @param   instance     - Stimulus hardware instance number
   @return  status       - SUCCESS if the operation is successfully performed using the hardware

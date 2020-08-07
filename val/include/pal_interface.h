@@ -516,7 +516,7 @@ typedef struct {
 void  pal_memory_create_info_table(MEMORY_INFO_TABLE *memoryInfoTable);
 uint64_t pal_memory_ioremap(void *addr, uint32_t size, uint32_t attr);
 void pal_memory_unmap(void *addr);
-
+uint64_t pal_memory_get_unpopulated_addr(uint64_t *addr, uint32_t instance);
 
 /* Common Definitions */
 void     pal_print(char8_t *string, uint64_t data);

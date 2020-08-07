@@ -55,6 +55,7 @@
   DebugLib
   BaseMemoryLib
   ShellCEntryLib
+  DxeServicesTableLib
   UefiBootServicesTableLib
   UefiRuntimeServicesTableLib
 
