@@ -26,6 +26,8 @@
   typedef char          char8_t;
   typedef long long int addr_t;
 #else
+  typedef INT8   int8_t;
+  typedef INT32  int32_t;
   typedef CHAR8  char8_t;
   typedef CHAR16 char16_t;
   typedef UINT8  uint8_t;

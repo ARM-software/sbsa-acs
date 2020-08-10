@@ -36,6 +36,7 @@ payload(void)
   uint32_t dp_type;
   uint32_t cap_base;
   uint32_t test_fails;
+  uint32_t test_skip = 1;
   pcie_device_bdf_table *bdf_tbl_ptr;
 
   pe_index = val_pe_get_index_mpid(val_pe_get_mpid());
@@ -52,13 +53,18 @@ payload(void)
       /* Check entry is onchip peripherals */
       if ((dp_type == iEP_EP) || (dp_type == RCiEP) || (dp_type == iEP_RP))
       {
-          /* If Power Management capability not supported, test fails */
+         /* If test runs for atleast an endpoint */
+         test_skip = 0;
+
+         /* If Power Management capability not supported, test fails */
          if (val_pcie_find_capability(bdf, PCIE_CAP, CID_PMC, &cap_base) == PCIE_CAP_NOT_FOUND)
               test_fails++;
       }
   }
 
-  if (test_fails)
+  if (test_skip == 1)
+      val_set_status(pe_index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
+  else if (test_fails)
       val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, test_fails));
   else
       val_set_status(pe_index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));

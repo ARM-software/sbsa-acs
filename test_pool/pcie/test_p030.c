@@ -52,6 +52,7 @@ payload(void)
   uint32_t tbl_index;
   uint32_t bar_data;
   uint32_t test_fails;
+  uint32_t test_skip = 1;
   uint64_t bar_base;
   pcie_device_bdf_table *bdf_tbl_ptr;
 
@@ -108,6 +109,9 @@ payload(void)
       /* Set test status as FAIL, update to PASS in exception handler */
       val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
 
+      /* If test runs for atleast an endpoint */
+      test_skip = 0;
+
       /*
        * Read memory mapped BAR to cause unsupported request
        * detected bit set in Device Status Register of the pcie
@@ -139,7 +143,9 @@ exception_return:
        bar_data = 0;
   }
 
-  if (test_fails)
+  if (test_skip == 1)
+      val_set_status(pe_index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
+  else if (test_fails)
       val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, test_fails));
   else
       val_set_status(pe_index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
