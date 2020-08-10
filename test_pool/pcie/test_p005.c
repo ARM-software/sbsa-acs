@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2020, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,6 +19,7 @@
 
 #include "val/include/sbsa_avs_dma.h"
 #include "val/include/sbsa_avs_smmu.h"
+#include "val/include/sbsa_avs_memory.h"
 
 #define TEST_NUM   (AVS_PCIE_TEST_NUM_BASE + 5)
 #define TEST_DESC  "DMA Address translations (SATA)   "
@@ -70,9 +71,9 @@ payload(void)
       val_smmu_ops(SMMU_START_MONITOR_DEV, 0, &target_dev_index, NULL);
 
       /* Allocate DMA-able memory region in DDR */
-      orig_buffer = kzalloc(TEST_DATA_BLK_SIZE, GFP_KERNEL);
-      new_buffer  = kzalloc(TEST_DATA_BLK_SIZE, GFP_KERNEL);
-      backup      = kzalloc(TEST_DATA_BLK_SIZE, GFP_KERNEL);
+      orig_buffer = val_memory_alloc(TEST_DATA_BLK_SIZE);
+      new_buffer  = val_memory_alloc(TEST_DATA_BLK_SIZE);
+      backup      = val_memory_alloc(TEST_DATA_BLK_SIZE);
 
       /* Backup the data on the disk before we override it with test data */
       val_dma_start_from_device(backup, 512, target_dev_index);
@@ -94,12 +95,12 @@ payload(void)
       val_print(AVS_PRINT_DEBUG, " %x \n", *((uint32_t *)new_buffer + 2));
 
 
-      if (memcmp(orig_buffer, new_buffer, TEST_DATA_BLK_SIZE)) {
+      if (val_memory_compare(orig_buffer, new_buffer, TEST_DATA_BLK_SIZE)) {
           val_print(AVS_PRINT_ERR, "\n        Data Compare of DMA TO and FROM Device %d - failed.",
             target_dev_index);
 
-          kfree(orig_buffer);
-          kfree(new_buffer);
+          val_memory_free(orig_buffer);
+          val_memory_free(new_buffer);
 
           /* Restore back the original data */
           val_dma_start_to_device(backup, TEST_DATA_BLK_SIZE, target_dev_index);
@@ -114,13 +115,13 @@ payload(void)
           /* This is to make sure there are no additional address translations in between */
           val_dma_device_get_dma_addr(target_dev_index, &dma_addr, &dma_len);
 
-          if (dma_addr != virt_to_phys(new_buffer))
+          if (dma_addr != *(uint64_t*)val_memory_virt_to_phys(new_buffer))
           {
               /* Restore back the original data */
               val_dma_start_to_device(backup, TEST_DATA_BLK_SIZE, target_dev_index);
 
               val_print(AVS_PRINT_ERR, "\n      Device DMA addr does not match allocated address %lx ", dma_addr);
-              val_print(AVS_PRINT_ERR, "\n      !=  %lx ", virt_to_phys(new_buffer));
+              val_print(AVS_PRINT_ERR, "\n      !=  %lx ", *(uint64_t*)val_memory_virt_to_phys(new_buffer));
               val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
               return;
           }
@@ -132,9 +133,9 @@ payload(void)
       /* Restore back the original data */
       val_dma_start_to_device(backup, TEST_DATA_BLK_SIZE, target_dev_index);
 
-      kfree(orig_buffer);
-      kfree(new_buffer);
-      kfree(backup);
+      val_memory_free(orig_buffer);
+      val_memory_free(new_buffer);
+      val_memory_free(backup);
   }
   val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 02));
 }

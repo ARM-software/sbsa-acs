@@ -538,8 +538,14 @@ void     pal_mem_allocate_shared(uint32_t num_pe, uint32_t sizeofentry);
 void     pal_mem_free_shared(void);
 uint64_t pal_mem_get_shared_addr(void);
 
+uint8_t  pal_mmio_read8(uint64_t addr);
+uint16_t pal_mmio_read16(uint64_t addr);
 uint32_t pal_mmio_read(uint64_t addr);
+uint64_t pal_mmio_read64(uint64_t addr);
+void     pal_mmio_write8(uint64_t addr, uint8_t data);
+void     pal_mmio_write16(uint64_t addr, uint16_t data);
 void     pal_mmio_write(uint64_t addr, uint32_t data);
+void     pal_mmio_write64(uint64_t addr, uint64_t data);
 
 void     pal_pe_update_elr(void *context, uint64_t offset);
 uint64_t pal_pe_get_esr(void *context);

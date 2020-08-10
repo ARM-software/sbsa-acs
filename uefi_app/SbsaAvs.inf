@@ -78,6 +78,7 @@
   ../test_pool/timer_wd/test_w002.c
   ../test_pool/pcie/test_p001.c
   ../test_pool/pcie/test_p002.c
+  ../test_pool/pcie/test_p003.c
   ../test_pool/pcie/test_p020.c
   ../test_pool/pcie/test_p021.c
   ../test_pool/pcie/test_p022.c
@@ -104,6 +105,7 @@
   ../test_pool/pcie/test_p043.c
   ../test_pool/pcie/test_p044.c
   ../test_pool/pcie/test_p045.c
+  ../test_pool/pcie/test_p046.c
   ../test_pool/io_virt/test_i001.c
   ../test_pool/io_virt/test_i002.c
   ../test_pool/io_virt/test_i003.c

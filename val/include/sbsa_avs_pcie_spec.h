@@ -127,6 +127,7 @@
 #define PCIE_CAP_START   0x40
 #define PCIE_CAP_END     0xFC
 #define PCIE_ECAP_START  0x100
+#define PCIE_ECAP_END    0xFFC
 
 /* Capability Structure IDs */
 #define CID_PCIECS     0x10
