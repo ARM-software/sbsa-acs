@@ -836,7 +836,7 @@ val_pcie_increment_bdf(uint32_t bdf)
   uint32_t bus;
   uint32_t dev;
   uint32_t func;
-  uint32_t ecam_cnt;
+  int32_t ecam_cnt;
   uint32_t ecam_index = 0;
 
   seg = PCIE_EXTRACT_BDF_SEG(bdf);
@@ -1002,11 +1002,15 @@ val_pcie_find_capability(uint32_t bdf, uint32_t cid_type, uint32_t cid, uint32_t
 
   uint32_t reg_value;
   uint32_t next_cap_offset;
+  uint32_t ret;
 
   if (cid_type == PCIE_CAP) {
 
       /* Serach in PCIe configuration space */
-      val_pcie_read_cfg(bdf, TYPE01_CPR, &reg_value);
+      ret = val_pcie_read_cfg(bdf, TYPE01_CPR, &reg_value);
+      if (ret == PCIE_NO_MAPPING || reg_value == PCIE_UNKNOWN_RESPONSE)
+          return ret;
+
       next_cap_offset = (reg_value & TYPE01_CPR_MASK);
       while (next_cap_offset)
       {

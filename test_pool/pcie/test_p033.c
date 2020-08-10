@@ -35,6 +35,7 @@ payload(void)
   uint32_t reg_value;
   uint32_t max_payload_value;
   uint32_t test_fails;
+  uint32_t test_skip = 1;
   uint32_t cap_base;
   pcie_device_bdf_table *bdf_tbl_ptr;
 
@@ -57,6 +58,9 @@ payload(void)
       /* Extract Max payload Size Supported value */
       max_payload_value = (reg_value >> DCAPR_MPSS_SHIFT) & DCAPR_MPSS_MASK;
 
+      /* If test runs for atleast an endpoint */
+      test_skip = 0;
+
       /* Valid payload size between 000b (129-bytes) to 101b (4096 bytes) */
       if (!((max_payload_value >= 0x00) && (max_payload_value <= 0x05)))
       {
@@ -66,7 +70,9 @@ payload(void)
       }
   }
 
-  if (test_fails)
+  if (test_skip == 1)
+      val_set_status(pe_index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
+  else if (test_fails)
       val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, test_fails));
   else
       val_set_status(pe_index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));

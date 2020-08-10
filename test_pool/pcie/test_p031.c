@@ -34,6 +34,7 @@ payload(void)
   uint32_t tbl_index;
   uint32_t reg_value;
   uint32_t test_fails;
+  uint32_t test_skip = 1;
   pcie_device_bdf_table *bdf_tbl_ptr;
 
   pe_index = val_pe_get_index_mpid(val_pe_get_mpid());
@@ -52,6 +53,9 @@ payload(void)
       /* Extract BIST register value */
       reg_value = VAL_EXTRACT_BITS(reg_value, BIST_REG_START, BIST_REG_END);
 
+      /* If test runs for atleast an endpoint */
+      test_skip = 0;
+
       /*
        * If BIST Capable bit[7] is clear Completion Code[0:3] and Start Bist[6]
        * must be hardwired to 0b
@@ -65,7 +69,9 @@ payload(void)
       }
   }
 
-  if (test_fails)
+  if (test_skip == 1)
+      val_set_status(pe_index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
+  else if (test_fails)
       val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, test_fails));
   else
       val_set_status(pe_index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));

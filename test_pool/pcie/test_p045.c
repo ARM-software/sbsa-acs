@@ -40,6 +40,7 @@ payload(void)
   uint32_t reg_value;
   uint16_t vendor_id;
   uint32_t device_id;
+  uint32_t test_skip = 1;
   pcie_device_bdf_table *bdf_tbl_ptr;
 
   tbl_index = 0;
@@ -59,6 +60,9 @@ payload(void)
           dp_type = val_pcie_device_port_type(bdf);
           if (dp_type == RP || dp_type == iEP_RP)
           {
+              /* If test runs for atleast an endpoint */
+              test_skip = 0;
+
               if (ecam_base == val_pcie_get_ecam_base(bdf))
               {
                   val_pcie_read_cfg(bdf, TYPE01_VIDR, &reg_value);
@@ -76,7 +80,10 @@ payload(void)
       ecam_index++;
   }
 
-  val_set_status(pe_index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
+  if (test_skip == 1)
+      val_set_status(pe_index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
+  else
+      val_set_status(pe_index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
 }
 
 uint32_t

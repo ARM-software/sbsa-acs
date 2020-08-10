@@ -35,6 +35,7 @@ payload(void)
   uint32_t reg_value;
   uint32_t cap_ptr_value;
   uint32_t test_fails;
+  uint32_t test_skip = 1;
   pcie_device_bdf_table *bdf_tbl_ptr;
 
   pe_index = val_pe_get_index_mpid(val_pe_get_mpid());
@@ -53,6 +54,9 @@ payload(void)
       /* Extract Capabilities Pointer register value */
       cap_ptr_value = (reg_value >> TYPE01_CPR_SHIFT) & TYPE01_CPR_MASK;
 
+      /* If test runs for atleast an endpoint */
+      test_skip = 0;
+
       /* Check Capabilities Pointer is not NULL and is between 40h and FCh */
       if (!((cap_ptr_value != 0x00) && ((cap_ptr_value >= 0x40) && (cap_ptr_value <= 0xFC))))
       {
@@ -62,7 +66,9 @@ payload(void)
       }
   }
 
-  if (test_fails)
+  if (test_skip == 1)
+      val_set_status(pe_index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
+  else if (test_fails)
       val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, test_fails));
   else
       val_set_status(pe_index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
