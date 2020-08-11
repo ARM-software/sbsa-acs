@@ -17,10 +17,12 @@
 
 #include "include/pal_pcie_enum.h"
 #include "include/pal_common_support.h"
+#include "include/platform_override_fvp.h"
 
 extern PCIE_INFO_TABLE *g_pcie_info_table;
 
-uint64_t g_bar_start = PCIE_BAR_VAL;
+uint64_t g_bar64_start = PCIE_BAR64_VAL;
+uint32_t g_bar32_start = PCIE_BAR32_VAL;
 
 /**
   @brief   This API reads 32-bit data from PCIe config space pointed by Bus,
@@ -105,9 +107,9 @@ void pal_pcie_program_bar_reg(uint32_t bus, uint32_t dev, uint32_t func)
         bar_size = bar_size | (bar_upper_bits << 32 );
 
         bar_size = ~bar_size + 1;
-        pal_pci_cfg_write(bus, dev, func, offset, g_bar_start);
-        print(AVS_PRINT_INFO, "Value written to BAR register is %x\n", g_bar_start);
-        g_bar_start = g_bar_start + bar_size;
+        pal_pci_cfg_write(bus, dev, func, offset, g_bar64_start);
+        print(AVS_PRINT_INFO, "Value written to BAR register is %x\n", g_bar64_start);
+        g_bar64_start = g_bar64_start + bar_size;
         offset=offset+8;
     }
 
@@ -122,9 +124,9 @@ void pal_pcie_program_bar_reg(uint32_t bus, uint32_t dev, uint32_t func)
         pal_pci_cfg_read(bus, dev, func, offset, &bar_reg_value);
         bar_reg_value = bar_reg_value & 0xFFFFFFF0;
         bar_size = ~bar_reg_value + 1;
-        pal_pci_cfg_write(bus, dev, func, offset, g_bar_start);
-        print(AVS_PRINT_INFO, "Value written to BAR register is %x\n", g_bar_start);
-        g_bar_start = g_bar_start + bar_size;
+        pal_pci_cfg_write(bus, dev, func, offset, g_bar32_start);
+        print(AVS_PRINT_INFO, "Value written to BAR register is %x\n", g_bar32_start);
+        g_bar32_start = g_bar32_start + bar_size;
         offset=offset+4;
      }
   }

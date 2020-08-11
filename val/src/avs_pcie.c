@@ -263,6 +263,7 @@ val_pcie_execute_tests(uint32_t enable_pcie, uint32_t level, uint32_t num_pe)
   }
 
   status |= p002_entry(num_pe);
+  status |= p003_entry(num_pe);
 #ifdef TARGET_LINUX
   status |= p004_entry(num_pe);
   status |= p005_entry(num_pe);
@@ -323,6 +324,7 @@ val_pcie_execute_tests(uint32_t enable_pcie, uint32_t level, uint32_t num_pe)
     status |= p043_entry(num_pe);
     status |= p044_entry(num_pe);
     status |= p045_entry(num_pe);
+    status |= p046_entry(num_pe);
   }
 #endif
 

@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2020, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -64,6 +64,40 @@ val_print_raw(uint32_t level, char8_t *string, uint64_t data)
 
 /**
   @brief  This API calls PAL layer to read from a Memory address
+          and return 8-bit data.
+          1. Caller       - Test Suite
+          2. Prerequisite - None.
+
+  @param addr   64-bit address
+
+  @return       8-bits of data
+ **/
+uint8_t
+val_mmio_read8(addr_t addr)
+{
+  return pal_mmio_read8(addr);
+
+}
+
+/**
+  @brief  This API calls PAL layer to read from a Memory address
+          and return 16-bit data.
+          1. Caller       - Test Suite
+          2. Prerequisite - None.
+
+  @param addr   64-bit address
+
+  @return       16-bits of data
+ **/
+uint16_t
+val_mmio_read16(addr_t addr)
+{
+  return pal_mmio_read16(addr);
+
+}
+
+/**
+  @brief  This API calls PAL layer to read from a Memory address
           and return 32-bit data.
           1. Caller       - Test Suite
           2. Prerequisite - None.
@@ -77,6 +111,59 @@ val_mmio_read(addr_t addr)
 {
   return pal_mmio_read(addr);
 
+}
+
+/**
+  @brief  This API calls PAL layer to read from a Memory address
+          and return 64-bit data.
+          1. Caller       - Test Suite
+          2. Prerequisite - None.
+
+  @param addr   64-bit address
+
+  @return       64-bits of data
+ **/
+uint64_t
+val_mmio_read64(addr_t addr)
+{
+  return pal_mmio_read64(addr);
+
+}
+
+/**
+  @brief  This function will call PAL layer to write 8-bit data to
+          a Memory address.
+        1. Caller       - Test Suite
+        2. Prerequisite - None.
+
+  @param addr   64-bit address
+  @param data   8-bit data
+
+  @return       None
+ **/
+void
+val_mmio_write8(addr_t addr, uint8_t data)
+{
+
+  pal_mmio_write8(addr, data);
+}
+
+/**
+  @brief  This function will call PAL layer to write 16-bit data to
+          a Memory address.
+        1. Caller       - Test Suite
+        2. Prerequisite - None.
+
+  @param addr   64-bit address
+  @param data   16-bit data
+
+  @return       None
+ **/
+void
+val_mmio_write16(addr_t addr, uint16_t data)
+{
+
+  pal_mmio_write16(addr, data);
 }
 
 /**
@@ -95,6 +182,24 @@ val_mmio_write(addr_t addr, uint32_t data)
 {
 
   pal_mmio_write(addr, data);
+}
+
+/**
+  @brief  This function will call PAL layer to write 64-bit data to
+          a Memory address.
+        1. Caller       - Test Suite
+        2. Prerequisite - None.
+
+  @param addr   64-bit address
+  @param data   64-bit data
+
+  @return       None
+ **/
+void
+val_mmio_write64(addr_t addr, uint64_t data)
+{
+
+  pal_mmio_write64(addr, data);
 }
 
 /**

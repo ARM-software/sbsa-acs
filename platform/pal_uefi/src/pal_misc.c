@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2019, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2020, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -25,6 +25,63 @@
 #include "include/pal_uefi.h"
 
 UINT8   *gSharedMemory;
+
+VOID
+pal_mmio_write8(UINT64 addr, UINT8 data)
+{
+  *(volatile UINT8 *)addr = data;
+  sbsa_print(AVS_PRINT_INFO, L" pal_mmio_write8 Address = %lx  Data = %lx \n", addr, data);
+
+}
+
+VOID
+pal_mmio_write16(UINT64 addr, UINT16 data)
+{
+  *(volatile UINT16 *)addr = data;
+  sbsa_print(AVS_PRINT_INFO, L" pal_mmio_write16 Address = %lx  Data = %lx \n", addr, data);
+
+}
+
+VOID
+pal_mmio_write64(UINT64 addr, UINT64 data)
+{
+  *(volatile UINT64 *)addr = data;
+  sbsa_print(AVS_PRINT_INFO, L" pal_mmio_write64 Address = %lx  Data = %lx \n", addr, data);
+
+}
+
+UINT8
+pal_mmio_read8(UINT64 addr)
+{
+  UINT8 data;
+
+  data = (*(volatile UINT8 *)addr);
+  sbsa_print(AVS_PRINT_INFO, L" pal_mmio_read8 Address = %lx  Data = %lx \n", addr, data);
+
+  return data;
+}
+
+UINT16
+pal_mmio_read16(UINT64 addr)
+{
+  UINT16 data;
+
+  data = (*(volatile UINT16 *)addr);
+  sbsa_print(AVS_PRINT_INFO, L" pal_mmio_read16 Address = %lx  Data = %lx \n", addr, data);
+
+  return data;
+}
+
+UINT64
+pal_mmio_read64(UINT64 addr)
+{
+  UINT64 data;
+
+  data = (*(volatile UINT64 *)addr);
+  sbsa_print(AVS_PRINT_INFO, L" pal_mmio_read64 Address = %lx  Data = %lx \n", addr, data);
+
+  return data;
+}
 
 /**
   @brief  Provides a single point of abstraction to read from all

@@ -317,4 +317,8 @@ p044_entry(uint32_t num_pe);
 
 uint32_t
 p045_entry(uint32_t num_pe);
+
+uint32_t
+p046_entry(uint32_t num_pe);
+
 #endif

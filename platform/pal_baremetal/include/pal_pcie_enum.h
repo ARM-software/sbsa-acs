@@ -38,7 +38,6 @@
 #define BUS_NUM_REG_OFFSET 0x18
 
 /*BAR offset */
-#define PCIE_BAR_VAL       0x100000
 #define BAR0_OFFSET        0x10
 #define BAR_MAX_OFFSET     0x24
 #define BAR_64_BIT         1

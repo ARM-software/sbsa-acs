@@ -20,6 +20,10 @@
 
 /** Begin config **/
 
+/* PCIe BAR config parameters*/
+#define PCIE_BAR64_VAL       0x500000000
+#define PCIE_BAR32_VAL       0x70000000
+
 /* PE platform config paramaters */
 #define PLATFORM_OVERRIDE_PE_CNT        0x8
 #define PLATFORM_OVERRIDE_PE0_INDEX     0x0
