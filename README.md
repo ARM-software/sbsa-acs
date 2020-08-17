@@ -17,7 +17,7 @@ A few tests are executed by running the SBSA ACS Linux application which in turn
 
 
 ## Release details
- - Code Quality: REL v2.4
+ - Code Quality: REL v2.5
  - The tests are written for version 5.0 of the SBSA specification.
  - PCIe RCiEP tests for Appendix E of SBSA 6.0 specification are also included.
  - The compliance suite is not a substitute for design verification.

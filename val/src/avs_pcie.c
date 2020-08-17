@@ -481,7 +481,7 @@ val_pcie_create_device_bdf_table()
 }
 
 /**
-  @brief  Returns the ECAM address of the input PCIe bridge function
+  @brief  Returns the ECAM address of the input PCIe function
 
   @param  bdf   - Segment/Bus/Dev/Func in PCIE_CREATE_BDF format
   @return ECAM address if success, else NULL address
@@ -499,20 +499,34 @@ addr_t val_pcie_get_ecam_base(uint32_t bdf)
   ecam_index = 0;
   ecam_base = 0;
 
-  val_pcie_read_cfg(bdf, TYPE1_PBN, &reg_value);
-  sec_bus = ((reg_value >> SECBN_SHIFT) & SECBN_MASK);
-  sub_bus = ((reg_value >> SUBBN_SHIFT) & SUBBN_MASK);
   seg_num = PCIE_EXTRACT_BDF_SEG(bdf);
 
   while (ecam_index < val_pcie_get_info(PCIE_INFO_NUM_ECAM, 0))
   {
-      if ((sec_bus >= val_pcie_get_info(PCIE_INFO_START_BUS, ecam_index)) &&
-          (sub_bus <= val_pcie_get_info(PCIE_INFO_END_BUS, ecam_index)) &&
-          (seg_num == val_pcie_get_info(PCIE_INFO_SEGMENT, ecam_index)))
+      if (seg_num == val_pcie_get_info(PCIE_INFO_SEGMENT, ecam_index))
       {
-          ecam_base = val_pcie_get_info(PCIE_INFO_ECAM, ecam_index);
-          break;
+          if (val_pcie_function_header_type(bdf) == TYPE0_HEADER)
+          {
+              /* Return ecam_base if Type0 Header */
+              ecam_base = val_pcie_get_info(PCIE_INFO_ECAM, ecam_index);
+              break;
+          }
+          else
+          {
+              /* Check for Secondary/Subordinate bus if Type1 Header */
+              val_pcie_read_cfg(bdf, TYPE1_PBN, &reg_value);
+              sec_bus = ((reg_value >> SECBN_SHIFT) & SECBN_MASK);
+              sub_bus = ((reg_value >> SUBBN_SHIFT) & SUBBN_MASK);
+
+              if ((sec_bus >= val_pcie_get_info(PCIE_INFO_START_BUS, ecam_index)) &&
+                  (sub_bus <= val_pcie_get_info(PCIE_INFO_END_BUS, ecam_index)))
+              {
+                  ecam_base = val_pcie_get_info(PCIE_INFO_ECAM, ecam_index);
+                  break;
+              }
+          }
       }
+
       ecam_index++;
   }
 
