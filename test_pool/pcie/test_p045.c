@@ -51,7 +51,7 @@ payload(void)
   while (ecam_index < val_pcie_get_info(PCIE_INFO_NUM_ECAM, 0))
   {
       ecam_base = val_pcie_get_info(PCIE_INFO_ECAM, ecam_index);
-      val_print(AVS_PRINT_ERR, "\n       WARNING: RPs under ECAM Base 0x%x :", ecam_base);
+      val_print(AVS_PRINT_DEBUG, "\n       RPs under ECAM Base 0x%x :", ecam_base);
 
       while (tbl_index < bdf_tbl_ptr->num_entries)
       {
@@ -69,9 +69,9 @@ payload(void)
                   device_id = (reg_value >> TYPE01_DIDR_SHIFT) & TYPE01_DIDR_MASK;
                   vendor_id = (reg_value >> TYPE01_VIDR_SHIFT) & TYPE01_VIDR_MASK;
 
-                  val_print(AVS_PRINT_ERR, "\n        BDF: 0x%x ", bdf);
-                  val_print(AVS_PRINT_ERR, "Dev ID: 0x%x ", device_id);
-                  val_print(AVS_PRINT_ERR, "Vendor ID: 0x%x", vendor_id);
+                  val_print(AVS_PRINT_DEBUG, "\n        BDF: 0x%x ", bdf);
+                  val_print(AVS_PRINT_DEBUG, "Dev ID: 0x%x ", device_id);
+                  val_print(AVS_PRINT_DEBUG, "Vendor ID: 0x%x", vendor_id);
               }
           }
 
