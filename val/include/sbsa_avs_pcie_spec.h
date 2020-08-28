@@ -64,6 +64,17 @@
 #define CR_FBTE_MASK   0x1
 #define CR_ID_MASK     0x1
 
+/* Class Code Masks */
+#define CC_SUB_MASK     0xFF   /* Sub Class */
+#define CC_BASE_MASK    0xFF   /* Base Class */
+
+/* Class Code Shifts */
+#define CC_SUB_SHIFT    16
+#define CC_BASE_SHIFT   24
+
+#define HB_BASE_CLASS   0x06
+#define HB_SUB_CLASS    0x00
+
 /* BIST register masks */
 #define BIST_REG_START  24
 #define BIST_REG_END    31

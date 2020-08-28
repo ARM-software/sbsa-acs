@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018, 2020 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,44 +19,24 @@
 #include "val/include/val_interface.h"
 
 #define TEST_NUM   (AVS_PE_TEST_NUM_BASE  +  25)
-#define TEST_DESC  "Check for pointer signing         "
+#define TEST_DESC  "Stage 2 control of mem and cache  "
 
-static void check_pointer_signing_algorithm(uint32_t index, uint64_t data)
+static void payload()
 {
-    /* Read ID_AA64ISAR1_EL1[7:4] for pointer signing using standard algorithm
-     * defined by Arm architecture
-     */
-    if (VAL_EXTRACT_BITS(data, 4, 7) == 0x1)
+    uint64_t data = 0;
+    uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
+
+    if (g_sbsa_level < 5) {
+        val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
+        return;
+    }
+
+    /* Read ID_AA64MMFR2_EL1.FWB[43:40] for stage 2 control of memory types and cacheability */
+    data = VAL_EXTRACT_BITS(val_pe_reg_read(ID_AA64MMFR2_EL1), 40, 43);
+    if (data == 0x1)
         val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
     else
         val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
-}
-static void payload()
-{
-    uint64_t data = val_pe_reg_read(ID_AA64ISAR1_EL1);
-    uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
-
-    if (g_sbsa_level < 4) {
-        val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
-        return;
-
-    } else if (g_sbsa_level < 5) {
-
-        /* Pointer signing is optional, Check if Pointer signing is implemented */
-        if ((VAL_EXTRACT_BITS(data, 4, 7) != 0x1) && (VAL_EXTRACT_BITS(data, 8, 11) != 0x1) &&
-            (VAL_EXTRACT_BITS(data, 24, 27) != 0x1) && (VAL_EXTRACT_BITS(data, 28, 31) != 0x1)) {
-            /* Pointer signing not implemented, Skip the test */
-            val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
-            return;
-        }
-
-        /* Implemented, Check for pointer signing using standard algorithm */
-        check_pointer_signing_algorithm(index, data);
-
-    } else {
-        /* Pointer signing is mandatory, Check for pointer signing using standard algorithm */
-        check_pointer_signing_algorithm(index, data);
-    }
 }
 
 uint32_t c025_entry(uint32_t num_pe)

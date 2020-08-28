@@ -50,7 +50,10 @@ uint8_t func_ecam_is_rp_ecam(uint32_t dsf_bdf)
       /* Check if this table entry is a Root Port */
       if (dp_type == RP || dp_type == iEP_RP)
       {
-         /* Check if the entry's bus range covers down stream function */
+          if (PCIE_EXTRACT_BDF_SEG(bdf) != PCIE_EXTRACT_BDF_SEG(dsf_bdf))
+              continue;
+
+          /* Check if the entry's bus range covers down stream function */
           val_pcie_read_cfg(bdf, TYPE1_PBN, &reg_value);
           if ((dsf_bus >= ((reg_value >> SECBN_SHIFT) & SECBN_MASK)) &&
               (dsf_bus <= ((reg_value >> SUBBN_SHIFT) & SUBBN_MASK)))
@@ -89,6 +92,7 @@ payload(void)
   uint32_t pe_index;
   uint32_t tbl_index;
   uint32_t fail_cnt;
+  uint32_t test_skip = 1;
   pcie_device_bdf_table *bdf_tbl_ptr;
 
   fail_cnt = 0;
@@ -106,16 +110,22 @@ payload(void)
       bdf = bdf_tbl_ptr->device[tbl_index++].bdf;
       dp_type = val_pcie_device_port_type(bdf);
       if (dp_type == EP || dp_type == iEP_EP ||
-               dp_type == UP || dp_type == DP)
+               dp_type == UP || dp_type == DP) {
+          /* If test runs for atleast an endpoint */
+          test_skip = 0;
+
           if (func_ecam_is_rp_ecam(bdf))
           {
               val_print(AVS_PRINT_ERR, "\n        bdf: 0x%x ", bdf);
               val_print(AVS_PRINT_ERR, "dp_type: 0x%x ", dp_type);
               fail_cnt++;
           }
+      }
   }
 
-  if (fail_cnt)
+  if (test_skip == 1)
+      val_set_status(pe_index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
+  else if (fail_cnt)
       val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, fail_cnt));
   else
       val_set_status(pe_index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));

@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018, 2020 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,10 +16,12 @@
 **/
 
 #include <Uefi.h>
+#include <PiDxe.h>
 #include <Library/UefiLib.h>
 #include <Library/UefiBootServicesTableLib.h>
 #include <Library/BaseLib.h>
 #include <Library/BaseMemoryLib.h>
+#include <Library/DxeServicesTableLib.h>
 
 #include <Protocol/AcpiTable.h>
 #include "Include/IndustryStandard/Acpi61.h"
@@ -288,4 +290,48 @@ pal_memory_unmap(VOID *ptr)
 {
 
   return;
+}
+
+/**
+  @brief  Return the address of unpopulated memory of requested
+          instance from the GCD memory map.
+
+  @param  addr      - Address of the unpopulated memory
+          instance  - Instance of memory
+
+  @return  EFI_STATUS
+**/
+UINT64
+pal_memory_get_unpopulated_addr(UINT64 *addr, UINT32 instance)
+{
+  EFI_STATUS                        Status;
+  EFI_GCD_MEMORY_SPACE_DESCRIPTOR  *MemorySpaceMap = NULL;
+  UINT32                            Index;
+  UINTN                             NumberOfDescriptors;
+  UINT32                            Memory_instance = 0;
+
+  /* Get the Global Coherency Domain Memory Space map table */
+  Status = gDS->GetMemorySpaceMap(&NumberOfDescriptors, &MemorySpaceMap);
+  if (Status != EFI_SUCCESS)
+    return Status;
+
+  for (Index = 0; Index < NumberOfDescriptors; Index++, MemorySpaceMap++)
+  {
+    if (MemorySpaceMap->GcdMemoryType == EfiGcdMemoryTypeNonExistent)
+    {
+      if (Memory_instance == instance)
+      {
+        if (*addr == 0)
+          continue;
+
+        *addr = MemorySpaceMap->BaseAddress;
+        sbsa_print(AVS_PRINT_INFO,L"Unpopulated region with base address 0x%lX found\n", *addr);
+        return EFI_SUCCESS;
+      }
+
+      Memory_instance++;
+    }
+  }
+
+  return EFI_NO_MAPPING;
 }

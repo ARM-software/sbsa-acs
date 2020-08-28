@@ -26,6 +26,8 @@
   typedef char          char8_t;
   typedef long long int addr_t;
 #else
+  typedef INT8   int8_t;
+  typedef INT32  int32_t;
   typedef CHAR8  char8_t;
   typedef CHAR16 char16_t;
   typedef UINT8  uint8_t;
@@ -237,6 +239,13 @@ typedef struct {
   uint32_t num_entries;
   PCIE_INFO_BLOCK  block[];
 }PCIE_INFO_TABLE;
+
+
+void     pal_pcie_enumerate(void);
+uint32_t pal_pcie_enumerate_device(uint32_t bus, uint32_t sec_bus);
+void     pal_pcie_program_bar_reg(uint32_t bus, uint32_t dev, uint32_t func);
+void     pal_pci_cfg_write(uint32_t bus, uint32_t dev, uint32_t func, int offset, int data);
+uint32_t pal_pci_cfg_read(uint32_t bus, uint32_t dev, uint32_t func, int offset, uint32_t *value);
 
 uint64_t pal_pcie_get_mcfg_ecam(void);
 void     pal_pcie_create_info_table(PCIE_INFO_TABLE *PcieTable);
@@ -509,7 +518,7 @@ typedef struct {
 void  pal_memory_create_info_table(MEMORY_INFO_TABLE *memoryInfoTable);
 uint64_t pal_memory_ioremap(void *addr, uint32_t size, uint32_t attr);
 void pal_memory_unmap(void *addr);
-
+uint64_t pal_memory_get_unpopulated_addr(uint64_t *addr, uint32_t instance);
 
 /* Common Definitions */
 void     pal_print(char8_t *string, uint64_t data);

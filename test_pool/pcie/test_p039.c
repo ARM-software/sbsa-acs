@@ -44,6 +44,7 @@ payload(void)
   uint32_t rp_requester_cap;
   uint32_t ep_requester_cap;
   uint32_t test_fails;
+  uint32_t test_skip = 1;
   pcie_device_bdf_table *bdf_tbl_ptr;
 
   pe_index = val_pe_get_index_mpid(val_pe_get_mpid());
@@ -76,6 +77,9 @@ payload(void)
 
           rp_requester_cap = val_pcie_get_atomicop_requester_capable(rp_bdf);
 
+          /* If test runs for atleast an endpoint */
+          test_skip = 0;
+
           /* if iEP is atomicop completer capable, RP should be routing or requester capable */
           if ((atomicop_32_cap || atomicop_64_cap || atomicop_128_cap) &&
              ((rp_routing_cap == 0) && (rp_requester_cap == 0)))
@@ -96,7 +100,9 @@ payload(void)
      }
   }
 
-  if (test_fails)
+  if (test_skip == 1)
+      val_set_status(pe_index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
+  else if (test_fails)
       val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, test_fails));
   else
       val_set_status(pe_index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));

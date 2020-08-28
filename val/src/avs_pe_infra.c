@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018, 2020 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -86,11 +86,11 @@ val_pe_get_num()
 
 
 /**
-  @brief   This API reads MPIDR system regiser and return the affx bits
+  @brief   This API reads MPIDR system regiser and return the Affinity bits
            1. Caller       -  Test Suite, VAL
            2. Prerequisite -  None
   @param   None
-  @return  32-bit Affinity value
+  @return  Affinity Bits of MPIDR
 **/
 uint64_t
 val_pe_get_mpid()
@@ -102,10 +102,8 @@ val_pe_get_mpid()
   #else
     data = val_pe_reg_read(MPIDR_EL1);
   #endif
-  //
-  //return the affx bits
-  //
-  data = (((data >> 32) & 0xFF) << 24) | (data & 0xFFFFFF);
+  /* Return the Affinity bits */
+  data = data & MPIDR_AFF_MASK;
   return data;
 
 }
@@ -299,8 +297,8 @@ val_pe_default_esr(uint64_t interrupt_type, void *context)
     uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
     val_print(AVS_PRINT_WARN, "\n        Unexpected exception occured", 0);
 #ifndef TARGET_LINUX
-    val_print(AVS_PRINT_WARN, "\n        FAR reported = 0x%x", val_pe_get_far(context));
-    val_print(AVS_PRINT_WARN, "\n        ESR reported = 0x%x", val_pe_get_esr(context));
+    val_print(AVS_PRINT_WARN, "\n        FAR reported = 0x%llx", val_pe_get_far(context));
+    val_print(AVS_PRINT_WARN, "\n        ESR reported = 0x%llx", val_pe_get_esr(context));
 #endif
     val_set_status(index, RESULT_FAIL(g_sbsa_level, 0, 01));
     val_pe_update_elr(context, g_exception_ret_addr);

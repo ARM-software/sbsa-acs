@@ -39,6 +39,7 @@ payload(void)
   uint32_t cap_base;
   uint32_t ari_frwd_support;
   uint32_t test_fails;
+  uint32_t test_skip = 1;
   pcie_device_bdf_table *bdf_tbl_ptr;
 
   pe_index = val_pe_get_index_mpid(val_pe_get_mpid());
@@ -68,6 +69,9 @@ payload(void)
           val_pcie_read_cfg(rp_bdf, cap_base + DCAP2R_OFFSET, &reg_value);
           ari_frwd_support = (reg_value >> DCAP2R_AFS_SHIFT) & DCAP2R_AFS_MASK;
 
+          /* If test runs for atleast an endpoint */
+          test_skip = 0;
+
           /* If root port not support ARI forwarding, fail the test */
           if (!ari_frwd_support)
               test_fails++;
@@ -75,7 +79,9 @@ payload(void)
       }
   }
 
-  if (test_fails)
+  if (test_skip == 1)
+      val_set_status(pe_index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
+  else if (test_fails)
       val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, test_fails));
   else
       val_set_status(pe_index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));

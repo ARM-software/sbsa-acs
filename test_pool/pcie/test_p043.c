@@ -42,6 +42,7 @@ payload(void)
   uint32_t sec_bus;
   uint32_t sub_bus;
   uint32_t test_fails;
+  uint32_t test_skip = 1;
   uint32_t reg_value;
   pcie_device_bdf_table *bdf_tbl_ptr;
 
@@ -76,6 +77,9 @@ payload(void)
           if (sec_bus != sub_bus)
               continue;
 
+          /* If test runs for atleast an endpoint */
+          test_skip = 0;
+
           /* Configuration Requests specifying Device Numbers (1-31) must be terminated by the
            * Downstream Port or the Root Port with an Unsupported Request Completion Status
            */
@@ -97,7 +101,9 @@ payload(void)
       }
   }
 
-  if (test_fails)
+  if (test_skip == 1)
+      val_set_status(pe_index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
+  else if (test_fails)
       val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, test_fails));
   else
       val_set_status(pe_index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));

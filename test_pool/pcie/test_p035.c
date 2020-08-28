@@ -75,6 +75,7 @@ payload(void)
   uint32_t cap_base;
   uint32_t flr_cap;
   uint32_t test_fails;
+  uint32_t test_skip = 1;
   addr_t config_space_addr;
   void *func_config_space;
   pcie_device_bdf_table *bdf_tbl_ptr;
@@ -131,6 +132,9 @@ payload(void)
           /* Wait for 100 ms */
           val_time_delay_ms(100 * ONE_MILLISECOND);
 
+          /* If test runs for atleast an endpoint */
+          test_skip = 0;
+
           /* Vendor Id should not be 0xFF after max FLR period */
           val_pcie_read_cfg(bdf, 0, &reg_value);
           if ((reg_value & TYPE01_VIDR_MASK) == TYPE01_VIDR_MASK)
@@ -150,7 +154,9 @@ payload(void)
       }
   }
 
-  if (test_fails)
+  if (test_skip == 1)
+      val_set_status(pe_index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
+  else if (test_fails)
       val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, test_fails));
   else
       val_set_status(pe_index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));

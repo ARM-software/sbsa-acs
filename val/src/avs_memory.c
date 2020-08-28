@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2019, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2020, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -90,7 +90,7 @@ val_memory_get_entry_index(uint32_t type, uint32_t instance)
 {
   uint32_t  i = 0;
 
-  while (g_memory_info_table->info[i].type != 0xFF) {
+  while (g_memory_info_table->info[i].type != MEMORY_TYPE_LAST_ENTRY) {
       if (g_memory_info_table->info[i].type == type) {
           if (instance == 0)
              return i;
@@ -220,4 +220,10 @@ void *
 val_memory_virt_to_phys(void *va)
 {
   return pal_mem_virt_to_phys(va);
+}
+
+uint64_t
+val_memory_get_unpopulated_addr(addr_t *addr, uint32_t instance)
+{
+  return pal_memory_get_unpopulated_addr(addr, instance);
 }

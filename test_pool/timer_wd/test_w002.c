@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018, 2020 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -45,7 +45,7 @@ payload()
 {
 
   uint32_t timeout, ns_wdg = 0;
-  uint64_t timer_expire_ticks = 100;
+  uint64_t timer_expire_ticks = 1000;
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
   wd_num = val_wd_get_info(0, WD_INFO_COUNT);
 

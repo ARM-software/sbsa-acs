@@ -39,6 +39,7 @@ payload(void)
   uint32_t bar_index;
   uint32_t  dp_type;
   uint32_t test_fails;
+  uint32_t test_skip = 1;
   pcie_device_bdf_table *bdf_tbl_ptr;
 
   pe_index = val_pe_get_index_mpid(val_pe_get_mpid());
@@ -80,6 +81,9 @@ payload(void)
               if (reg_value == 0)
                   continue;
 
+              /* If test runs for atleast an endpoint */
+              test_skip = 0;
+
               /* Check type[1:2] should be 32-bit or 64-bit */
               addr_type = (reg_value >> BAR_MDT_SHIFT) & BAR_MDT_MASK;
               if ((addr_type != BITS_32) && (addr_type != BITS_64))
@@ -103,7 +107,10 @@ payload(void)
            }
        }
   }
-  if (test_fails)
+
+  if (test_skip == 1)
+      val_set_status(pe_index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
+  else if (test_fails)
       val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, test_fails));
   else
       val_set_status(pe_index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));

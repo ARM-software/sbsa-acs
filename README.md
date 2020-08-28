@@ -5,7 +5,7 @@
 ## Server Base System Architecture
 **Server Base System Architecture** (SBSA) specification specifies a hardware system architecture based on the Arm 64-bit architecture. Server system software such as operating systems, hypervisors, and firmware rely on this. It addresses processing element features and key aspects of system architecture.
 
-For more information, download the [SBSA specification](http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.den0029b/index.html)
+For more information, download the [SBSA specification](https://developer.arm.com/documentation/den0029/)
 
 
 ## SBSA - Architecture Compliance Suite
@@ -17,7 +17,7 @@ A few tests are executed by running the SBSA ACS Linux application which in turn
 
 
 ## Release details
- - Code Quality: REL v2.4
+ - Code Quality: REL v2.5
  - The tests are written for version 5.0 of the SBSA specification.
  - PCIe RCiEP tests for Appendix E of SBSA 6.0 specification are also included.
  - The compliance suite is not a substitute for design verification.

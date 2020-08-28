@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018, 2020 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -59,10 +59,11 @@ payload()
       data = val_smmu_read_cfg(SMMUv3_IDR0, num_smmu);
       if (((data >> 24) & 0x3) == 0x2) {
           val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
-      } else {
-          val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
+          return;
       }
   }
+
+  val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
 
 }
 
