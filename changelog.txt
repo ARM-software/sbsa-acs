@@ -1,3 +1,10 @@
+v20.08_RELv2.5
+
+* SBSA: Add changes to skip if there are any host bridge or legacy PCI devices
+* SBSA: Increased to support nodes of IORT table
+* SBSA: Fix for wrong Affinity bits
+* SBSA: Issue fixes and Enhancements
+
 v20.03_REL2.4
 
 * SBSA: Add SBSA Version 6.0 Generic PCIe New Tests (RCiEP Rules only)
