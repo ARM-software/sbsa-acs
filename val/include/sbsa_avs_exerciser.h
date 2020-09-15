@@ -62,5 +62,10 @@ uint32_t e007_entry(void);
 uint32_t e008_entry(void);
 uint32_t e009_entry(void);
 uint32_t e010_entry(void);
+uint32_t e011_entry(void);
+uint32_t e012_entry(void);
+uint32_t e013_entry(void);
+uint32_t e014_entry(void);
+uint32_t e015_entry(void);
 
 #endif

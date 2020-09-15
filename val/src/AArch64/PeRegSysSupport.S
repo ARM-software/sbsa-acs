@@ -1,5 +1,5 @@
 #/** @file
-# Copyright (c) 2016-2019, Arm Limited or its affiliates. All rights reserved.
+# Copyright (c) 2016-2020, Arm Limited or its affiliates. All rights reserved.
 # SPDX-License-Identifier : Apache-2.0
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -110,6 +110,14 @@ GCC_ASM_EXPORT (AA64ReadSp)
 GCC_ASM_EXPORT (AA64WriteSp)
 GCC_ASM_EXPORT (AA64ReadFar2)
 GCC_ASM_EXPORT (ArmRdvl)
+GCC_ASM_EXPORT (AA64ReadMair1)
+GCC_ASM_EXPORT (AA64ReadMair2)
+GCC_ASM_EXPORT (AA64ReadTcr1)
+GCC_ASM_EXPORT (AA64ReadTcr2)
+GCC_ASM_EXPORT (AA64ReadTtbr0El1)
+GCC_ASM_EXPORT (AA64ReadTtbr0El2)
+GCC_ASM_EXPORT (AA64ReadTtbr1El1)
+GCC_ASM_EXPORT (AA64ReadTtbr1El2)
 
 ASM_PFX(ArmReadMpidr):
   mrs   x0, mpidr_el1           // read EL1 MPIDR
@@ -399,6 +407,38 @@ ASM_PFX(AA64WriteSp):
 
 ASM_PFX(AA64ReadFar2):
   mrs   x0, far_el2
+  ret
+
+ASM_PFX(AA64ReadMair1):
+  mrs   x0, mair_el1           // read EL1 MAIR
+  ret
+
+ASM_PFX(AA64ReadMair2):
+  mrs   x0, mair_el2           // read EL2 MAIR
+  ret
+
+ASM_PFX(AA64ReadTcr1):
+  mrs   x0, tcr_el1           // read EL1 TCR
+  ret
+
+ASM_PFX(AA64ReadTcr2):
+  mrs   x0, tcr_el2           // read EL2 TCR
+  ret
+
+ASM_PFX(AA64ReadTtbr0El2):
+  mrs   x0, ttbr0_el2           // read EL2 TTBR0
+  ret
+
+ASM_PFX(AA64ReadTtbr1El2):
+  mrs   x0, ttbr1_el2           // read EL2 TTBR1
+  ret
+
+ASM_PFX(AA64ReadTtbr0El1):
+  mrs   x0, ttbr0_el1           // read EL1 TTBR0
+  ret
+
+ASM_PFX(AA64ReadTtbr1El1):
+  mrs   x0, ttbr1_el1           // read EL1 TTBR1
   ret
 
 ASM_PFX(ArmRdvl):

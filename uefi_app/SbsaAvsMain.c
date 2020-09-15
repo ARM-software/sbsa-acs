@@ -107,6 +107,16 @@ createGicInfoTable (
 
 }
 
+EFI_STATUS
+configureGicIts (
+)
+{
+  EFI_STATUS Status;
+
+  Status = val_gic_its_configure();
+
+  return Status;
+}
 
 EFI_STATUS
 createTimerInfoTable(
@@ -245,7 +255,7 @@ HelpMsg (
          "-v      Verbosity of the Prints\n"
          "        1 shows all prints, 5 shows Errors\n"
          "-l      Level of compliance to be tested for\n"
-         "        As per SBSA spec, 0 to 3\n"
+         "        As per SBSA spec, 0 to 6\n"
          "-f      Name of the log file to record the test results in\n"
          "-s      Enable the execution of secure tests\n"
          "-skip   Test(s) to be skipped\n"
@@ -411,6 +421,16 @@ ShellAppMainsbsa (
   Status = createGicInfoTable();
   if (Status)
     return Status;
+
+  /*
+   * Configure Gic Redistributor and ITS to support
+   * Generation of LPIs.
+  */
+  Status = configureGicIts();
+  if (Status) {
+    Print(L" GIC ITS Initialization Failed.\n");
+    Print(L" LPI Interrupt related test may not pass.\n");
+  }
 
   createTimerInfoTable();
   createWatchdogInfoTable();

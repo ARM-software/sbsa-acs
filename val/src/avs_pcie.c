@@ -102,7 +102,7 @@ val_pcie_read_cfg(uint32_t bdf, uint32_t offset, uint32_t *data)
 uint32_t
 val_pcie_io_read_cfg(uint32_t bdf, uint32_t offset, uint32_t *data)
 {
-    return pal_pcie_read_cfg(bdf, offset, data);
+    return pal_pcie_io_read_cfg(bdf, offset, data);
 }
 
 /**
@@ -160,6 +160,23 @@ val_pcie_write_cfg(uint32_t bdf, uint32_t offset, uint32_t data)
                (dev * PCIE_MAX_FUNC * 4096) + (func * 4096);
 
   pal_mmio_write(ecam_base + cfg_addr + offset, data);
+}
+
+/**
+  @brief   Write 32bit data to PCIe config space pointed by Bus,
+           Device, Function and offset using UEFI PciIoProtocol interface
+           1. Caller       -  Test Suite
+           2. Prerequisite -  val_pcie_create_info_table
+  @param   bdf    - concatenated Bus(8-bits), device(8-bits) & function(8-bits)
+  @param   offset - Register offset within a device PCIe config space
+  @param   data - 32-bit data write to the config space
+
+  @return success/failure
+**/
+void
+val_pcie_io_write_cfg(uint32_t bdf, uint32_t offset, uint32_t data)
+{
+    return pal_pcie_io_write_cfg(bdf, offset, data);
 }
 
 /**
@@ -263,6 +280,7 @@ val_pcie_execute_tests(uint32_t enable_pcie, uint32_t level, uint32_t num_pe)
   }
 
   status |= p002_entry(num_pe);
+  status |= p003_entry(num_pe);
 #ifdef TARGET_LINUX
   status |= p004_entry(num_pe);
   status |= p005_entry(num_pe);
@@ -323,6 +341,18 @@ val_pcie_execute_tests(uint32_t enable_pcie, uint32_t level, uint32_t num_pe)
     status |= p043_entry(num_pe);
     status |= p044_entry(num_pe);
     status |= p045_entry(num_pe);
+    status |= p046_entry(num_pe);
+    status |= p047_entry(num_pe);
+    status |= p048_entry(num_pe);
+    status |= p049_entry(num_pe);
+    status |= p050_entry(num_pe);
+    status |= p051_entry(num_pe);
+    status |= p052_entry(num_pe);
+    status |= p053_entry(num_pe);
+    status |= p054_entry(num_pe);
+    status |= p055_entry(num_pe);
+    status |= p056_entry(num_pe);
+    status |= p057_entry(num_pe);
   }
 #endif
 
@@ -719,15 +749,26 @@ val_pcie_get_device_type(uint32_t bdf)
 }
 
 /**
-  @brief   This API checks the PCIe device P2P support
+  @brief   This API checks the PCIe Hierarchy P2P support
+           1. Caller       -  Test Suite
+  @return  1 - P2P feature not supported 0 - P2P feature supported
+**/
+uint32_t
+val_pcie_p2p_support()
+{
+  return pal_pcie_p2p_support();
+}
+
+/**
+  @brief   This API checks the PCIe Root port supports P2P with other RP's
            1. Caller       -  Test Suite
   @param   bdf      - PCIe BUS/Device/Function
   @return  1 - P2P feature not supported 0 - P2P feature supported
 **/
 uint32_t
-val_pcie_p2p_support(uint32_t bdf)
+val_pcie_dev_p2p_support(uint32_t bdf)
 {
-  return pal_pcie_p2p_support(PCIE_EXTRACT_BDF_SEG (bdf),
+  return pal_pcie_dev_p2p_support(PCIE_EXTRACT_BDF_SEG (bdf),
                                     PCIE_EXTRACT_BDF_BUS (bdf),
                                     PCIE_EXTRACT_BDF_DEV (bdf),
                                     PCIE_EXTRACT_BDF_FUNC (bdf));
@@ -737,15 +778,16 @@ val_pcie_p2p_support(uint32_t bdf)
   @brief   This API checks the PCIe device multifunction support
            1. Caller       -  Test Suite
   @param   bdf      - PCIe BUS/Device/Function
-  @return  1 - Multifunction not supported 0 - Multifunction supported
+  @return  0 - Multifunction not supported 1 - Multifunction supported
 **/
 uint32_t
 val_pcie_multifunction_support(uint32_t bdf)
 {
-  return pal_pcie_multifunction_support(PCIE_EXTRACT_BDF_SEG (bdf),
-                                        PCIE_EXTRACT_BDF_BUS (bdf),
-                                        PCIE_EXTRACT_BDF_DEV (bdf),
-                                        PCIE_EXTRACT_BDF_FUNC (bdf));
+  uint32_t reg_data;
+  val_pcie_read_cfg(bdf, TYPE01_CLSR, &reg_data);
+  reg_data = ((reg_data >> TYPE01_HTR_SHIFT) & TYPE01_HTR_MASK);
+
+  return ((reg_data >> HTR_MFD_SHIFT) & HTR_MFD_MASK);
 }
 
 /**
@@ -1208,6 +1250,81 @@ val_pcie_is_urd(uint32_t bdf)
 }
 
 /**
+  @brief  Clears Error detected bit in Device Status Register
+
+  @param  bdf   - Segment/Bus/Dev/Func in the format of PCIE_CREATE_BDF
+  @return None
+**/
+void
+val_pcie_clear_device_status_error(uint32_t bdf)
+{
+
+  uint32_t pciecs_base;
+  uint32_t reg_value;
+
+  /*
+   * Get the PCI Express Capability structure offset and use that
+   * offset to write 1b to clear CED, NFED, FED, URD bit in Device Status register
+   */
+  val_pcie_find_capability(bdf, PCIE_CAP, CID_PCIECS, &pciecs_base);
+  val_pcie_read_cfg(bdf, pciecs_base + DCTLR_OFFSET, &reg_value);
+  reg_value = reg_value | (0xF << DCTLR_DSR_SHIFT);
+  val_pcie_write_cfg(bdf, pciecs_base + DCTLR_OFFSET, reg_value);
+
+}
+
+/**
+  @brief  Check Error detected bit in Device Status Register
+
+  @param  bdf   - Segment/Bus/Dev/Func in the format of PCIE_CREATE_BDF
+  @return 1 if Error is detected, 0 if No Error
+**/
+uint32_t
+val_pcie_is_device_status_error(uint32_t bdf)
+{
+
+  uint32_t pciecs_base;
+  uint32_t reg_value;
+
+  /*
+   * Get the PCI Express Capability structure offset and use that
+   * offset to check CED, NFED, FED, URD bit in Device Status register
+   */
+  val_pcie_find_capability(bdf, PCIE_CAP, CID_PCIECS, &pciecs_base);
+  val_pcie_read_cfg(bdf, pciecs_base + DCTLR_OFFSET, &reg_value);
+
+  if (reg_value & (0xF << DCTLR_DSR_SHIFT))
+      return 1;
+
+  return 0;
+}
+
+/**
+  @brief  Check Signaled Target Abort bit in Status/Secondary Status Register
+          in Root Port
+  @param  bdf   - Segment/Bus/Dev/Func in the format of PCIE_CREATE_BDF
+  @return 1 if STA Bit Set, 0 if Not Set
+**/
+uint32_t
+val_pcie_is_sig_target_abort(uint32_t bdf)
+{
+
+  uint32_t status_val;
+  uint32_t sec_status_val;
+
+  /* Read Status Register at 0x4 Offset */
+  val_pcie_read_cfg(bdf, TYPE01_CR, &status_val);
+  /* Read Secondary Status Register at 0x1C Offset */
+  val_pcie_read_cfg(bdf, TYPE1_SEC_STA, &sec_status_val);
+
+  if (((status_val >> SR_STA_SHIFT) & SR_STA_MASK) ||
+      ((sec_status_val >> SSR_STA_SHIFT) & SSR_STA_MASK))
+      return 1;
+
+  return 0;
+}
+
+/**
   @brief  Disable error reporting of the PCIe Function to the upstream
   @param  bdf   - Segment/Bus/Dev/Func in the format of PCIE_CREATE_BDF
   @return None
@@ -1660,8 +1777,9 @@ val_pcie_get_rootport(uint32_t bdf, uint32_t *rp_bdf)
       val_pcie_read_cfg(*rp_bdf, TYPE1_PBN, &reg_value);
       sec_bus = ((reg_value >> SECBN_SHIFT) & SECBN_MASK);
       sub_bus = ((reg_value >> SUBBN_SHIFT) & SUBBN_MASK);
+      dp_type = val_pcie_device_port_type(*rp_bdf);
 
-      if ((val_pcie_device_port_type(*rp_bdf) == RP) &&
+      if (((dp_type == RP) || (dp_type = iEP_RP)) &&
           (sec_bus <= PCIE_EXTRACT_BDF_BUS(bdf)) &&
           (sub_bus >= PCIE_EXTRACT_BDF_BUS(bdf)))
           return 0;
@@ -1728,4 +1846,19 @@ val_pcie_is_host_bridge(uint32_t bdf)
     return 1;
 
   return 0;
+}
+
+/**
+  @brief  Returns whether a PCIe Function has an Address Translation Cache
+
+  @param  bdf        - Segment/Bus/Dev/Func in the format of PCIE_CREATE_BDF
+  @return Returns 0  - if Function doesn't have Addr Translation Cache else 1.
+**/
+uint32_t
+val_pcie_is_cache_present(uint32_t bdf)
+{
+  return pal_pcie_is_cache_present(PCIE_EXTRACT_BDF_SEG (bdf),
+                                   PCIE_EXTRACT_BDF_BUS (bdf),
+                                   PCIE_EXTRACT_BDF_DEV (bdf),
+                                   PCIE_EXTRACT_BDF_FUNC (bdf));
 }

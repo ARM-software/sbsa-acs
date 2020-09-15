@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018, 2020 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,6 +17,8 @@
 
 #ifndef __GIC_SYS_REGS_H__
 #define __GIC_SYS_REGS_H__
+
+#define LPI_MIN_ID      8192
 
 typedef enum {
   ICH_HCR_EL2 = 0,

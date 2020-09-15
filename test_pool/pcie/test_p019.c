@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2018, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2018-2020, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -56,7 +56,7 @@ static void payload(void)
                 continue;
 
             /* check if PCIe device supports peer to peer */
-            if (val_pcie_p2p_support(dev_bdf))
+            if (val_pcie_dev_p2p_support(dev_bdf))
                 continue;
 
             valid_cnt++;

@@ -167,6 +167,10 @@ payload (void)
 
   while (instance-- != 0) {
 
+    /* if init fail moves to next exerciser */
+    if (val_exerciser_init(instance))
+        continue;
+
     /* Get the exerciser BDF */
     e_bdf = val_exerciser_get_bdf(instance);
 
@@ -189,7 +193,7 @@ payload (void)
     }
 
     /* Get a WB, outer shareable DDR Buffer of size TEST_DATA_BLK_SIZE */
-    dram_buf1_virt = val_memory_alloc_coherent(e_bdf, TEST_DATA_BLK_SIZE, dram_buf1_phys);
+    dram_buf1_virt = val_memory_alloc_cacheable(e_bdf, TEST_DATA_BLK_SIZE, &dram_buf1_phys);
     if (!dram_buf1_virt) {
       val_print(AVS_PRINT_ERR, "\n       WB and OSH mem alloc failure %x", 02);
       val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
@@ -197,11 +201,11 @@ payload (void)
     }
 
     /* Program exerciser hierarchy to start sending/receiving TLPs
-     * with No Snoop attribute header. This includes enabling
+     * with No Snoop attribute header. This includes disabling
      * No snoop bit in exerciser control register.
      */
-    if (val_exerciser_ops(NO_SNOOP_CLEAR_TLP_START, 0, instance)) {
-       val_print(AVS_PRINT_ERR, "\n       Exerciser %x No Snoop enable error", instance);
+    if (val_exerciser_ops(TXN_NO_SNOOP_DISABLE, 0, instance)) {
+       val_print(AVS_PRINT_ERR, "\n       Exerciser %x No Snoop disable error", instance);
        goto test_fail;
     }
 
@@ -209,14 +213,8 @@ payload (void)
             test_sequence2(dram_buf1_virt, dram_buf1_phys, e_bdf, instance))
         goto test_fail;
 
-    /* Stop exerciser hierarchy sending/receiving TLPs with No Snoop attribute header */
-    if (val_exerciser_ops(NO_SNOOP_CLEAR_TLP_STOP, 0, instance)) {
-        val_print(AVS_PRINT_ERR, "\n       Exerciser %x No snoop TLP disable error", instance);
-        goto test_fail;
-    }
-
     /* Return this exerciser dma memory back to the heap manager */
-    val_memory_free_coherent(e_bdf, TEST_DATA_BLK_SIZE, dram_buf1_virt, dram_buf1_phys);
+    val_memory_free_cacheable(e_bdf, TEST_DATA_BLK_SIZE, dram_buf1_virt, dram_buf1_phys);
 
   }
 
@@ -225,7 +223,7 @@ payload (void)
 
 test_fail:
   val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
-  val_memory_free_coherent(e_bdf, TEST_DATA_BLK_SIZE, dram_buf1_virt, dram_buf1_phys);
+  val_memory_free_cacheable(e_bdf, TEST_DATA_BLK_SIZE, dram_buf1_virt, dram_buf1_phys);
   return;
 }
 

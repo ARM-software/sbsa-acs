@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2019, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2020, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -89,6 +89,19 @@ val_pe_execute_tests(uint32_t level, uint32_t num_pe)
       status |= c025_entry(num_pe);
       status |= c026_entry(num_pe);
       status |= c027_entry(num_pe);
+  }
+
+  if (level > 5) {
+      status |= c029_entry(num_pe);
+      status |= c030_entry(num_pe);
+      status |= c031_entry(num_pe);
+      status |= c032_entry(num_pe);
+      status |= c033_entry(num_pe);
+      status |= c034_entry(num_pe);
+      status |= c035_entry(num_pe);
+      status |= c036_entry(num_pe);
+      status |= c037_entry(num_pe);
+      status |= c038_entry(num_pe);
   }
 
   if (status != AVS_STATUS_PASS)
@@ -220,12 +233,21 @@ val_pe_reg_read(uint32_t reg_id)
           return AA64ReadFar2();
       case RDVL:
           return ArmRdvl();
+      case MAIR_ELx:
+          if (AA64ReadCurrentEL() == AARCH64_EL1)
+            return AA64ReadMair1();
+          if (AA64ReadCurrentEL() == AARCH64_EL2)
+            return AA64ReadMair2();
+      case TCR_ELx:
+          if (AA64ReadCurrentEL() == AARCH64_EL1)
+            return AA64ReadTcr1();
+          if (AA64ReadCurrentEL() == AARCH64_EL2)
+            return AA64ReadTcr2();
       default:
            val_report_status(val_pe_get_index_mpid(val_pe_get_mpid()), RESULT_FAIL(g_sbsa_level, 0, 0x78));
   }
 
   return 0x0;
-
 }
 
 /**
@@ -371,4 +393,66 @@ void
 val_pe_spe_disable(void)
 {
   DisableSpe();
+}
+
+uint32_t val_pe_reg_read_tcr(uint32_t ttbr1, PE_TCR_BF *tcr)
+{
+    uint64_t val = val_pe_reg_read(TCR_ELx);
+    uint32_t el = AA64ReadCurrentEL() & AARCH64_EL_MASK;
+    uint8_t tg_ttbr0[3] = {12 /*4KB*/, 16 /*64KB*/, 14 /*16KB*/};
+    uint8_t tg_ttbr1[4] = {0 /* N/A */, 14 /*16KB*/, 12 /*4KB*/, 16 /* 64KB*/};
+    uint64_t e2h;
+
+    if ((tcr == NULL) ||
+        (el != AARCH64_EL1 && el != AARCH64_EL2))
+        return AVS_STATUS_ERR;
+
+    if (el == AARCH64_EL2)
+        e2h = ArmReadHcr() & AARCH64_HCR_E2H_MASK;
+
+    if (el == AARCH64_EL1 || (el == AARCH64_EL2 && e2h))
+    {
+        tcr->ps = (val & SBSA_TCR_IPS_MASK) >> SBSA_TCR_IPS_SHIFT;
+        if (ttbr1) {
+            tcr->tg = (val & SBSA_TCR_TG1_MASK) >> SBSA_TCR_TG1_SHIFT;
+            if (tcr->tg == 0 || tcr->tg > 3)
+                return AVS_STATUS_ERR;
+            tcr->tg_size_log2 = tg_ttbr1[tcr->tg];
+            tcr->sh = (val & SBSA_TCR_SH1_MASK) >> SBSA_TCR_SH1_SHIFT;
+            tcr->orgn = (val & SBSA_TCR_ORGN1_MASK) >> SBSA_TCR_ORGN1_SHIFT;
+            tcr->irgn = (val & SBSA_TCR_IRGN1_MASK) >> SBSA_TCR_IRGN1_SHIFT;
+            tcr->tsz = (val & SBSA_TCR_T1SZ_MASK) >> SBSA_TCR_T1SZ_SHIFT;
+            return 0;
+        }
+    }
+    else if (!ttbr1)
+        tcr->ps = (val & SBSA_TCR_PS_MASK) >> SBSA_TCR_PS_SHIFT;
+    else
+        return AVS_STATUS_ERR;
+
+    tcr->tg = (val & SBSA_TCR_TG0_MASK) >> SBSA_TCR_TG0_SHIFT;
+    if (tcr->tg > 2)
+        return AVS_STATUS_ERR;
+    tcr->tg_size_log2 = tg_ttbr0[tcr->tg];
+    tcr->sh = (val & SBSA_TCR_SH0_MASK) >> SBSA_TCR_SH0_SHIFT;
+    tcr->orgn = (val & SBSA_TCR_ORGN0_MASK) >> SBSA_TCR_ORGN0_SHIFT;
+    tcr->irgn = (val & SBSA_TCR_IRGN0_MASK) >> SBSA_TCR_IRGN0_SHIFT;
+    tcr->tsz = (val & SBSA_TCR_T0SZ_MASK) >> SBSA_TCR_T0SZ_SHIFT;
+    return 0;
+}
+
+uint32_t val_pe_reg_read_ttbr(uint32_t ttbr1, uint64_t *ttbr_ptr)
+{
+    uint32_t el = AA64ReadCurrentEL() & AARCH64_EL_MASK;
+    typedef uint64_t (*ReadTtbr_t)();
+    ReadTtbr_t ReadTtbr[2][2] = {{AA64ReadTtbr0El1, AA64ReadTtbr0El2},
+                                  {AA64ReadTtbr1El1, AA64ReadTtbr1El2}};
+
+    if ((ttbr_ptr == NULL) ||
+        (el != AARCH64_EL1 && el != AARCH64_EL2) ||
+        ttbr1 > 1)
+        return AVS_STATUS_ERR;
+
+    *ttbr_ptr = ReadTtbr[ttbr1][(el >> 2) - 1]();
+    return 0;
 }

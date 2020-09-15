@@ -103,6 +103,7 @@ pal_exerciser_start_dma_direction (
   )
 {
   UINT32 Mask;
+  UINT32 Status;
 
   if (Direction == EDMA_TO_DEVICE) {
       Mask = DMA_TO_DEVICE_MASK;//  DMA direction:to Device
@@ -118,7 +119,8 @@ pal_exerciser_start_dma_direction (
   pal_mmio_write(Base + DMACTL1, (pal_mmio_read(Base + DMACTL1) | MASK_BIT));
 
   // Reading the Status of the DMA
-  return (pal_mmio_read(Base + DMASTATUS) & ((MASK_BIT << 1) | MASK_BIT));
+  Status = (pal_mmio_read(Base + DMASTATUS) & ((MASK_BIT << 1) | MASK_BIT));
+  return Status;
 }
 
 /**
@@ -184,7 +186,7 @@ UINT32 pal_exerciser_set_param (
   )
 {
   UINT32 Status;
-  UINT32 Temp;
+  UINT32 Data;
   UINT64 Base;
 
   Base = pal_exerciser_get_ecsr_base(Bdf,0);
@@ -199,18 +201,35 @@ UINT32 pal_exerciser_set_param (
       case DMA_ATTRIBUTES:
           pal_mmio_write(Base + DMA_BUS_ADDR,Value1);// wrting into the DMA Control Register 2
           pal_mmio_write(Base + DMA_LEN,Value2);// writing into the DMA Control Register 3
-          Temp = pal_mmio_read(Base + DMASTATUS);// Reading the DMA status register
-          Status = Temp & ((MASK_BIT << 1) | MASK_BIT);
+          Data = pal_mmio_read(Base + DMASTATUS);// Reading the DMA status register
+          Status = Data & ((MASK_BIT << 1) | MASK_BIT);
           return Status;
 
       case P2P_ATTRIBUTES:
           return 0;
 
       case PASID_ATTRIBUTES:
+          Data = pal_mmio_read(Base + DMACTL1);
+          Data &= ~(PASID_LEN_MASK << PASID_LEN_SHIFT);
+          Data |= ((Value1 - 16) & PASID_LEN_MASK) << PASID_LEN_SHIFT;
+          pal_mmio_write(Base + DMACTL1, Data);
           return 0;
 
       case MSIX_ATTRIBUTES:
           return 0;
+
+      case CFG_TXN_ATTRIBUTES:
+          switch (Value1) {
+
+            case TXN_REQ_ID:
+                /* Change Requester ID for DMA Transaction.*/
+                return 0;
+            case TXN_ADDR_TYPE:
+                /* Change Address Type for DMA Transaction.*/
+                return 0;
+            default:
+                return 1;
+          }
 
       default:
           return 1;
@@ -254,6 +273,7 @@ pal_exerciser_get_param (
       case P2P_ATTRIBUTES:
           return 0;
       case PASID_ATTRIBUTES:
+          *Value1 = ((pal_mmio_read(Base + DMACTL1) >> PASID_LEN_SHIFT) & PASID_LEN_MASK) + 16;
           return 0;
       case MSIX_ATTRIBUTES:
           *Value1 = pal_mmio_read(Base + MSICTL);
@@ -313,6 +333,7 @@ pal_exerciser_ops (
   UINT64 Base;
   UINT32 Ecam;
   UINT32 CapabilityOffset;
+  UINT32 data;
 
   Base = pal_exerciser_get_ecsr_base(Bdf,0);
   Ecam = pal_pcie_get_mcfg_ecam(); // Getting the ECAM address
@@ -336,9 +357,9 @@ pal_exerciser_ops (
         }
 
     case GENERATE_MSI:
-        pal_mmio_write( Base + MSICTL , Param << 1);
-        pal_mmio_write( Base + MSICTL ,(pal_mmio_read(Base + MSICTL) | MASK_BIT));
-        return (pal_mmio_read(Base + MSICTL ) & MASK_BIT);
+        /* Param is the msi_index */
+        pal_mmio_write( Base + MSICTL ,(pal_mmio_read(Base + MSICTL) | (MSI_GENERATION_MASK) | (Param)));
+        return 0;
 
     case GENERATE_L_INTR:
         pal_mmio_write(Base + INTXCTL , (pal_mmio_read(Base + INTXCTL) | MASK_BIT));
@@ -355,8 +376,10 @@ pal_exerciser_ops (
         return 0;
 
     case PASID_TLP_START:
-        pal_mmio_write(Base + DMACTL1, (pal_mmio_read(Base + DMACTL1) | (MASK_BIT << 6)));
-        pal_mmio_write(Base + DMACTL1, (pal_mmio_read(Base + DMACTL1) & PASID_LEN_MASK));// pasidlen
+        data = pal_mmio_read(Base + DMACTL1);
+        data &= ~(PASID_VAL_MASK << PASID_VAL_SHIFT);
+        data |= (MASK_BIT << 6) | ((Param & PASID_VAL_MASK) << PASID_VAL_SHIFT);
+        pal_mmio_write(Base + DMACTL1, data);
 
         if (!pal_exerciser_find_pcie_capability(PASID, Bdf, PCIE, &CapabilityOffset)) {
             pal_mmio_write(Ecam + pal_exerciser_get_pcie_config_offset(Bdf) + CapabilityOffset + PCIE_CAP_CTRL_OFFSET,
@@ -375,11 +398,11 @@ pal_exerciser_ops (
         }
         return 1;
 
-    case NO_SNOOP_CLEAR_TLP_START:
+    case TXN_NO_SNOOP_ENABLE:
         pal_mmio_write(Base + DMACTL1, (pal_mmio_read(Base + DMACTL1)) | NO_SNOOP_START_MASK);//enabling the NO SNOOP
         return 0;
 
-    case NO_SNOOP_CLEAR_TLP_STOP:
+    case TXN_NO_SNOOP_DISABLE:
         pal_mmio_write(Base + DMACTL1, (pal_mmio_read(Base + DMACTL1)) & NO_SNOOP_STOP_MASK);//disabling the NO SNOOP
         return 0;
 
