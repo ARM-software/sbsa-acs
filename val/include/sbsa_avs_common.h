@@ -87,11 +87,29 @@
 #define IS_TEST_SKIP(value)      (((value >> STATE_BIT) & (STATE_MASK)) == TEST_SKIP_VAL)
 #define IS_TEST_FAIL_SKIP(value) ((IS_TEST_FAIL(value)) || (IS_TEST_SKIP(value)))
 
+uint8_t
+val_mmio_read8(addr_t addr);
+
+uint16_t
+val_mmio_read16(addr_t addr);
+
 uint32_t
 val_mmio_read(addr_t addr);
 
+uint64_t
+val_mmio_read64(addr_t addr);
+
+void
+val_mmio_write8(addr_t addr, uint8_t data);
+
+void
+val_mmio_write16(addr_t addr, uint16_t data);
+
 void
 val_mmio_write(addr_t addr, uint32_t data);
+
+void
+val_mmio_write64(addr_t addr, uint64_t data);
 
 uint32_t
 val_initialize_test(uint32_t test_num, char8_t * desc, uint32_t num_pe, uint32_t level);

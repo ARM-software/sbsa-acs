@@ -28,6 +28,7 @@
 static   EFI_ACPI_6_1_MULTIPLE_APIC_DESCRIPTION_TABLE_HEADER *gMadtHdr;
 UINT8   *gSecondaryPeStack;
 UINT64  gMpidrMax;
+static UINT32 g_num_pe;
 
 #define SIZE_STACK_SECONDARY_PE  0x100		//256 bytes per core
 #define UPDATE_AFF_MAX(src,dest,mask)  ((dest & mask) > (src & mask) ? (dest & mask) : (src & mask))
@@ -51,6 +52,18 @@ PalGetSecondaryStackBase()
 {
 
   return (UINT64)gSecondaryPeStack;
+}
+
+/**
+  @brief   Return the number of PEs in the System.
+  @param   None
+  @return  num_of_pe
+**/
+UINT32
+pal_pe_get_num()
+{
+
+  return (UINT32)g_num_pe;
 }
 
 /**
@@ -161,6 +174,7 @@ pal_pe_create_info_table(PE_INFO_TABLE *PeTable)
   }while(Length < TableLength);
 
   gMpidrMax = MpidrAff0Max | MpidrAff1Max | MpidrAff2Max | MpidrAff3Max;
+  g_num_pe = PeTable->header.num_of_pe;
   pal_pe_data_cache_ops_by_va((UINT64)PeTable, CLEAN_AND_INVALIDATE);
   pal_pe_data_cache_ops_by_va((UINT64)&gMpidrMax, CLEAN_AND_INVALIDATE);
   PalAllocateSecondaryStack(gMpidrMax);

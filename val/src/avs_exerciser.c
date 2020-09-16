@@ -18,6 +18,7 @@
 #include "include/sbsa_avs_val.h"
 #include "include/sbsa_avs_exerciser.h"
 #include "include/sbsa_avs_pcie.h"
+#include "include/sbsa_avs_smmu.h"
 
 EXERCISER_INFO_TABLE g_exercier_info_table;
 /**
@@ -188,7 +189,6 @@ uint32_t val_exerciser_init(uint32_t instance)
 uint32_t val_exerciser_ops(EXERCISER_OPS ops, uint64_t param, uint32_t instance)
 {
     return pal_exerciser_ops(ops, param, g_exercier_info_table.e_info[instance].bdf);
-
 }
 
 /**
@@ -242,16 +242,21 @@ val_exerciser_execute_tests(uint32_t level)
       return AVS_STATUS_SKIP;
   }
 
-    status = e001_entry();
-    status |= e002_entry();
-    status |= e003_entry();
-    status |= e004_entry();
-    status |= e005_entry();
-    status |= e006_entry();
-    status |= e007_entry();
-    status |= e008_entry();
-    status |= e009_entry();
-    status |= e010_entry();
+  status = e001_entry();
+  status |= e002_entry();
+  status |= e003_entry();
+  status |= e004_entry();
+  status |= e005_entry();
+  status |= e006_entry();
+  status |= e007_entry();
+  status |= e008_entry();
+  status |= e009_entry();
+  status |= e010_entry();
+  status |= e011_entry();
+  status |= e012_entry();
+  status |= e013_entry();
+  status |= e014_entry();
+  status |= e015_entry();
 
   if (status != AVS_STATUS_PASS) {
       val_print(AVS_PRINT_ERR, "\n     One or more Exerciser tests have failed.... \n", status);

@@ -187,9 +187,9 @@ val_memory_alloc(uint32_t size)
 }
 
 void *
-val_memory_alloc_coherent(uint32_t bdf, uint32_t size, void *pa)
+val_memory_alloc_cacheable(uint32_t bdf, uint32_t size, void **pa)
 {
-  return pal_mem_alloc_coherent(bdf, size, pa);
+  return pal_mem_alloc_cacheable(bdf, size, pa);
 }
 
 void
@@ -211,9 +211,9 @@ val_memory_set(void *buf, uint32_t size, uint8_t value)
 }
 
 void
-val_memory_free_coherent(uint32_t bdf, uint32_t size, void *va, void *pa)
+val_memory_free_cacheable(uint32_t bdf, uint32_t size, void *va, void *pa)
 {
-  pal_mem_free_coherent(bdf, size, va, pa);
+  pal_mem_free_cacheable(bdf, size, va, pa);
 }
 
 void *
@@ -222,8 +222,31 @@ val_memory_virt_to_phys(void *va)
   return pal_mem_virt_to_phys(va);
 }
 
+void *
+val_memory_phys_to_virt(uint64_t pa)
+{
+  return pal_mem_phys_to_virt(pa);
+}
+
 uint64_t
 val_memory_get_unpopulated_addr(addr_t *addr, uint32_t instance)
 {
   return pal_memory_get_unpopulated_addr(addr, instance);
+}
+
+uint32_t val_memory_page_size(void)
+{
+    return pal_mem_page_size();
+}
+
+void *
+val_memory_alloc_pages(uint32_t num_pages)
+{
+    return pal_mem_alloc_pages(num_pages);
+}
+
+void
+val_memory_free_pages(void *addr, uint32_t num_pages)
+{
+    pal_mem_free_pages(addr, num_pages);
 }

@@ -73,6 +73,17 @@ typedef struct {
   PE_INFO_ENTRY  pe_info[];
 }PE_INFO_TABLE;
 
+typedef struct {
+  uint32_t ps:3;
+  uint32_t tg:2;
+  uint32_t sh:2;
+  uint32_t orgn:2;
+  uint32_t irgn:2;
+  uint32_t tsz:6;
+  uint32_t sl:2;
+  uint32_t tg_size_log2:5;
+}PE_TCR_BF;
+
 void pal_pe_create_info_table(PE_INFO_TABLE *pe_info_table);
 
 /**
@@ -129,6 +140,7 @@ typedef enum {
 typedef struct {
   uint32_t type;
   uint64_t base;
+  uint32_t its_id;  /* This its_id is only used in case of ITS Type entry */
 }GIC_INFO_ENTRY;
 
 /**
@@ -145,8 +157,10 @@ void pal_gic_end_of_interrupt(uint32_t int_id);
 uint32_t pal_gic_request_irq(unsigned int irq_num, unsigned int mapped_irq_num, void *isr);
 void pal_gic_free_irq(unsigned int irq_num, unsigned int mapped_irq_num);
 uint32_t pal_gic_set_intr_trigger(uint32_t int_id, INTR_TRIGGER_INFO_TYPE_e trigger_type);
-uint32_t pal_gic_request_msi(uint32_t bdf, uint32_t IntID, uint32_t msi_index);
-void pal_gic_free_msi(uint32_t bdf, uint32_t IntID, uint32_t msi_index);
+uint32_t pal_gic_its_configure(void);
+uint32_t pal_gic_request_msi(uint32_t its_id, uint32_t DevID, uint32_t IntID, uint32_t msi_index, uint32_t *msi_addr, uint32_t *msi_data);
+void pal_gic_free_msi(uint32_t its_id, uint32_t DevID, uint32_t IntID, uint32_t msi_index);
+uint32_t pal_gic_get_max_lpi_id(void);
 
 /** Timer tests related definitions **/
 
@@ -249,7 +263,7 @@ uint32_t pal_pci_cfg_read(uint32_t bus, uint32_t dev, uint32_t func, int offset,
 
 uint64_t pal_pcie_get_mcfg_ecam(void);
 void     pal_pcie_create_info_table(PCIE_INFO_TABLE *PcieTable);
-uint32_t pal_pcie_read_cfg(uint32_t bdf, uint32_t offset, uint32_t *data);
+uint32_t pal_pcie_io_read_cfg(uint32_t bdf, uint32_t offset, uint32_t *data);
 uint32_t pal_pcie_get_bdf_wrapper(uint32_t class_code, uint32_t start_bdf);
 void *pal_pci_bdf_to_dev(uint32_t bdf);
 void pal_pci_read_config_byte(uint32_t bdf, uint8_t offset, uint8_t *val);
@@ -257,9 +271,12 @@ void pal_pci_write_config_byte(uint32_t bdf, uint8_t offset, uint8_t val);
 void pal_pcie_read_ext_cap_word(uint32_t seg, uint32_t bus, uint32_t dev, uint32_t fn,
                                 uint32_t ext_cap_id, uint8_t offset, uint16_t *val);
 uint32_t pal_pcie_get_pcie_type(uint32_t seg, uint32_t bus, uint32_t dev, uint32_t fn);
-uint32_t pal_pcie_p2p_support(uint32_t seg, uint32_t bus, uint32_t dev, uint32_t fn);
+uint32_t pal_pcie_p2p_support(void);
+uint32_t pal_pcie_dev_p2p_support(uint32_t seg, uint32_t bus, uint32_t dev, uint32_t fn);
 uint32_t pal_pcie_multifunction_support(uint32_t seg, uint32_t bus, uint32_t dev, uint32_t fn);
+uint32_t pal_pcie_is_cache_present(uint32_t seg, uint32_t bus, uint32_t dev, uint32_t fn);
 
+void pal_pcie_io_write_cfg(uint32_t bdf, uint32_t offset, uint32_t data);
 /**
   @brief  Instance of SMMU INFO block
 **/
@@ -351,6 +368,30 @@ typedef struct {
   uint32_t smmu_num_ctrl;       ///< Number of SMMU Controllers in the system
   SMMU_INFO_BLOCK smmu_block[]; ///< Array of Information blocks - instantiated for each SMMU Controller
 }SMMU_INFO_TABLE;
+
+typedef struct {
+    uint32_t smmu_index;
+    uint32_t streamid;
+    uint32_t substreamid;
+    uint32_t ssid_bits;
+    uint32_t stage2;
+} smmu_master_attributes_t;
+
+typedef struct {
+    uint64_t pgt_base;
+    uint32_t ias;
+    uint32_t oas;
+    uint64_t mair;
+    uint32_t stage;
+    PE_TCR_BF tcr;
+} pgt_descriptor_t;
+
+typedef struct {
+    uint64_t physical_address;
+    uint64_t virtual_address;
+    uint64_t length;
+    uint64_t attributes;
+} memory_region_descriptor_t;
 
 void     pal_smmu_create_info_table(SMMU_INFO_TABLE *smmu_info_table);
 uint32_t pal_smmu_check_device_iova(void *port, uint64_t dma_addr);
@@ -526,20 +567,32 @@ void     pal_print_raw(uint64_t addr, char8_t *string, uint64_t data);
 uint32_t pal_strncmp(char8_t *str1, char8_t *str2, uint32_t len);
 void    *pal_memcpy(void *dest_buffer, void *src_buffer, uint32_t len);
 void    *pal_mem_alloc(uint32_t size);
-void    *pal_mem_alloc_coherent(uint32_t bdf, uint32_t size, void *pa);
+void    *pal_mem_alloc_cacheable(uint32_t bdf, uint32_t size, void **pa);
 void     pal_mem_free(void *buffer);
 int      pal_mem_compare(void *src, void *dest, uint32_t len);
 void     pal_mem_set(void *buf, uint32_t size, uint8_t value);
-void     pal_mem_free_coherent(uint32_t bdf, unsigned int size, void *va, void *pa);
+void     pal_mem_free_cacheable(uint32_t bdf, unsigned int size, void *va, void *pa);
 void    *pal_mem_virt_to_phys(void *va);
+void    *pal_mem_phys_to_virt(uint64_t pa);
 
 uint64_t pal_time_delay_ms(uint64_t time_ms);
 void     pal_mem_allocate_shared(uint32_t num_pe, uint32_t sizeofentry);
 void     pal_mem_free_shared(void);
 uint64_t pal_mem_get_shared_addr(void);
 
+uint8_t  pal_mmio_read8(uint64_t addr);
+uint16_t pal_mmio_read16(uint64_t addr);
+
+uint32_t pal_mem_page_size(void);
+void    *pal_mem_alloc_pages(uint32_t num_pages);
+void     pal_mem_free_pages(void *page_base, uint32_t num_pages);
+
 uint32_t pal_mmio_read(uint64_t addr);
+uint64_t pal_mmio_read64(uint64_t addr);
+void     pal_mmio_write8(uint64_t addr, uint8_t data);
+void     pal_mmio_write16(uint64_t addr, uint16_t data);
 void     pal_mmio_write(uint64_t addr, uint32_t data);
+void     pal_mmio_write64(uint64_t addr, uint64_t data);
 
 void     pal_pe_update_elr(void *context, uint64_t offset);
 uint64_t pal_pe_get_esr(void *context);
@@ -582,8 +635,23 @@ typedef enum {
     DMA_ATTRIBUTES   = 0x4,
     P2P_ATTRIBUTES   = 0x5,
     PASID_ATTRIBUTES = 0x6,
-    CFG_TXN_ATTRIBUTES = 0x7
+    CFG_TXN_ATTRIBUTES = 0x7,
+    ATS_RES_ATTRIBUTES = 0x8,
+    TRANSACTION_TYPE  = 0x9,
+    NUM_TRANSACTIONS  = 0xA
 } EXERCISER_PARAM_TYPE;
+
+typedef enum {
+    TXN_REQ_ID     = 0x0,
+    TXN_ADDR_TYPE  = 0x1,
+} EXERCISER_TXN_ATTR;
+
+typedef enum {
+    AT_UNTRANSLATED = 0x0,
+    AT_TRANS_REQ    = 0x1,
+    AT_TRANSLATED   = 0x2,
+    AT_RESERVED     = 0x3
+} EXERCISER_TXN_ADDR_TYPE;
 
 typedef enum {
     EXERCISER_RESET = 0x1,
@@ -601,10 +669,11 @@ typedef enum {
     CLEAR_INTR    = 0x6,
     PASID_TLP_START = 0x7,
     PASID_TLP_STOP  = 0x8,
-    NO_SNOOP_CLEAR_TLP_START = 0x9,
-    NO_SNOOP_CLEAR_TLP_STOP  = 0xa,
-    START_TXN_MONITOR        = 0xb,
-    STOP_TXN_MONITOR         = 0xc
+    TXN_NO_SNOOP_ENABLE  = 0x9,
+    TXN_NO_SNOOP_DISABLE = 0xa,
+    START_TXN_MONITOR    = 0xb,
+    STOP_TXN_MONITOR     = 0xc,
+    ATS_TXN_REQ          = 0xd
 } EXERCISER_OPS;
 
 typedef enum {

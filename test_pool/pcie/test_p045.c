@@ -41,6 +41,11 @@ payload(void)
   uint16_t vendor_id;
   uint32_t device_id;
   uint32_t test_skip = 1;
+  uint32_t test_fail = 0;
+  uint32_t segment;
+  uint32_t rp_ecam_base;
+  uint32_t rp_segment;
+
   pcie_device_bdf_table *bdf_tbl_ptr;
 
   tbl_index = 0;
@@ -48,40 +53,50 @@ payload(void)
   bdf_tbl_ptr = val_pcie_bdf_table_ptr();
   pe_index = val_pe_get_index_mpid(val_pe_get_mpid());
 
-  while (ecam_index < val_pcie_get_info(PCIE_INFO_NUM_ECAM, 0))
+  while (tbl_index < bdf_tbl_ptr->num_entries)
   {
-      ecam_base = val_pcie_get_info(PCIE_INFO_ECAM, ecam_index);
-      val_print(AVS_PRINT_DEBUG, "\n       RPs under ECAM Base 0x%x :", ecam_base);
+      next_bdf:
+      bdf = bdf_tbl_ptr->device[tbl_index++].bdf;
+      dp_type = val_pcie_device_port_type(bdf);
 
-      while (tbl_index < bdf_tbl_ptr->num_entries)
+      if (dp_type == RP || dp_type == iEP_RP)
       {
-          bdf = bdf_tbl_ptr->device[tbl_index++].bdf;
+          test_skip = 0;
+          ecam_index = 0;
 
-          dp_type = val_pcie_device_port_type(bdf);
-          if (dp_type == RP || dp_type == iEP_RP)
+          val_pcie_read_cfg(bdf, TYPE01_VIDR, &reg_value);
+          device_id = (reg_value >> TYPE01_DIDR_SHIFT) & TYPE01_DIDR_MASK;
+          vendor_id = (reg_value >> TYPE01_VIDR_SHIFT) & TYPE01_VIDR_MASK;
+          val_print(AVS_PRINT_DEBUG, "\n        BDF: 0x%x ", bdf);
+          val_print(AVS_PRINT_DEBUG, "Dev ID: 0x%x ", device_id);
+          val_print(AVS_PRINT_DEBUG, "Vendor ID: 0x%x", vendor_id);
+
+          rp_ecam_base = val_pcie_get_ecam_base(bdf);
+          rp_segment = PCIE_EXTRACT_BDF_SEG(bdf);
+
+          while (ecam_index < val_pcie_get_info(PCIE_INFO_NUM_ECAM, 0))
           {
-              /* If test runs for atleast an endpoint */
-              test_skip = 0;
+              ecam_base = val_pcie_get_info(PCIE_INFO_ECAM, ecam_index);
+              segment = val_pcie_get_info(PCIE_INFO_SEGMENT, ecam_index);
 
-              if (ecam_base == val_pcie_get_ecam_base(bdf))
+              if (ecam_base == rp_ecam_base && segment == rp_segment)
               {
-                  val_pcie_read_cfg(bdf, TYPE01_VIDR, &reg_value);
-                  device_id = (reg_value >> TYPE01_DIDR_SHIFT) & TYPE01_DIDR_MASK;
-                  vendor_id = (reg_value >> TYPE01_VIDR_SHIFT) & TYPE01_VIDR_MASK;
-
-                  val_print(AVS_PRINT_DEBUG, "\n        BDF: 0x%x ", bdf);
-                  val_print(AVS_PRINT_DEBUG, "Dev ID: 0x%x ", device_id);
-                  val_print(AVS_PRINT_DEBUG, "Vendor ID: 0x%x", vendor_id);
+                  val_print(AVS_PRINT_DEBUG, "\n        ECAM base 0x%x matches with RPs base address", ecam_base);
+                  goto next_bdf;
               }
+
+              ecam_index++;
           }
 
+          val_print(AVS_PRINT_ERR, "\n        RP BDF 0x%x not under any HB", bdf);
+          test_fail++;
       }
-
-      ecam_index++;
   }
 
   if (test_skip == 1)
       val_set_status(pe_index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
+  else if (test_fail)
+      val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, test_fail));
   else
       val_set_status(pe_index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
 }
