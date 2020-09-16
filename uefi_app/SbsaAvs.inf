@@ -173,7 +173,6 @@
   MdePkg/MdePkg.dec
   MdeModulePkg/MdeModulePkg.dec
   ShellPkg/ShellPkg.dec
-  EdkCompatibilityPkg/EdkCompatibilityPkg.dec
 
 [LibraryClasses]
   SbsaValLib

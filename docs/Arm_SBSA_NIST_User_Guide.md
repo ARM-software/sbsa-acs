@@ -32,20 +32,20 @@ To start the ACS build with NIST STS, perform the following steps:
 ```
     UefiRuntimeLib|MdePkg/Library/UefiRuntimeLib/UefiRuntimeLib.inf
     !ifdef $(ENABLE_NIST)
-        SbsaNistLib|AppPkg/Applications/sbsa-acs/test_pool/nist_sts/SbsaNistLib.inf
-        SbsaValNistLib|AppPkg/Applications/sbsa-acs/val/SbsaValNistLib.inf
-        SbsaPalNistLib|AppPkg/Applications/sbsa-acs/platform/pal_uefi/SbsaPalNistLib.inf
+        SbsaNistLib|ShellPkg/Application/sbsa-acs/test_pool/nist_sts/SbsaNistLib.inf
+        SbsaValNistLib|ShellPkg/Application/sbsa-acs/val/SbsaValNistLib.inf
+        SbsaPalNistLib|ShellPkg/Application/sbsa-acs/platform/pal_uefi/SbsaPalNistLib.inf
     !else
-        SbsaValLib|AppPkg/Applications/sbsa-acs/val/SbsaValLib.inf
-        SbsaPalLib|AppPkg/Applications/sbsa-acs/platform/pal_uefi/SbsaPalLib.inf
+        SbsaValLib|ShellPkg/Application/sbsa-acs/val/SbsaValLib.inf
+        SbsaPalLib|ShellPkg/Application/sbsa-acs/platform/pal_uefi/SbsaPalLib.inf
     !endif
 ```
 2.  Add the following in the [components] section of ShellPkg/ShellPkg.dsc
 ```
     !ifdef $(ENABLE_NIST)
-        AppPkg/Applications/sbsa-acs/uefi_app/SbsaAvsNist.inf
+        ShellPkg/Application/sbsa-acs/uefi_app/SbsaAvsNist.inf
     !else
-        AppPkg/Applications/sbsa-acs/uefi_app/SbsaAvs.inf
+        ShellPkg/Application/sbsa-acs/uefi_app/SbsaAvs.inf
     !endif
 ```
 3.  Modify CC Flags in the [BuildOptions] section of ShellPkg/ShellPkg.dsc
@@ -84,12 +84,12 @@ To start the ACS build with NIST STS, perform the following steps:
 To build the SBSA test suite with NIST STS, execute the following commands:
 ***Linux build environment***
 ```
-source AppPkg/Applications/sbsa-acs/tools/scripts/avsbuild.sh NIST
+source ShellPkg/Application/sbsa-acs/tools/scripts/avsbuild.sh NIST
 ```
 
 ***Windows build environment***
 ```
-build -a AARCH64 -t GCC49 -p ShellPkg/ShellPkg.dsc -m AppPkg/Applications/sbsa-acs/uefi_app/SbsaAvs.inf -D ENABLE_NIST
+build -a AARCH64 -t GCC49 -p ShellPkg/ShellPkg.dsc -m ShellPkg/Application/sbsa-acs/uefi_app/SbsaAvs.inf -D ENABLE_NIST
 ```
 
 **Directory structure of SBSA ACS**
