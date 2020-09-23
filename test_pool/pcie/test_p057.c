@@ -64,16 +64,13 @@ payload(void)
           if (val_pcie_dev_p2p_support(bdf))
               continue;
 
-          /* If ATS Not supported, Skip the BDF. */
-          if (val_pcie_find_capability(bdf, PCIE_ECAP, ECID_ATS, &cap_base) != PCIE_SUCCESS)
-              continue;
-
           /* If test runs for atleast an endpoint */
           test_skip = 0;
 
           /* Read the ACS Capability */
           if (val_pcie_find_capability(bdf, PCIE_ECAP, ECID_ACS, &cap_base) != PCIE_SUCCESS)
           {
+              val_print(AVS_PRINT_ERR, "\n       ACS Capability not supported, Bdf : 0x%x", bdf);
               test_fails++;
               continue;
           }

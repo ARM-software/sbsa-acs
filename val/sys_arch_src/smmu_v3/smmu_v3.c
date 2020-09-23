@@ -1,17 +1,19 @@
-/*
+/** @file
+ * Copyright (c) 2020, Arm Limited or its affiliates. All rights reserved.
+ * SPDX-License-Identifier : Apache-2.0
+
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     https://www.apache.org/licenses/LICENSE-2.0
+ *  http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */
-
+ **/
 #include "smmu_v3.h"
 
 smmu_dev_t *g_smmu;
@@ -169,7 +171,8 @@ static void smmu_strtab_write_ste(smmu_master_t *master, uint64_t *ste)
     }
 
     if (stage2_cfg) {
-        ste[1] |= BITFIELD_SET(STRTAB_STE_1_STRW, 0x2);
+        ste[1] |= BITFIELD_SET(STRTAB_STE_1_STRW, 0x2) |
+                  BITFIELD_SET(STRTAB_STE_1_EATS, 0x1);
         ste[2] = (BITFIELD_SET(STRTAB_STE_2_S2VMID, stage2_cfg->vmid) |
               BITFIELD_SET(STRTAB_STE_2_VTCR, stage2_cfg->vtcr) |
               STRTAB_STE_2_S2PTW | STRTAB_STE_2_S2AA64 |
@@ -184,7 +187,8 @@ static void smmu_strtab_write_ste(smmu_master_t *master, uint64_t *ste)
         ste[1] = BITFIELD_SET(STRTAB_STE_1_S1DSS, STRTAB_STE_1_S1DSS_SSID0) |
              BITFIELD_SET(STRTAB_STE_1_S1CIR, STRTAB_STE_1_S1C_CACHE_WBRA) |
              BITFIELD_SET(STRTAB_STE_1_S1COR, STRTAB_STE_1_S1C_CACHE_WBRA) |
-             BITFIELD_SET(STRTAB_STE_1_S1CSH, SMMU_SH_ISH);
+             BITFIELD_SET(STRTAB_STE_1_S1CSH, SMMU_SH_ISH) |
+             BITFIELD_SET(STRTAB_STE_1_EATS, 0x1);
 
         val |= (stage1_cfg->cdcfg.cdtab_phys & STRTAB_STE_0_S1CONTEXTPTR_MASK) |
             BITFIELD_SET(STRTAB_STE_0_CONFIG, STRTAB_STE_0_CONFIG_S1_TRANS) |

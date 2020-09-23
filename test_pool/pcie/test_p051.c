@@ -104,6 +104,7 @@ payload(void)
   uint32_t reg_value;
   uint32_t iep_rp_found;
   uint32_t test_fails;
+  uint32_t idx;
   void     *cfg_space_buf;
   addr_t   cfg_space_addr;
   pcie_device_bdf_table *bdf_tbl_ptr;
@@ -151,7 +152,9 @@ payload(void)
           val_print(AVS_PRINT_INFO, "Config space addr 0x%x", cfg_space_addr);
 
           /* Save the iEP_EP config space to restore after Secondary Bus Reset */
-          val_memcpy(cfg_space_buf, (void *)cfg_space_addr, PCIE_CFG_SIZE);
+          for (idx = 0; idx < PCIE_CFG_SIZE / 4; idx ++) {
+              *((uint32_t *)cfg_space_buf + idx) = *((uint32_t *)cfg_space_addr + idx);
+          }
 
           /* Set Secondary Bus Reset Bit in Bridge Control
            * Register of iEP_RP
@@ -169,7 +172,10 @@ payload(void)
           }
 
           /* Restore iEP_EP Config Space */
-          val_memcpy((void *)cfg_space_addr, cfg_space_buf, PCIE_CFG_SIZE);
+          for (idx = 0; idx < PCIE_CFG_SIZE / 4; idx ++) {
+              *((uint32_t *)cfg_space_addr + idx) = *((uint32_t *)cfg_space_buf + idx);
+          }
+
           val_memory_free(cfg_space_buf);
       }
   }

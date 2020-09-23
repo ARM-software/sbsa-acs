@@ -263,6 +263,7 @@ val_iovirt_get_device_info(uint32_t rid, uint32_t segment, uint32_t *device_id,
 void
 val_iovirt_create_info_table(uint64_t *iovirt_info_table)
 {
+  uint32_t num_smmu;
 
   if (iovirt_info_table == NULL)
   {
@@ -274,18 +275,16 @@ val_iovirt_create_info_table(uint64_t *iovirt_info_table)
 
   pal_iovirt_create_info_table(g_iovirt_info_table);
 
+  num_smmu = val_iovirt_get_smmu_info(SMMU_NUM_CTRL, 0);
   val_print(AVS_PRINT_TEST,
-            " SMMU_INFO: Number of SMMU CTRL       :    %x \n",
-            val_iovirt_get_smmu_info(SMMU_NUM_CTRL, 0));
+            " SMMU_INFO: Number of SMMU CTRL       :    %x \n", num_smmu);
 
 #ifndef TARGET_LINUX
-  uint32_t num_smmu;
   uint32_t instance;
 
   val_smmu_init();
 
   /* Disable All SMMU's */
-  num_smmu = val_smmu_get_info(SMMU_NUM_CTRL, 0);
   for (instance = 0; instance < num_smmu; ++instance)
       val_smmu_disable(instance);
 #endif

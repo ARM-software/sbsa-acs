@@ -209,7 +209,7 @@ cfgspace_transactions_order_check(void)
     baseptr = (char *)val_memory_ioremap((void *)bdf_addr, 512, DEVICE_nGnRnE);
 
     if (!baseptr) {
-        val_print(AVS_PRINT_ERR, "\n     Failed in config ioremap for instance %x", instance);
+        val_print(AVS_PRINT_ERR, "\n       Failed in config ioremap for instance %x", instance);
         continue;
     }
 
@@ -257,7 +257,7 @@ barspace_transactions_order_check(void)
 
     /* Get BAR 0 details for this instance */
     if (val_exerciser_get_data(EXERCISER_DATA_BAR0_SPACE, &e_data, instance)) {
-        val_print(AVS_PRINT_ERR, "\n      Exerciser %d data read error     ", instance);
+        val_print(AVS_PRINT_ERR, "\n       Exerciser %d data read error     ", instance);
         continue;
     }
 
@@ -269,7 +269,7 @@ barspace_transactions_order_check(void)
     baseptr = (char *)val_memory_ioremap((void *)e_data.bar_space.base_addr, 512, DEVICE_nGnRnE);
 
     if (!baseptr) {
-        val_print(AVS_PRINT_ERR, "\n     Failed in BAR ioremap for instance %x", instance);
+        val_print(AVS_PRINT_ERR, "\n       Failed in BAR ioremap for instance %x", instance);
         continue;;
     }
 

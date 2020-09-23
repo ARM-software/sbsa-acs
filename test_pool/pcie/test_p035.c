@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2019, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2019, 2020 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -76,6 +76,7 @@ payload(void)
   uint32_t flr_cap;
   uint32_t test_fails;
   uint32_t test_skip = 1;
+  uint32_t idx;
   addr_t config_space_addr;
   void *func_config_space;
   pcie_device_bdf_table *bdf_tbl_ptr;
@@ -122,7 +123,9 @@ payload(void)
           val_print(AVS_PRINT_INFO, "config space addr 0x%x", config_space_addr);
 
           /* Save the function config space to restore after FLR */
-          val_memcpy(func_config_space, (void *)config_space_addr, PCIE_CFG_SIZE);
+          for (idx = 0; idx < PCIE_CFG_SIZE / 4; idx ++) {
+              *((uint32_t *)func_config_space + idx) = *((uint32_t *)config_space_addr + idx);
+          }
 
           /* Initiate FLR by setting the FLR bit */
           val_pcie_read_cfg(bdf, cap_base + DCTLR_OFFSET, &reg_value);
@@ -149,7 +152,10 @@ payload(void)
               test_fails++;
 
           /* Initialize the function config space */
-          val_memcpy((void *)config_space_addr, func_config_space, PCIE_CFG_SIZE);
+          for (idx = 0; idx < PCIE_CFG_SIZE / 4; idx ++) {
+              *((uint32_t *)config_space_addr + idx) = *((uint32_t *)func_config_space + idx);
+          }
+
           val_memory_free(func_config_space);
       }
   }

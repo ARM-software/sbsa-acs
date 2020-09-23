@@ -189,9 +189,6 @@ check_redirected_req_validation (uint32_t req_instance, uint32_t req_e_bdf,
    * It should Result into ACS Violation
    */
 
-  /* Clear Device Status Register Error Bits */
-  val_pcie_clear_device_status_error(req_rp_bdf);
-
   /* Create VA-PA Mapping in SMMU with PGT permissions as Read Only */
   /* Initialize DMA master and memory descriptors */
 
@@ -213,6 +210,10 @@ check_redirected_req_validation (uint32_t req_instance, uint32_t req_e_bdf,
 
   /* Trigger DMA from req_e_bdf */
   val_exerciser_set_param(DMA_ATTRIBUTES, (uint64_t)txn_va, 1, req_instance);
+
+  /* Clear Error Status Bits */
+  val_pcie_clear_device_status_error(req_rp_bdf);
+  val_pcie_clear_sig_target_abort(req_rp_bdf);
 
   /* DMA Should fail because Write permission not given */
   if (val_exerciser_ops(START_DMA, EDMA_FROM_DEVICE, req_instance) == 0) {
@@ -253,6 +254,10 @@ check_redirected_req_validation (uint32_t req_instance, uint32_t req_e_bdf,
   /* Trigger DMA from req_e_bdf */
   val_exerciser_set_param(DMA_ATTRIBUTES, (uint64_t)txn_va, 1, req_instance);
 
+  /* Clear Error Status Bits */
+  val_pcie_clear_device_status_error(req_rp_bdf);
+  val_pcie_clear_sig_target_abort(req_rp_bdf);
+
   /* DMA Should fail not because Write permission given */
   if (val_exerciser_ops(START_DMA, EDMA_FROM_DEVICE, req_instance) != 0) {
       val_print(AVS_PRINT_DEBUG, "\n       Seq2:DMA Write Should happen For : %4x", req_instance);
@@ -277,6 +282,10 @@ test_fail:
 test_clean:
   val_smmu_unmap(master);
   val_pgt_destroy(pgt_desc);
+
+  /* Clear Error Status Bits */
+  val_pcie_clear_device_status_error(req_rp_bdf);
+  val_pcie_clear_sig_target_abort(req_rp_bdf);
 
   /* Disable all SMMUs */
   for (instance = 0; instance < num_smmus; ++instance)

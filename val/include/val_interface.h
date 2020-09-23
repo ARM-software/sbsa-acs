@@ -184,6 +184,7 @@ uint8_t val_pcie_is_host_bridge(uint32_t bdf);
 void val_pcie_clear_device_status_error(uint32_t bdf);
 uint32_t val_pcie_is_device_status_error(uint32_t bdf);
 uint32_t val_pcie_is_sig_target_abort(uint32_t bdf);
+void val_pcie_clear_sig_target_abort(uint32_t bdf);
 
 /* IO-VIRT APIs */
 typedef enum {

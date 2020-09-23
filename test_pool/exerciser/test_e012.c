@@ -105,8 +105,9 @@ check_source_validation (uint32_t req_instance, uint32_t req_e_bdf,
       return AVS_STATUS_FAIL;
   }
 
-  /* Clear Device Status Register Error Bits */
+  /* Clear Error Status Bits */
   val_pcie_clear_device_status_error(req_rp_bdf);
+  val_pcie_clear_sig_target_abort(req_rp_bdf);
 
   /* Change Requester ID for DMA such that it does not fall under req_rp_bdf
    * Secondary & Subordinate bdf
@@ -144,8 +145,9 @@ check_transaction_blocking (uint32_t req_instance, uint32_t req_e_bdf,
 {
   /* Check 2 : ACS Transaction Blocking */
 
-  /* Clear Device Status Register Error Bits */
+  /* Clear Error Status Bits */
   val_pcie_clear_device_status_error(req_rp_bdf);
+  val_pcie_clear_sig_target_abort(req_rp_bdf);
 
   /* Transaction with Address Type other than default(0x0)
    * Should result into Transaction blocking.
@@ -253,6 +255,9 @@ payload(void)
           curr_bdf_failed = 0;
           fail_cnt++;
       }
+      /* Clear Error Status Bits */
+      val_pcie_clear_device_status_error(req_rp_bdf);
+      val_pcie_clear_sig_target_abort(req_rp_bdf);
   }
 
   if (test_skip == 1)
