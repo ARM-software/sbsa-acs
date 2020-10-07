@@ -32,7 +32,7 @@ static void payload()
   num_smmu = val_smmu_get_info(SMMU_NUM_CTRL, 0);
 
   if (num_smmu == 0) {
-      val_print(AVS_PRINT_ERR, "\nNo SMMU Controllers are discovered ", 0);
+      val_print(AVS_PRINT_ERR, "\n       No SMMU Controllers are discovered ", 0);
       val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
       return;
   }
@@ -40,7 +40,7 @@ static void payload()
   while (num_smmu--) {
       if (val_smmu_get_info(SMMU_CTRL_ARCH_MAJOR_REV, num_smmu) == 2) {
           if (g_sbsa_level > 3) {
-              val_print(AVS_PRINT_ERR, "\nSmmuv3 should be supported Level %x", g_sbsa_level);
+              val_print(AVS_PRINT_ERR, "\n       Smmuv3 should be supported Level %x", g_sbsa_level);
               val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
               return;
           }
@@ -50,13 +50,13 @@ static void payload()
 
           if (g_sbsa_level < 5) {
               if ((data != 0) && (data != 0x1) && (data != 0x2)) {
-                  val_print(AVS_PRINT_ERR, "\nInvalid Architecture Revision %x  ", data);
+                  val_print(AVS_PRINT_ERR, "\n       Invalid Architecture Revision %x  ", data);
                   val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
                   return;
               }
           } else {
               if (data < 0x2) { /* Smmuv3.2 or higher not implemented */
-                  val_print(AVS_PRINT_ERR, "\n\tLevel %x should support Smmuv3.2 or higher  ",
+                  val_print(AVS_PRINT_ERR, "\n       Level %x should support Smmuv3.2 or higher  ",
                                            g_sbsa_level);
                   val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
                   return;

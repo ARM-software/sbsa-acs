@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2020, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,7 +21,7 @@
 #include "val/include/sbsa_avs_iovirt.h"
 
 #define TEST_NUM   (AVS_SMMU_TEST_NUM_BASE + 6)
-#define TEST_DESC  "Unique stream id for each req id   "
+#define TEST_DESC  "Unique stream id for each req id  "
 
 static
 void
@@ -32,7 +32,7 @@ payload()
 
   num_rc = val_iovirt_get_pcie_rc_info(NUM_PCIE_RC, 0);
   if(!num_rc) {
-      val_print(AVS_PRINT_ERR, "\n      No Root Complex discovered ", 0);
+      val_print(AVS_PRINT_ERR, "\n       No Root Complex discovered ", 0);
       val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 3));
       return;
   }

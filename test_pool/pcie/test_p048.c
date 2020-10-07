@@ -55,6 +55,7 @@ payload(void)
   uint32_t read_value;
   uint32_t test_skip = 1;
   uint64_t mem_base;
+  uint64_t mem_lim;
   pcie_device_bdf_table *bdf_tbl_ptr;
 
   tbl_index = 0;
@@ -94,8 +95,15 @@ payload(void)
 
         /* Read Function's NP Memory Base Limit Register */
         val_pcie_read_cfg(bdf, TYPE1_NP_MEM, &read_value);
+        if (read_value == 0)
+          continue;
 
         mem_base = (read_value & MEM_BA_MASK) << MEM_BA_SHIFT;
+        mem_lim = (read_value & MEM_LIM_MASK) | MEM_LIM_LOWER_BITS;
+
+        /* If Memory Limit is programmed with value less the Base, then Skip.*/
+        if (mem_lim < mem_base)
+          continue;
 
         /* If test runs for atleast an endpoint */
         test_skip = 0;

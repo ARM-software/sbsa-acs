@@ -60,14 +60,14 @@ static uint32_t test_sequence2(void *dram_buf1_virt, void *dram_buf1_phys, uint3
   /* Perform DMA OUT to copy contents of dram_buf2 to exerciser memory */
   val_exerciser_set_param(DMA_ATTRIBUTES, (uint64_t)dram_buf2_phys, dma_len, instance);
   if (val_exerciser_ops(START_DMA, EDMA_TO_DEVICE, instance)) {
-      val_print(AVS_PRINT_ERR, "\n      DMA write failure to exerciser %4x", instance);
+      val_print(AVS_PRINT_ERR, "\n       DMA write failure to exerciser %4x", instance);
       return 1;
   }
 
   /* Perform DMA IN to copy content back from exerciser memory to dram_buf1 */
   val_exerciser_set_param(DMA_ATTRIBUTES, (uint64_t)dram_buf1_phys, dma_len, instance);
   if (val_exerciser_ops(START_DMA, EDMA_FROM_DEVICE, instance)) {
-      val_print(AVS_PRINT_ERR, "\n      DMA read failure from exerciser %4x", instance);
+      val_print(AVS_PRINT_ERR, "\n       DMA read failure from exerciser %4x", instance);
       return 1;
   }
 
@@ -77,7 +77,7 @@ static uint32_t test_sequence2(void *dram_buf1_virt, void *dram_buf1_phys, uint3
 
   /* Compare the contents of ddr_buf1 and ddr_buf2 for NEW_DATA */
   if (val_memory_compare(dram_buf1_virt, dram_buf2_virt, dma_len)) {
-      val_print(AVS_PRINT_ERR, "\n        I/O coherency failure for Exerciser %4x", instance);
+      val_print(AVS_PRINT_ERR, "\n       I/O coherency failure for Exerciser %4x", instance);
       return 1;
   }
 
@@ -106,14 +106,14 @@ static uint32_t test_sequence1(void *dram_buf1_virt, void *dram_buf1_phys, uint3
   /* Perform DMA OUT to copy contents of dram_buf1 to exerciser memory */
   val_exerciser_set_param(DMA_ATTRIBUTES, (uint64_t)dram_buf1_phys, dma_len, instance);
   if (val_exerciser_ops(START_DMA, EDMA_TO_DEVICE, instance)) {
-      val_print(AVS_PRINT_ERR, "\n      DMA write failure to exerciser %4x", instance);
+      val_print(AVS_PRINT_ERR, "\n       DMA write failure to exerciser %4x", instance);
       return 1;
   }
 
   /* Perform DMA IN to copy the content from exerciser memory to dram_buf2 */
   val_exerciser_set_param(DMA_ATTRIBUTES, (uint64_t)dram_buf2_phys, dma_len, instance);
   if (val_exerciser_ops(START_DMA, EDMA_FROM_DEVICE, instance)) {
-      val_print(AVS_PRINT_ERR, "\n      DMA read failure from exerciser %4x", instance);
+      val_print(AVS_PRINT_ERR, "\n       DMA read failure from exerciser %4x", instance);
       return 1;
   }
 
@@ -122,7 +122,7 @@ static uint32_t test_sequence1(void *dram_buf1_virt, void *dram_buf1_phys, uint3
 
   /* Compare the contents of ddr_buf1 and ddr_buf2 for NEW_DATA */
   if (val_memory_compare(dram_buf1_virt, dram_buf2_virt, dma_len)) {
-      val_print(AVS_PRINT_ERR, "\n        I/O coherency failure for Exerciser %4x", instance);
+      val_print(AVS_PRINT_ERR, "\n       I/O coherency failure for Exerciser %4x", instance);
       return 1;
   }
 

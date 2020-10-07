@@ -38,7 +38,7 @@ void val_exerciser_create_info_table(void)
   /* if no bdf table ptr return error */
   if (bdf_table->num_entries == 0)
   {
-      val_print(AVS_PRINT_ERR, "\n       No BDFs discovered            ", 0);
+      val_print(AVS_PRINT_DEBUG, "\n       No BDFs discovered            ", 0);
       return;
   }
 
@@ -231,14 +231,16 @@ val_exerciser_execute_tests(uint32_t level)
   }
 
   /* Create the list of valid Pcie Device Functions */
-  if (val_pcie_create_device_bdf_table())
+  if (val_pcie_create_device_bdf_table()) {
+      val_print(AVS_PRINT_WARN, "\n     Create BDF Table Failed, Skipping Exerciser tests...\n", 0);
       return AVS_STATUS_SKIP;
+  }
 
   val_exerciser_create_info_table();
   num_instances = val_exerciser_get_info(EXERCISER_NUM_CARDS, 0);
 
   if (num_instances == 0) {
-      val_print(AVS_PRINT_INFO, "    No exerciser cards in the system %x", 0);
+      val_print(AVS_PRINT_WARN, "\n     No Exerciser Devices Found, Skipping Exerciser tests...\n", 0);
       return AVS_STATUS_SKIP;
   }
 

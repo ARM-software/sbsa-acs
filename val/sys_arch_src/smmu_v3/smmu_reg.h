@@ -1,17 +1,19 @@
-/*
+/** @file
+ * Copyright (c) 2020, Arm Limited or its affiliates. All rights reserved.
+ * SPDX-License-Identifier : Apache-2.0
+
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     https://www.apache.org/licenses/LICENSE-2.0
+ *  http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */
-
+ **/
 #ifndef __SMMU_REG_H__
 #define __SMMU_REG_H__
 
@@ -125,6 +127,7 @@ BITFIELD_DECL(uint64_t, STRTAB_STE_1_S1DSS, 1, 0)
 BITFIELD_DECL(uint64_t, STRTAB_STE_1_S1CIR, 3, 2)
 BITFIELD_DECL(uint64_t, STRTAB_STE_1_S1COR, 5, 4)
 BITFIELD_DECL(uint64_t, STRTAB_STE_1_S1CSH, 7, 6)
+BITFIELD_DECL(uint64_t, STRTAB_STE_1_EATS, 29, 28)
 BITFIELD_DECL(uint64_t, STRTAB_STE_1_STRW, 31, 30)
 #define STRTAB_STE_1_STRW_NSEL1 0UL
 #define STRTAB_STE_1_STRW_EL2 2UL
