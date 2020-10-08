@@ -90,6 +90,8 @@ void val_gic_cpuif_init(void);
 uint32_t val_gic_request_irq(uint32_t irq_num, uint32_t mapped_irq_num, void *isr);
 void val_gic_free_irq(uint32_t irq_num, uint32_t mapped_irq_num);
 void val_gic_set_intr_trigger(uint32_t int_id, INTR_TRIGGER_INFO_TYPE_e trigger_type);
+uint32_t val_gic_get_intr_trigger_type(uint32_t int_id, INTR_TRIGGER_INFO_TYPE_e *trigger_type);
+uint32_t val_gic_its_configure(void);
 uint32_t val_gic_request_msi(uint32_t bdf, uint32_t IntID, uint32_t msi_index);
 void val_gic_free_msi(uint32_t bdf, uint32_t IntID, uint32_t msi_index);
 
@@ -157,7 +159,8 @@ uint32_t val_pcie_is_devicedma_64bit(uint32_t bdf);
 uint32_t val_pcie_scan_bridge_devices_and_check_memtype(uint32_t bdf);
 void val_pcie_read_ext_cap_word(uint32_t bdf, uint32_t ext_cap_id, uint8_t offset, uint16_t *val);
 uint32_t val_pcie_get_pcie_type(uint32_t bdf);
-uint32_t val_pcie_p2p_support(uint32_t bdf);
+uint32_t val_pcie_p2p_support(void);
+uint32_t val_pcie_dev_p2p_support(uint32_t bdf);
 uint32_t val_pcie_multifunction_support(uint32_t bdf);
 uint32_t val_pcie_is_onchip_peripheral(uint32_t bdf);
 uint32_t val_pcie_device_port_type(uint32_t bdf);
@@ -178,13 +181,20 @@ uint32_t val_pcie_get_downstream_function(uint32_t bdf, uint32_t *dsf_bdf);
 uint32_t val_pcie_get_rootport(uint32_t bdf, uint32_t *rp_bdf);
 uint8_t val_pcie_parent_is_rootport(uint32_t dsf_bdf, uint32_t *rp_bdf);
 uint8_t val_pcie_is_host_bridge(uint32_t bdf);
+void val_pcie_clear_device_status_error(uint32_t bdf);
+uint32_t val_pcie_is_device_status_error(uint32_t bdf);
+uint32_t val_pcie_is_sig_target_abort(uint32_t bdf);
+void val_pcie_clear_sig_target_abort(uint32_t bdf);
 
 /* IO-VIRT APIs */
 typedef enum {
   SMMU_NUM_CTRL = 1,
   SMMU_CTRL_BASE,
   SMMU_CTRL_ARCH_MAJOR_REV,
-  SMMU_IOVIRT_BLOCK
+  SMMU_IOVIRT_BLOCK,
+  SMMU_SSID_BITS,
+  SMMU_IN_ADDR_SIZE,
+  SMMU_OUT_ADDR_SIZE
 }SMMU_INFO_e;
 
 typedef enum {

@@ -26,15 +26,19 @@
 #include <Protocol/HardwareInterrupt2.h>
 
 #include "include/pal_uefi.h"
+#include "include/sbsa_pcie_enum.h"
+#include "src_gic_its/sbsa_gic_its.h"
 
 static EFI_ACPI_6_1_MULTIPLE_APIC_DESCRIPTION_TABLE_HEADER *gMadtHdr;
 
 EFI_HARDWARE_INTERRUPT_PROTOCOL *gInterrupt = NULL;
 EFI_HARDWARE_INTERRUPT2_PROTOCOL *gInterrupt2 = NULL;
 
-
 UINT64
 pal_get_madt_ptr();
+
+GIC_INFO_ENTRY  *g_gic_entry = NULL;
+GIC_ITS_INFO    *g_gic_its_info;
 
 /**
   @brief  Populate information about the GIC sub-system at the input address.
@@ -58,6 +62,7 @@ pal_gic_create_info_table(GIC_INFO_TABLE *GicTable)
   }
 
   GicEntry = GicTable->gic_info;
+  g_gic_entry = GicTable->gic_info;
   GicTable->header.gic_version = 0;
   GicTable->header.num_gicrd = 0;
   GicTable->header.num_gicd = 0;
@@ -100,14 +105,25 @@ pal_gic_create_info_table(GIC_INFO_TABLE *GicTable)
         GicEntry->type = ENTRY_TYPE_GICD;
         GicEntry->base = ((EFI_ACPI_6_1_GIC_DISTRIBUTOR_STRUCTURE *)Entry)->PhysicalBaseAddress;
         GicTable->header.gic_version = ((EFI_ACPI_6_1_GIC_DISTRIBUTOR_STRUCTURE *)Entry)->GicVersion;
+        sbsa_print(AVS_PRINT_INFO, L"GIC DIS base %x \n", GicEntry->base);
         GicTable->header.num_gicd++;
+        GicEntry++;
+    }
+
+    if (Entry->Type == EFI_ACPI_6_1_GICR) {
+        GicEntry->type = ENTRY_TYPE_GICRD;
+        GicEntry->base = ((EFI_ACPI_6_1_GICR_STRUCTURE *)Entry)->DiscoveryRangeBaseAddress;
+        sbsa_print(AVS_PRINT_INFO, L"GIC RD base Structure %x \n", GicEntry->base);
+        GicTable->header.num_gicrd++;
         GicEntry++;
     }
 
     if (Entry->Type == EFI_ACPI_6_1_GIC_ITS) {
         GicEntry->type = ENTRY_TYPE_GICITS;
         GicEntry->base = ((EFI_ACPI_6_1_GIC_ITS_STRUCTURE *)Entry)->PhysicalBaseAddress;
+        GicEntry->its_id = ((EFI_ACPI_6_1_GIC_ITS_STRUCTURE *)Entry)->GicItsId;
         sbsa_print(AVS_PRINT_INFO, L"GIC ITS base %x \n", GicEntry->base);
+        sbsa_print(AVS_PRINT_INFO, L"GIC ITS ID%x \n", GicEntry->its_id);
         GicTable->header.num_its++;
         GicEntry++;
     }
@@ -239,27 +255,124 @@ pal_gic_free_irq (
 
 }
 
-/* Place holder function. Need to be
- * implemented if needed in later releases
- */
 UINT32
-pal_gic_request_msi (
-  UINT32    bdf,
-  UINT32    IntID,
-  UINT32    msi_index
+pal_gic_its_configure (
   )
 {
+  /*
+   * This function configure the gic to have support for LPIs,
+   * If supported in the system.
+  */
+  UINT64     mGicRedistributorBase = 0;
+  EFI_STATUS Status;
+
+  /* Allocate memory to store ITS info */
+  g_gic_its_info = (GIC_ITS_INFO *) pal_mem_alloc(1024);
+  if (!g_gic_its_info) {
+      sbsa_print(AVS_PRINT_ERR, L"GIC : ITS table memory allocation failed\n", 0);
+      return 0xFFFFFFFF;
+  }
+
+  g_gic_its_info->GicNumIts = 0;
+
+  while (g_gic_entry->type != 0xFF) {
+    if (g_gic_entry->type == ENTRY_TYPE_GICD) {
+        g_gic_its_info->GicDBase = g_gic_entry->base;
+    } else if (g_gic_entry->type == ENTRY_TYPE_GICRD) {
+        mGicRedistributorBase = g_gic_entry->base;
+    } else if (g_gic_entry->type == ENTRY_TYPE_GICITS) {
+        g_gic_its_info->GicIts[g_gic_its_info->GicNumIts].Base = g_gic_entry->base;
+        g_gic_its_info->GicIts[g_gic_its_info->GicNumIts++].ID = g_gic_entry->its_id;
+    }
+    g_gic_entry++;
+  }
+
+  sbsa_print(AVS_PRINT_INFO, L"GIC Distributor base %x \n", g_gic_its_info->GicDBase);
+
+  /* Get Redistributor base for Current CPU. */
+  g_gic_its_info->GicRdBase = GetCurrentCpuRDBase(mGicRedistributorBase);
+  if (g_gic_its_info->GicRdBase == 0) {
+    sbsa_print(AVS_PRINT_DEBUG, L"Could not get GIC RD Base.\n", 0);
     return 0xFFFFFFFF;
+  }
+
+  sbsa_print(AVS_PRINT_INFO, L"GIC ReDistributor base for Current CPU %x \n", g_gic_its_info->GicRdBase);
+
+  if (ArmGICDSupportsLPIs(g_gic_its_info->GicDBase) && ArmGICRSupportsLPIs(g_gic_its_info->GicRdBase)) {
+    Status = ArmGicItsConfiguration();
+    if (EFI_ERROR(Status)) {
+      sbsa_print(AVS_PRINT_DEBUG, L"Could Not Configure ITS.\n", 0);
+      return 0xFFFFFFFF;
+    }
+  } else {
+    sbsa_print(AVS_PRINT_DEBUG, L"LPIs not supported in the system.\n", 0);
+    return 0xFFFFFFFF;
+  }
+
+  return 0;
 }
 
-/* Place holder function. Need to be
- * implemented if needed in later releases
- */
+UINT32
+pal_gic_get_max_lpi_id (
+  )
+{
+  return ArmGicItsGetMaxLpiID();
+}
+
+UINT32
+getItsIndex (
+  IN UINT32   ItsID
+  )
+{
+  UINT32  index;
+
+  for (index=0; index<g_gic_its_info->GicNumIts; index++)
+  {
+    if (ItsID == g_gic_its_info->GicIts[index].ID)
+      return index;
+  }
+  return 0xFFFFFFFF;
+}
+
+UINT32
+pal_gic_request_msi (
+  UINT32    ItsID,
+  UINT32    DevID,
+  UINT32    IntID,
+  UINT32    msi_index,
+  UINT32    *msi_addr,
+  UINT32    *msi_data
+  )
+{
+  UINT32  ItsIndex;
+
+  ItsIndex = getItsIndex(ItsID);
+  if (ItsIndex > g_gic_its_info->GicNumIts) {
+    sbsa_print(AVS_PRINT_ERR, L"\n       Could not find ITS block in MADT", 0);
+    return 0xFFFFFFFF;
+  }
+
+  ArmGicItsCreateLpiMap(ItsIndex, DevID, IntID, LPI_PRIORITY1);
+
+  *msi_addr = ArmGicItsGetGITSTranslatorAddress(ItsIndex);
+  *msi_data = IntID;
+
+  return 0;
+}
+
 VOID
 pal_gic_free_msi (
-  UINT32    bdf,
+  UINT32    ItsID,
+  UINT32    DevID,
   UINT32    IntID,
   UINT32    msi_index
   )
 {
+  UINT32  ItsIndex;
+
+  ItsIndex = getItsIndex(ItsID);
+  if (ItsIndex > g_gic_its_info->GicNumIts)
+    return ;
+
+  ArmGicItsClearLpiMappings(ItsIndex, DevID, IntID);
 }

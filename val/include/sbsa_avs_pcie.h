@@ -25,7 +25,13 @@
 #define PCIE_EXTRACT_BDF_DEV(bdf)  ((bdf >> 8) & 0xFF)
 #define PCIE_EXTRACT_BDF_FUNC(bdf) (bdf & 0xFF)
 
+#define PCIE_CREATE_BDF_PACKED(bdf)  PCIE_EXTRACT_BDF_FUNC(bdf) | \
+                                    (PCIE_EXTRACT_BDF_DEV(bdf) << 3) | \
+                                    (PCIE_EXTRACT_BDF_BUS(bdf) << 8)
+
 #define PCIE_CREATE_BDF(seg, bus, dev, func) ((seg << 24) | ((bus & 0xFF) << 16) | ((dev & 0xFF) << 8) | func)
+
+#define GET_DEVICE_ID(bus, dev, func) ((bus << 8) | (dev << 3) | func)
 
 #define PCIE_MAX_BUS   256
 #define PCIE_MAX_DEV    32
@@ -54,6 +60,8 @@
 
 #define MAX_BITFIELD_ENTRIES 100
 #define ERR_STRING_SIZE 64
+
+#define MEM_OFFSET_10   0x10
 
 /* Allows storage of 2048 valid BDFs */
 #define PCIE_DEVICE_BDF_TABLE_SZ 8192
@@ -136,6 +144,7 @@ typedef struct {
 } pcie_device_bdf_table;
 
 void     val_pcie_write_cfg(uint32_t bdf, uint32_t offset, uint32_t data);
+void     val_pcie_io_write_cfg(uint32_t bdf, uint32_t offset, uint32_t data);
 uint32_t val_pcie_read_cfg(uint32_t bdf, uint32_t offset, uint32_t *data);
 uint32_t val_get_msi_vectors (uint32_t bdf, PERIPHERAL_VECTOR_LIST **mvector);
 uint64_t val_pcie_get_bdf_config_addr(uint32_t bdf);
@@ -182,6 +191,9 @@ val_pcie_get_rp_transaction_frwd_support(uint32_t bdf);
 
 uint32_t
 val_pcie_get_atomicop_requester_capable(uint32_t bdf);
+
+uint32_t
+val_pcie_is_cache_present(uint32_t bdf);
 
 uint32_t
 p001_entry(uint32_t num_pe);
@@ -317,4 +329,41 @@ p044_entry(uint32_t num_pe);
 
 uint32_t
 p045_entry(uint32_t num_pe);
+
+uint32_t
+p046_entry(uint32_t num_pe);
+
+uint32_t
+p047_entry(uint32_t num_pe);
+
+uint32_t
+p048_entry(uint32_t num_pe);
+
+uint32_t
+p049_entry(uint32_t num_pe);
+
+uint32_t
+p050_entry(uint32_t num_pe);
+
+uint32_t
+p051_entry(uint32_t num_pe);
+
+uint32_t
+p052_entry(uint32_t num_pe);
+
+uint32_t
+p053_entry(uint32_t num_pe);
+
+uint32_t
+p054_entry(uint32_t num_pe);
+
+uint32_t
+p055_entry(uint32_t num_pe);
+
+uint32_t
+p056_entry(uint32_t num_pe);
+
+uint32_t
+p057_entry(uint32_t num_pe);
+
 #endif

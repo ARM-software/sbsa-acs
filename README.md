@@ -17,8 +17,8 @@ A few tests are executed by running the SBSA ACS Linux application which in turn
 
 
 ## Release details
- - Code Quality: REL v2.5
- - The tests are written for version 5.0 of the SBSA specification.
+ - Code Quality: REL v3.0
+ - The tests are written for version 6.0 of the SBSA specification.
  - PCIe RCiEP tests for Appendix E of SBSA 6.0 specification are also included.
  - The compliance suite is not a substitute for design verification.
  - To review the SBSA ACS logs, Arm licensees can contact Arm directly through their partner managers.
@@ -50,7 +50,8 @@ Prebuilt images for each release are available in the prebuilt_images folder of 
     Before starting the ACS build, ensure that the following requirements are met.
 
 - Any mainstream Linux based OS distribution running on a x86 or aarch64 machine.
-- git clone the UDK2018 branch of [EDK2 tree](https://github.com/tianocore/edk2).
+- git clone the edk2-stable202008 tag of [EDK2 tree](https://github.com/tianocore/edk2).
+- git clone the [EDK2 port of libc](https://github.com/tianocore/edk2-libc) SHA: 61687168fe02ac4d933a36c9145fdd242ac424d1.
 - Install GCC 5.3 or later toolchain for Linux from [here](https://releases.linaro.org/components/toolchain/binaries/).
 - Install the build prerequisite packages to build EDK2. 
 Note: The details of the packages are beyond the scope of this document.
@@ -58,27 +59,30 @@ Note: The details of the packages are beyond the scope of this document.
 To start the ACS build, perform the following steps:
 
 1.  cd local_edk2_path
-2.  git clone https://github.com/ARM-software/sbsa-acs AppPkg/Applications/sbsa-acs
-3.  Add the following to the [LibraryClasses.common] section in ShellPkg/ShellPkg.dsc
-   - Add  SbsaValLib|AppPkg/Applications/sbsa-acs/val/SbsaValLib.inf
-   - Add  SbsaPalLib|AppPkg/Applications/sbsa-acs/platform/pal_uefi/SbsaPalLib.inf
-4.  Add AppPkg/Applications/sbsa-acs/uefi_app/SbsaAvs.inf in the [components] section of ShellPkg/ShellPkg.dsc
+2.  git clone https://github.com/tianocore/edk2-libc
+3.  git clone https://github.com/ARM-software/sbsa-acs ShellPkg/Application/sbsa-acs
+4.  Add the following to the [LibraryClasses.common] section in ShellPkg/ShellPkg.dsc
+   - Add  SbsaValLib|ShellPkg/Application/sbsa-acs/val/SbsaValLib.inf
+   - Add  SbsaPalLib|ShellPkg/Application/sbsa-acs/platform/pal_uefi/SbsaPalLib.inf
+5.  Add ShellPkg/Application/sbsa-acs/uefi_app/SbsaAvs.inf in the [components] section of ShellPkg/ShellPkg.dsc
 
 ### Linux build environment
 If the build environment is Linux, perform the following steps:
 1.  export GCC49_AARCH64_PREFIX= GCC5.3 toolchain path pointing to /bin/aarch64-linux-gnu- in case of x86 machine. For aarch64 build it should point to /usr/bin/
-2.  source edksetup.sh
-3.  make -C BaseTools/Source/C
-4.  source AppPkg/Applications/sbsa-acs/tools/scripts/avsbuild.sh
+2.  export PACKAGES_PATH= path pointing to edk2-libc
+3.  source edksetup.sh
+4.  make -C BaseTools/Source/C
+5.  source ShellPkg/Application/sbsa-acs/tools/scripts/avsbuild.sh
 
 ### Windows build environment
 If the build environment is Windows, perform the following steps:
 1. Set the toolchain path to GCC53 or above.
 2. Setup the environment for AARCH64 EDK2 build.
-3. Build the SBSA shell application.
+3. Setup the environment for PACKAGES_PATH.
+4. Build the SBSA shell application.
    For example,
    build -a AARCH64 -t GCC49 -p ShellPkg/ShellPkg.dsc -m
-   AppPkg/Applications/sbsa-acs/uefi_app/SbsaAvs.inf
+   ShellPkg/Application/sbsa-acs/uefi_app/SbsaAvs.inf
 
 **Note:** To build the ACS with NIST Statistical Test Suite, see [SBSA_NIST_User_Guide](docs/Arm_SBSA_NIST_User_Guide.md)
 
@@ -92,6 +96,16 @@ The EFI executable file is generated at <edk2_path>/Build/Shell/DEBUG_GCC49/AARC
 The execution of the compliance suite varies depending on the test environment. These steps assume that the test suite is invoked through the ACS UEFI shell application.
 
 For details about the SBSA ACS UEFI Shell application, see [SBSA ACS USER Guide](docs/Arm_SBSA_Architecture_Compliance_User_Guide.pdf)
+
+### Prerequisites
+- If the system supports LPI’s (Interrupt ID > 8192) then Firmware should have support for installing handler for LPI interrupts.
+    - If you are using edk2, please change the ArmGic driver in the ArmPkg to have support for installing handler for LPI’s.
+    - Add the following in edk2/ArmPkg/Drivers/ArmGic/GicV3/ArmGicV3Dxe.c
+>        - After [#define ARM_GIC_DEFAULT_PRIORITY  0x80]
+>          +#define ARM_GIC_MAX_NUM_INTERRUPT 16384
+>        - Change this in GicV3DxeInitialize Function.
+>          -mGicNumInterrupts      = ArmGicGetMaxNumInterrupts (mGicDistributorBase);
+>          +mGicNumInterrupts      = ARM_GIC_MAX_NUM_INTERRUPT;
 
 ### Post-Silicon
 

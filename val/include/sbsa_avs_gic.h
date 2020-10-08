@@ -38,7 +38,11 @@
 #define GICD_ISACTIVER0     0x300
 #define GICD_ICPENDR0       0x280
 #define GICD_ICACTIVER0     0x380
+#define GICD_ICFGR          0xC00
 #define GICD_IROUTER        0x6000
+
+#define GICD_ICFGR_INTR_STRIDE          16 /* (32/2) Interrupt per Register */
+#define GICD_ICFGR_INTR_CONFIG1(intid)  ((1+int_id*2) % 32) /* Bit Config[2x+1] for config type level/edge */
 
 uint32_t
 g001_entry(uint32_t num_pe);

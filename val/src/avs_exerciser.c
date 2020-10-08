@@ -18,6 +18,7 @@
 #include "include/sbsa_avs_val.h"
 #include "include/sbsa_avs_exerciser.h"
 #include "include/sbsa_avs_pcie.h"
+#include "include/sbsa_avs_smmu.h"
 
 EXERCISER_INFO_TABLE g_exercier_info_table;
 /**
@@ -37,7 +38,7 @@ void val_exerciser_create_info_table(void)
   /* if no bdf table ptr return error */
   if (bdf_table->num_entries == 0)
   {
-      val_print(AVS_PRINT_ERR, "\n       No BDFs discovered            ", 0);
+      val_print(AVS_PRINT_DEBUG, "\n       No BDFs discovered            ", 0);
       return;
   }
 
@@ -188,7 +189,6 @@ uint32_t val_exerciser_init(uint32_t instance)
 uint32_t val_exerciser_ops(EXERCISER_OPS ops, uint64_t param, uint32_t instance)
 {
     return pal_exerciser_ops(ops, param, g_exercier_info_table.e_info[instance].bdf);
-
 }
 
 /**
@@ -231,27 +231,34 @@ val_exerciser_execute_tests(uint32_t level)
   }
 
   /* Create the list of valid Pcie Device Functions */
-  if (val_pcie_create_device_bdf_table())
+  if (val_pcie_create_device_bdf_table()) {
+      val_print(AVS_PRINT_WARN, "\n     Create BDF Table Failed, Skipping Exerciser tests...\n", 0);
       return AVS_STATUS_SKIP;
+  }
 
   val_exerciser_create_info_table();
   num_instances = val_exerciser_get_info(EXERCISER_NUM_CARDS, 0);
 
   if (num_instances == 0) {
-      val_print(AVS_PRINT_INFO, "    No exerciser cards in the system %x", 0);
+      val_print(AVS_PRINT_WARN, "\n     No Exerciser Devices Found, Skipping Exerciser tests...\n", 0);
       return AVS_STATUS_SKIP;
   }
 
-    status = e001_entry();
-    status |= e002_entry();
-    status |= e003_entry();
-    status |= e004_entry();
-    status |= e005_entry();
-    status |= e006_entry();
-    status |= e007_entry();
-    status |= e008_entry();
-    status |= e009_entry();
-    status |= e010_entry();
+  status = e001_entry();
+  status |= e002_entry();
+  status |= e003_entry();
+  status |= e004_entry();
+  status |= e005_entry();
+  status |= e006_entry();
+  status |= e007_entry();
+  status |= e008_entry();
+  status |= e009_entry();
+  status |= e010_entry();
+  status |= e011_entry();
+  status |= e012_entry();
+  status |= e013_entry();
+  status |= e014_entry();
+  status |= e015_entry();
 
   if (status != AVS_STATUS_PASS) {
       val_print(AVS_PRINT_ERR, "\n     One or more Exerciser tests have failed.... \n", status);

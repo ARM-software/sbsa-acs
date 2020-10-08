@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2019, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2020, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -128,7 +128,7 @@ pal_pcie_create_info_table(PCIE_INFO_TABLE *PcieTable)
     @return  success/failure
 **/
 UINT32
-pal_pcie_read_cfg(UINT32 Bdf, UINT32 offset, UINT32 *data)
+pal_pcie_io_read_cfg(UINT32 Bdf, UINT32 offset, UINT32 *data)
 {
 
   EFI_STATUS                    Status;
@@ -165,6 +165,89 @@ pal_pcie_read_cfg(UINT32 Bdf, UINT32 offset, UINT32 *data)
     }
   }
   return PCIE_NO_MAPPING;
+}
+
+/**
+    @brief Write 32-bit data to PCIe config space pointed by Bus,
+           Device, Function and register offset, using UEFI PciIoProtocol
+
+    @param   Bdf      - BDF value for the device
+    @param   offset - Register offset within a device PCIe config space
+    @param   data - 32 bit value at offset from ECAM base of the device specified by BDF value
+    @return  success/failure
+**/
+VOID
+pal_pcie_io_write_cfg(UINT32 Bdf, UINT32 offset, UINT32 data)
+{
+
+  EFI_STATUS                    Status;
+  EFI_PCI_IO_PROTOCOL           *Pci;
+  UINTN                         HandleCount;
+  EFI_HANDLE                    *HandleBuffer;
+  UINTN                         Seg, Bus, Dev, Func;
+  UINT32                        Index;
+  UINT32                        InputSeg, InputBus, InputDev, InputFunc;
+
+
+  Status = gBS->LocateHandleBuffer (ByProtocol, &gEfiPciIoProtocolGuid, NULL, &HandleCount, &HandleBuffer);
+  if (EFI_ERROR (Status)) {
+    sbsa_print(AVS_PRINT_INFO,L"No PCI devices found in the system\n");
+    return;
+  }
+
+  InputSeg = PCIE_EXTRACT_BDF_SEG(Bdf);
+  InputBus = PCIE_EXTRACT_BDF_BUS(Bdf);
+  InputDev = PCIE_EXTRACT_BDF_DEV(Bdf);
+  InputFunc = PCIE_EXTRACT_BDF_FUNC(Bdf);
+
+  for (Index = 0; Index < HandleCount; Index++) {
+    Status = gBS->HandleProtocol (HandleBuffer[Index], &gEfiPciIoProtocolGuid, (VOID **)&Pci);
+    if (!EFI_ERROR (Status)) {
+      Pci->GetLocation (Pci, &Seg, &Bus, &Dev, &Func);
+      if (InputSeg == Seg && InputBus == Bus && InputDev == Dev && InputFunc == Func) {
+          Status = Pci->Pci.Write (Pci, EfiPciIoWidthUint32, offset, 1, &data);
+      }
+    }
+  }
+}
+
+/**
+  @brief   This API checks the PCIe Hierarchy Supports P2P
+           1. Caller       -  Test Suite
+  @return  1 - P2P feature not supported 0 - P2P feature supported
+**/
+UINT32
+pal_pcie_p2p_support()
+{
+  /*
+   * TODO
+   * PCIe support for peer to peer
+   * transactions is platform implementation specific
+   */
+
+  return 1;
+}
+
+/**
+  @brief   This API checks the PCIe device P2P support
+           1. Caller       -  Test Suite
+  @param   bdf      - PCIe BUS/Device/Function
+  @return  1 - P2P feature not supported 0 - P2P feature supported
+**/
+UINT32
+pal_pcie_dev_p2p_support (
+  UINT32 Seg,
+  UINT32 Bus,
+  UINT32 Dev,
+  UINT32 Fn)
+{
+  /*
+   * TODO
+   * Root port or Switch support for peer to peer
+   * transactions is platform implementation specific
+   */
+
+  return 1;
 }
 
 /* Place holder function. Need to be
@@ -206,6 +289,23 @@ pal_pcie_get_root_port_bdf (
   UINT32 *Bus,
   UINT32 *Dev,
   UINT32 *Func
+  )
+{
+  return 0;
+}
+
+/**
+  @brief   Platform dependent API checks the Address Translation
+           Cache Support for BDF
+           1. Caller       -  Test Suite
+  @return  0 - ATC not supported 1 - ATC supported
+**/
+UINT32
+pal_pcie_is_cache_present (
+  UINT32 Seg,
+  UINT32 Bus,
+  UINT32 Dev,
+  UINT32 Fn
   )
 {
   return 0;
