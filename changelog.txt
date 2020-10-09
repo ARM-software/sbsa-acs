@@ -1,3 +1,12 @@
+v20.10_REL3.0
+
+* SBSA: Added SBSA Level 6 PE, SMMU Tests.
+* SBSA: Added New PCIe, Exerciser tests Related to ATS, P2P, ACS Rules.
+* SBSA: Added SMMU & Gic-ITS Functional Tests in Exerciser.
+* SBSA: EDKII: Migration to edk2-stable202008.
+* SBSA: Bug Fixes & Test Updates.
+* SBSA: Print information about Number of PCIe Devices.
+
 v20.08_RELv2.5
 
 * SBSA: Add changes to skip if there are any host bridge or legacy PCI devices
