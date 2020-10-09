@@ -20,11 +20,11 @@
 
 
 
-  #define SBSA_ACS_MAJOR_VER  2
-  #define SBSA_ACS_MINOR_VER  5
+  #define SBSA_ACS_MAJOR_VER  3
+  #define SBSA_ACS_MINOR_VER  0
 
   #define G_SBSA_LEVEL  4
-  #define SBSA_MAX_LEVEL_SUPPORTED 5
+  #define SBSA_MAX_LEVEL_SUPPORTED 6
   #define G_PRINT_LEVEL AVS_PRINT_TEST
 
   #define PE_INFO_TBL_SZ         8192 /*Supports maximum 400 PEs*/

@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2020, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -46,6 +46,7 @@ val_wd_execute_tests(uint32_t level, uint32_t num_pe)
 
   status = w001_entry(num_pe);
   status |= w002_entry(num_pe);
+  status |= w003_entry(num_pe);
 
   if (status != 0)
     val_print(AVS_PRINT_TEST, "\n      ***One or more tests have failed... *** \n", 0);

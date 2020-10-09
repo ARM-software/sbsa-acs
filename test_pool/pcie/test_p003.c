@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2019, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2020, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -41,6 +41,7 @@ payload(void)
   uint32_t end_bus;
   uint32_t bus_index;
   uint32_t dev_index;
+  uint32_t func_index;
   uint32_t ret;
 
   num_ecam = val_pcie_get_info(PCIE_INFO_NUM_ECAM, 0);
@@ -73,28 +74,43 @@ payload(void)
            return;
       }
 
+      /* Accessing the BDF PCIe config range */
       for(bus_index = bus; bus_index <= end_bus; bus_index++) {
         for(dev_index = 0; dev_index < PCIE_MAX_DEV; dev_index++) {
+           for(func_index = 0; func_index < PCIE_MAX_FUNC; func_index++) {
 
-           /* Only function zero is checked */
-           bdf = PCIE_CREATE_BDF(segment, bus_index, dev_index, 0);
-           ret = val_pcie_read_cfg(bdf, PCIE_VENDOR_ID_REG_OFFSET, &data);
+               bdf = PCIE_CREATE_BDF(segment, bus_index, dev_index, func_index);
+               ret = val_pcie_read_cfg(bdf, PCIE_VENDOR_ID_REG_OFFSET, &data);
 
-           //If this is really PCIe CFG space, Device ID and Vendor ID cannot be 0 or 0xFFFF
-           if (ret == PCIE_NO_MAPPING || (data == 0) || ((data & 0xFFFF) == 0xFFFF)) {
-              val_print(AVS_PRINT_ERR, "\n      Incorrect data at ECAM Base %4x    ", data);
-              val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, (bus_index << 8)|dev_index));
-              return;
-           }
+               //If this is really PCIe CFG space, Device ID and Vendor ID cannot be 0
+               if (ret == PCIE_NO_MAPPING || (data == 0)) {
+                  val_print(AVS_PRINT_ERR, "\n      Incorrect data at ECAM Base %4x    ", data);
+                  val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, (bus_index << 8)|dev_index));
+                  return;
+               }
 
-           ret = val_pcie_read_cfg(bdf, PCIE_CACHE_LINE_SIZE_REG_OFFSET, &data);
+               ret = val_pcie_read_cfg(bdf, PCIE_CACHE_LINE_SIZE_REG_OFFSET, &data);
+               if (ret == PCIE_NO_MAPPING) {
+                  val_print(AVS_PRINT_ERR, "\n      Incorrect PCIe CFG Hdr type %4x    ", data);
+                  val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, (bus_index << 8)|dev_index));
+                  return;
+               }
 
-           //If this really is PCIe CFG, Header type[6:0] must be 01 or 00
-           if (ret == PCIE_NO_MAPPING || (((data >> 16) & 0x7F) > 01)) {
-              val_print(AVS_PRINT_ERR, "\n      Incorrect PCIe CFG Hdr type %4x    ", data);
-              val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, (bus_index << 8)|dev_index));
-              return;
-           }
+               /* Accessing the PCIe Ext capability region */
+               ret = val_pcie_read_cfg(bdf, PCIE_ECAP_START + 0x100, &data);
+               if (ret == PCIE_NO_MAPPING) {
+                  val_print(AVS_PRINT_ERR, "\n      PCIe Extended Capability region error for BDF %x", bdf);
+                  val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, (bus_index << 8)|dev_index));
+                  return;
+               }
+
+               ret = val_pcie_read_cfg(bdf, PCIE_ECAP_END - 0x100, &data);
+               if (ret == PCIE_NO_MAPPING) {
+                  val_print(AVS_PRINT_ERR, "\n      PCIe Extended Capability region error for BDF %x", bdf);
+                  val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, (bus_index << 8)|dev_index));
+                  return;
+               }
+            }
         }
       }
   }

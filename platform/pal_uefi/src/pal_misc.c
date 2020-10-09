@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2019, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2020, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,11 +20,69 @@
 #include  <Library/ShellLib.h>
 #include  <Library/PrintLib.h>
 #include  <Library/BaseMemoryLib.h>
+#include <Protocol/Cpu.h>
 
 
 #include "include/pal_uefi.h"
 
 UINT8   *gSharedMemory;
+
+VOID
+pal_mmio_write8(UINT64 addr, UINT8 data)
+{
+  *(volatile UINT8 *)addr = data;
+  sbsa_print(AVS_PRINT_INFO, L" pal_mmio_write8 Address = %lx  Data = %lx \n", addr, data);
+
+}
+
+VOID
+pal_mmio_write16(UINT64 addr, UINT16 data)
+{
+  *(volatile UINT16 *)addr = data;
+  sbsa_print(AVS_PRINT_INFO, L" pal_mmio_write16 Address = %lx  Data = %lx \n", addr, data);
+
+}
+
+VOID
+pal_mmio_write64(UINT64 addr, UINT64 data)
+{
+  *(volatile UINT64 *)addr = data;
+  sbsa_print(AVS_PRINT_INFO, L" pal_mmio_write64 Address = %lx  Data = %lx \n", addr, data);
+
+}
+
+UINT8
+pal_mmio_read8(UINT64 addr)
+{
+  UINT8 data;
+
+  data = (*(volatile UINT8 *)addr);
+  sbsa_print(AVS_PRINT_INFO, L" pal_mmio_read8 Address = %lx  Data = %lx \n", addr, data);
+
+  return data;
+}
+
+UINT16
+pal_mmio_read16(UINT64 addr)
+{
+  UINT16 data;
+
+  data = (*(volatile UINT16 *)addr);
+  sbsa_print(AVS_PRINT_INFO, L" pal_mmio_read16 Address = %lx  Data = %lx \n", addr, data);
+
+  return data;
+}
+
+UINT64
+pal_mmio_read64(UINT64 addr)
+{
+  UINT64 data;
+
+  data = (*(volatile UINT64 *)addr);
+  sbsa_print(AVS_PRINT_INFO, L" pal_mmio_read64 Address = %lx  Data = %lx \n", addr, data);
+
+  return data;
+}
 
 /**
   @brief  Provides a single point of abstraction to read from all
@@ -64,7 +122,6 @@ pal_mmio_write(UINT64 addr, UINT32 data)
 {
   sbsa_print(AVS_PRINT_INFO, L" pal_mmio_write Address = %lx  Data = %x \n", addr, data);
   *(volatile UINT32 *)addr = data;
-
 }
 
 /**
@@ -272,31 +329,73 @@ pal_mem_alloc (
 
 }
 
-/* Place holder function. Need to be
- * implemented if needed in later releases
+/**
+ * @brief  Allocates requested buffer size in bytes in a contiguous cacheable
+ *         memory and returns the base address of the range.
+ *
+ * @param  Size         allocation size in bytes
+ * @param  Pa           Pointer to Physical Addr
+ * @retval if SUCCESS   Pointer to Virtual Addr
+ * @retval if FAILURE   NULL
  */
 VOID *
-pal_mem_alloc_coherent (
+pal_mem_alloc_cacheable (
   UINT32 Bdf,
   UINT32 Size,
-  VOID *Pa
+  VOID **Pa
   )
 {
-  return NULL;
+  EFI_PHYSICAL_ADDRESS      Address;
+  EFI_CPU_ARCH_PROTOCOL     *Cpu;
+  EFI_STATUS                Status;
+
+  Status = gBS->AllocatePages (AllocateAnyPages,
+                               EfiBootServicesData,
+                               EFI_SIZE_TO_PAGES(Size),
+                               &Address);
+  if (EFI_ERROR(Status)) {
+    sbsa_print(AVS_PRINT_ERR, L"Allocate Pool failed %x \n", Status);
+    return NULL;
+  }
+
+  /* Check Whether Cpu architectural protocol is installed */
+  Status = gBS->LocateProtocol ( &gEfiCpuArchProtocolGuid, NULL, (VOID **)&Cpu);
+  if (EFI_ERROR(Status)) {
+    sbsa_print(AVS_PRINT_ERR, L"Could not get Cpu Arch Protocol %x \n", Status);
+    return NULL;
+  }
+
+  /* Set Memory Attributes */
+  Status = Cpu->SetMemoryAttributes (Cpu,
+                                     Address,
+                                     Size,
+                                     EFI_MEMORY_WB);
+  if (EFI_ERROR (Status)) {
+    sbsa_print(AVS_PRINT_ERR, L"Could not Set Memory Attribute %x \n", Status);
+    return NULL;
+  }
+
+  *Pa = (VOID *)Address;
+  return (VOID *)Address;
 }
 
-/* Place holder function. Need to be
- * implemented if needed in later releases
+/**
+ * @brief  Free the cacheable memory region allocated above
+ *
+ * @param  Size         allocation size in bytes
+ * @param  Va           Pointer to Virtual Addr
+ * @param  Pa           Pointer to Physical Addr
+ * @retval None
  */
 VOID
-pal_mem_free_coherent (
+pal_mem_free_cacheable (
   UINT32 Bdf,
   UINT32 Size,
   VOID *Va,
   VOID *Pa
   )
 {
-
+  gBS->FreePages((EFI_PHYSICAL_ADDRESS)(UINTN)Va, EFI_SIZE_TO_PAGES(Size));
 }
 
 /* Place holder function. Need to be
@@ -308,6 +407,14 @@ pal_mem_virt_to_phys (
   )
 {
   return Va;
+}
+
+VOID *
+pal_mem_phys_to_virt (
+  UINT64 Pa
+  )
+{
+  return (VOID*)Pa;
 }
 
 /**
@@ -363,4 +470,40 @@ pal_time_delay_ms (
   )
 {
   return gBS->Stall(MicroSeconds);
+}
+
+UINT32
+pal_mem_page_size()
+{
+    return EFI_PAGE_SIZE;
+}
+
+VOID *
+pal_mem_alloc_pages (
+  UINT32 NumPages
+  )
+{
+  EFI_STATUS Status;
+  EFI_PHYSICAL_ADDRESS PageBase;
+
+  Status = gBS->AllocatePages (AllocateAnyPages,
+                               EfiBootServicesData,
+                               NumPages,
+                               &PageBase);
+  if (EFI_ERROR(Status))
+  {
+    sbsa_print(AVS_PRINT_ERR, L"Allocate Pages failed %x \n", Status);
+    return NULL;
+  }
+
+  return (VOID*)(UINTN)PageBase;
+}
+
+VOID
+pal_mem_free_pages(
+  VOID *PageBase,
+  UINT32 NumPages
+  )
+{
+  gBS->FreePages((EFI_PHYSICAL_ADDRESS)(UINTN)PageBase, NumPages);
 }

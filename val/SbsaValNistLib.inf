@@ -46,6 +46,8 @@
   src/avs_memory.c
   src/avs_exerciser.c
   src/avs_nist.c
+  src/avs_pgt.c
+  sys_arch_src/smmu_v3/smmu_v3.c
 
  [Packages]
   StdLib/StdLib.dec

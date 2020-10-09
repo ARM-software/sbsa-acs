@@ -20,14 +20,6 @@
 #include "include/sbsa_avs_gic_support.h"
 #include "include/sbsa_avs_common.h"
 
-#define GICD_ISENABLER      0x100
-#define GICD_ICENABLER      0x180
-#define GICD_ISPENDR        0x200
-#define GICD_ISACTIVER0     0x300
-#define GICD_ICPENDR0       0x280
-#define GICD_ICACTIVER0     0x380
-#define GICD_IROUTER        0x6000
-
 GIC_INFO_TABLE  *g_gic_info_table;
 
 /**
@@ -264,6 +256,37 @@ void val_gic_cpuif_init(void)
   val_gic_reg_write(ICC_IGRPEN1_EL1, 0x1);
   val_gic_reg_write(ICC_BPR1_EL1, 0x7);
   val_gic_reg_write(ICC_PMR_EL1, 0xff);
+}
+
+/**
+  @brief   This function will Get the trigger type Edge/Level
+           1. Caller       -  Test Suite
+           2. Prerequisite -  val_gic_create_info_table
+  @param   int_id Interrupt ID
+  @return  Status
+**/
+uint32_t val_gic_get_intr_trigger_type(uint32_t int_id, INTR_TRIGGER_INFO_TYPE_e *trigger_type)
+{
+  uint32_t reg_value;
+  uint32_t reg_offset;
+  uint32_t config_bit_shift;
+
+  if (int_id > val_get_max_intid()) {
+    val_print(AVS_PRINT_ERR, "\n       Invalid Interrupt ID number 0x%x ", int_id);
+    return AVS_STATUS_ERR;
+  }
+
+  reg_offset = int_id / GICD_ICFGR_INTR_STRIDE;
+  config_bit_shift  = GICD_ICFGR_INTR_CONFIG1(int_id);
+
+  reg_value = val_mmio_read(val_get_gicd_base() + GICD_ICFGR + (4 * reg_offset));
+
+  if ((reg_value & (1 << config_bit_shift)) == 0)
+    *trigger_type = INTR_TRIGGER_INFO_LEVEL_HIGH;
+  else
+    *trigger_type = INTR_TRIGGER_INFO_EDGE_RISING;
+
+  return 0;
 }
 
 /**

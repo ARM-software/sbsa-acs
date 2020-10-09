@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2020, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -35,6 +35,12 @@ val_pe_reg_read(uint32_t reg_id);
 
 void
 val_pe_reg_write(uint32_t reg_id, uint64_t write_data);
+
+uint32_t
+val_pe_reg_read_tcr(uint32_t ttbr1, PE_TCR_BF *tcr);
+
+uint32_t
+val_pe_reg_read_ttbr(uint32_t ttbr1, uint64_t *ttbr_ptr);
 
 uint8_t
 val_is_el3_enabled(void);

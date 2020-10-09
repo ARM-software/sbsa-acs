@@ -40,14 +40,16 @@
   src/pal_exerciser.c
   src/pal_smmu.c
   src/pal_nist.c
+  src_gic_its/sbsa_gic_its.c
+  src_gic_its/sbsa_gic_redistributor.c
 
 [Packages]
+  ArmPkg/ArmPkg.dec
   StdLib/StdLib.dec
   MdePkg/MdePkg.dec
   ShellPkg/ShellPkg.dec
   EmbeddedPkg/EmbeddedPkg.dec
   MdeModulePkg/MdeModulePkg.dec
-  EdkCompatibilityPkg/EdkCompatibilityPkg.dec
 
 [LibraryClasses]
   LibC
