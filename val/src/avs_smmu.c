@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2019, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2020, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -57,8 +57,6 @@ val_smmu_execute_tests(uint32_t level, uint32_t num_pe)
 {
   uint32_t status, i;
 
-
-
   for (i=0 ; i<MAX_TEST_SKIP_NUM ; i++){
       if (g_skip_test_num[i] == AVS_SMMU_TEST_NUM_BASE) {
           val_print(AVS_PRINT_TEST, "      USER Override - Skipping all SMMU tests \n", 0);
@@ -80,13 +78,6 @@ val_smmu_execute_tests(uint32_t level, uint32_t num_pe)
   return status;
 }
 #endif
-
-
-uint64_t
-val_smmu_get_info(SMMU_INFO_e type, uint32_t index)
-{
-  return val_iovirt_get_smmu_info(type, index);
-}
 
 
 uint32_t
@@ -189,15 +180,6 @@ val_smmu_create_pasid_entry(uint32_t smmu_index, uint32_t pasid)
 
   smmu_base = val_smmu_get_info(SMMU_CTRL_BASE, smmu_index);
   return pal_smmu_create_pasid_entry(smmu_base, pasid);
-}
-
-uint32_t
-val_smmu_disable(uint32_t smmu_index)
-{
-  uint64_t smmu_base;
-
-  smmu_base = val_smmu_get_info(SMMU_CTRL_BASE, smmu_index);
-  return pal_smmu_disable(smmu_base);
 }
 
 uint64_t

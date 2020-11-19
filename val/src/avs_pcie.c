@@ -102,7 +102,7 @@ val_pcie_read_cfg(uint32_t bdf, uint32_t offset, uint32_t *data)
 uint32_t
 val_pcie_io_read_cfg(uint32_t bdf, uint32_t offset, uint32_t *data)
 {
-    return pal_pcie_read_cfg(bdf, offset, data);
+    return pal_pcie_io_read_cfg(bdf, offset, data);
 }
 
 /**
@@ -163,6 +163,23 @@ val_pcie_write_cfg(uint32_t bdf, uint32_t offset, uint32_t data)
 }
 
 /**
+  @brief   Write 32bit data to PCIe config space pointed by Bus,
+           Device, Function and offset using UEFI PciIoProtocol interface
+           1. Caller       -  Test Suite
+           2. Prerequisite -  val_pcie_create_info_table
+  @param   bdf    - concatenated Bus(8-bits), device(8-bits) & function(8-bits)
+  @param   offset - Register offset within a device PCIe config space
+  @param   data - 32-bit data write to the config space
+
+  @return success/failure
+**/
+void
+val_pcie_io_write_cfg(uint32_t bdf, uint32_t offset, uint32_t data)
+{
+    return pal_pcie_io_write_cfg(bdf, offset, data);
+}
+
+/**
   @brief   This API  returns function config space addr.
            1. Caller       -  Test Suite
            2. Prerequisite -  val_pcie_create_info_table
@@ -180,6 +197,7 @@ uint64_t val_pcie_get_bdf_config_addr(uint32_t bdf)
   uint32_t num_ecam;
   addr_t   ecam_base = 0;
   uint32_t i = 0;
+
 
   if ((bus >= PCIE_MAX_BUS) || (dev >= PCIE_MAX_DEV) || (func >= PCIE_MAX_FUNC)) {
      val_print(AVS_PRINT_ERR, "Invalid Bus/Dev/Func  %x \n", bdf);
@@ -264,7 +282,6 @@ val_pcie_execute_tests(uint32_t enable_pcie, uint32_t level, uint32_t num_pe)
 
   status |= p002_entry(num_pe);
   status |= p003_entry(num_pe);
-#ifdef TARGET_LINUX
   status |= p004_entry(num_pe);
   status |= p005_entry(num_pe);
   status |= p006_entry(num_pe);
@@ -292,7 +309,6 @@ val_pcie_execute_tests(uint32_t enable_pcie, uint32_t level, uint32_t num_pe)
     status |= p018_entry(num_pe);
     status |= p019_entry(num_pe);
   }
-#else
   /* Create the list of valid Pcie Device Functions */
   if (val_pcie_create_device_bdf_table())
       return AVS_STATUS_SKIP;
@@ -326,7 +342,6 @@ val_pcie_execute_tests(uint32_t enable_pcie, uint32_t level, uint32_t num_pe)
     status |= p045_entry(num_pe);
     status |= p046_entry(num_pe);
   }
-#endif
 
   if (status != AVS_STATUS_PASS) {
       val_print(AVS_PRINT_ERR, "\n     One or more PCIe tests have failed.... \n", status);
@@ -406,7 +421,6 @@ val_pcie_create_device_bdf_table()
   uint32_t ecam_index;
   uint32_t bdf;
   uint32_t reg_value;
-  uint32_t cid_offset;
 
   /* if table is already present, return success */
   if (g_pcie_bdf_table)
@@ -457,12 +471,7 @@ val_pcie_create_device_bdf_table()
                   /* Store the Function's BDF if there was a valid response */
                   if (reg_value != PCIE_UNKNOWN_RESPONSE)
                   {
-                      /* Skip if the device is a host bridge */
                       if (val_pcie_is_host_bridge(bdf))
-                          continue;
-
-                      /* Skip if the device is a PCI legacy device */
-                      if (val_pcie_find_capability(bdf, PCIE_CAP, CID_PCIECS,  &cid_offset) != PCIE_SUCCESS)
                           continue;
 
                       g_pcie_bdf_table->device[g_pcie_bdf_table->num_entries++].bdf = bdf;
@@ -838,7 +847,7 @@ val_pcie_increment_bdf(uint32_t bdf)
   uint32_t bus;
   uint32_t dev;
   uint32_t func;
-  int32_t ecam_cnt;
+  uint32_t ecam_cnt;
   uint32_t ecam_index = 0;
 
   seg = PCIE_EXTRACT_BDF_SEG(bdf);
@@ -1008,7 +1017,7 @@ val_pcie_find_capability(uint32_t bdf, uint32_t cid_type, uint32_t cid, uint32_t
 
   if (cid_type == PCIE_CAP) {
 
-      /* Serach in PCIe configuration space */
+      /* Search in PCIe configuration space */
       ret = val_pcie_read_cfg(bdf, TYPE01_CPR, &reg_value);
       if (ret == PCIE_NO_MAPPING || reg_value == PCIE_UNKNOWN_RESPONSE)
           return ret;

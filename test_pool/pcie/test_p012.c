@@ -125,7 +125,7 @@ payload (void)
     }
   }
 
-  val_memory_free(irq_map);
+  val_memory_free (irq_map);
 
   if (!status) {
     val_set_status (index, RESULT_PASS (g_sbsa_level, TEST_NUM, 01));

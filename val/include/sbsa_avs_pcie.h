@@ -25,7 +25,13 @@
 #define PCIE_EXTRACT_BDF_DEV(bdf)  ((bdf >> 8) & 0xFF)
 #define PCIE_EXTRACT_BDF_FUNC(bdf) (bdf & 0xFF)
 
+#define PCIE_CREATE_BDF_PACKED(bdf)  PCIE_EXTRACT_BDF_FUNC(bdf) | \
+                                    (PCIE_EXTRACT_BDF_DEV(bdf) << 3) | \
+                                    (PCIE_EXTRACT_BDF_BUS(bdf) << 8)
+
 #define PCIE_CREATE_BDF(seg, bus, dev, func) ((seg << 24) | ((bus & 0xFF) << 16) | ((dev & 0xFF) << 8) | func)
+
+#define GET_DEVICE_ID(bus, dev, func) ((bus << 8) | (dev << 3) | func)
 
 #define PCIE_MAX_BUS   256
 #define PCIE_MAX_DEV    32
@@ -136,6 +142,7 @@ typedef struct {
 } pcie_device_bdf_table;
 
 void     val_pcie_write_cfg(uint32_t bdf, uint32_t offset, uint32_t data);
+void     val_pcie_io_write_cfg(uint32_t bdf, uint32_t offset, uint32_t data);
 uint32_t val_pcie_read_cfg(uint32_t bdf, uint32_t offset, uint32_t *data);
 uint32_t val_get_msi_vectors (uint32_t bdf, PERIPHERAL_VECTOR_LIST **mvector);
 uint64_t val_pcie_get_bdf_config_addr(uint32_t bdf);
@@ -320,5 +327,4 @@ p045_entry(uint32_t num_pe);
 
 uint32_t
 p046_entry(uint32_t num_pe);
-
 #endif

@@ -19,6 +19,8 @@
 #include "include/sbsa_avs_gic.h"
 #include "include/sbsa_avs_gic_support.h"
 #include "include/sbsa_avs_common.h"
+#include "include/sbsa_avs_pcie.h"
+#include "include/sbsa_avs_iovirt.h"
 
 
 #ifndef TARGET_LINUX
@@ -78,6 +80,21 @@ val_gic_reg_write(uint32_t reg_id, uint64_t write_data)
 }
 #endif
 
+uint32_t
+val_gic_is_valid_lpi(uint32_t int_id)
+{
+  uint32_t max_lpi_id = 0;
+
+  max_lpi_id = pal_gic_get_max_lpi_id();
+
+  if ((int_id < LPI_MIN_ID) || (int_id > max_lpi_id)) {
+    /* Not Vaild LPI */
+    return 0;
+  }
+
+  return 1; /* Valid LPI */
+}
+
 /**
   @brief   This function is installs the ISR pointed by the function pointer
            the input Interrupt ID.
@@ -95,7 +112,7 @@ val_gic_install_isr(uint32_t int_id, void (*isr)(void))
   uint32_t      reg_offset = int_id / 32;
   uint32_t      reg_shift  = int_id % 32;
 
-  if ((int_id > val_get_max_intid()) || (int_id == 0)) {
+  if (((int_id > val_get_max_intid()) && (!val_gic_is_valid_lpi(int_id))) || (int_id == 0)) {
       val_print(AVS_PRINT_ERR, "\n    Invalid Interrupt ID number %d ", int_id);
       return AVS_STATUS_ERR;
   }
@@ -152,6 +169,15 @@ uint32_t val_gic_end_of_interrupt(uint32_t int_id)
   return 0;
 }
 
+uint32_t val_gic_its_configure()
+{
+  uint32_t status;
+
+  status = pal_gic_its_configure();
+
+  return status;
+}
+
 /**
   @brief   This function clear the MSI related mappings.
 
@@ -163,7 +189,8 @@ uint32_t val_gic_end_of_interrupt(uint32_t int_id)
 **/
 void val_gic_free_msi(uint32_t bdf, uint32_t IntID, uint32_t msi_index)
 {
-    pal_gic_free_msi(bdf, IntID, msi_index);
+
+  pal_gic_free_msi(bdf, IntID, msi_index);
 }
 
 /**
@@ -177,5 +204,6 @@ void val_gic_free_msi(uint32_t bdf, uint32_t IntID, uint32_t msi_index)
 **/
 uint32_t val_gic_request_msi(uint32_t bdf, uint32_t IntID, uint32_t msi_index)
 {
+
   return pal_gic_request_msi(bdf, IntID, msi_index);
 }

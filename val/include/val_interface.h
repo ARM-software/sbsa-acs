@@ -90,6 +90,7 @@ void val_gic_cpuif_init(void);
 uint32_t val_gic_request_irq(uint32_t irq_num, uint32_t mapped_irq_num, void *isr);
 void val_gic_free_irq(uint32_t irq_num, uint32_t mapped_irq_num);
 void val_gic_set_intr_trigger(uint32_t int_id, INTR_TRIGGER_INFO_TYPE_e trigger_type);
+uint32_t val_gic_its_configure();
 uint32_t val_gic_request_msi(uint32_t bdf, uint32_t IntID, uint32_t msi_index);
 void val_gic_free_msi(uint32_t bdf, uint32_t IntID, uint32_t msi_index);
 
@@ -184,7 +185,10 @@ typedef enum {
   SMMU_NUM_CTRL = 1,
   SMMU_CTRL_BASE,
   SMMU_CTRL_ARCH_MAJOR_REV,
-  SMMU_IOVIRT_BLOCK
+  SMMU_IOVIRT_BLOCK,
+  SMMU_SSID_BITS,
+  SMMU_IN_ADDR_SIZE,
+  SMMU_OUT_ADDR_SIZE
 }SMMU_INFO_e;
 
 typedef enum {

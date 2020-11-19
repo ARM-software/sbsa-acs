@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2019, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2020, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -30,6 +30,9 @@
 #define SMMUv3_IIDR   0x18
 #define SMMUv3_AIDR   0x1C
 
+uint64_t
+val_smmu_ssid_bits(uint32_t smmu_index);
+
 uint32_t
 val_smmu_read_cfg(uint32_t offset, uint32_t index);
 
@@ -43,11 +46,27 @@ uint32_t
 val_smmu_create_pasid_entry(uint32_t smmu_index, uint32_t pasid);
 
 uint32_t
+val_smmu_enable(uint32_t smmu_index);
+
+uint32_t
 val_smmu_disable(uint32_t smmu_index);
 
 uint64_t
 val_smmu_pa2iova(uint32_t smmu_index, uint64_t pa);
 
+uint32_t
+val_smmu_init();
+
+void
+val_smmu_stop();
+
+uint64_t
+val_smmu_map(smmu_master_attributes_t master,
+             pgt_descriptor_t pgt_desc
+             );
+
+void
+val_smmu_unmap(smmu_master_attributes_t master);
 
 uint32_t
 i001_entry(uint32_t num_pe);

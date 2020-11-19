@@ -1,7 +1,7 @@
 /** @file
- * Copyright (c) 2016-2018, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018, 2020 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
-
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -15,8 +15,10 @@
  * limitations under the License.
 **/
 
-#ifndef __SBSA_AVS_WD_H__
-#define __SBSA_AVS_WD_H__
+#ifndef __SBSA_AVS_WD_H
+#define __SBSA_AVS_WD_H
+
+#define  WD_IIDR_OFFSET     0xFCC
 
 uint32_t
 w001_entry(uint32_t num_pe);
@@ -24,4 +26,7 @@ w001_entry(uint32_t num_pe);
 uint32_t
 w002_entry(uint32_t num_pe);
 
-#endif // __SBSA_AVS_WD_H__
+uint32_t
+w003_entry(uint32_t num_pe);
+
+#endif // __SBSA_AVS_WD_H

@@ -33,6 +33,8 @@
 #define PCI_EP      0x100
 #define PCI_EP_MASK 0xF00
 
+
+typedef uint64_t dma_addr_t;
 addr_t val_dma_mem_alloc(void **buffer, uint32_t size, uint32_t dev_index, uint32_t flags);
 
 void val_dma_mem_free(void *buffer, dma_addr_t mem_dma, uint32_t size, uint32_t dev_index, uint32_t flags);

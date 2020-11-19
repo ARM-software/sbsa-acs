@@ -92,7 +92,7 @@ exception_taken:
           }
 
       }
-
+      loop_var--;
       instance++;
   }
 

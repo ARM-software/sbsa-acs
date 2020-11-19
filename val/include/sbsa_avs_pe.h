@@ -34,6 +34,38 @@
 // AArch64 Exception Level
 #define AARCH64_EL2  0x8
 #define AARCH64_EL1  0x4
+#define AARCH64_EL_MASK (0x3ull << 2)
+
+#define AARCH64_HCR_E2H_MASK (0x1ull << 34)
+#define AARCH64_TTBR_ADDR_MASK (((0x1ull << 47) - 1) << 1)
+#define TCR_TG1_SHIFT   30
+#define TCR_SH1_SHIFT   28
+#define TCR_ORGN1_SHIFT 26
+#define TCR_IRGN1_SHIFT 24
+#define TCR_T1SZ_SHIFT  16
+
+#define TCR_TG1_MASK   (0x3ull << TCR_TG1_SHIFT)
+#define TCR_SH1_MASK   (0x3ull << TCR_SH1_SHIFT)
+#define TCR_ORGN1_MASK (0x3ull << TCR_ORGN1_SHIFT)
+#define TCR_IRGN1_MASK (0x3ull << TCR_IRGN1_SHIFT)
+#define TCR_T1SZ_MASK  (0x3full << TCR_T1SZ_SHIFT)
+
+#define TCR_TG0_SHIFT   14
+#define TCR_SH0_SHIFT   12
+#define TCR_ORGN0_SHIFT 10
+#define TCR_IRGN0_SHIFT 8
+#define TCR_T0SZ_SHIFT  0
+
+#define TCR_TG0_MASK    (0x3ull << TCR_TG0_SHIFT)
+#define TCR_SH0_MASK    (0x3ull << TCR_SH0_SHIFT)
+#define TCR_ORGN0_MASK  (0x3ull << TCR_ORGN0_SHIFT)
+#define TCR_IRGN0_MASK  (0x3ull << TCR_IRGN0_SHIFT)
+#define TCR_T0SZ_MASK   (0x3full << TCR_T0SZ_SHIFT)
+
+#define TCR_IPS_SHIFT  32
+#define TCR_IPS_MASK   (0x7ull << TCR_IPS_SHIFT)
+#define TCR_PS_SHIFT   16
+#define TCR_PS_MASK    (0x7ull << TCR_PS_SHIFT)
 
 typedef enum {
   MPIDR_EL1 = 1,
@@ -98,7 +130,10 @@ typedef enum {
   PMBLIMITR_EL1,
   ESR_EL2,
   FAR_EL2,
-  RDVL
+  RDVL,
+  MAIR_ELx,
+  TCR_ELx,
+  TTBR_ELx
 }SBSA_AVS_PE_REGS;
 
 
@@ -107,6 +142,8 @@ uint64_t ArmReadMpidr(void);
 uint64_t ArmReadIdPfr0(void);
 
 uint64_t ArmReadIdPfr1(void);
+
+uint64_t ArmReadHcr(void);
 
 uint64_t AA64ReadMmfr0(void);
 
@@ -220,6 +257,22 @@ uint64_t AA64ReadErr2fr(void);
 
 uint64_t AA64ReadErr3fr(void);
 
+uint64_t AA64ReadMair1(void);
+
+uint64_t AA64ReadMair2(void);
+
+uint64_t AA64ReadTcr1(void);
+
+uint64_t AA64ReadTcr2(void);
+
+uint64_t AA64ReadTtbr0El1(void);
+
+uint64_t AA64ReadTtbr0El2(void);
+
+uint64_t AA64ReadTtbr1El1(void);
+
+uint64_t AA64ReadTtbr1El2(void);
+
 void AA64WritePmsirr(uint64_t write_data);
 
 void AA64WritePmscr2(uint64_t write_data);
@@ -290,6 +343,16 @@ uint32_t c025_entry(uint32_t num_pe);
 uint32_t c026_entry(uint32_t num_pe);
 uint32_t c027_entry(uint32_t num_pe);
 uint32_t c028_entry(uint32_t num_pe);
+uint32_t c029_entry(uint32_t num_pe);
+uint32_t c030_entry(uint32_t num_pe);
+uint32_t c031_entry(uint32_t num_pe);
+uint32_t c032_entry(uint32_t num_pe);
+uint32_t c033_entry(uint32_t num_pe);
+uint32_t c034_entry(uint32_t num_pe);
+uint32_t c035_entry(uint32_t num_pe);
+uint32_t c036_entry(uint32_t num_pe);
+uint32_t c037_entry(uint32_t num_pe);
+uint32_t c038_entry(uint32_t num_pe);
 
 #endif
 

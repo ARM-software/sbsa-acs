@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2019, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2020, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,6 +18,7 @@
 #include "include/sbsa_avs_val.h"
 #include "include/sbsa_avs_common.h"
 #include "include/sbsa_avs_iovirt.h"
+#include "include/sbsa_avs_smmu.h"
 
 IOVIRT_INFO_TABLE *g_iovirt_info_table;
 
@@ -157,7 +158,8 @@ int
 val_iovirt_get_device_id(uint32_t rid, uint32_t segment, uint32_t *device_id, uint32_t *stream_id)
 {
   uint32_t i, j, id = 0;
-  uint32_t str_id, oref;
+  uint32_t sid, did, oref;
+  uint32_t mapping_found;
   IOVIRT_BLOCK *block;
   NODE_DATA_MAP *map;
   if (g_iovirt_info_table == NULL)
@@ -165,65 +167,80 @@ val_iovirt_get_device_id(uint32_t rid, uint32_t segment, uint32_t *device_id, ui
       val_print(AVS_PRINT_ERR, "GET_DEVICE_ID: iovirt info table is not created \n", 0);
       return AVS_STATUS_ERR;
   }
-  if(!device_id) {
+  if (!device_id) {
       val_print(AVS_PRINT_ERR, "GET_DEVICE_ID: Invalid parameters\n", 0);
       return AVS_STATUS_ERR;
   }
 
-  if(!stream_id)
-      stream_id = &str_id;
   /* Search for root complex block with same segment number, and in whose id */
   /* mapping range 'rid' falls. Calculate the output id */
   block = &g_iovirt_info_table->blocks[0];
-  for(i = 0; i < g_iovirt_info_table->num_blocks; i++, block = IOVIRT_NEXT_BLOCK(block))
+  mapping_found = 0;
+  for (i = 0; i < g_iovirt_info_table->num_blocks; i++, block = IOVIRT_NEXT_BLOCK(block))
   {
-      if(block->type != IOVIRT_NODE_PCI_ROOT_COMPLEX)
-          continue;
-      if(block->data.rc.segment != segment)
-          continue;
-      for(j = 0, map = &block->data_map[0]; j < block->num_data_map; j++, map++)
+      if (block->type == IOVIRT_NODE_PCI_ROOT_COMPLEX
+          && block->data.rc.segment == segment)
       {
-          if(rid >= (*map).map.input_base && rid <= ((*map).map.input_base + (*map).map.id_count))
+          for (j = 0, map = &block->data_map[0]; j < block->num_data_map; j++, map++)
           {
-              id =  (rid - (*map).map.input_base) + (*map).map.output_base;
-              oref = (*map).map.output_ref;
-              break;
+              if(rid >= (*map).map.input_base
+                      && rid <= ((*map).map.input_base + (*map).map.id_count))
+              {
+                  id =  (rid - (*map).map.input_base) + (*map).map.output_base;
+                  oref = (*map).map.output_ref;
+                  mapping_found = 1;
+              }
           }
-      }
-      if(id)
           break;
+      }
   }
-  if(!id) {
-      val_print(AVS_PRINT_ERR, "GET_DEVICE_ID: Requestor ID mapping not found\n", 0);
+  if (!mapping_found) {
+      val_print(AVS_PRINT_ERR,
+               "GET_DEVICE_ID: Requestor ID to Stream ID/Device ID mapping not found\n", 0);
       return AVS_STATUS_ERR;
   }
   /* If output reference node is to ITS group, 'id' is device id */
   block = (IOVIRT_BLOCK*)((uint8_t*)g_iovirt_info_table + oref);
   if(block->type == IOVIRT_NODE_ITS_GROUP)
   {
-      *device_id = id;
-      *stream_id = 0;
-      return 0;
+      did = id;
+      sid = ~((uint32_t)0);
   }
   /* If output reference is to SMMU block, 'id' is stream id */
   /* Go through id mappings of this block and find corresponding device id */
-  if(block->type == IOVIRT_NODE_SMMU || block->type == IOVIRT_NODE_SMMU_V3)
+  else if(block->type == IOVIRT_NODE_SMMU || block->type == IOVIRT_NODE_SMMU_V3)
   {
-      *stream_id = id;
+      sid = id;
       id = 0;
+      mapping_found = 0;
       for(i = 0, map = &block->data_map[0]; i < block->num_data_map; i++, map++)
       {
-          if(*stream_id >= (*map).map.input_base && *stream_id <= ((*map).map.input_base +
+          if(sid >= (*map).map.input_base && sid <= ((*map).map.input_base +
                                                     (*map).map.id_count))
           {
-              *device_id =  (*stream_id - (*map).map.input_base) + (*map).map.output_base;
-              return 0;
+              did =  (sid - (*map).map.input_base) + (*map).map.output_base;
+              mapping_found = 1;
+              break;
           }
       }
   }
-  val_print(AVS_PRINT_ERR, "GET_DEVICE_ID: Device ID mapping not found\n", 0);
-  return AVS_STATUS_ERR;
+  else
+  {
+    val_print(AVS_PRINT_ERR, "GET_DEVICE_ID: Invalid mapping for RC in IORT\n", 0);
+    return AVS_STATUS_ERR;
+  }
+  if (!mapping_found)
+  {
+    val_print(AVS_PRINT_ERR, "GET_DEVICE_ID: Stream ID to Device ID mapping not found\n", 0);
+    return AVS_STATUS_ERR;
+  }
+
+  if (stream_id)
+      *stream_id = sid;
+  *device_id = did;
+  return 0;
 }
+
 
 /**
   @brief   This API will call PAL layer to fill in the IO Virt information
@@ -250,6 +267,7 @@ val_iovirt_create_info_table(uint64_t *iovirt_info_table)
   val_print(AVS_PRINT_TEST,
             " SMMU_INFO: Number of SMMU CTRL       :    %x \n",
             val_iovirt_get_smmu_info(SMMU_NUM_CTRL, 0));
+  val_smmu_init();
 }
 
 uint32_t
@@ -262,6 +280,7 @@ val_iovirt_check_unique_ctx_intid(uint32_t smmu_index)
 void
 val_iovirt_free_info_table()
 {
+  val_smmu_stop();
   pal_mem_free((void *)g_iovirt_info_table);
 }
 
