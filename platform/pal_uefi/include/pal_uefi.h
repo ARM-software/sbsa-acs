@@ -351,6 +351,7 @@ typedef struct {
 } PERIPHERAL_IRQ_MAP;
 
 UINT32 pal_pcie_get_root_port_bdf(UINT32 *seg, UINT32 *bus, UINT32 *dev, UINT32 *func);
+UINT32 pal_pcie_max_pasid_bits(UINT32 bdf);
 
 /* Memory INFO table */
 typedef enum {
@@ -384,5 +385,6 @@ VOID    *pal_mem_alloc(UINT32 size);
 VOID    *pal_mem_alloc_coherent(UINT32 bdf, UINT32 size, VOID *pa);
 VOID    pal_mem_free_coherent(UINT32 bdf, UINT32 size, VOID *va, VOID *pa);
 VOID    *pal_mem_virt_to_phys(VOID *va);
+VOID    *pal_mem_phys_to_virt(UINT64 pa);
 UINT64  pal_memory_get_unpopulated_addr(UINT64 *addr, UINT32 instance);
 #endif

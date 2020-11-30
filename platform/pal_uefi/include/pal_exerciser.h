@@ -61,7 +61,10 @@
 
 #define CLR_INTR_MASK       0xFFFFFFFE
 #define PASID_TLP_STOP_MASK 0xFFFFFFBF
-#define PASID_LEN_MASK      0xFFFFFC7F
+#define PASID_VAL_MASK      ((0x1ul << 20) - 1)
+#define PASID_VAL_SHIFT     12
+#define PASID_LEN_SHIFT     7
+#define PASID_LEN_MASK      0x7ul
 #define DMA_TO_DEVICE_MASK  0xFFFFFFEF
 
 /* shift_bit */

@@ -30,7 +30,6 @@ payload(void)
 {
   uint32_t count = 0;
   uint64_t base;
-  uint32_t data;
   char *baseptr;
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
 
@@ -40,8 +39,6 @@ payload(void)
   while (count--) {
       base = val_peripheral_get_info(SATA_BASE1, count);
       baseptr = (char *)val_memory_ioremap((void *)base, 1024, 0);
-
-      data = *(uint32_t *)(baseptr+3);
 
       val_memory_unmap(baseptr);
   }

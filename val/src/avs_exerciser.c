@@ -18,6 +18,7 @@
 #include "include/sbsa_avs_val.h"
 #include "include/sbsa_avs_exerciser.h"
 #include "include/sbsa_avs_pcie.h"
+#include "include/sbsa_avs_smmu.h"
 
 EXERCISER_INFO_TABLE g_exercier_info_table;
 /**

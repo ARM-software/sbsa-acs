@@ -367,6 +367,14 @@ pal_mem_virt_to_phys (
   return Va;
 }
 
+VOID *
+pal_mem_phys_to_virt (
+  UINT64 Pa
+  )
+{
+  return (VOID*)Pa;
+}
+
 /**
   @brief  Compares two strings
 
@@ -420,4 +428,40 @@ pal_time_delay_ms (
   )
 {
   return gBS->Stall(MicroSeconds);
+}
+
+UINT32
+pal_mem_page_size()
+{
+    return EFI_PAGE_SIZE;
+}
+
+VOID *
+pal_mem_alloc_pages (
+  UINT32 NumPages
+  )
+{
+  EFI_STATUS Status;
+  EFI_PHYSICAL_ADDRESS PageBase;
+
+  Status = gBS->AllocatePages (AllocateAnyPages,
+                               EfiBootServicesData,
+                               NumPages,
+                               &PageBase);
+  if (EFI_ERROR(Status))
+  {
+    sbsa_print(AVS_PRINT_ERR, L"Allocate Pages failed %x \n", Status);
+    return NULL;
+  }
+
+  return (VOID*)(UINTN)PageBase;
+}
+
+VOID
+pal_mem_free_pages(
+  VOID *PageBase,
+  UINT32 NumPages
+  )
+{
+  gBS->FreePages((EFI_PHYSICAL_ADDRESS)(UINTN)PageBase, NumPages);
 }

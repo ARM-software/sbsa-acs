@@ -202,6 +202,7 @@ val_mmio_write64(addr_t addr, uint64_t data)
   pal_mmio_write64(addr, data);
 }
 
+
 /**
   @brief  This API prinst the test number, description and
           sets the test status to pending for the input number of PEs.

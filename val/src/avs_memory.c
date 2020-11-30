@@ -90,7 +90,7 @@ val_memory_get_entry_index(uint32_t type, uint32_t instance)
 {
   uint32_t  i = 0;
 
-  while (g_memory_info_table->info[i].type != MEMORY_TYPE_LAST_ENTRY) {
+  while (g_memory_info_table->info[i].type != 0xFF) {
       if (g_memory_info_table->info[i].type == type) {
           if (instance == 0)
              return i;
@@ -187,7 +187,7 @@ val_memory_alloc(uint32_t size)
 }
 
 void *
-val_memory_alloc_coherent(uint32_t bdf, uint32_t size, void *pa)
+val_memory_alloc_coherent(uint32_t bdf, uint32_t size, void **pa)
 {
   return pal_mem_alloc_coherent(bdf, size, pa);
 }
@@ -222,8 +222,31 @@ val_memory_virt_to_phys(void *va)
   return pal_mem_virt_to_phys(va);
 }
 
+void *
+val_memory_phys_to_virt(uint64_t pa)
+{
+  return pal_mem_phys_to_virt(pa);
+}
+
+uint32_t val_memory_page_size()
+{
+    return pal_mem_page_size();
+}
+
+void *
+val_memory_alloc_pages(uint32_t num_pages)
+{
+    return pal_mem_alloc_pages(num_pages);
+}
+
+void
+val_memory_free_pages(void *addr, uint32_t num_pages)
+{
+    pal_mem_free_pages(addr, num_pages);
+}
+
 uint64_t
 val_memory_get_unpopulated_addr(addr_t *addr, uint32_t instance)
 {
-  return pal_memory_get_unpopulated_addr(addr, instance);
+    return pal_memory_get_unpopulated_addr(addr, instance);
 }
