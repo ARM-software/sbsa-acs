@@ -93,8 +93,9 @@ pal_gic_create_info_table(GIC_INFO_TABLE *GicTable)
       }
 
       if (Entry->GICRBaseAddress != 0) {
-        GicEntry->type = ENTRY_TYPE_GICRD;
+        GicEntry->type = ENTRY_TYPE_GICC_GICRD;
         GicEntry->base = Entry->GICRBaseAddress;
+        GicEntry->length = 0;
         sbsa_print(AVS_PRINT_INFO, L"GIC RD base %x \n", GicEntry->base);
         GicTable->header.num_gicrd++;
         GicEntry++;
@@ -111,8 +112,9 @@ pal_gic_create_info_table(GIC_INFO_TABLE *GicTable)
     }
 
     if (Entry->Type == EFI_ACPI_6_1_GICR) {
-        GicEntry->type = ENTRY_TYPE_GICRD;
+        GicEntry->type = ENTRY_TYPE_GICR_GICRD;
         GicEntry->base = ((EFI_ACPI_6_1_GICR_STRUCTURE *)Entry)->DiscoveryRangeBaseAddress;
+        GicEntry->length = ((EFI_ACPI_6_1_GICR_STRUCTURE *)Entry)->DiscoveryRangeLength;
         sbsa_print(AVS_PRINT_INFO, L"GIC RD base Structure %x \n", GicEntry->base);
         GicTable->header.num_gicrd++;
         GicEntry++;
@@ -263,53 +265,79 @@ pal_gic_its_configure (
    * This function configure the gic to have support for LPIs,
    * If supported in the system.
   */
-  UINT64     mGicRedistributorBase = 0;
   EFI_STATUS Status;
 
   /* Allocate memory to store ITS info */
   g_gic_its_info = (GIC_ITS_INFO *) pal_mem_alloc(1024);
   if (!g_gic_its_info) {
-      sbsa_print(AVS_PRINT_ERR, L"GIC : ITS table memory allocation failed\n", 0);
-      return 0xFFFFFFFF;
+      sbsa_print(AVS_PRINT_DEBUG, L"GIC : ITS table memory allocation failed\n", 0);
+      goto its_fail;
   }
 
   g_gic_its_info->GicNumIts = 0;
+  g_gic_its_info->GicRdBase = 0;
+  g_gic_its_info->GicDBase  = 0;
 
-  while (g_gic_entry->type != 0xFF) {
-    if (g_gic_entry->type == ENTRY_TYPE_GICD) {
+  while (g_gic_entry->type != 0xFF)
+  {
+    if (g_gic_entry->type == ENTRY_TYPE_GICD)
+    {
         g_gic_its_info->GicDBase = g_gic_entry->base;
-    } else if (g_gic_entry->type == ENTRY_TYPE_GICRD) {
-        mGicRedistributorBase = g_gic_entry->base;
-    } else if (g_gic_entry->type == ENTRY_TYPE_GICITS) {
+    }
+    else if ((g_gic_entry->type == ENTRY_TYPE_GICR_GICRD) || (g_gic_entry->type == ENTRY_TYPE_GICC_GICRD))
+    {
+        /* Calculate Current PE Redistributor Base Address */
+        if (g_gic_its_info->GicRdBase == 0)
+        {
+            if (g_gic_entry->type == ENTRY_TYPE_GICR_GICRD)
+                g_gic_its_info->GicRdBase = GetCurrentCpuRDBase(g_gic_entry->base, g_gic_entry->length);
+            else
+                g_gic_its_info->GicRdBase = GetCurrentCpuRDBase(g_gic_entry->base, 0);
+        }
+    }
+    else if (g_gic_entry->type == ENTRY_TYPE_GICITS)
+    {
         g_gic_its_info->GicIts[g_gic_its_info->GicNumIts].Base = g_gic_entry->base;
         g_gic_its_info->GicIts[g_gic_its_info->GicNumIts++].ID = g_gic_entry->its_id;
     }
     g_gic_entry++;
   }
 
-  sbsa_print(AVS_PRINT_INFO, L"GIC Distributor base %x \n", g_gic_its_info->GicDBase);
-
-  /* Get Redistributor base for Current CPU. */
-  g_gic_its_info->GicRdBase = GetCurrentCpuRDBase(mGicRedistributorBase);
-  if (g_gic_its_info->GicRdBase == 0) {
-    sbsa_print(AVS_PRINT_DEBUG, L"Could not get GIC RD Base.\n", 0);
-    return 0xFFFFFFFF;
+  /* Return if no ITS */
+  if (g_gic_its_info->GicNumIts == 0)
+  {
+    sbsa_print(AVS_PRINT_DEBUG, L"No ITS Found in the MADT.\n", 0);
+    goto its_fail;
   }
 
-  sbsa_print(AVS_PRINT_INFO, L"GIC ReDistributor base for Current CPU %x \n", g_gic_its_info->GicRdBase);
+  /* Base Address Check. */
+  if ((g_gic_its_info->GicRdBase == 0) || (g_gic_its_info->GicDBase == 0))
+  {
+    sbsa_print(AVS_PRINT_DEBUG, L"Could not get GICD/GICRD Base.\n", 0);
+    goto its_fail;
+  }
 
-  if (ArmGICDSupportsLPIs(g_gic_its_info->GicDBase) && ArmGICRSupportsLPIs(g_gic_its_info->GicRdBase)) {
+  if (ArmGICDSupportsLPIs(g_gic_its_info->GicDBase) && ArmGICRSupportsLPIs(g_gic_its_info->GicRdBase))
+  {
     Status = ArmGicItsConfiguration();
-    if (EFI_ERROR(Status)) {
+    if (EFI_ERROR(Status))
+    {
       sbsa_print(AVS_PRINT_DEBUG, L"Could Not Configure ITS.\n", 0);
-      return 0xFFFFFFFF;
+      goto its_fail;
     }
-  } else {
+  }
+  else
+  {
     sbsa_print(AVS_PRINT_DEBUG, L"LPIs not supported in the system.\n", 0);
-    return 0xFFFFFFFF;
+    goto its_fail;
   }
 
   return 0;
+
+its_fail:
+  sbsa_print(AVS_PRINT_DEBUG, L"GIC ITS Initialization Failed.\n", 0);
+  sbsa_print(AVS_PRINT_DEBUG, L"LPI Interrupt related test may not pass.\n", 0);
+  return 0xFFFFFFFF;
 }
 
 UINT32
@@ -346,9 +374,18 @@ pal_gic_request_msi (
 {
   UINT32  ItsIndex;
 
+  if ((g_gic_its_info == NULL) || (g_gic_its_info->GicNumIts == 0))
+    return 0xFFFFFFFF;
+
   ItsIndex = getItsIndex(ItsID);
   if (ItsIndex > g_gic_its_info->GicNumIts) {
     sbsa_print(AVS_PRINT_ERR, L"\n       Could not find ITS block in MADT", 0);
+    return 0xFFFFFFFF;
+  }
+
+  if ((g_gic_its_info->GicRdBase == 0) || (g_gic_its_info->GicDBase == 0))
+  {
+    sbsa_print(AVS_PRINT_DEBUG, L"GICD/GICRD Base Invalid value.\n", 0);
     return 0xFFFFFFFF;
   }
 
@@ -370,9 +407,20 @@ pal_gic_free_msi (
 {
   UINT32  ItsIndex;
 
+  if ((g_gic_its_info == NULL) || (g_gic_its_info->GicNumIts == 0))
+    return;
+
   ItsIndex = getItsIndex(ItsID);
   if (ItsIndex > g_gic_its_info->GicNumIts)
-    return ;
+  {
+    sbsa_print(AVS_PRINT_ERR, L"\n       Could not find ITS block in MADT", 0);
+    return;
+  }
+  if ((g_gic_its_info->GicRdBase == 0) || (g_gic_its_info->GicDBase == 0))
+  {
+    sbsa_print(AVS_PRINT_DEBUG, L"GICD/GICRD Base Invalid value.\n", 0);
+    return;
+  }
 
   ArmGicItsClearLpiMappings(ItsIndex, DevID, IntID);
 }
