@@ -57,7 +57,7 @@ payload(void)
       if ((dp_type == RCiEP) || (dp_type == iEP_EP))
       {
           /* Check if the EP Supports Multifunction */
-          if(!val_pcie_multifunction_support(bdf))
+          if(val_pcie_multifunction_support(bdf))
               continue;
 
           /* Check If Endpoint supports P2P with other Functions. */
