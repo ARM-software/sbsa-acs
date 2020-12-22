@@ -422,16 +422,6 @@ ShellAppMainsbsa (
   if (Status)
     return Status;
 
-  /*
-   * Configure Gic Redistributor and ITS to support
-   * Generation of LPIs.
-  */
-  Status = configureGicIts();
-  if (Status) {
-    Print(L" GIC ITS Initialization Failed.\n");
-    Print(L" LPI Interrupt related test may not pass.\n");
-  }
-
   createTimerInfoTable();
   createWatchdogInfoTable();
   createPcieVirtInfoTable();
@@ -474,6 +464,12 @@ ShellAppMainsbsa (
 
   Print(L"\n      *** Starting IO Virtualization tests ***  \n");
   Status |= val_smmu_execute_tests(g_sbsa_level, val_pe_get_num());
+
+  /*
+   * Configure Gic Redistributor and ITS to support
+   * Generation of LPIs.
+  */
+  configureGicIts();
 
   Print(L"\n      *** Starting PCIe Exerciser tests ***  \n");
   Status |= val_exerciser_execute_tests(g_sbsa_level);

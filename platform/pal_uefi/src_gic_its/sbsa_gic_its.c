@@ -36,19 +36,19 @@
 UINT64 ArmReadMpidr(VOID);
 
 extern GIC_ITS_INFO    *g_gic_its_info;
-static UINT32          cwriter_ptr[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+static UINT32          *g_cwriter_ptr;
+static UINT32           g_its_setup_done = 0;
 
 UINT64
 GetCurrentCpuRDBase (
-  UINT64     mGicRedistributorBase
+  UINT64     mGicRedistributorBase,
+  UINT32     length
   )
 {
-  UINT32     Index;
   UINT64     Mpidr;
   UINT32     Affinity, CpuAffinity;
   UINT32     GicRedistributorGranularity;
   UINT64     GicCpuRedistributorBase;
-  UINT32     num_pe;
 
   Mpidr = ArmReadMpidr();
 
@@ -59,9 +59,20 @@ GetCurrentCpuRDBase (
                                   + ARM_GICR_SGI_PPI_FRAME_SIZE;
 
   GicCpuRedistributorBase = mGicRedistributorBase;
-  num_pe = pal_pe_get_num();
 
-  for (Index = 0; Index < num_pe; Index++) {
+  /* If information is present in GICC Structure */
+  if (length == 0)
+  {
+      Affinity = MmioRead32(GicCpuRedistributorBase + ARM_GICR_TYPER + NEXT_DW_OFFSET);
+      if (Affinity == CpuAffinity) {
+        return GicCpuRedistributorBase;
+      }
+      return 0;
+  }
+
+  /* If information is present in GICR Structure */
+  while (GicCpuRedistributorBase < (mGicRedistributorBase + length))
+  {
     Affinity = MmioRead32(GicCpuRedistributorBase + ARM_GICR_TYPER + NEXT_DW_OFFSET);
     if (Affinity == CpuAffinity) {
       return GicCpuRedistributorBase;
@@ -217,11 +228,11 @@ WriteCmdQMAPD (
   IN UINT64     Valid
   )
 {
-    MmioWrite64((UINT64)(CMDQ_BASE + cwriter_ptr[ItsIndex]), (UINT64)((DevID << ITS_CMD_SHIFT_DEVID) | ARM_ITS_CMD_MAPD));
-    MmioWrite64((UINT64)(CMDQ_BASE + cwriter_ptr[ItsIndex] + 1), (UINT64)(Size));
-    MmioWrite64((UINT64)(CMDQ_BASE + cwriter_ptr[ItsIndex] + 2), (UINT64)((Valid << ITS_CMD_SHIFT_VALID) | (ITT_BASE & ITT_PAR_MASK)));
-    MmioWrite64((UINT64)(CMDQ_BASE + cwriter_ptr[ItsIndex] + 3), (UINT64)(0x0));
-    cwriter_ptr[ItsIndex] = cwriter_ptr[ItsIndex] + ITS_NEXT_CMD_PTR;
+    MmioWrite64((UINT64)(CMDQ_BASE + g_cwriter_ptr[ItsIndex]), (UINT64)((DevID << ITS_CMD_SHIFT_DEVID) | ARM_ITS_CMD_MAPD));
+    MmioWrite64((UINT64)(CMDQ_BASE + g_cwriter_ptr[ItsIndex] + 1), (UINT64)(Size));
+    MmioWrite64((UINT64)(CMDQ_BASE + g_cwriter_ptr[ItsIndex] + 2), (UINT64)((Valid << ITS_CMD_SHIFT_VALID) | (ITT_BASE & ITT_PAR_MASK)));
+    MmioWrite64((UINT64)(CMDQ_BASE + g_cwriter_ptr[ItsIndex] + 3), (UINT64)(0x0));
+    g_cwriter_ptr[ItsIndex] = g_cwriter_ptr[ItsIndex] + ITS_NEXT_CMD_PTR;
 }
 
 VOID
@@ -234,11 +245,11 @@ WriteCmdQMAPC (
   IN UINT64     Valid
   )
 {
-    MmioWrite64((UINT64)(CMDQ_BASE + cwriter_ptr[ItsIndex] ), (UINT64)(ARM_ITS_CMD_MAPC));
-    MmioWrite64((UINT64)(CMDQ_BASE + cwriter_ptr[ItsIndex] + 1), (UINT64)(0x0));
-    MmioWrite64((UINT64)(CMDQ_BASE + cwriter_ptr[ItsIndex] + 2), (UINT64)((Valid << ITS_CMD_SHIFT_VALID) | RDBase | Clctn_ID));
-    MmioWrite64((UINT64)(CMDQ_BASE + cwriter_ptr[ItsIndex] + 3), (UINT64)(0x0));
-    cwriter_ptr[ItsIndex] = cwriter_ptr[ItsIndex] + ITS_NEXT_CMD_PTR;
+    MmioWrite64((UINT64)(CMDQ_BASE + g_cwriter_ptr[ItsIndex] ), (UINT64)(ARM_ITS_CMD_MAPC));
+    MmioWrite64((UINT64)(CMDQ_BASE + g_cwriter_ptr[ItsIndex] + 1), (UINT64)(0x0));
+    MmioWrite64((UINT64)(CMDQ_BASE + g_cwriter_ptr[ItsIndex] + 2), (UINT64)((Valid << ITS_CMD_SHIFT_VALID) | RDBase | Clctn_ID));
+    MmioWrite64((UINT64)(CMDQ_BASE + g_cwriter_ptr[ItsIndex] + 3), (UINT64)(0x0));
+    g_cwriter_ptr[ItsIndex] = g_cwriter_ptr[ItsIndex] + ITS_NEXT_CMD_PTR;
 }
 
 VOID
@@ -250,11 +261,11 @@ WriteCmdQMAPI (
   IN UINT32     Clctn_ID
   )
 {
-    MmioWrite64((UINT64)(CMDQ_BASE + cwriter_ptr[ItsIndex]), (UINT64)((DevID << ITS_CMD_SHIFT_DEVID) | ARM_ITS_CMD_MAPI));
-    MmioWrite64((UINT64)(CMDQ_BASE + cwriter_ptr[ItsIndex] + 1), (UINT64)(IntID));
-    MmioWrite64((UINT64)(CMDQ_BASE + cwriter_ptr[ItsIndex] + 2), (UINT64)(Clctn_ID));
-    MmioWrite64((UINT64)(CMDQ_BASE + cwriter_ptr[ItsIndex] + 3), (UINT64)(0x0));
-    cwriter_ptr[ItsIndex] = cwriter_ptr[ItsIndex] + ITS_NEXT_CMD_PTR;
+    MmioWrite64((UINT64)(CMDQ_BASE + g_cwriter_ptr[ItsIndex]), (UINT64)((DevID << ITS_CMD_SHIFT_DEVID) | ARM_ITS_CMD_MAPI));
+    MmioWrite64((UINT64)(CMDQ_BASE + g_cwriter_ptr[ItsIndex] + 1), (UINT64)(IntID));
+    MmioWrite64((UINT64)(CMDQ_BASE + g_cwriter_ptr[ItsIndex] + 2), (UINT64)(Clctn_ID));
+    MmioWrite64((UINT64)(CMDQ_BASE + g_cwriter_ptr[ItsIndex] + 3), (UINT64)(0x0));
+    g_cwriter_ptr[ItsIndex] = g_cwriter_ptr[ItsIndex] + ITS_NEXT_CMD_PTR;
 }
 
 VOID
@@ -265,11 +276,11 @@ WriteCmdQINV (
   IN UINT32     IntID
   )
 {
-    MmioWrite64((UINT64)(CMDQ_BASE + cwriter_ptr[ItsIndex]), (UINT64)((DevID << ITS_CMD_SHIFT_DEVID) | ARM_ITS_CMD_INV));
-    MmioWrite64((UINT64)(CMDQ_BASE + cwriter_ptr[ItsIndex] + 1), (UINT64)(IntID));
-    MmioWrite64((UINT64)(CMDQ_BASE + cwriter_ptr[ItsIndex] + 2), (UINT64)(0x0));
-    MmioWrite64((UINT64)(CMDQ_BASE + cwriter_ptr[ItsIndex] + 3), (UINT64)(0x0));
-    cwriter_ptr[ItsIndex] = cwriter_ptr[ItsIndex] + ITS_NEXT_CMD_PTR;
+    MmioWrite64((UINT64)(CMDQ_BASE + g_cwriter_ptr[ItsIndex]), (UINT64)((DevID << ITS_CMD_SHIFT_DEVID) | ARM_ITS_CMD_INV));
+    MmioWrite64((UINT64)(CMDQ_BASE + g_cwriter_ptr[ItsIndex] + 1), (UINT64)(IntID));
+    MmioWrite64((UINT64)(CMDQ_BASE + g_cwriter_ptr[ItsIndex] + 2), (UINT64)(0x0));
+    MmioWrite64((UINT64)(CMDQ_BASE + g_cwriter_ptr[ItsIndex] + 3), (UINT64)(0x0));
+    g_cwriter_ptr[ItsIndex] = g_cwriter_ptr[ItsIndex] + ITS_NEXT_CMD_PTR;
 }
 
 VOID
@@ -280,11 +291,11 @@ WriteCmdQDISCARD (
   IN UINT32     IntID
   )
 {
-    MmioWrite64((UINT64)(CMDQ_BASE + cwriter_ptr[ItsIndex]), (UINT64)((DevID << ITS_CMD_SHIFT_DEVID) | ARM_ITS_CMD_DISCARD));
-    MmioWrite64((UINT64)(CMDQ_BASE + cwriter_ptr[ItsIndex] + 1), (UINT64)(IntID));
-    MmioWrite64((UINT64)(CMDQ_BASE + cwriter_ptr[ItsIndex] + 2), (UINT64)(0x0));
-    MmioWrite64((UINT64)(CMDQ_BASE + cwriter_ptr[ItsIndex] + 3), (UINT64)(0x0));
-    cwriter_ptr[ItsIndex] = cwriter_ptr[ItsIndex] + ITS_NEXT_CMD_PTR;
+    MmioWrite64((UINT64)(CMDQ_BASE + g_cwriter_ptr[ItsIndex]), (UINT64)((DevID << ITS_CMD_SHIFT_DEVID) | ARM_ITS_CMD_DISCARD));
+    MmioWrite64((UINT64)(CMDQ_BASE + g_cwriter_ptr[ItsIndex] + 1), (UINT64)(IntID));
+    MmioWrite64((UINT64)(CMDQ_BASE + g_cwriter_ptr[ItsIndex] + 2), (UINT64)(0x0));
+    MmioWrite64((UINT64)(CMDQ_BASE + g_cwriter_ptr[ItsIndex] + 3), (UINT64)(0x0));
+    g_cwriter_ptr[ItsIndex] = g_cwriter_ptr[ItsIndex] + ITS_NEXT_CMD_PTR;
 }
 
 
@@ -295,11 +306,11 @@ WriteCmdQSYNC (
   IN UINT32     RDBase
   )
 {
-    MmioWrite64((UINT64)(CMDQ_BASE + cwriter_ptr[ItsIndex]), (UINT64)(ARM_ITS_CMD_SYNC));
-    MmioWrite64((UINT64)(CMDQ_BASE + cwriter_ptr[ItsIndex] + 1), (UINT64)(0x0));
-    MmioWrite64((UINT64)(CMDQ_BASE + cwriter_ptr[ItsIndex] + 2), (UINT64)(RDBase));
-    MmioWrite64((UINT64)(CMDQ_BASE + cwriter_ptr[ItsIndex] + 3), (UINT64)(0x0));
-    cwriter_ptr[ItsIndex] = cwriter_ptr[ItsIndex] + ITS_NEXT_CMD_PTR;
+    MmioWrite64((UINT64)(CMDQ_BASE + g_cwriter_ptr[ItsIndex]), (UINT64)(ARM_ITS_CMD_SYNC));
+    MmioWrite64((UINT64)(CMDQ_BASE + g_cwriter_ptr[ItsIndex] + 1), (UINT64)(0x0));
+    MmioWrite64((UINT64)(CMDQ_BASE + g_cwriter_ptr[ItsIndex] + 2), (UINT64)(RDBase));
+    MmioWrite64((UINT64)(CMDQ_BASE + g_cwriter_ptr[ItsIndex] + 3), (UINT64)(0x0));
+    g_cwriter_ptr[ItsIndex] = g_cwriter_ptr[ItsIndex] + ITS_NEXT_CMD_PTR;
 }
 
 VOID
@@ -376,6 +387,9 @@ ArmGicItsClearLpiMappings (
   UINT64    ItsBase;
   UINT64    ItsCommandBase;
 
+  if (!g_its_setup_done)
+    return;
+
   ItsBase        = g_gic_its_info->GicIts[ItsIndex].Base;
   ItsCommandBase = g_gic_its_info->GicIts[ItsIndex].CommandQBase;
 
@@ -391,7 +405,7 @@ ArmGicItsClearLpiMappings (
   WriteCmdQSYNC(ItsIndex, (UINT64 *)(ItsCommandBase), RDBase);
 
   /* Update the CWRITER Register so that all the commands from Command queue gets executed.*/
-  value = ((cwriter_ptr[ItsIndex] * NUM_BYTES_IN_DW));
+  value = ((g_cwriter_ptr[ItsIndex] * NUM_BYTES_IN_DW));
   MmioWrite64((ItsBase + ARM_GITS_CWRITER), value);
 
   /* Check CREADR value which ensures Command Queue is processed */
@@ -412,6 +426,9 @@ ArmGicItsCreateLpiMap (
   UINT64    RDBase;
   UINT64    ItsBase;
   UINT64    ItsCommandBase;
+
+  if (!g_its_setup_done)
+    return;
 
   ItsBase        = g_gic_its_info->GicIts[ItsIndex].Base;
   ItsCommandBase = g_gic_its_info->GicIts[ItsIndex].CommandQBase;
@@ -442,7 +459,7 @@ ArmGicItsCreateLpiMap (
   WriteCmdQSYNC(ItsIndex, (UINT64 *)(ItsCommandBase), RDBase);
 
   /* Update the CWRITER Register so that all the commands from Command queue gets executed.*/
-  value = ((cwriter_ptr[ItsIndex] * NUM_BYTES_IN_DW));
+  value = ((g_cwriter_ptr[ItsIndex] * NUM_BYTES_IN_DW));
   MmioWrite64((ItsBase + ARM_GITS_CWRITER), value);
 
   /* Check CREADR value which ensures Command Queue is processed */
@@ -458,7 +475,10 @@ ArmGicItsGetMaxLpiID (
   UINT32    index;
   UINT32    min_idbits = ARM_LPI_MAX_IDBITS;
 
-  if (g_gic_its_info->GicNumIts == 0)
+  if ((g_gic_its_info == NULL) || (g_gic_its_info->GicNumIts == 0))
+    return 0;
+
+  if (!g_its_setup_done)
     return 0;
 
   /* Return The Minimum IDBits supported in ITS */
@@ -519,6 +539,14 @@ ArmGicItsConfiguration (
   EFI_STATUS    Status;
   UINT32        index;
 
+  g_cwriter_ptr = AllocatePool(sizeof(UINT32) * (g_gic_its_info->GicNumIts));
+  if (g_cwriter_ptr == NULL) {
+    DEBUG ((DEBUG_ERROR, "\n       ITS : Could Not Allocate Memory CWriteR. Test may not pass."));
+    return EFI_OUT_OF_RESOURCES;
+  }
+  for (index=0; index<g_gic_its_info->GicNumIts; index++)
+    g_cwriter_ptr[index] = 0;
+
   for (index=0; index<g_gic_its_info->GicNumIts; index++)
   {
     /* Set Initial configuration */
@@ -548,6 +576,8 @@ ArmGicItsConfiguration (
       return Status;
     }
   }
+
+  g_its_setup_done = 1;
 
   DEBUG ((DEBUG_INFO, "\n       ITS : Info Block "));
   for (index=0; index<g_gic_its_info->GicNumIts; index++)

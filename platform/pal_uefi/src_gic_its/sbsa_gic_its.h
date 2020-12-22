@@ -204,7 +204,8 @@ ArmGicItsConfiguration (
 
 UINT64
 GetCurrentCpuRDBase (
-  UINT64    mGicRedistributorBase
+  UINT64    mGicRedistributorBase,
+  UINT32    length
   );
 
 EFIAPI

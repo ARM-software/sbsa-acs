@@ -82,7 +82,8 @@ typedef struct {
 typedef enum {
   ENTRY_TYPE_CPUIF = 0x1000,
   ENTRY_TYPE_GICD,
-  ENTRY_TYPE_GICRD,
+  ENTRY_TYPE_GICC_GICRD,
+  ENTRY_TYPE_GICR_GICRD,
   ENTRY_TYPE_GICITS
 }GIC_INFO_TYPE_e;
 
@@ -101,6 +102,7 @@ typedef struct {
   UINT32 type;
   UINT64 base;
   UINT32 its_id;  /* This its_id is only used in case of ITS Type entry */
+  UINT32 length;  /* This length is only used in case of Re-Distributor Range Address length */
 }GIC_INFO_ENTRY;
 
 /**
