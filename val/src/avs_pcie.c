@@ -464,8 +464,10 @@ static uint32_t val_pcie_populate_device_rootport(void)
       bdf = bdf_tbl_ptr->device[tbl_index].bdf;
       val_print(AVS_PRINT_DEBUG, "\n       Device bdf 0x%x", bdf);
 
-      /* Fn returns 1 if RP not foud */
+      /* Fn returns rp_bdf = 0, if RP not found */
       val_pcie_get_rootport(bdf, &rp_bdf);
+      if (rp_bdf == 0)
+        return 1;
       bdf_tbl_ptr->device[tbl_index].rp_bdf = rp_bdf;
       val_print(AVS_PRINT_DEBUG, " RP bdf 0x%x", rp_bdf);
   }
@@ -558,8 +560,13 @@ val_pcie_create_device_bdf_table()
 
   val_print(AVS_PRINT_INFO, "\n       Number of valid BDFs is %x\n", g_pcie_bdf_table->num_entries);
   /* Sanity Check : Confirm all EP (normal, integrated) have a rootport */
-  return val_pcie_populate_device_rootport();
-
+  if (val_pcie_populate_device_rootport())
+  {
+      /* Discard the bdf table */
+      g_pcie_bdf_table->num_entries = 0;
+      return 1;
+  }
+  return 0;
 }
 
 /**
@@ -1860,7 +1867,7 @@ val_pcie_get_rootport(uint32_t bdf, uint32_t *rp_bdf)
   }
 
   /* Return failure */
-  val_print(AVS_PRINT_DEBUG, "\n       Root port of Function (bdf: 0x%x) Not found ", bdf);
+  val_print(AVS_PRINT_ERR, "\n       PCIe Hierarchy fail: RP of bdf 0x%x not found", bdf);
   *rp_bdf = 0;
   return 1;
 
