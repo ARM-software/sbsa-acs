@@ -52,7 +52,7 @@ payload(void)
   uint32_t dp_type;
   uint32_t pe_index;
   uint32_t tbl_index;
-  uint32_t read_value;
+  uint32_t read_value, old_value;
   uint32_t test_skip = 1;
   uint64_t mem_base;
   uint64_t mem_lim;
@@ -108,10 +108,11 @@ payload(void)
         /* If test runs for atleast an endpoint */
         test_skip = 0;
 
-        /* Write known value to an address which is in range
+        /* Read and write known value to an address which is in range
          * Base + 0x10 will always be in the range.
          * Read the same
         */
+        old_value = (*(volatile uint32_t *)(mem_base + MEM_OFFSET_10));
         *(volatile uint32_t *)(mem_base + MEM_OFFSET_10) = KNOWN_DATA;
         read_value = (*(volatile uint32_t *)(mem_base + MEM_OFFSET_10));
 
@@ -125,7 +126,7 @@ exception_return:
           return;
         }
 
-        if ((read_value == PCIE_UNKNOWN_RESPONSE) || val_pcie_is_urd(bdf)) {
+        if ((old_value != read_value && read_value == PCIE_UNKNOWN_RESPONSE) || val_pcie_is_urd(bdf)) {
           val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
           val_pcie_clear_urd(bdf);
           return;
