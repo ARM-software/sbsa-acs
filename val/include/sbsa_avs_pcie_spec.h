@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2019-2020, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2019-2021, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -96,7 +96,7 @@
 
 /* Header type reg shifts and masks */
 #define HTR_HL_SHIFT   0x0
-#define HTR_HL_MASK    0x3f
+#define HTR_HL_MASK    0x7f
 #define HTR_MFD_SHIFT  7
 #define HTR_MFD_MASK   0x1
 
