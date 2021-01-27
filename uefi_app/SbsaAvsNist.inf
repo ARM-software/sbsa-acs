@@ -1,5 +1,5 @@
 ## @file
-#  Copyright (c) 2020, Arm Limited or its affiliates. All rights reserved.
+#  Copyright (c) 2020-2021, Arm Limited or its affiliates. All rights reserved.
 #  SPDX-License-Identifier : Apache-2.0
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
@@ -31,9 +31,6 @@
 [Sources.AARCH64]
   ../
   SbsaAvsMain.c
-  ../test_pool/secure/test_s001.c
-  ../test_pool/secure/test_s002.c
-  ../test_pool/secure/test_s003.c
   ../test_pool/pe/test_c001.c
   ../test_pool/pe/test_c002.c
   ../test_pool/pe/test_c003.c
@@ -70,8 +67,6 @@
   ../test_pool/pe/test_c034.c
   ../test_pool/pe/test_c035.c
   ../test_pool/pe/test_c036.c
-  ../test_pool/pe/test_c037.c
-  ../test_pool/pe/test_c038.c
   ../test_pool/gic/test_g001.c
   ../test_pool/gic/test_g002.c
   ../test_pool/gic/test_g003.c
@@ -150,7 +145,6 @@
   ../test_pool/peripherals/test_d002.c
   ../test_pool/peripherals/test_d003.c
   ../test_pool/peripherals/test_m001.c
-  ../test_pool/peripherals/test_m002.c
   ../test_pool/exerciser/test_e001.c
   ../test_pool/exerciser/test_e002.c
   ../test_pool/exerciser/test_e003.c

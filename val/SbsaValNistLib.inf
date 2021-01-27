@@ -1,5 +1,5 @@
 ## @file
-#  Copyright (c) 2020, Arm Limited or its affiliates. All rights reserved.
+#  Copyright (c) 2020-2021, Arm Limited or its affiliates. All rights reserved.
 #  SPDX-License-Identifier : Apache-2.0
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
@@ -42,7 +42,6 @@
   src/avs_wd.c
   src/avs_wakeup.c
   src/avs_peripherals.c
-  src/avs_secure.c
   src/avs_memory.c
   src/avs_exerciser.c
   src/avs_nist.c
