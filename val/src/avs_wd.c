@@ -157,14 +157,16 @@ val_wd_disable(uint32_t index)
 void
 val_wd_set_ws0(uint32_t index, uint32_t timeout)
 {
+  uint32_t counter_freq;
 
   if (timeout == 0) {
       val_wd_disable(index);
       return;
   }
+  counter_freq = val_timer_get_info(TIMER_INFO_CNTFREQ, 0);
 
-  val_mmio_write((g_wd_info_table->wd_info[index].wd_ctrl_base + 8), timeout);
+  val_mmio_write((g_wd_info_table->wd_info[index].wd_ctrl_base + 8),
+		  counter_freq * timeout);
   val_wd_enable(index);
 
 }
-
