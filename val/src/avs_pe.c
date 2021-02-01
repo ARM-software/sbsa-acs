@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2020, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2021, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -72,7 +72,7 @@ val_pe_execute_tests(uint32_t level, uint32_t num_pe)
       status |= c017_entry(num_pe);
   }
 
-  if (level > 1) {
+  if (level > 5) {
       status |= c018_entry(num_pe);
   }
 
@@ -92,6 +92,7 @@ val_pe_execute_tests(uint32_t level, uint32_t num_pe)
   }
 
   if (level > 5) {
+      status |= c028_entry(num_pe);
       status |= c029_entry(num_pe);
       status |= c030_entry(num_pe);
       status |= c031_entry(num_pe);
@@ -100,8 +101,6 @@ val_pe_execute_tests(uint32_t level, uint32_t num_pe)
       status |= c034_entry(num_pe);
       status |= c035_entry(num_pe);
       status |= c036_entry(num_pe);
-      status |= c037_entry(num_pe);
-      status |= c038_entry(num_pe);
   }
 
   if (status != AVS_STATUS_PASS)
