@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2018-2020, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2018-2021, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -48,7 +48,6 @@ void
 payload (void)
 {
 
-  uint32_t count = val_peripheral_get_info (NUM_ALL, 0);
   uint32_t index = val_pe_get_index_mpid (val_pe_get_mpid());
   uint32_t e_bdf = 0;
   uint32_t timeout;
@@ -57,11 +56,6 @@ payload (void)
   uint32_t num_cards;
   uint32_t num_smmus;
   uint32_t msi_index = 0;
-
-  if(!count) {
-     val_set_status (index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 3));
-     return;
-  }
 
   /* Read the number of excerciser cards */
   num_cards = val_exerciser_get_info(EXERCISER_NUM_CARDS, 0);
