@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018, 2020-2021 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,128 +17,154 @@
 #include "val/include/sbsa_avs_val.h"
 #include "val/include/val_interface.h"
 
-#include "val/include/sbsa_avs_dma.h"
-#include "val/include/sbsa_avs_smmu.h"
+#include "val/include/sbsa_avs_pcie.h"
+#include "val/include/sbsa_avs_memory.h"
 
+/* SBSA-checklist 63 & 64 */
 #define TEST_NUM   (AVS_PCIE_TEST_NUM_BASE + 5)
-#define TEST_DESC  "DMA Address translations (SATA)   "
+#define TEST_DESC  "PCIe Unaligned access, Norm mem   "
 
-#define TEST_DATA_BLK_SIZE  512
+#define DATA 0xC0DECAFE
 
-/* For all DMA masters populated in the Info table, Verify functional DMA,
-   before we proceed with other tests */
 static
 void
 payload(void)
 {
-
-  void *orig_buffer = NULL, *new_buffer;
-  void *backup;
+  uint32_t count = 0;
+  uint32_t data;
+  uint32_t bdf;
+  uint32_t bar_reg_value;
+  uint64_t bar_upper_bits;
+  uint32_t bar_value;
+  uint32_t bar_value_1;
+  uint64_t bar_size;
+  char    *baseptr;
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
-  uint32_t target_dev_index;
-  uint64_t dma_addr;
-  uint32_t dma_len;
+  uint32_t test_skip = 1;
+  uint32_t test_fail = 0;
+  uint64_t offset;
+  uint64_t base;
 
-  target_dev_index = val_dma_get_info(DMA_NUM_CTRL, 0);
+  count = val_peripheral_get_info(NUM_SATA, 0);
 
-  if (!target_dev_index) {
-      val_print(AVS_PRINT_WARN, "\n       No DMA controllers detected...    ", 0);
-      val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
-      return;
-  }
+  while (count--) {
+next_bdf:
+      bdf = val_peripheral_get_info(SATA_BDF, count);
+      offset = BAR0_OFFSET;
 
-  while (target_dev_index)
-  {
-      target_dev_index--; //index is zero based
+      while(offset <= BAR_MAX_OFFSET) {
+          val_pcie_read_cfg(bdf, offset, &bar_value);
+          val_print(AVS_PRINT_DEBUG, "\n The BAR value of bdf %x", bdf);
+          val_print(AVS_PRINT_DEBUG, " is %x ", bar_value);
+          base = 0;
 
-      if (val_dma_get_info(DMA_HOST_COHERENT, target_dev_index) != DMA_COHERENT) {
-          if (val_dma_get_info(DMA_HOST_PCI, target_dev_index) == PCI_EP) {
-              val_print(AVS_PRINT_ERR, "\n       All PCIe end points must be IO-Coherent. .. ", 0);
-              val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
-              return;
-          } else {
-              val_print(AVS_PRINT_WARN, "\n      Controller Index = %x is not IO-Coherent. Skipping.. ",
-                target_dev_index);
-              if (target_dev_index)
-                  continue;
-              else {
-                  val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
-                  return;
-              }
-          }
-      }
-      val_smmu_ops(SMMU_START_MONITOR_DEV, 0, &target_dev_index, NULL);
-
-      /* Allocate DMA-able memory region in DDR */
-      orig_buffer = kzalloc(TEST_DATA_BLK_SIZE, GFP_KERNEL);
-      new_buffer  = kzalloc(TEST_DATA_BLK_SIZE, GFP_KERNEL);
-      backup      = kzalloc(TEST_DATA_BLK_SIZE, GFP_KERNEL);
-
-      /* Backup the data on the disk before we override it with test data */
-      val_dma_start_from_device(backup, 512, target_dev_index);
-
-
-      *((uint32_t *)orig_buffer)     = 0x12345678;
-      *((uint32_t *)orig_buffer + 1) = 0x1234569A;
-      *((uint32_t *)orig_buffer + 2) = 0x12ABCDEF;
-      *((uint32_t *)orig_buffer + 9) = 0x12ABCDEF;
-      *((uint32_t *)orig_buffer + 10) = 0x12ABCDEF;
-      /* Program Device DMA controller with the source buffer */
-      val_dma_start_to_device(orig_buffer, TEST_DATA_BLK_SIZE, target_dev_index);
-
-      /* READ Back from device and Verify the DDR memory has the original data */
-      val_dma_start_from_device(new_buffer, TEST_DATA_BLK_SIZE, target_dev_index);
-
-      val_print(AVS_PRINT_DEBUG, "\n new buffer = %x ", *(uint32_t *)new_buffer);
-      val_print(AVS_PRINT_DEBUG, " %x ", *((uint32_t *)new_buffer + 1));
-      val_print(AVS_PRINT_DEBUG, " %x \n", *((uint32_t *)new_buffer + 2));
-
-
-      if (memcmp(orig_buffer, new_buffer, TEST_DATA_BLK_SIZE)) {
-          val_print(AVS_PRINT_ERR, "\n        Data Compare of DMA TO and FROM Device %d - failed.",
-            target_dev_index);
-
-          kfree(orig_buffer);
-          kfree(new_buffer);
-
-          /* Restore back the original data */
-          val_dma_start_to_device(backup, TEST_DATA_BLK_SIZE, target_dev_index);
-
-          val_smmu_ops(SMMU_STOP_MONITOR_DEV, 0, &target_dev_index, NULL);
-          val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, target_dev_index));
-          return;
-      }
-
-      if (val_dma_get_info(DMA_HOST_IOMMU_ATTACHED, target_dev_index) == 0) {
-          /* Make sure that the DMA address used by the device is the same as what we were allocated */
-          /* This is to make sure there are no additional address translations in between */
-          val_dma_device_get_dma_addr(target_dev_index, &dma_addr, &dma_len);
-
-          if (dma_addr != virt_to_phys(new_buffer))
+          if (bar_value == 0)
           {
-              /* Restore back the original data */
-              val_dma_start_to_device(backup, TEST_DATA_BLK_SIZE, target_dev_index);
-
-              val_print(AVS_PRINT_ERR, "\n      Device DMA addr does not match allocated address %lx ", dma_addr);
-              val_print(AVS_PRINT_ERR, "\n      !=  %lx ", virt_to_phys(new_buffer));
-              val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
-              return;
+              /** This BAR is not implemented **/
+              count--;
+              goto next_bdf;
           }
 
+          /* Skip for IO address space */
+          if (bar_value & 0x1) {
+              count--;
+              goto next_bdf;
+          }
+
+          if (BAR_REG(bar_value) == BAR_64_BIT)
+          {
+              val_print(AVS_PRINT_INFO, "The BAR supports 64-bit address decoding capability \n", 0);
+              val_pcie_read_cfg(bdf, offset+4, &bar_value_1);
+              base = bar_value_1;
+
+              /* BAR supports 64-bit address therefore, write all 1's
+               * to BARn and BARn+1 and identify the size requested
+               */
+              val_pcie_write_cfg(bdf, offset, 0xFFFFFFF0);
+              val_pcie_write_cfg(bdf, offset + 4, 0xFFFFFFFF);
+              val_pcie_read_cfg(bdf, offset, &bar_reg_value);
+              bar_size = bar_reg_value & 0xFFFFFFF0;
+              val_pcie_read_cfg(bdf, offset + 4, &bar_reg_value);
+              bar_upper_bits = bar_reg_value;
+              bar_size = bar_size | (bar_upper_bits << 32 );
+              bar_size = ~bar_size + 1;
+
+              /* Restore the original BAR value */
+              val_pcie_write_cfg(bdf, offset + 4, bar_value_1);
+              val_pcie_write_cfg(bdf, offset, bar_value);
+              base = (base << 32) | bar_value;
+          }
+
+          else {
+              val_print(AVS_PRINT_INFO, "The BAR supports 32-bit address decoding capability\n", 0);
+
+              /* BAR supports 32-bit address. Write all 1's
+               * to BARn and identify the size requested
+               */
+              val_pcie_write_cfg(bdf, offset, 0xFFFFFFF0);
+              val_pcie_read_cfg(bdf, offset, &bar_reg_value);
+              bar_reg_value = bar_reg_value & 0xFFFFFFF0;
+              bar_size = ~bar_reg_value + 1;
+
+              /* Restore the original BAR value */
+              val_pcie_write_cfg(bdf, offset, bar_value);
+              base = bar_value;
+          }
+
+          val_print(AVS_PRINT_DEBUG, "\n BAR size is %x", bar_size);
+
+          /* Check if bar supports the remap size */
+          if (1024 > bar_size) {
+              val_print(AVS_PRINT_ERR, "Bar size less than remap requested size", 0);
+              goto next_bar;
+          }
+
+          test_skip = 0;
+
+          /* Map SATA Controller BARs to a NORMAL memory attribute. check unaligned access */
+          baseptr = (char *)val_memory_ioremap((void *)base, 1024, NORMAL_NC);
+
+          /* Check for unaligned access */
+          *(uint32_t *)(baseptr) = DATA;
+          data = *(char *)(baseptr+3);
+
+          val_memory_unmap(baseptr);
+
+          if (data != (DATA >> 24)) {
+              val_print(AVS_PRINT_ERR, "Unaligned data mismatch", 0);
+              test_fail++;
+          }
+
+          /* Map SATA Controller BARs to a DEVICE memory attribute and check transaction */
+          baseptr = (char *)val_memory_ioremap((void *)base, 1024, DEVICE_nGnRnE);
+
+          *(uint32_t *)(baseptr) = DATA;
+          data = *(uint32_t *)(baseptr);
+
+          val_memory_unmap(baseptr);
+
+          if (data != DATA) {
+              val_print(AVS_PRINT_ERR, "Data value mismatch", 0);
+              test_fail++;
+          }
+
+next_bar:
+          if (BAR_REG(bar_reg_value) == BAR_32_BIT)
+              offset=offset+4;
+
+          if (BAR_REG(bar_reg_value) == BAR_64_BIT)
+              offset=offset+8;
       }
-
-      val_smmu_ops(SMMU_STOP_MONITOR_DEV, 0, &target_dev_index, NULL);
-
-      /* Restore back the original data */
-      val_dma_start_to_device(backup, TEST_DATA_BLK_SIZE, target_dev_index);
-
-      kfree(orig_buffer);
-      kfree(new_buffer);
-      kfree(backup);
   }
-  val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 02));
-}
 
+  if (test_skip)
+      val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 0));
+  else if (test_fail)
+      val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, test_fail));
+  else
+      val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 0));
+
+}
 
 uint32_t
 p005_entry(uint32_t num_pe)
