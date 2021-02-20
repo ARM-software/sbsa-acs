@@ -41,7 +41,7 @@ esr(uint64_t interrupt_type, void *context)
   /* Update the ELR to point to next instrcution */
   val_pe_update_elr(context, (uint64_t)branch_to_test);
 
-  val_print(AVS_PRINT_INFO, "\n       Received DAbort Exception ", 0);
+  val_print(AVS_PRINT_INFO, "       Received DAbort Exception\n", 0);
   val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
 }
 
@@ -66,12 +66,12 @@ payload()
       /* Get the base address of unpopulated region */
       status = val_memory_get_unpopulated_addr(&addr, instance);
       if (status == EFI_NO_MAPPING) {
-          val_print(AVS_PRINT_INFO, "\n      All instances of unpopulated memory were obtained", 0);
+          val_print(AVS_PRINT_INFO, "      All instances of unpopulated memory were obtained\n", 0);
           return;
       }
 
       if (status) {
-          val_print(AVS_PRINT_ERR, "\n      Error in obtaining unpopulated memory for instance 0x%d", instance);
+          val_print(AVS_PRINT_ERR, "      Error in obtaining unpopulated memory for instance 0x%d\n", instance);
           return;
       }
 
@@ -85,7 +85,7 @@ payload()
 exception_taken:
           /* if the access did not go to our exception handler, fail and exit */
           if (IS_TEST_FAIL(val_get_status(index))) {
-              val_print(AVS_PRINT_ERR, "\n      Memory access check fails at address = 0x%llx ", addr);
+              val_print(AVS_PRINT_ERR, "      Memory access check fails at address = 0x%llx\n", addr);
               return;
           }
 

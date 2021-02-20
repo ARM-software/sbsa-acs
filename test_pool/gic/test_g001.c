@@ -32,17 +32,17 @@ payload()
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
 
   gic_version = val_gic_get_info(GIC_INFO_VERSION);
-  val_print(AVS_PRINT_INFO, "\n       Received GIC version = %4d      ", gic_version);
+  val_print(AVS_PRINT_INFO, "       Received GIC version = %4d\n", gic_version);
 
   if (g_sbsa_level < 2) {
       if (gic_version < 2) {
-          val_print(AVS_PRINT_ERR, "\n       GIC version is %x                 ", gic_version);
+          val_print(AVS_PRINT_ERR, "       GIC version is %x\n", gic_version);
           val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
           return;
       }
   } else {
       if (gic_version < 3) {
-          val_print(AVS_PRINT_ERR, "\n       GIC version is %3x                ", gic_version);
+          val_print(AVS_PRINT_ERR, "       GIC version is %3x\n", gic_version);
           val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
           return;
       }

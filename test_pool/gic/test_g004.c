@@ -40,7 +40,7 @@ isr()
   val_gic_reg_write(ICH_HCR_EL2, data);
 
   val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
-  val_print(AVS_PRINT_INFO, "\n       Received GIC maintenance interrupt ", 0);
+  val_print(AVS_PRINT_INFO, "       Received GIC maintenance interrupt\n", 0);
   val_gic_end_of_interrupt(int_id);
 
   return;

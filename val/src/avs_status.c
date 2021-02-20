@@ -34,7 +34,7 @@ val_report_status(uint32_t index, uint32_t status)
 
   if (IS_TEST_FAIL(status)) {
       val_print(AVS_PRINT_ERR, "\n       Failed on PE - %4d ", index);
-      val_print(AVS_PRINT_ERR, "for Level= %2d ", (status >> LEVEL_BIT) & LEVEL_MASK);
+      val_print(AVS_PRINT_ERR, "for Level= %2d\n", (status >> LEVEL_BIT) & LEVEL_MASK);
   }
 
   if (IS_TEST_PASS(status))
@@ -47,10 +47,10 @@ val_report_status(uint32_t index, uint32_t status)
         val_print(AVS_PRINT_WARN, ": Result:  -SKIPPED- %x \n", status & STATUS_MASK);
       else
         if (IS_TEST_START(status))
-          val_print(AVS_PRINT_INFO, "         START  ", status);
+          val_print(AVS_PRINT_INFO, "\nSTART\n", status);
         else
           if (IS_TEST_END(status))
-            val_print(AVS_PRINT_INFO, "         END  \n\n", status);
+            val_print(AVS_PRINT_INFO, "END\n", status);
           else
             val_print(AVS_PRINT_ERR, ": Result:  %8x  \n", status);
 

@@ -55,7 +55,7 @@ val_gic_execute_tests(uint32_t level, uint32_t num_pe)
   if (status != AVS_STATUS_PASS)
     val_print(AVS_PRINT_ERR, "\n      One or more GIC tests failed. Check Log \n", 0);
   else
-    val_print(AVS_PRINT_TEST, "\n     All GIC tests Passed!! \n", 0);
+    val_print(AVS_PRINT_TEST, "\n     All GIC tests Passed!!!\n", 0);
 
   return status;
 
@@ -75,7 +75,7 @@ val_gic_create_info_table(uint64_t *gic_info_table)
 {
 
   if (gic_info_table == NULL) {
-      val_print(AVS_PRINT_ERR, "Input for Create Info table cannot be NULL \n", 0);
+      val_print(AVS_PRINT_ERR, "Input for Create Info table cannot be NULL\n", 0);
       return AVS_STATUS_ERR;
   }
 
@@ -142,7 +142,7 @@ uint32_t
 val_gic_get_info(uint32_t type)
 {
   if (g_gic_info_table == NULL) {
-      val_print(AVS_PRINT_ERR, "\n   Get GIC info called before gic info table is filled ",        0);
+      val_print(AVS_PRINT_ERR, "   Get GIC info called before GIC info table is filled\n",        0);
       return 0;
   }
 
@@ -150,7 +150,7 @@ val_gic_get_info(uint32_t type)
 
       case GIC_INFO_VERSION:
           if (g_gic_info_table->header.gic_version != 0) {
-             val_print(AVS_PRINT_INFO, "\n       gic version from ACPI table = %d ", g_gic_info_table->header.gic_version);
+             val_print(AVS_PRINT_INFO, "       GIC version from ACPI table = %d\n", g_gic_info_table->header.gic_version);
                 return g_gic_info_table->header.gic_version;
           }
 
@@ -163,7 +163,7 @@ val_gic_get_info(uint32_t type)
           return g_gic_info_table->header.num_its;
 
       default:
-          val_print(AVS_PRINT_ERR, "\n    GIC Info - TYPE not recognized %d  ", type);
+          val_print(AVS_PRINT_ERR, "    GIC Info - TYPE not recognized %d\n", type);
           break;
   }
   return AVS_STATUS_ERR;
@@ -197,7 +197,7 @@ uint32_t val_gic_route_interrupt_to_pe(uint32_t int_id, uint64_t mpidr)
       val_mmio_write(val_get_gicd_base() + GICD_IROUTER + (8 * int_id), mpidr);
   }
   else{
-      val_print(AVS_PRINT_ERR, "\n    Only SPIs can be routed, interrupt with INTID = %d cannot be routed", int_id);
+      val_print(AVS_PRINT_ERR, "    Only SPIs can be routed, interrupt with INTID = %d cannot be routed\n", int_id);
   }
 
   return 0;
@@ -240,7 +240,7 @@ void val_gic_clear_interrupt(uint32_t int_id)
         val_mmio_write(val_get_gicd_base() + GICD_ICACTIVER0 + (4 * reg_offset), (1 << reg_shift));
     }
     else
-        val_print(AVS_PRINT_ERR, "\n    Invalid SPI interrupt ID number %d", int_id);
+        val_print(AVS_PRINT_ERR, "    Invalid SPI interrupt ID number %d\n", int_id);
 }
 
 /**
@@ -272,7 +272,7 @@ uint32_t val_gic_get_intr_trigger_type(uint32_t int_id, INTR_TRIGGER_INFO_TYPE_e
   uint32_t config_bit_shift;
 
   if (int_id > val_get_max_intid()) {
-    val_print(AVS_PRINT_ERR, "\n       Invalid Interrupt ID number 0x%x ", int_id);
+    val_print(AVS_PRINT_ERR, "       Invalid Interrupt ID number 0x%x\n", int_id);
     return AVS_STATUS_ERR;
   }
 
@@ -301,9 +301,9 @@ void val_gic_set_intr_trigger(uint32_t int_id, INTR_TRIGGER_INFO_TYPE_e trigger_
 {
   uint32_t status;
 
-  val_print(AVS_PRINT_DEBUG, "\n    Setting Trigger type as %d  ", trigger_type);
+  val_print(AVS_PRINT_DEBUG, "    Setting Trigger type as %d\n", trigger_type);
   status = pal_gic_set_intr_trigger(int_id, trigger_type);
 
   if (status)
-    val_print(AVS_PRINT_ERR, "\n    Error Could Not Configure Trigger Type", 0);
+    val_print(AVS_PRINT_ERR, "    Error Could Not Configure Trigger Type\n", 0);
 }

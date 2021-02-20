@@ -36,7 +36,7 @@ payload()
   data = val_pcie_get_info(PCIE_INFO_NUM_ECAM, 0);
 
   if (data == 0) {
-      val_print(AVS_PRINT_WARN, "\n       PCIe Subsystem not  discovered   ", 0);
+      val_print(AVS_PRINT_WARN, "       PCIe Subsystem not discovered\n", 0);
       val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
       return;
   }
@@ -44,14 +44,14 @@ payload()
   num_smmu = val_smmu_get_info(SMMU_NUM_CTRL, 0);
 
   if (num_smmu == 0) {
-      val_print(AVS_PRINT_ERR, "\n       No SMMU Controllers are discovered ", 0);
+      val_print(AVS_PRINT_ERR, "       No SMMU Controllers are discovered\n", 0);
       val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
       return;
   }
 
   while (num_smmu--) {
       if (val_smmu_get_info(SMMU_CTRL_ARCH_MAJOR_REV, num_smmu) == 2) {
-          val_print(AVS_PRINT_WARN, "\n       Not valid for SMMU v2           ", 0);
+          val_print(AVS_PRINT_WARN, "       Not valid for SMMU v2\n", 0);
           val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
           return;
       }

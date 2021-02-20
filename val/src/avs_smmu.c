@@ -68,7 +68,7 @@ val_smmu_execute_tests(uint32_t level, uint32_t num_pe)
 
   num_smmu = val_iovirt_get_smmu_info(SMMU_NUM_CTRL, 0);
   if (num_smmu == 0) {
-    val_print(AVS_PRINT_WARN, "\n     No SMMU Controller Found, Skipping SMMU tests...\n", 0);
+    val_print(AVS_PRINT_WARN, "     No SMMU Controller Found, Skipping SMMU tests...\n", 0);
     return AVS_STATUS_SKIP;
   }
 
@@ -84,7 +84,7 @@ val_smmu_execute_tests(uint32_t level, uint32_t num_pe)
 
   if (g_sbsa_level > 5) {
       if (status_version_chk != AVS_STATUS_PASS) {
-          val_print(AVS_PRINT_ERR, "\n      SMMU Version Not Compliant, Skipping Remaining SMMU Tests...\n", 0);
+          val_print(AVS_PRINT_ERR, "      SMMU Version Not Compliant, Skipping Remaining SMMU Tests...\n", 0);
       } else {
           status |= i008_entry(num_pe);
           status |= i009_entry(num_pe);
@@ -99,7 +99,7 @@ val_smmu_execute_tests(uint32_t level, uint32_t num_pe)
   }
 
   if (status != AVS_STATUS_PASS) {
-      val_print(AVS_PRINT_ERR, "\n      One or more SMMU tests have failed...  \n", status);
+      val_print(AVS_PRINT_ERR, "      One or more SMMU tests have failed...  \n", status);
   }
 
   return status;

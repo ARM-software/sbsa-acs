@@ -97,7 +97,7 @@ isr()
 {
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
   uart_disable_txintr();
-  val_print(AVS_PRINT_DEBUG, "\n      Received interrupt      ", 0);
+  val_print(AVS_PRINT_DEBUG, "      Received interrupt\n", 0);
   val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 0x01));
   val_gic_end_of_interrupt(int_id);
 }
@@ -150,7 +150,7 @@ payload()
   uint32_t data;
 
   if (count == 0) {
-      val_print(AVS_PRINT_WARN, "\n        No UART defined by Platform      ", 0);
+      val_print(AVS_PRINT_WARN, "        No UART defined by Platform\n", 0);
       val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
       return;
   }
@@ -179,7 +179,7 @@ payload()
       uart_reg_write(SBSA_UARTDR, WIDTH_BIT32, data | 0x0F00);
       data = (data >> 8) & 0x0F;
       if (data != ((uart_reg_read(SBSA_UARTDR, WIDTH_BIT32)>>8) & 0x0F)) {
-          val_print(AVS_PRINT_ERR, "\n     UARTDR Bits 11:8 are not Read Only", 0);
+          val_print(AVS_PRINT_ERR, "     UARTDR Bits 11:8 are not Read Only\n", 0);
           val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, SBSA_UARTDR));
           return;
       }
@@ -214,12 +214,12 @@ payload1()
           val_set_status(index, RESULT_PENDING(g_sbsa_level, TEST_NUM2));
           val_gic_install_isr(int_id, isr);
           uart_enable_txintr();
-          val_print_raw(g_print_level, "\n       Test Message                      ", 0);
+          val_print_raw(g_print_level, "       Test Message\n", 0);
 
           while ((--timeout > 0) && (IS_RESULT_PENDING(val_get_status(index))));
 
           if (timeout == 0) {
-              val_print(AVS_PRINT_ERR, "\n     Did not receive UART interrupt on %d  ", int_id);
+              val_print(AVS_PRINT_ERR, "     Did not receive UART interrupt on %d\n", int_id);
               val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM2, 02));
               return;
           }

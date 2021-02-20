@@ -69,7 +69,7 @@ payload(void)
       bdf = PCIE_CREATE_BDF(segment, bus, 0, 0);
       ret = val_pcie_read_cfg(bdf, PCIE_VENDOR_ID_REG_OFFSET, &data);
       if (data == PCIE_UNKNOWN_RESPONSE) {
-          val_print(AVS_PRINT_ERR, "\n      First device in a ECAM space is not a valid device", 0);
+          val_print(AVS_PRINT_ERR, "      First device in a ECAM space is not a valid device\n", 0);
            val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, (bus << 8)));
            return;
       }

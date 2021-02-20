@@ -36,7 +36,7 @@ payload()
   uint64_t timer_num = val_timer_get_info(TIMER_INFO_NUM_PLATFORM_TIMERS, 0);
 
   if (!timer_num) {
-      val_print(AVS_PRINT_WARN, "\n       No System timers are defined      ", 0);
+      val_print(AVS_PRINT_WARN, "       No System timers are defined\n", 0);
       val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 0x1));
       return;
   }
@@ -51,33 +51,33 @@ payload()
       cnt_base_n   = val_timer_get_info(TIMER_INFO_SYS_CNT_BASE_N, timer_num);
 
       if (cnt_ctl_base == 0) {
-          val_print(AVS_PRINT_WARN, "\n       CNTCTL BASE_N is zero             ", 0);
+          val_print(AVS_PRINT_WARN, "       CNTCTL BASE_N is zero\n", 0);
           val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 0x2));
           return;
       }
 
       data = val_mmio_read(cnt_ctl_base + 0x8);
       if (data == 0x0) {
-          val_print(AVS_PRINT_ERR, "\n       Unexpected value for CNTCTLBase.CNTTIDR %x ", data);
+          val_print(AVS_PRINT_ERR, "       Unexpected value for CNTCTLBase.CNTTIDR %x\n", data);
           val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 0x1));
           return;
       }
       val_mmio_write(cnt_ctl_base + 0x8, 0xFFFFFFFF);
       if(data != val_mmio_read(cnt_ctl_base + 0x8)) {
-          val_print(AVS_PRINT_ERR, "\n       Read-write check failed for CNTCTLBase.CNTTIDR, expected value %x ", data);
+          val_print(AVS_PRINT_ERR, "       Read-write check failed for CNTCTLBase.CNTTIDR, expected value %x\n", data);
           val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 0x2));
           return;
       }
 
       data = val_mmio_read(cnt_ctl_base + 0xFD0);
       if ((data == 0x0) || ((data & 0xFFFF) == 0xFFFF)) {
-          val_print(AVS_PRINT_ERR, "\n       Unexpected value for CNTCTLBase.CounterID %x ", data);
+          val_print(AVS_PRINT_ERR, "       Unexpected value for CNTCTLBase.CounterID %x\n", data);
           val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 0x3));
           return;
       }
 
       if (cnt_base_n == 0) {
-          val_print(AVS_PRINT_WARN, "\n      CNT_BASE_N is zero                 ", 0);
+          val_print(AVS_PRINT_WARN, "      CNT_BASE_N is zero\n", 0);
           val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 0x3));
           return;
       }
@@ -86,15 +86,15 @@ payload()
       val_mmio_write(cnt_base_n + 0x0, data - ARBIT_VALUE);  // Writes to Read-Only registers should be ignored
       if(val_mmio_read(cnt_base_n + 0x0) < data) {
           val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 0x4));
-          val_print(AVS_PRINT_ERR, "\n      CNTBaseN offset 0 should be read-only ", 0);
+          val_print(AVS_PRINT_ERR, "      CNTBaseN offset 0 should be read-only\n", 0);
           return;
       }
 
       data = 0x3;
       val_mmio_write(cnt_base_n + 0x2C, data);
       if(data != (val_mmio_read(cnt_base_n + 0x2C) & 0x3)) {
-          val_print(AVS_PRINT_ERR, "\n       Read-write check failed for CNTBaseN.CNTP_CTL, expected value %x ", data);
-          val_print(AVS_PRINT_ERR, "\n       Read value %x ", val_mmio_read(cnt_base_n + 0x2C));
+          val_print(AVS_PRINT_ERR, "       Read-write check failed for CNTBaseN.CNTP_CTL, expected value %x\n", data);
+          val_print(AVS_PRINT_ERR, "       Read value %x\n", val_mmio_read(cnt_base_n + 0x2C));
           val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 0x5));
           val_mmio_write(cnt_base_n + 0x2C, 0x0); // Disable the timer before return
           return;
@@ -104,7 +104,7 @@ payload()
       data = 0xFF00FF00;
       val_mmio_write(cnt_base_n + 0x20, data);
       if(data != val_mmio_read(cnt_base_n + 0x20)) {
-          val_print(AVS_PRINT_ERR, "\n       Read-write check failed for CNTBaseN.CNTP_CVAL[31:0], expected value %x ", data);
+          val_print(AVS_PRINT_ERR, "       Read-write check failed for CNTBaseN.CNTP_CVAL[31:0], expected value %x\n", data);
           val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 0x6));
           return;
       }
@@ -112,14 +112,14 @@ payload()
       data = 0x00FF00FF;
       val_mmio_write(cnt_base_n + 0x24, data);
       if(data != val_mmio_read(cnt_base_n + 0x24)) {
-          val_print(AVS_PRINT_ERR, "\n       Read-write check failed for CNTBaseN.CNTP_CVAL[63:32], expected value %x ", data);
+          val_print(AVS_PRINT_ERR, "       Read-write check failed for CNTBaseN.CNTP_CVAL[63:32], expected value %x\n", data);
           val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 0x7));
           return;
       }
 
       data = val_mmio_read(cnt_base_n + 0xFD0);
       if ((data == 0x0) || ((data & 0xFFFF) == 0xFFFF)) {
-          val_print(AVS_PRINT_ERR, "\n      Unexpected value for CNTBaseN.CounterID %x  ", data);
+          val_print(AVS_PRINT_ERR, "      Unexpected value for CNTBaseN.CounterID %x\n", data);
           val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 0x8));
           return;
       }

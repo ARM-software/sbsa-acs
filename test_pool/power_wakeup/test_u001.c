@@ -43,7 +43,7 @@ isr_failsafe()
 {
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
   val_timer_set_phy_el1(0);
-  val_print(AVS_PRINT_ERR, "\n       Received Failsafe interrupt      ", 0);
+  val_print(AVS_PRINT_ERR, "       Received Failsafe interrupt\n", 0);
   val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
   intid = val_timer_get_info(TIMER_INFO_PHY_EL1_INTID, 0);
   val_gic_end_of_interrupt(intid);
@@ -55,7 +55,7 @@ isr1()
 {
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
   val_timer_set_phy_el1(0);
-  val_print(AVS_PRINT_INFO, "\n       Received EL1 PHY interrupt       ", 0);
+  val_print(AVS_PRINT_INFO, "       Received EL1 PHY interrupt\n", 0);
   val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
   intid = val_timer_get_info(TIMER_INFO_PHY_EL1_INTID, 0);
   val_gic_end_of_interrupt(intid);
@@ -69,7 +69,7 @@ isr2()
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
   /* We received our interrupt, so disable timer from generating further interrupts */
   val_timer_set_vir_el1(0);
-  val_print(AVS_PRINT_INFO, "\n       Received EL1 VIRT interrupt      ", 0);
+  val_print(AVS_PRINT_INFO, "       Received EL1 VIRT interrupt\n", 0);
   val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM2, 01));
   intid = val_timer_get_info(TIMER_INFO_VIR_EL1_INTID, 0);
   val_gic_end_of_interrupt(intid);
@@ -82,7 +82,7 @@ isr3()
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
   /* We received our interrupt, so disable timer from generating further interrupts */
   val_timer_set_phy_el2(0);
-  val_print(AVS_PRINT_INFO, "\n       Received EL2 Physical interrupt  ", 0);
+  val_print(AVS_PRINT_INFO, "       Received EL2 Physical interrupt\n", 0);
   val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM3, 01));
   intid = val_timer_get_info(TIMER_INFO_PHY_EL2_INTID, 0);
   val_gic_end_of_interrupt(intid);
@@ -94,7 +94,7 @@ isr4()
 {
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
   val_wd_set_ws0(timer_num, 0);
-  val_print(AVS_PRINT_INFO, "\n       Received WS0 interrupt           ", 0);
+  val_print(AVS_PRINT_INFO, "       Received WS0 interrupt\n", 0);
   val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM4, 01));
   intid = val_wd_get_info(timer_num, WD_INFO_GSIV);
   val_gic_end_of_interrupt(intid);
@@ -107,7 +107,7 @@ isr5()
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
   uint64_t cnt_base_n = val_timer_get_info(TIMER_INFO_SYS_CNT_BASE_N, timer_num);
   val_timer_disable_system_timer((addr_t)cnt_base_n);
-  val_print(AVS_PRINT_INFO, "\n       Received Sys timer interrupt   ", 0);
+  val_print(AVS_PRINT_INFO, "       Received Sys timer interrupt\n", 0);
   val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM5, 01));
   intid = val_timer_get_info(TIMER_INFO_SYS_INTID, timer_num);
   val_gic_end_of_interrupt(intid);
@@ -191,7 +191,7 @@ payload4()
 
   timer_num = val_wd_get_info(0, WD_INFO_COUNT);
   if(!timer_num){
-      val_print(AVS_PRINT_WARN, "\n       No watchdog implemented           ", 0);
+      val_print(AVS_PRINT_WARN, "       No watchdog implemented\n", 0);
       val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM4, 01));
       return;
   }
@@ -214,7 +214,7 @@ payload4()
   }
 
   if(!ns_wdg){
-      val_print(AVS_PRINT_WARN, "\n       No non-secure watchdog implemented   ", 0);
+      val_print(AVS_PRINT_WARN, "       No non-secure watchdog implemented\n", 0);
       val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM4, 02));
       return;
   }
@@ -232,7 +232,7 @@ payload5()
 
   timer_num = val_timer_get_info(TIMER_INFO_NUM_PLATFORM_TIMERS, 0);
   if(!timer_num){
-      val_print(AVS_PRINT_WARN, "\n       No system timers implemented      ", 0);
+      val_print(AVS_PRINT_WARN, "       No system timers implemented\n", 0);
       val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM5, 01));
       return;
   }
@@ -278,7 +278,7 @@ payload5()
   }
 
   if(!ns_timer){
-      val_print(AVS_PRINT_WARN, "\n       No non-secure systimer implemented   ", 0);
+      val_print(AVS_PRINT_WARN, "       No non-secure systimer implemented\n", 0);
       val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM4, 03));
       return;
   }

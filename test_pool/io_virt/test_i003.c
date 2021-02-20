@@ -33,7 +33,7 @@ static void payload()
     num_smmu = val_smmu_get_info(SMMU_NUM_CTRL, 0);
 
     if (num_smmu == 0) {
-        val_print(AVS_PRINT_ERR, "\n       No SMMU Controllers are discovered ", 0);
+        val_print(AVS_PRINT_ERR, "       No SMMU Controllers are discovered\n", 0);
         val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
         return;
     }
@@ -41,27 +41,27 @@ static void payload()
     while (num_smmu--)
     {
         if (val_smmu_get_info(SMMU_CTRL_ARCH_MAJOR_REV, num_smmu) == 2) {
-            val_print(AVS_PRINT_INFO, "\n\t Detected SMMUv2 ", 0);
+            val_print(AVS_PRINT_INFO, "\t Detected SMMU v2\n", 0);
 
             if (g_sbsa_level > 3) {
-                val_print(AVS_PRINT_ERR, "\n\t Smmuv3 should be supported Level %x", g_sbsa_level);
+                val_print(AVS_PRINT_ERR, "\t SMMU v3 should be supported on level %x\n", g_sbsa_level);
                 val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
                 return;
             }
 
             data = val_smmu_read_cfg(SMMUv2_IDR0, num_smmu);
             if ((data & BIT29) == 0) {
-                val_print(AVS_PRINT_ERR, "\n\t Stage 2 Translation not supported ", 0);
+                val_print(AVS_PRINT_ERR, "\t Stage 2 Translation not supported\n", 0);
                 val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
                 return;
             }
 
         } else {
-            val_print(AVS_PRINT_INFO, "\n\t Detected SMMUv3 ", 0);
+            val_print(AVS_PRINT_INFO, "\t Detected SMMU v3\n", 0);
             data = val_smmu_read_cfg(SMMUv3_IDR0, num_smmu);
             /* Check Stage2 translation support */
             if ((data & BIT0) == 0) {
-                val_print(AVS_PRINT_ERR, "\n\t Stage 2 Translation not supported ", 0);
+                val_print(AVS_PRINT_ERR, "\t Stage 2 Translation not supported\n", 0);
                 val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
                 return;
             }
@@ -69,7 +69,7 @@ static void payload()
             /* Check Stage1 translation support for level > 3 */
             if (g_sbsa_level > 3) {
                 if ((data & BIT1) == 0) {
-                    val_print(AVS_PRINT_ERR, "\n\t Stage 1 Translation not supported ", 0);
+                    val_print(AVS_PRINT_ERR, "\t Stage 1 Translation not supported\n", 0);
                     val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
                     return;
                 }
@@ -77,7 +77,7 @@ static void payload()
 
             // Check COHACC
             if ((data & BIT4) == 0) {
-                val_print(AVS_PRINT_ERR, "\n\t IO-Coherent access not supported  ", 0);
+                val_print(AVS_PRINT_ERR, "\t IO-Coherent access not supported\n", 0);
                 val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 03));
                 return;
             }
