@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2020, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2021, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -157,13 +157,16 @@ val_wd_disable(uint32_t index)
 void
 val_wd_set_ws0(uint32_t index, uint32_t timeout)
 {
+  uint32_t counter_freq;
 
   if (timeout == 0) {
       val_wd_disable(index);
       return;
   }
 
-  val_mmio_write((g_wd_info_table->wd_info[index].wd_ctrl_base + 8), timeout);
+  counter_freq = val_timer_get_info(TIMER_INFO_CNTFREQ, 0);
+
+  val_mmio_write((g_wd_info_table->wd_info[index].wd_ctrl_base + 8), counter_freq * timeout);
   val_wd_enable(index);
 
 }
