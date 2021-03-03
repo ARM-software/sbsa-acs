@@ -35,11 +35,6 @@ payload()
   uint32_t num_smmu;
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
 
-  if (g_sbsa_level < 6) {
-      val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
-      return;
-  }
-
   data = val_pcie_get_info(PCIE_INFO_NUM_ECAM, 0);
 
   if (data == 0) {
