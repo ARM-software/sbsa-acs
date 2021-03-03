@@ -26,11 +26,6 @@ static void payload()
     uint64_t data = 0;
     uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
 
-    if (g_sbsa_level < 5) {
-        val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
-        return;
-    }
-
     /* Read ID_AA64MMFR2_EL1[27:24] for enhanced Nested Virtualization support */
     data = VAL_EXTRACT_BITS(val_pe_reg_read(ID_AA64MMFR2_EL1), 24, 27);
     if (data == 0x2)

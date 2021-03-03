@@ -26,11 +26,6 @@ static void payload()
     uint64_t data = 0;
     uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
 
-    if (g_sbsa_level < 5) {
-        val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
-        return;
-    }
-
     /* Read ID_AA64MMFR2_EL1[55:52] for changing page table maaping size
      * support using level 1 or level 2
      */

@@ -27,11 +27,6 @@ static void payload()
     uint64_t data = 0;
     uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
 
-    if (g_sbsa_level < 6) {
-        val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
-        return;
-    }
-
     /* Read ID_AA64ISAR1_EL1.SPECRES[43:40] = 0b0001 For CFP, DVP, CPP RCTX Instructions */
     data = VAL_EXTRACT_BITS(val_pe_reg_read(ID_AA64ISAR1_EL1), 40, 43);
 

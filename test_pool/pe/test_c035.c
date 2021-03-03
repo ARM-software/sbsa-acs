@@ -27,11 +27,6 @@ static void payload()
     uint64_t data = 0;
     uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
 
-    if (g_sbsa_level < 6) {
-        val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
-        return;
-    }
-
     /* ID_AA64MMFR2_EL1.EVT[59:56] = 0b0010 - Support for Enhanced Virtualization Trap */
     data = VAL_EXTRACT_BITS(val_pe_reg_read(ID_AA64MMFR2_EL1), 56, 59);
 

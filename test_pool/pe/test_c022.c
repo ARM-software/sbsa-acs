@@ -36,11 +36,7 @@ static void payload()
     uint64_t data = val_pe_reg_read(ID_AA64ISAR1_EL1);
     uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
 
-    if (g_sbsa_level < 4) {
-        val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
-        return;
-
-    } else if (g_sbsa_level < 5) {
+    if (g_sbsa_level < 5) {
 
         /* Pointer signing is optional, Check if Pointer signing is implemented */
         if ((VAL_EXTRACT_BITS(data, 4, 7) == 0) && (VAL_EXTRACT_BITS(data, 8, 11) == 0) &&
