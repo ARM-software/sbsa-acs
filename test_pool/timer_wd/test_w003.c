@@ -33,11 +33,6 @@ payload()
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
   uint32_t data, ns_wdg = 0;
 
-  if (g_sbsa_level < 5) {
-      val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
-      return;
-  }
-
   val_print(AVS_PRINT_DEBUG, "\n       Found %d watchdogs in ACPI table ", wd_num);
 
   if (wd_num == 0) {
