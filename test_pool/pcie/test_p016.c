@@ -36,10 +36,6 @@ static void payload(void)
     uint64_t dev_bdf;
 
     index = val_pe_get_index_mpid(val_pe_get_mpid());
-    if (g_sbsa_level < 4) {
-        val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
-        return ;
-    }
 
     count = val_peripheral_get_info (NUM_ALL, 0);
     if (!count) {
