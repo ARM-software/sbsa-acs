@@ -33,7 +33,7 @@ isr()
 {
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
   val_wd_set_ws0(wd_num, 0);
-  val_print(AVS_PRINT_DEBUG, "\n       Received WS0 interrupt            ", 0);
+  val_print(AVS_PRINT_DEBUG, "       Received WS0 interrupt\n", 0);
   val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
   val_gic_end_of_interrupt(int_id);
 }
@@ -51,7 +51,7 @@ payload()
 
 
   if (wd_num == 0) {
-      val_print(AVS_PRINT_WARN, "\n       No Watchdogs reported          %d  ", wd_num);
+      val_print(AVS_PRINT_WARN, "       No Watchdogs reported          %d\n", wd_num);
       val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
       return;
   }
@@ -67,7 +67,7 @@ payload()
       val_set_status(index, RESULT_PENDING(g_sbsa_level, TEST_NUM));     // Set the initial result to pending
 
       int_id       = val_wd_get_info(wd_num, WD_INFO_GSIV);
-      val_print(AVS_PRINT_DEBUG, "\n       WS0 Interrupt id  %d        ", int_id);
+      val_print(AVS_PRINT_DEBUG, "       WS0 Interrupt id: %d\n", int_id);
 
       val_gic_install_isr(int_id, isr);
 
@@ -82,7 +82,7 @@ payload()
       while ((--timeout > 0) && (IS_RESULT_PENDING(val_get_status(index))));
 
       if (timeout == 0) {
-          val_print(AVS_PRINT_ERR, "\n       WS0 Interrupt not received on %d   ", int_id);
+          val_print(AVS_PRINT_ERR, "       WS0 Interrupt not received on %d\n", int_id);
           val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
           return;
       }
@@ -90,7 +90,7 @@ payload()
   } while(wd_num);
 
   if(!ns_wdg) {
-      val_print(AVS_PRINT_WARN, "\n       No non-secure Watchdogs reported", 0);
+      val_print(AVS_PRINT_WARN, "       No non-secure Watchdogs reported\n", 0);
       val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 02));
       return;
   }

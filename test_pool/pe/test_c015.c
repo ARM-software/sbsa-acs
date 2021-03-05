@@ -138,7 +138,7 @@ return_reg_value(uint32_t reg, uint8_t dependency)
         break;
 
     default:
-        val_print(AVS_PRINT_ERR, "\n Unknown dependency = %d ", dependency);
+        val_print(AVS_PRINT_ERR, "Unknown dependency = %d\n", dependency);
         return 0x0;
   }
 
@@ -194,7 +194,7 @@ payload(uint32_t num_pe)
   uint64_t reg_read_data, debug_data=0, array_index=0;
 
   if (num_pe == 1) {
-      val_print(AVS_PRINT_WARN, "\n       Skipping as num of PE is 1        ", 0);
+      val_print(AVS_PRINT_WARN, "       Skipping as num of PE is 1\n", 0);
       val_set_status(my_index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
       return;
   }
@@ -208,7 +208,7 @@ payload(uint32_t num_pe)
          val_pe_reg_write(CSSELR_EL1, i << 1);
          cache_list[i] = return_reg_value(reg_list[0].reg_name, reg_list[0].dependency);
          val_data_cache_ops_by_va((addr_t)(cache_list + i), CLEAN_AND_INVALIDATE);
-         val_print(AVS_PRINT_INFO, "\n      cache size read is %x ", cache_list[i]);
+         val_print(AVS_PRINT_INFO, "      cache size read is %x\n", cache_list[i]);
       }
       i++;
   }
@@ -225,17 +225,17 @@ payload(uint32_t num_pe)
           while ((--timeout) && (IS_RESULT_PENDING(val_get_status(i))));
 
           if(timeout == 0) {
-              val_print(AVS_PRINT_ERR, "\n       **Timed out** for PE index = %d", i);
+              val_print(AVS_PRINT_ERR, "       **Timed out** for PE index = %d\n", i);
               val_set_status(i, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
               return;
           }
 
           if(IS_TEST_FAIL(val_get_status(i))) {
               val_get_test_data(i, &debug_data, &array_index);
-              val_print(AVS_PRINT_ERR, "\n       Reg compare failed for PE index=%d for Register: ", i);
+              val_print(AVS_PRINT_ERR, "       Reg compare failed for PE index=%d for Register:\n", i);
               val_print(AVS_PRINT_ERR, reg_list[array_index].reg_desc, 0);
-              val_print(AVS_PRINT_ERR, "\n       Current PE value = 0x%llx", rd_data_array[array_index] & (~reg_list[array_index].reg_mask));
-              val_print(AVS_PRINT_ERR, "         Other PE value = 0x%llx", debug_data);
+              val_print(AVS_PRINT_ERR, "       Current PE value = 0x%llx", rd_data_array[array_index] & (~reg_list[array_index].reg_mask));
+              val_print(AVS_PRINT_ERR, "       Other PE value = 0x%llx\n", debug_data);
               return;
           }
       }

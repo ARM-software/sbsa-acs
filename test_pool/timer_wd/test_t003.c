@@ -32,7 +32,7 @@ isr()
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
   /* We received our interrupt, so disable timer from generating further interrupts */
   val_timer_set_vir_el1(0);
-  val_print(AVS_PRINT_INFO, "\n       Received interrupt    ", 0);
+  val_print(AVS_PRINT_INFO, "       Received interrupt\n", 0);
   val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
   val_gic_end_of_interrupt(intid);
 }
@@ -51,7 +51,7 @@ payload()
   /* For SBSA level 2 and above, the PPI has to be a specific value.*/
   if (g_sbsa_level > 1) {
       if (intid != 27) {
-          val_print(AVS_PRINT_ERR, "\n       Incorrect PPI value %d   ", intid);
+          val_print(AVS_PRINT_ERR, "       Incorrect PPI value %d\n", intid);
           val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
       }
   }
@@ -63,7 +63,7 @@ payload()
   while ((--timeout > 0) && (IS_RESULT_PENDING(val_get_status(index))));
 
   if (timeout == 0) {
-    val_print(AVS_PRINT_ERR, "\n       EL0-Virtual timer interrupt not received on %d   ", intid);
+    val_print(AVS_PRINT_ERR, "       EL0-Virtual timer interrupt not received on %d\n", intid);
     val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
   }
 

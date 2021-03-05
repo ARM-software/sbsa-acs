@@ -30,7 +30,7 @@ void
 isr()
 {
   val_timer_set_phy_el1(0);
-  val_print(AVS_PRINT_INFO, "\n       Received interrupt   ", 0);
+  val_print(AVS_PRINT_INFO, "       Received interrupt\n", 0);
   val_set_status(0, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
   val_gic_end_of_interrupt(intid);
 }
@@ -50,7 +50,7 @@ payload()
   if (g_sbsa_level > 1) {
       if (intid != 30) {
           timeout = 0;
-          val_print(AVS_PRINT_ERR, "\n       Incorrect PPI value %d   ", intid);
+          val_print(AVS_PRINT_ERR, "       Incorrect PPI value %d\n", intid);
           val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
           return;
       }
@@ -63,7 +63,7 @@ payload()
   while ((--timeout > 0) && (IS_RESULT_PENDING(val_get_status(index))));
 
   if (timeout == 0){
-    val_print(AVS_PRINT_ERR, "\n       EL0-Phy timer interrupt not received on %d   ", intid);
+    val_print(AVS_PRINT_ERR, "       EL0-Phy timer interrupt not received on %d\n", intid);
     val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
   }
 

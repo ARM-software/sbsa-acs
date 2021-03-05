@@ -38,10 +38,10 @@ payload()
       return;
   }
 
-  val_print(AVS_PRINT_DEBUG, "\n       Found %d watchdogs in ACPI table ", wd_num);
+  val_print(AVS_PRINT_DEBUG, "       Found %d watchdogs in ACPI table\n", wd_num);
 
   if (wd_num == 0) {
-      val_print(AVS_PRINT_WARN, "\n       No Watchdogs reported          %d  ", wd_num);
+      val_print(AVS_PRINT_WARN, "       No Watchdogs reported          %d\n", wd_num);
       val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
       return;
   }
@@ -54,13 +54,13 @@ payload()
 
       ns_wdg++;
       ctrl_base    = val_wd_get_info(wd_num, WD_INFO_CTRL_BASE);
-      val_print(AVS_PRINT_INFO, "\n      Watchdog CTRL base is  %x      ", ctrl_base);
+      val_print(AVS_PRINT_INFO, "      Watchdog CTRL base is  %x\n", ctrl_base);
 
       /* W_IIDR.Architecture Revision [19:16] = 0x1 for Watchdog Rev 1 */
       data = VAL_EXTRACT_BITS(val_mmio_read(ctrl_base + WD_IIDR_OFFSET), 16, 19);
 
       if(data != 1) {
-          val_print(AVS_PRINT_WARN, "\n       Recommended Watchdog Rev 1 Not Found", 0);
+          val_print(AVS_PRINT_WARN, "       Recommended Watchdog Rev 1 not found\n", 0);
           val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 02));
           return;
       }
@@ -68,7 +68,7 @@ payload()
   } while(wd_num);
 
   if(!ns_wdg) {
-      val_print(AVS_PRINT_WARN, "\n       No non-secure Watchdogs reported", 0);
+      val_print(AVS_PRINT_WARN, "       No non-secure Watchdogs reported\n", 0);
       val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 03));
       return;
   }
