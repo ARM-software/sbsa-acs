@@ -49,10 +49,7 @@ val_wd_execute_tests(uint32_t level, uint32_t num_pe)
   if (level > 4)
 	status |= w003_entry(num_pe);
 
-  if (status != 0)
-    val_print(AVS_PRINT_TEST, "\n      ***One or more tests have failed... *** \n", 0);
-  else
-    val_print(AVS_PRINT_TEST, "\n      All Watchdog tests passed!! \n", 0);
+  val_print_test_end(status, "Watchdog");
 
   return status;
 }

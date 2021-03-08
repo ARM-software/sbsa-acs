@@ -43,6 +43,7 @@ void val_allocate_shared_mem(void);
 void val_free_shared_mem(void);
 void val_print(uint32_t level, char8_t *string, uint64_t data);
 void val_print_raw(uint32_t level, char8_t *string, uint64_t data);
+void val_print_test_end(uint32_t status, char8_t *string);
 void val_set_test_data(uint32_t index, uint64_t addr, uint64_t test_data);
 void val_get_test_data(uint32_t index, uint64_t *data0, uint64_t *data1);
 uint32_t val_strncmp(char8_t *str1, char8_t *str2, uint32_t len);
