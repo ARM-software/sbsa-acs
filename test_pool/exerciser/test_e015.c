@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2020, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2021, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -28,15 +28,23 @@
 #define TEST_NUM   (AVS_EXERCISER_TEST_NUM_BASE + 15)
 #define TEST_DESC  "Arrival order & Gathering Check   "
 
-#define TEST_DATA_1B 0xEC
-#define TEST_DATA_2B 0xABDE
-#define TEST_DATA_4B 0xDEADDAED
-#define TEST_DATA_8B 0xDEADDAEDABEDCEAC
-
 /* 0 means read transction, 1 means write transaction */
 static uint32_t transaction_order[] = {1, 1, 0, 1, 0, 0, 0, 0};
+static uint32_t pattern[16] = {0};
 static uint32_t run_flag;
 static uint32_t fail_cnt;
+
+static uint32_t read_config_space(uint32_t *addr)
+{
+  uint32_t idx;
+
+  for(idx = 0; idx < 16; idx++) {
+    addr = addr + idx;
+    pattern[idx] = val_mmio_read((addr_t)addr);
+  }
+
+  return 0;
+}
 
 /* num of transactions captured and thier attributes is checked */
 static uint32_t test_sequence_check(uint32_t instance)
@@ -67,6 +75,9 @@ static uint32_t test_sequence_check(uint32_t instance)
 static uint32_t test_sequence_1B(uint8_t *addr, uint8_t increment_addr, uint32_t instance)
 {
   uint64_t idx;
+  uint8_t write_val;
+  uint32_t pidx;
+  uint8_t *pattern_ptr;
 
   /* Start monitoring exerciser transactions */
   if (val_exerciser_ops(START_TXN_MONITOR, CFG_READ, instance))
@@ -76,9 +87,12 @@ static uint32_t test_sequence_1B(uint8_t *addr, uint8_t increment_addr, uint32_t
 
   /* Send the transaction on incrementalt addresses */
   for (idx = 0; idx < sizeof(transaction_order)/sizeof(transaction_order[0]); idx++) {
+      pidx = ((uint64_t)addr & 0xFF);
+      pattern_ptr = (uint8_t *)&pattern;
+      write_val = pattern_ptr[pidx];
       /* Write transaction */
       if (transaction_order[idx])
-          val_mmio_write8((addr_t)addr, TEST_DATA_1B);
+          val_mmio_write8((addr_t)addr, write_val);
       else
           val_mmio_read8((addr_t)addr);
       if (increment_addr)
@@ -95,6 +109,9 @@ static uint32_t test_sequence_1B(uint8_t *addr, uint8_t increment_addr, uint32_t
 static uint32_t test_sequence_2B(uint16_t *addr, uint8_t increment_addr, uint32_t instance)
 {
   uint64_t idx;
+  uint16_t write_val;
+  uint32_t pidx;
+  uint16_t *pattern_ptr;
 
   /* Start monitoring exerciser transactions */
   if (val_exerciser_ops(START_TXN_MONITOR, CFG_READ, instance))
@@ -104,9 +121,12 @@ static uint32_t test_sequence_2B(uint16_t *addr, uint8_t increment_addr, uint32_
 
   /* Send the transaction on incrementalt addresses */
   for (idx = 0; idx < sizeof(transaction_order)/sizeof(transaction_order[0]); idx++) {
+      pidx = ((uint64_t)addr & 0xFF)/2;
+      pattern_ptr = (uint16_t *)&pattern;
+      write_val = pattern_ptr[pidx];
       /* Write transaction */
       if (transaction_order[idx])
-          val_mmio_write16((addr_t)addr, TEST_DATA_2B);
+          val_mmio_write16((addr_t)addr, write_val);
       else
           val_mmio_read16((addr_t)addr);
       if (increment_addr)
@@ -123,6 +143,8 @@ static uint32_t test_sequence_2B(uint16_t *addr, uint8_t increment_addr, uint32_
 static uint32_t test_sequence_4B(uint32_t *addr, uint8_t increment_addr, uint32_t instance)
 {
   uint64_t idx;
+  uint32_t write_val, pidx;
+  uint32_t *pattern_ptr;
 
   /* Start monitoring exerciser transactions */
   if (val_exerciser_ops(START_TXN_MONITOR, CFG_READ, instance))
@@ -132,9 +154,12 @@ static uint32_t test_sequence_4B(uint32_t *addr, uint8_t increment_addr, uint32_
 
   /* Send the transaction on incrementalt addresses */
   for (idx = 0; idx < sizeof(transaction_order)/sizeof(transaction_order[0]); idx++) {
+      pidx = ((uint64_t)addr & 0xFF)/4;
+      pattern_ptr = (uint32_t *)&pattern;
+      write_val = pattern_ptr[pidx];
       /* Write transaction */
       if (transaction_order[idx])
-          val_mmio_write((addr_t)addr, TEST_DATA_4B);
+          val_mmio_write((addr_t)addr, write_val);
       else
           val_mmio_read((addr_t)addr);
       if (increment_addr)
@@ -151,6 +176,9 @@ static uint32_t test_sequence_4B(uint32_t *addr, uint8_t increment_addr, uint32_
 static uint32_t test_sequence_8B(uint64_t *addr, uint8_t increment_addr, uint32_t instance)
 {
   uint64_t idx;
+  uint64_t write_val;
+  uint32_t pidx;
+  uint64_t *pattern_ptr;
 
   /* Start monitoring exerciser transactions */
   if (val_exerciser_ops(START_TXN_MONITOR, CFG_READ, instance))
@@ -160,9 +188,12 @@ static uint32_t test_sequence_8B(uint64_t *addr, uint8_t increment_addr, uint32_
 
   /* Send the transaction on incrementalt addresses */
   for (idx = 0; idx < sizeof(transaction_order)/sizeof(transaction_order[0]); idx++) {
+      pidx = ((uint64_t)addr & 0xFF)/8;
+      pattern_ptr = (uint64_t *)&pattern;
+      write_val = pattern_ptr[pidx];
       /* Write transaction */
       if (transaction_order[idx])
-          val_mmio_write64((addr_t)addr, TEST_DATA_8B);
+          val_mmio_write64((addr_t)addr, write_val);
       else
           val_mmio_read64((addr_t)addr);
       if (increment_addr)
@@ -213,26 +244,17 @@ cfgspace_transactions_order_check(void)
         continue;
     }
 
-    /* Test Scenario 1 : Transactions on aligned address */
+    read_config_space((uint32_t *)baseptr);
+
+    /* Test Scenario 1 : Transactions on incremental aligned address */
     fail_cnt += test_sequence_1B((uint8_t *)baseptr, 1, instance);
     fail_cnt += test_sequence_2B((uint16_t *)baseptr, 1, instance);
     fail_cnt += test_sequence_4B((uint32_t *)baseptr, 1, instance);
 
-    /* Test Scenario 2 : Transactions on PCIe misaligned address */
-    baseptr += 1;
-    fail_cnt += test_sequence_2B((uint16_t *)baseptr, 1, instance);
-    fail_cnt += test_sequence_4B((uint32_t *)baseptr, 1, instance);
-
-    /* Test Scenario 3 : Transactions on same address */
+    /* Test Scenario 2 : Transactions on same address */
     fail_cnt += test_sequence_1B((uint8_t *)baseptr, 0, instance);
     fail_cnt += test_sequence_2B((uint16_t *)baseptr, 0, instance);
     fail_cnt += test_sequence_4B((uint32_t *)baseptr, 0, instance);
-
-    /* Test Scenario 4 : Transactions on same misaligned PCIe address */
-    baseptr += 3;
-    fail_cnt += test_sequence_2B((uint16_t *)baseptr, 0, instance);
-    fail_cnt += test_sequence_4B((uint32_t *)baseptr, 0, instance);
-
   }
 }
 
@@ -273,30 +295,17 @@ barspace_transactions_order_check(void)
         continue;;
     }
 
-    /* Test Scenario 1 : Transactions on aligned address */
+    /* Test Scenario 1 : Transactions on incremental aligned address */
     fail_cnt += test_sequence_1B((uint8_t *)baseptr, 1, instance);
     fail_cnt += test_sequence_2B((uint16_t *)baseptr, 1, instance);
     fail_cnt += test_sequence_4B((uint32_t *)baseptr, 1, instance);
     fail_cnt += test_sequence_8B((uint64_t *)baseptr, 1, instance);
 
-    /* Test Scenario 2 : Transactions on PCIe misaligned address */
-    baseptr += 1;
-    fail_cnt += test_sequence_2B((uint16_t *)baseptr, 1, instance);
-    fail_cnt += test_sequence_4B((uint32_t *)baseptr, 1, instance);
-    fail_cnt += test_sequence_8B((uint64_t *)baseptr, 1, instance);
-
-    /* Test Scenario 3 : Transactions on same address */
+    /* Test Scenario 2 : Transactions on same address */
     fail_cnt += test_sequence_1B((uint8_t *)baseptr, 0, instance);
     fail_cnt += test_sequence_2B((uint16_t *)baseptr, 0, instance);
     fail_cnt += test_sequence_4B((uint32_t *)baseptr, 0, instance);
     fail_cnt += test_sequence_8B((uint64_t *)baseptr, 0, instance);
-
-    /* Test Scenario 4 : Transactions on same misaligned PCIe address */
-    baseptr += 3;
-    fail_cnt += test_sequence_2B((uint16_t *)baseptr, 0, instance);
-    fail_cnt += test_sequence_4B((uint32_t *)baseptr, 0, instance);
-    fail_cnt += test_sequence_8B((uint64_t *)baseptr, 0, instance);
-
   }
 }
 
