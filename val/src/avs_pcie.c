@@ -260,11 +260,6 @@ val_pcie_execute_tests(uint32_t enable_pcie, uint32_t level, uint32_t num_pe)
 {
   uint32_t status, i;
 
-  if (level == 0) {
-    val_print(AVS_PRINT_WARN, "PCIe compliance is required  only from Level %d \n", 1);
-    return AVS_STATUS_SKIP;
-  }
-
   for (i=0 ; i<MAX_TEST_SKIP_NUM ; i++){
       if (g_skip_test_num[i] == AVS_PCIE_TEST_NUM_BASE) {
           val_print(AVS_PRINT_TEST, "\n USER Override - Skipping all PCIe tests \n", 0);
@@ -286,20 +281,12 @@ val_pcie_execute_tests(uint32_t enable_pcie, uint32_t level, uint32_t num_pe)
   status |= p006_entry(num_pe);
   status |= p007_entry(num_pe);
   status |= p008_entry(num_pe);
-
-  if (level > 1) {
-    status |= p009_entry(num_pe);
-  }
-
+  status |= p009_entry(num_pe);
   status |= p011_entry(num_pe);
   status |= p012_entry(num_pe);
-
-  if (level > 2) {
-    status |= p010_entry(num_pe);
-    status |= p013_entry(num_pe);
-    status |= p014_entry(num_pe);
-  }
-
+  status |= p010_entry(num_pe);
+  status |= p013_entry(num_pe);
+  status |= p014_entry(num_pe);
   status |= p015_entry(num_pe);
 
   if (level > 3) {
