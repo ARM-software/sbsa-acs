@@ -21,10 +21,9 @@
 
 #include "val/include/sbsa_avs_wakeup.h"
 
-#define TEST_DESC  "       TEST Wakeup from Power Semantic B  \n"
-
+#define TEST_DESC "Wake from EL0 PHY Timer Interrupt "
 #define TEST_NUM   (AVS_WAKEUP_TEST_NUM_BASE + 1)
-#define TEST_DESC1 "Wake from EL0 PHY Timer Interrupt "
+
 #define TEST_NUM2  (AVS_WAKEUP_TEST_NUM_BASE + 2)
 #define TEST_DESC2 "Wake from EL0 VIRT Timer Interrupt"
 #define TEST_NUM3  (AVS_WAKEUP_TEST_NUM_BASE + 3)
@@ -298,9 +297,7 @@ u001_entry(uint32_t num_pe)
 
   num_pe = 1;  //This Timer test is run on single processor
 
-  val_print(AVS_PRINT_TEST, TEST_DESC, 0);
-
-  status_test = val_initialize_test(TEST_NUM, TEST_DESC1, num_pe, g_sbsa_level);
+  status_test = val_initialize_test(TEST_NUM, TEST_DESC, num_pe, g_sbsa_level);
   if (status_test != AVS_STATUS_SKIP)
       val_run_test_payload(TEST_NUM, num_pe, payload1, 0);
   status = val_check_for_error(TEST_NUM, num_pe);
