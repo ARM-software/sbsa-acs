@@ -252,7 +252,11 @@ HelpMsg (
   Print (L"\nUsage: Sbsa.efi [-v <n>] | [-l <n>] | [-f <filename>] | [-skip <n>] | [-nist] | [-p <n>]\n"
          "Options:\n"
          "-v      Verbosity of the Prints\n"
-         "        1 shows all prints, 5 shows Errors\n"
+         "        5 shows test information (default)\n"
+         "        4 shows errors\n"
+         "        3 shows warnings\n"
+         "        2 shows debugging information\n"
+         "        1 shows all prints\n"
          "-l      Level of compliance to be tested for\n"
          "        As per SBSA spec, 3 to 6\n"
          "-f      Name of the log file to record the test results in\n"
@@ -267,7 +271,7 @@ HelpMsg (
 }
 
 STATIC CONST SHELL_PARAM_ITEM ParamList[] = {
-  {L"-v"    , TypeValue},    // -v    # Verbosity of the Prints. 1 shows all prints, 5 shows Errors
+  {L"-v"    , TypeValue},    // -v    # Verbosity of the Prints.
   {L"-l"    , TypeValue},    // -l    # Level of compliance to be tested for.
   {L"-f"    , TypeValue},    // -f    # Name of the log file to record the test results in.
   {L"-skip" , TypeValue},    // -skip # test(s) to skip execution
