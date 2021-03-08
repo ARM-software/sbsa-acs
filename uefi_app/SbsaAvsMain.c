@@ -454,13 +454,16 @@ ShellAppMainsbsa (
   Print(L"\n      *** Starting IO Virtualization tests ***  \n");
   Status |= val_smmu_execute_tests(g_sbsa_level, val_pe_get_num());
 
-  /*
-   * Configure Gic Redistributor and ITS to support
-   * Generation of LPIs.
-  */
-  configureGicIts();
+  if(g_sbsa_level > 3){
+    /*
+    * Configure Gic Redistributor and ITS to support
+    * Generation of LPIs.
+    */
+    configureGicIts();
 
-  Status |= val_exerciser_execute_tests(g_sbsa_level);
+    Print(L"\n      *** Starting PCIe Exerciser tests ***  \n");
+    Status |= val_exerciser_execute_tests(g_sbsa_level);
+  }
 
   #ifdef ENABLE_NIST
   if (g_execute_nist == TRUE) {
