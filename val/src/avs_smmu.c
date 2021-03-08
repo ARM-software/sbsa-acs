@@ -68,7 +68,7 @@ val_smmu_execute_tests(uint32_t level, uint32_t num_pe)
 
   num_smmu = val_iovirt_get_smmu_info(SMMU_NUM_CTRL, 0);
   if (num_smmu == 0) {
-    val_print(AVS_PRINT_WARN, "\n     No SMMU Controller Found, Skipping SMMU tests...\n", 0);
+    val_print(AVS_PRINT_TEST, "\n      No SMMU controller found, skipping SMMU tests...\n", 0);
     return AVS_STATUS_SKIP;
   }
 

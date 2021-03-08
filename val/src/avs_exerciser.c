@@ -236,7 +236,7 @@ val_exerciser_execute_tests(uint32_t level)
   num_instances = val_exerciser_get_info(EXERCISER_NUM_CARDS, 0);
 
   if (num_instances == 0) {
-      val_print(AVS_PRINT_WARN, "\n     No Exerciser Devices Found, Skipping Exerciser tests...\n", 0);
+      val_print(AVS_PRINT_TEST, "\n      No Exerciser devices found, skipping Exerciser tests...\n", 0);
       return AVS_STATUS_SKIP;
   }
 
