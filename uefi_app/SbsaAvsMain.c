@@ -254,7 +254,7 @@ HelpMsg (
          "-v      Verbosity of the Prints\n"
          "        1 shows all prints, 5 shows Errors\n"
          "-l      Level of compliance to be tested for\n"
-         "        As per SBSA spec, 0 to 6\n"
+         "        As per SBSA spec, 3 to 6\n"
          "-f      Name of the log file to record the test results in\n"
          "-skip   Test(s) to be skipped\n"
          "        Refer to section 4 of SBSA_ACS_User_Guide\n"
@@ -334,8 +334,13 @@ ShellAppMainsbsa (
     if (g_sbsa_level > SBSA_MAX_LEVEL_SUPPORTED) {
       g_sbsa_level = G_SBSA_LEVEL;
     }
-  }
+    if (g_sbsa_level < SBSA_MIN_LEVEL_SUPPORTED) {
+      Print(L"SBSA Level %d is not supported.\n", g_sbsa_level);
+      HelpMsg();
+      return SHELL_INVALID_PARAMETER;
+    }
 
+  }
 
     // Options with Values
   CmdLineArg  = ShellCommandLineGetValue (ParamPackage, L"-v");
