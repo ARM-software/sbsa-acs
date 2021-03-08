@@ -480,11 +480,13 @@ ShellAppMainsbsa (
   /*
    * Configure Gic Redistributor and ITS to support
    * Generation of LPIs.
-  */
+   */
   configureGicIts();
 
-  Print(L"\n      *** Starting PCIe Exerciser tests ***  \n");
-  Status |= val_exerciser_execute_tests(g_sbsa_level);
+  if (g_sbsa_level > 3) { 
+    Print(L"\n      *** Starting PCIe Exerciser tests ***  \n");
+    Status |= val_exerciser_execute_tests(g_sbsa_level);
+  }
 
   #ifdef ENABLE_NIST
   if (g_execute_nist == TRUE) {
