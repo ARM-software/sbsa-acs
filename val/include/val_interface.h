@@ -20,14 +20,11 @@
 
 #include "pal_interface.h"
 
-/* set G_PRINT_LEVEL to one of the below values in your application entry 
-  to control the verbosity of the prints */
-#define AVS_PRINT_ERR   5      /* Only Errors. use this to de-clutter the terminal and focus only on specifics */
+#define AVS_PRINT_TEST  5      /* Test description and result descriptions. THIS is DEFAULT */
 #define AVS_PRINT_WARN  4      /* Only warnings & errors. use this to de-clutter the terminal and focus only on specifics */
-#define AVS_PRINT_TEST  3      /* Test description and result descriptions. THIS is DEFAULT */
+#define AVS_PRINT_ERR   3      /* Only Errors. use this to de-clutter the terminal and focus only on specifics */
 #define AVS_PRINT_DEBUG 2      /* For Debug statements. contains register dumps etc */
 #define AVS_PRINT_INFO  1      /* Print all statements. Do not use unless really needed */
-
 
 #define AVS_STATUS_FAIL      0x90000000
 #define AVS_STATUS_ERR       0xEDCB1234  //some impropable value?
@@ -43,6 +40,7 @@ void val_allocate_shared_mem(void);
 void val_free_shared_mem(void);
 void val_print(uint32_t level, char8_t *string, uint64_t data);
 void val_print_raw(uint32_t level, char8_t *string, uint64_t data);
+void val_print_test_end(uint32_t status, char8_t *string);
 void val_set_test_data(uint32_t index, uint64_t addr, uint64_t test_data);
 void val_get_test_data(uint32_t index, uint64_t *data0, uint64_t *data1);
 uint32_t val_strncmp(char8_t *str1, char8_t *str2, uint32_t len);

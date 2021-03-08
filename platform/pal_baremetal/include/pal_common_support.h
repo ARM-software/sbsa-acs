@@ -25,9 +25,9 @@
 
 extern uint32_t g_print_level;
 
-#define AVS_PRINT_ERR   5      /* Only Errors. use this to de-clutter the terminal and focus only on specifics */
+#define AVS_PRINT_TEST  5      /* Test description and result descriptions. THIS is DEFAULT */
 #define AVS_PRINT_WARN  4      /* Only warnings & errors. use this to de-clutter the terminal and focus only on specifics */
-#define AVS_PRINT_TEST  3      /* Test description and result descriptions. THIS is DEFAULT */
+#define AVS_PRINT_ERR   3      /* Only Errors. use this to de-clutter the terminal and focus only on specifics */
 #define AVS_PRINT_DEBUG 2      /* For Debug statements. contains register dumps etc */
 #define AVS_PRINT_INFO  1      /* Print all statements. Do not use unless really needed */
 
