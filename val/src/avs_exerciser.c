@@ -256,9 +256,7 @@ val_exerciser_execute_tests(uint32_t level)
   status |= e014_entry();
   status |= e015_entry();
 
-  if (status != AVS_STATUS_PASS) {
-      val_print(AVS_PRINT_ERR, "\n     One or more Exerciser tests have failed.... \n", status);
-  }
+  val_print_test_end(status, "Exerciser");
 
   return status;
 }

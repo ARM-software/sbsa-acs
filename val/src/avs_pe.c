@@ -98,10 +98,7 @@ val_pe_execute_tests(uint32_t level, uint32_t num_pe)
       status |= c036_entry(num_pe);
   }
 
-  if (status != AVS_STATUS_PASS)
-      val_print(AVS_PRINT_TEST, "\n      *** One or more PE tests have failed... *** \n", 0);
-  else
-      val_print(AVS_PRINT_TEST, "\n      All PE tests have passed!! \n", 0);
+  val_print_test_end(status, "PE");
 
   return status;
 

@@ -40,6 +40,26 @@ val_print(uint32_t level, char8_t *string, uint64_t data)
 
 }
 
+void
+val_print_test_end(uint32_t status, char8_t *string)
+{
+  pal_print("\n      ",0);
+
+  if (status != AVS_STATUS_PASS){
+      pal_print("One of more ", 0);
+      pal_print(string, 0);
+      pal_print(" tests failed.", 0);
+  }
+  else{
+      pal_print("All ", 0);
+      pal_print(string, 0);
+      pal_print(" tests passed.", 0);
+  }
+
+  pal_print("\n",0);
+
+}
+
 /**
   @brief  This API calls PAL layer to print a string to the output console.
           1. Caller       - Application layer
