@@ -18,8 +18,7 @@
 #ifndef __SBSA_AVS_PE_H__
 #define __SBSA_AVS_PE_H__
 
-#define MAX_NUM_PE_LEVEL0        0x8
-#define MAX_NUM_PE_LEVEL2        (2 << 27)
+#define MAX_NUM_PE               (2 << 27)
 
 #define MPIDR_AFF_MASK           (0xFF00FFFFFF)
 

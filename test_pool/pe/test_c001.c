@@ -31,7 +31,7 @@ payload()
 
   num_of_pe = val_pe_get_num();
 
-  if (num_of_pe > MAX_NUM_PE_LEVEL2) {
+  if (num_of_pe > MAX_NUM_PE) {
       val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
       val_print(AVS_PRINT_ERR, "Number of PE is %d \n", num_of_pe);
       return;
