@@ -66,11 +66,8 @@ val_pe_execute_tests(uint32_t level, uint32_t num_pe)
   status |= c013_entry(num_pe);
   status |= c014_entry(num_pe);
   status |= c015_entry(num_pe);
-
-  if (level > 2) {
-      status |= c016_entry(num_pe);
-      status |= c017_entry(num_pe);
-  }
+  status |= c016_entry(num_pe);
+  status |= c017_entry(num_pe);
 
   if (level > 5) {
       status |= c018_entry(num_pe);

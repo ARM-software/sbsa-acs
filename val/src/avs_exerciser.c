@@ -218,7 +218,7 @@ val_exerciser_execute_tests(uint32_t level)
   uint32_t status, i;
   uint32_t num_instances;
 
-  if (level <= 3) {
+  if (level == 3) {
     val_print(AVS_PRINT_WARN, "Exerciser Sbsa compliance is only from Level %d \n", 4);
     return AVS_STATUS_SKIP;
   }

@@ -31,22 +31,10 @@ payload()
 
   num_of_pe = val_pe_get_num();
 
-  //
-  //g_sbsa_level is set based on runtime input to the tool
-  //
-  if (g_sbsa_level < 2) {
-      if (num_of_pe > MAX_NUM_PE_LEVEL0) {
-          val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
-          val_print(AVS_PRINT_ERR, "Number of PE is %d \n", num_of_pe);
-          return;
-      }
-  } else {
-      if (num_of_pe > MAX_NUM_PE_LEVEL2) {
-          val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
-          val_print(AVS_PRINT_ERR, "Number of PE is %d \n", num_of_pe);
-          return;
-      }
-
+  if (num_of_pe > MAX_NUM_PE) {
+      val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
+      val_print(AVS_PRINT_ERR, "Number of PE is %d \n", num_of_pe);
+      return;
   }
 
   val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));

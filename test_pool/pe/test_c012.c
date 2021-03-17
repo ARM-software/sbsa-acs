@@ -30,17 +30,10 @@ payload()
 
   data = val_pe_reg_read(PMCR_EL0);
 
-  if (g_sbsa_level < 1) {
-      if (((data & 0x0F800) >> 11) > 3) //bits 15:11 for Number of counters.
-          val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
-      else
-          val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
-  } else {
-      if (((data & 0x0F800) >> 11) > 5) //bits 15:11 for Number of counters.
-          val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
-      else
-          val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
-  }
+  if (((data & 0x0F800) >> 11) > 5) //bits 15:11 for Number of counters.
+      val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
+  else
+      val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
 
   return;
 
