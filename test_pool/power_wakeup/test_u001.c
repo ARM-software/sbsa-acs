@@ -144,6 +144,7 @@ payload1()
   val_gic_install_isr(intid, isr1);
   val_timer_set_phy_el1(timer_expire_val);
   val_power_enter_semantic(SBSA_POWER_SEM_B);
+  wakeup_clear_failsafe();
   return;
 }
 
