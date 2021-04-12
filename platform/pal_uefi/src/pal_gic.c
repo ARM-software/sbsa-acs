@@ -223,7 +223,7 @@ pal_gic_set_intr_trigger(UINT32 int_id, INTR_TRIGGER_INFO_TYPE_e trigger_type)
   Status = gInterrupt2->SetTriggerType (
                    gInterrupt2,
                    int_id,
-                   trigger_type
+                   (EFI_HARDWARE_INTERRUPT2_TRIGGER_TYPE)trigger_type
                    );
 
   if (EFI_ERROR(Status))
