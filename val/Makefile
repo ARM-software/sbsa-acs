@@ -27,7 +27,7 @@ obj-m += sbsa_acs_val.o
 sbsa_acs_val-objs += $(VAL_SRC)/avs_status.o      $(VAL_SRC)/avs_memory.o \
     $(VAL_SRC)/avs_peripherals.o $(VAL_SRC)/avs_dma.o  $(VAL_SRC)/avs_smmu.o \
     $(VAL_SRC)/avs_test_infra.o  $(VAL_SRC)/avs_pcie.o $(VAL_SRC)/avs_pe_infra.o \
-    $(VAL_SRC)/avs_iovirt.o  $(VAL_SRC)/avs_gic_support.o \
+    $(VAL_SRC)/avs_iovirt.o  \
     $(ACS_DIR)/sys_arch_src/smmu_v3/smmu_v3.o
 
 ccflags-y=-I$(PWD)/$(ACS_DIR)/include -I$(PWD)/$(ACS_DIR)/ -DTARGET_LINUX -Wall -Werror
