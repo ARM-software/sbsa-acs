@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018, 2021 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,6 +18,7 @@
 #include "val/include/val_interface.h"
 
 #include "val/include/sbsa_avs_pcie.h"
+#include "val/include/sbsa_avs_memory.h"
 
 #define TEST_NUM   (AVS_PCIE_TEST_NUM_BASE + 12)
 #define TEST_DESC  "PCI legacy interrupt SPI ID unique"
@@ -53,7 +54,7 @@ payload (void)
      return;
   }
 
-  irq_map = kzalloc(sizeof(PERIPHERAL_IRQ_MAP), GFP_KERNEL);
+  irq_map = val_memory_alloc(sizeof(PERIPHERAL_IRQ_MAP));
   if (!irq_map) {
     val_print (AVS_PRINT_ERR, "\n       Memory allocation error", 0);
     val_set_status (index, RESULT_FAIL (g_sbsa_level, TEST_NUM, 01));
@@ -124,7 +125,7 @@ payload (void)
     }
   }
 
-  kfree (irq_map);
+  val_memory_free (irq_map);
 
   if (!status) {
     val_set_status (index, RESULT_PASS (g_sbsa_level, TEST_NUM, 01));
