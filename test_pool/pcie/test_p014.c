@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018, 2021 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -34,8 +34,7 @@ payload(void)
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
   uint32_t target_dev_index;
   uint32_t status = 0;
-  addr_t   dma_addr = 0;
-  void *buffer;
+  void     *buffer;
   uint32_t attr, sh;
   int ret;
 
@@ -53,7 +52,7 @@ payload(void)
       target_dev_index--; //index is zero based
       if(val_dma_get_info(DMA_HOST_COHERENT, target_dev_index))
       {
-          dma_addr = val_dma_mem_alloc(&buffer, 512, target_dev_index, DMA_COHERENT);
+          val_dma_mem_alloc(&buffer, 512, target_dev_index, DMA_COHERENT);
           ret = val_dma_mem_get_attrs(buffer, &attr, &sh);
           if(ret)
           {
@@ -69,7 +68,7 @@ payload(void)
           }
       }
       else {
-          dma_addr = val_dma_mem_alloc(&buffer, 512, target_dev_index, DMA_NOT_COHERENT);
+          val_dma_mem_alloc(&buffer, 512, target_dev_index, DMA_NOT_COHERENT);
           ret = val_dma_mem_get_attrs(buffer, &attr, &sh);
           if(ret)
           {
