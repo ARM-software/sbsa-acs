@@ -250,9 +250,17 @@ pal_pcie_dev_p2p_support (
   return 1;
 }
 
-/* Place holder function. Need to be
- * implemented if needed in later releases
- */
+/**
+    @brief   Create a list of MSI(X) vectors for a device
+
+    @param   bus        PCI bus address
+    @param   dev        PCI device address
+    @param   fn         PCI function number
+    @param   mvector    pointer to a MSI(X) list address
+
+    @return  mvector    list of MSI(X) vectors
+    @return  number of MSI(X) vectors
+**/
 UINT32
 pal_get_msi_vectors (
   UINT32 Seg,
@@ -265,9 +273,17 @@ pal_get_msi_vectors (
   return 0;
 }
 
-/* Place holder function. Need to be
- * implemented if needed in later releases
- */
+/**
+    @brief   Get legacy IRQ routing for a PCI device
+
+    @param   bus        PCI bus address
+    @param   dev        PCI device address
+    @param   fn         PCI function number
+    @param   irq_map    pointer to IRQ map structure
+
+    @return  irq_map    IRQ routing map
+    @return  status code
+**/
 UINT32
 pal_pcie_get_legacy_irq_map (
   UINT32 Seg,
@@ -277,7 +293,7 @@ pal_pcie_get_legacy_irq_map (
   PERIPHERAL_IRQ_MAP *IrqMap
   )
 {
-  return 0;
+  return 1;
 }
 
 /* Place holder function. Need to be
@@ -309,4 +325,21 @@ pal_pcie_is_cache_present (
   )
 {
   return 0;
+}
+
+/**
+    @brief   Gets RP support of transaction forwarding.
+
+    @param   bus        PCI bus address
+    @param   dev        PCI device address
+    @param   fn         PCI function number
+    @param   seg        PCI segment number
+
+    @return  0 if rp not involved in transaction forwarding
+             1 if rp is involved in transaction forwarding
+**/
+UINT32
+pal_pcie_get_rp_transaction_frwd_support(UINT32 seg, UINT32 bus, UINT32 dev, UINT32 fn)
+{
+  return 1;
 }

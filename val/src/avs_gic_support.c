@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2020, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2021, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,7 +21,11 @@
 #include "include/sbsa_avs_common.h"
 #include "include/sbsa_avs_pcie.h"
 #include "include/sbsa_avs_iovirt.h"
+#include "sys_arch_src/gic_its_v3/sbsa_gic_its.h"
 
+extern GIC_INFO_TABLE  *g_gic_info_table;
+GIC_INFO_ENTRY  *g_gic_entry = NULL;
+GIC_ITS_INFO    *g_gic_its_info;
 
 #ifndef TARGET_LINUX
 /**
@@ -85,7 +89,7 @@ val_gic_is_valid_lpi(uint32_t int_id)
 {
   uint32_t max_lpi_id = 0;
 
-  max_lpi_id = pal_gic_get_max_lpi_id();
+  max_lpi_id = ArmGicItsGetMaxLpiID();
 
   if ((int_id < LPI_MIN_ID) || (int_id > max_lpi_id)) {
     /* Not Vaild LPI */
@@ -171,11 +175,104 @@ uint32_t val_gic_end_of_interrupt(uint32_t int_id)
 
 uint32_t val_gic_its_configure()
 {
-  uint32_t status;
+  uint32_t Status;
 
-  status = pal_gic_its_configure();
+  g_gic_entry = g_gic_info_table->gic_info;
 
-  return status;
+  if( g_gic_entry == NULL)
+    goto its_fail;
+
+  /* Allocate memory to store ITS info */
+  g_gic_its_info = (GIC_ITS_INFO *) val_memory_alloc(1024);
+  if (!g_gic_its_info) {
+      val_print(AVS_PRINT_ERR, "GIC : ITS table memory allocation failed\n", 0);
+      goto its_fail;
+  }
+
+  g_gic_its_info->GicNumIts = 0;
+  g_gic_its_info->GicRdBase = 0;
+  g_gic_its_info->GicDBase  = 0;
+
+  while (g_gic_entry->type != 0xFF)
+  {
+   if (g_gic_entry->type == ENTRY_TYPE_GICD)
+    {
+        g_gic_its_info->GicDBase = g_gic_entry->base;
+    }
+    else if ((g_gic_entry->type == ENTRY_TYPE_GICR_GICRD) || (g_gic_entry->type == ENTRY_TYPE_GICC_GICRD))
+    {
+        /* Calculate Current PE Redistributor Base Address */
+        if (g_gic_its_info->GicRdBase == 0)
+        {
+            if (g_gic_entry->type == ENTRY_TYPE_GICR_GICRD)
+                g_gic_its_info->GicRdBase = GetCurrentCpuRDBase(g_gic_entry->base, g_gic_entry->length);
+            else
+                g_gic_its_info->GicRdBase = GetCurrentCpuRDBase(g_gic_entry->base, 0);
+        }
+    }
+    else if (g_gic_entry->type == ENTRY_TYPE_GICITS)
+    {
+        g_gic_its_info->GicIts[g_gic_its_info->GicNumIts].Base = g_gic_entry->base;
+        g_gic_its_info->GicIts[g_gic_its_info->GicNumIts++].ID = g_gic_entry->its_id;
+    }
+    g_gic_entry++;
+
+  }
+
+  /* Return if no ITS */
+  if (g_gic_its_info->GicNumIts == 0)
+  {
+
+    goto its_fail;
+  }
+
+  /* Base Address Check. */
+  if ((g_gic_its_info->GicRdBase == 0) || (g_gic_its_info->GicDBase == 0))
+  {
+    val_print(AVS_PRINT_ERR, "Could not get GICD/GICRD Base.\n", 0);
+    goto its_fail;
+  }
+
+  if (ArmGICDSupportsLPIs(g_gic_its_info->GicDBase) && ArmGICRSupportsLPIs(g_gic_its_info->GicRdBase))
+  {
+
+    Status = ArmGicItsConfiguration();
+
+    if ((Status))
+    {
+      val_print(AVS_PRINT_ERR, "Could Not Configure ITS.\n", 0);
+      goto its_fail;
+    }
+  }
+  else
+  {
+    val_print(AVS_PRINT_ERR, "LPIs not supported in the system.\n", 0);
+    goto its_fail;
+  }
+
+  return 0;
+
+its_fail:
+
+  val_print(AVS_PRINT_ERR, "GIC ITS Initialization Failed.\n", 0);
+  val_print(AVS_PRINT_ERR, "LPI Interrupt related test may not pass.\n", 0);
+
+  return AVS_STATUS_ERR;
+}
+
+uint32_t
+getItsIndex (
+  uint32_t   ItsID
+  )
+{
+  uint32_t  index;
+
+  for (index=0; index<g_gic_its_info->GicNumIts; index++)
+  {
+    if (ItsID == g_gic_its_info->GicIts[index].ID)
+      return index;
+  }
+  return AVS_INVALID_INDEX;
 }
 
 void clear_msi_x_table(uint32_t bdf, uint32_t msi_index)
@@ -249,6 +346,7 @@ void val_gic_free_msi(uint32_t bdf, uint32_t IntID, uint32_t msi_index)
   uint32_t bus = PCIE_EXTRACT_BDF_BUS(bdf);
   uint32_t dev = PCIE_EXTRACT_BDF_DEV(bdf);
   uint32_t func = PCIE_EXTRACT_BDF_FUNC(bdf);
+  uint32_t  ItsIndex;
 
   req_id = GET_DEVICE_ID(bus, dev, func);
 
@@ -257,8 +355,16 @@ void val_gic_free_msi(uint32_t bdf, uint32_t IntID, uint32_t msi_index)
     device_id = req_id;
   }
 
-  pal_gic_free_msi(its_id, device_id, IntID, msi_index);
-
+  ItsIndex = getItsIndex(its_id);
+  if (ItsIndex > g_gic_its_info->GicNumIts)
+  {
+    val_print(AVS_PRINT_ERR, "\n       Could not find ITS block in MADT", 0);
+  }
+  if ((g_gic_its_info->GicRdBase == 0) || (g_gic_its_info->GicDBase == 0))
+  {
+    val_print(AVS_PRINT_ERR, "GICD/GICRD Base Invalid value.\n", 0);
+  }
+  ArmGicItsClearLpiMappings(ItsIndex, device_id, IntID);
   clear_msi_x_table(bdf, msi_index);
 }
 
@@ -280,6 +386,7 @@ uint32_t val_gic_request_msi(uint32_t bdf, uint32_t IntID, uint32_t msi_index)
   uint32_t bus = PCIE_EXTRACT_BDF_BUS(bdf);
   uint32_t dev = PCIE_EXTRACT_BDF_DEV(bdf);
   uint32_t func = PCIE_EXTRACT_BDF_FUNC(bdf);
+  uint32_t  ItsIndex;
 
   req_id = GET_DEVICE_ID(bus, dev, func);
 
@@ -288,11 +395,27 @@ uint32_t val_gic_request_msi(uint32_t bdf, uint32_t IntID, uint32_t msi_index)
     device_id = req_id;
   }
 
-  status = pal_gic_request_msi(its_id, device_id, IntID, msi_index, &msi_addr, &msi_data);
-  if (status) {
-    /* MSI Assignment Failed. */
-    return status;
+   if ((g_gic_its_info == NULL) || (g_gic_its_info->GicNumIts == 0))
+    return AVS_STATUS_ERR;
+
+  ItsIndex = getItsIndex(its_id);
+
+  if (ItsIndex > g_gic_its_info->GicNumIts) {
+    val_print(AVS_PRINT_ERR, "\n       Could not find ITS block in MADT", 0);
+    return AVS_STATUS_ERR;
   }
+
+  if ((g_gic_its_info->GicRdBase == 0) || (g_gic_its_info->GicDBase == 0))
+  {
+    val_print(AVS_PRINT_DEBUG, "GICD/GICRD Base Invalid value.\n", 0);
+    return AVS_STATUS_ERR;
+  }
+
+   ArmGicItsCreateLpiMap(ItsIndex, device_id, IntID, LPI_PRIORITY1);
+
+  msi_addr = ArmGicItsGetGITSTranslatorAddress(ItsIndex);
+  msi_data = IntID;
+
 
   fill_msi_x_table(bdf, msi_index, msi_addr, msi_data);
 

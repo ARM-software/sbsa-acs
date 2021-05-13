@@ -44,7 +44,7 @@ void
 payload()
 {
 
-  uint32_t timeout, ns_wdg = 0;
+  uint32_t status, timeout, ns_wdg = 0;
   uint64_t timer_expire_ticks = 1;
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
   wd_num = val_wd_get_info(0, WD_INFO_COUNT);
@@ -77,7 +77,12 @@ payload()
       else
           val_gic_set_intr_trigger(int_id, INTR_TRIGGER_INFO_LEVEL_HIGH);
 
-      val_wd_set_ws0(wd_num, timer_expire_ticks);
+      status = val_wd_set_ws0(wd_num, timer_expire_ticks);
+      if (status) {
+          val_print(AVS_PRINT_ERR, "\n       Setting watchdof timeout failed", 0);
+          val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
+          return;
+      }
 
       while ((--timeout > 0) && (IS_RESULT_PENDING(val_get_status(index))));
 

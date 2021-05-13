@@ -152,22 +152,50 @@ val_wd_disable(uint32_t index)
   @brief   This API arms the watchdog by writing to Control Base register
   @param   index   - identifies the watchdog instance to program
   @param   timeout - ticks to generation of ws0 interrupt
-  @return  None
+  @return  Success/Failure
  **/
-void
+uint32_t
 val_wd_set_ws0(uint32_t index, uint32_t timeout)
 {
-  uint32_t counter_freq;
+  uint64_t counter_freq;
+  uint32_t wor_l;
+  uint32_t wor_h = 0;
+  uint32_t ctrl_base;
+  uint32_t data;
 
   if (timeout == 0) {
       val_wd_disable(index);
-      return;
+      return 0;
   }
 
+  ctrl_base    = val_wd_get_info(index, WD_INFO_CTRL_BASE);
+
+  /* W_IIDR.Architecture Revision [19:16] = 0x1 for Watchdog Rev 1 */
+  data = VAL_EXTRACT_BITS(val_mmio_read(ctrl_base + WD_IIDR_OFFSET), 16, 19);
   counter_freq = val_timer_get_info(TIMER_INFO_CNTFREQ, 0);
 
-  val_mmio_write((g_wd_info_table->wd_info[index].wd_ctrl_base + 8), counter_freq * timeout);
+  /* Check if the timeout value exceeds */
+  if (data == 0)
+  {
+      if ((counter_freq * timeout) >> 32)
+      {
+          val_print(AVS_PRINT_ERR,"\nCounter frequency value exceeded", 0);
+          return 1;
+      }
+  }
+
+  wor_l = (uint32_t)(counter_freq * timeout);
+  wor_h = (uint32_t)((counter_freq * timeout) >> 32);
+
+  val_mmio_write((g_wd_info_table->wd_info[index].wd_ctrl_base + 8), wor_l);
+
+  /* Upper bits are applicable only for WDog Version 1 */
+  if(data == 1)
+      val_mmio_write((g_wd_info_table->wd_info[index].wd_ctrl_base + 12), wor_h);
+
   val_wd_enable(index);
+
+  return 0;
 
 }
 

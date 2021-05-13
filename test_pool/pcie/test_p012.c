@@ -42,15 +42,17 @@ payload (void)
   uint64_t dev_bdf;
   uint32_t ccnt;
   uint32_t ncnt;
+  uint32_t test_skip;
 
   current_irq_pin = 0;
   status = 0;
+  test_skip = 1;
   next_irq_pin = current_irq_pin + 1;
   index = val_pe_get_index_mpid (val_pe_get_mpid());
   count = val_peripheral_get_info (NUM_ALL, 0);
 
   if(!count) {
-     val_set_status (index, RESULT_SKIP (g_sbsa_level, TEST_NUM, 3));
+     val_set_status (index, RESULT_SKIP (g_sbsa_level, TEST_NUM, 01));
      return;
   }
 
@@ -108,6 +110,7 @@ payload (void)
 
           for (ccnt = 0; (ccnt < irq_map->legacy_irq_map[current_irq_pin].irq_count) && (status == 0); ccnt++) {
             for (ncnt = 0; (ncnt < irq_map->legacy_irq_map[next_irq_pin].irq_count) && (status == 0); ncnt++) {
+              test_skip = 0;
               if (irq_map->legacy_irq_map[current_irq_pin].irq_list[ccnt] ==
                   irq_map->legacy_irq_map[next_irq_pin].irq_list[ncnt]) {
                 status = 7;
@@ -127,6 +130,10 @@ payload (void)
 
   val_memory_free (irq_map);
 
+  if (test_skip) {
+    val_set_status (index, RESULT_SKIP (g_sbsa_level, TEST_NUM, 02));
+    return;
+  }
   if (!status) {
     val_set_status (index, RESULT_PASS (g_sbsa_level, TEST_NUM, 01));
   } else {

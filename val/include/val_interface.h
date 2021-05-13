@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2020, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2021, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -144,7 +144,7 @@ void     val_wd_create_info_table(uint64_t *wd_info_table);
 void     val_wd_free_info_table(void);
 uint32_t val_wd_execute_tests(uint32_t level, uint32_t num_pe);
 uint64_t val_wd_get_info(uint32_t index, uint32_t info_type);
-void     val_wd_set_ws0(uint32_t index, uint32_t timeout);
+uint32_t val_wd_set_ws0(uint32_t index, uint32_t timeout);
 
 
 /* PCIE VAL APIs */
