@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2020, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2020,2021 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,7 +15,7 @@
  * limitations under the License.
 **/
 
-#include "include/pal_common_support.h"
+#include "../include/pal_common_support.h"
 #include "include/platform_override_fvp.h"
 
 PE_INFO_TABLE platform_pe_cfg = {
@@ -59,11 +59,12 @@ PE_INFO_TABLE platform_pe_cfg = {
 
 PLATFORM_OVERRIDE_GIC_INFO_TABLE platform_gic_cfg = {
 
-    .gic_version = PLATFORM_OVERRIDE_GIC_VERSION,
-    .num_gicc    = PLATFORM_OVERRIDE_GICC_COUNT,
-    .num_gicd    = PLATFORM_OVERRIDE_GICD_COUNT,
-    .num_gicrd   = PLATFORM_OVERRIDE_GICRD_COUNT,
-    .num_gicits  = PLATFORM_OVERRIDE_GICITS_COUNT,
+    .gic_version  = PLATFORM_OVERRIDE_GIC_VERSION,
+    .num_gicc     = PLATFORM_OVERRIDE_GICC_COUNT,
+    .num_gicd     = PLATFORM_OVERRIDE_GICD_COUNT,
+    .num_gicrd    = PLATFORM_OVERRIDE_GICRD_COUNT,
+    .num_gicits   = PLATFORM_OVERRIDE_GICITS_COUNT,
+    .gicrd_length = PLATFORM_OVERRIDE_GICIRD_LENGTH,
 
     .gicc_base[0]   = PLATFORM_OVERRIDE_GICC_BASE,
     .gicc_base[1]   = PLATFORM_OVERRIDE_GICC_BASE,
@@ -75,8 +76,9 @@ PLATFORM_OVERRIDE_GIC_INFO_TABLE platform_gic_cfg = {
     .gicc_base[7]   = PLATFORM_OVERRIDE_GICC_BASE,
 
     .gicd_base[0]   = PLATFORM_OVERRIDE_GICD_BASE,
-
-    .gicits_base[0] = PLATFORM_OVERRIDE_GICITS_BASE
+    .gicrd_base[0]  = PLATFORM_OVERRIDE_GICRD_BASE,
+    .gicits_base[0] = PLATFORM_OVERRIDE_GICITS_BASE,
+    .gicits_id[0]   = PLATFORM_OVERRIDE_GICITS_ID
 
 };
 
@@ -140,24 +142,36 @@ PLATFORM_PCIE_PERIPHERAL_INFO_TABLE platform_pcie_peripheral_cfg = {
     .info[0].p2p_support   = PERIPHERAL0_P2P_SUPPORT,
     .info[0].dma_64bit     = PERIPHERAL0_DMA_64BIT,
     .info[0].behind_smmu   = PERIPHERAL0_BEHIND_SMMU,
+    .info[0].atc_present   = PERIPHERAL0_ATC_SUPPORT,
     .info[1].dma_support   = PERIPHERAL1_DMA_SUPPORT,
     .info[1].dma_coherent  = PERIPHERAL1_DMA_COHERENT,
     .info[1].p2p_support   = PERIPHERAL1_P2P_SUPPORT,
     .info[1].dma_64bit     = PERIPHERAL1_DMA_64BIT,
-    .info[1].behind_smmu   = PERIPHERAL1_BEHIND_SMMU
+    .info[1].behind_smmu   = PERIPHERAL1_BEHIND_SMMU,
+    .info[1].atc_present   = PERIPHERAL1_ATC_SUPPORT,
 
 };
 
 PLATFORM_OVERRIDE_IOVIRT_INFO_TABLE platform_iovirt_cfg = {
     .Address              = IOVIRT_ADDRESS,
-    .node_count           = NODE_COUNT,
+    .node_count           = IORT_NODE_COUNT,
     .type[0]              = IOVIRT_NODE_ITS_GROUP,
-    .type[1]              = IOVIRT_NODE_PCI_ROOT_COMPLEX,
-    .num_map[1]           = IOVIRT_RC_NUM_MAP,
-    .map[1].input_base[0] = RC_MAP0_INPUT_BASE,
-    .map[1].id_count[0]   = RC_MAP0_ID_COUNT,
-    .map[1].output_base[0]= RC_MAP0_OUTPUT_BASE,
-    .map[1].output_ref[0] = RC_MAP0_OUTPUT_REF
+    .type[2]              = IOVIRT_NODE_PCI_ROOT_COMPLEX,
+    .type[1]              = IOVIRT_NODE_SMMU_V3,
+    .num_map[2]           = IOVIRT_RC_NUM_MAP,
+    .num_map[1]           = IOVIRT_SMMUV3_NUM_MAP,
+    .map[2].input_base[0] = RC_MAP0_INPUT_BASE,
+    .map[2].id_count[0]   = RC_MAP0_ID_COUNT,
+    .map[2].output_base[0]= RC_MAP0_OUTPUT_BASE,
+    .map[2].output_ref[0] = RC_MAP0_OUTPUT_REF,
+    .map[1].input_base[0] = SMMUV3_ID_MAP0_INPUT_BASE,
+    .map[1].id_count[0]   = SMMUV3_ID_MAP0_ID_COUNT,
+    .map[1].output_base[0]= SMMUV3_ID_MAP0_OUTPUT_BASE,
+    .map[1].output_ref[0] = SMMUV3_ID_MAP0_OUTPUT_REF,
+    .map[1].input_base[1] = SMMUV3_ID_MAP1_INPUT_BASE,
+    .map[1].id_count[1]   = SMMUV3_ID_MAP1_ID_COUNT,
+    .map[1].output_base[1]= SMMUV3_ID_MAP1_OUTPUT_BASE,
+    .map[1].output_ref[1] = SMMUV3_ID_MAP1_OUTPUT_REF
 
 };
 

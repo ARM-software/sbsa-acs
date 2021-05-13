@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2020, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2021, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,8 +18,7 @@
 #ifndef __SBSA_AVS_PE_H__
 #define __SBSA_AVS_PE_H__
 
-#define MAX_NUM_PE_LEVEL0        0x8
-#define MAX_NUM_PE_LEVEL2        (2 << 27)
+#define MAX_NUM_PE               (2 << 27)
 
 #define MPIDR_AFF_MASK           (0xFF00FFFFFF)
 
@@ -38,34 +37,34 @@
 
 #define AARCH64_HCR_E2H_MASK (0x1ull << 34)
 #define AARCH64_TTBR_ADDR_MASK (((0x1ull << 47) - 1) << 1)
-#define TCR_TG1_SHIFT   30
-#define TCR_SH1_SHIFT   28
-#define TCR_ORGN1_SHIFT 26
-#define TCR_IRGN1_SHIFT 24
-#define TCR_T1SZ_SHIFT  16
+#define SBSA_TCR_TG1_SHIFT   30
+#define SBSA_TCR_SH1_SHIFT   28
+#define SBSA_TCR_ORGN1_SHIFT 26
+#define SBSA_TCR_IRGN1_SHIFT 24
+#define SBSA_TCR_T1SZ_SHIFT  16
 
-#define TCR_TG1_MASK   (0x3ull << TCR_TG1_SHIFT)
-#define TCR_SH1_MASK   (0x3ull << TCR_SH1_SHIFT)
-#define TCR_ORGN1_MASK (0x3ull << TCR_ORGN1_SHIFT)
-#define TCR_IRGN1_MASK (0x3ull << TCR_IRGN1_SHIFT)
-#define TCR_T1SZ_MASK  (0x3full << TCR_T1SZ_SHIFT)
+#define SBSA_TCR_TG1_MASK   (0x3ull << SBSA_TCR_TG1_SHIFT)
+#define SBSA_TCR_SH1_MASK   (0x3ull << SBSA_TCR_SH1_SHIFT)
+#define SBSA_TCR_ORGN1_MASK (0x3ull << SBSA_TCR_ORGN1_SHIFT)
+#define SBSA_TCR_IRGN1_MASK (0x3ull << SBSA_TCR_IRGN1_SHIFT)
+#define SBSA_TCR_T1SZ_MASK  (0x3full << SBSA_TCR_T1SZ_SHIFT)
 
-#define TCR_TG0_SHIFT   14
-#define TCR_SH0_SHIFT   12
-#define TCR_ORGN0_SHIFT 10
-#define TCR_IRGN0_SHIFT 8
-#define TCR_T0SZ_SHIFT  0
+#define SBSA_TCR_TG0_SHIFT   14
+#define SBSA_TCR_SH0_SHIFT   12
+#define SBSA_TCR_ORGN0_SHIFT 10
+#define SBSA_TCR_IRGN0_SHIFT 8
+#define SBSA_TCR_T0SZ_SHIFT  0
 
-#define TCR_TG0_MASK    (0x3ull << TCR_TG0_SHIFT)
-#define TCR_SH0_MASK    (0x3ull << TCR_SH0_SHIFT)
-#define TCR_ORGN0_MASK  (0x3ull << TCR_ORGN0_SHIFT)
-#define TCR_IRGN0_MASK  (0x3ull << TCR_IRGN0_SHIFT)
-#define TCR_T0SZ_MASK   (0x3full << TCR_T0SZ_SHIFT)
+#define SBSA_TCR_TG0_MASK    (0x3ull << SBSA_TCR_TG0_SHIFT)
+#define SBSA_TCR_SH0_MASK    (0x3ull << SBSA_TCR_SH0_SHIFT)
+#define SBSA_TCR_ORGN0_MASK  (0x3ull << SBSA_TCR_ORGN0_SHIFT)
+#define SBSA_TCR_IRGN0_MASK  (0x3ull << SBSA_TCR_IRGN0_SHIFT)
+#define SBSA_TCR_T0SZ_MASK   (0x3full << SBSA_TCR_T0SZ_SHIFT)
 
-#define TCR_IPS_SHIFT  32
-#define TCR_IPS_MASK   (0x7ull << TCR_IPS_SHIFT)
-#define TCR_PS_SHIFT   16
-#define TCR_PS_MASK    (0x7ull << TCR_PS_SHIFT)
+#define SBSA_TCR_IPS_SHIFT  32
+#define SBSA_TCR_IPS_MASK   (0x7ull << SBSA_TCR_IPS_SHIFT)
+#define SBSA_TCR_PS_SHIFT   16
+#define SBSA_TCR_PS_MASK    (0x7ull << SBSA_TCR_PS_SHIFT)
 
 typedef enum {
   MPIDR_EL1 = 1,
@@ -135,7 +134,6 @@ typedef enum {
   TCR_ELx,
   TTBR_ELx
 }SBSA_AVS_PE_REGS;
-
 
 uint64_t ArmReadMpidr(void);
 
@@ -351,8 +349,6 @@ uint32_t c033_entry(uint32_t num_pe);
 uint32_t c034_entry(uint32_t num_pe);
 uint32_t c035_entry(uint32_t num_pe);
 uint32_t c036_entry(uint32_t num_pe);
-uint32_t c037_entry(uint32_t num_pe);
-uint32_t c038_entry(uint32_t num_pe);
 
 #endif
 

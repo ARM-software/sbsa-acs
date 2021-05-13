@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2020, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2021, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -26,15 +26,18 @@
 #include <Protocol/HardwareInterrupt2.h>
 
 #include "include/pal_uefi.h"
+#include "include/sbsa_pcie_enum.h"
+
 
 static EFI_ACPI_6_1_MULTIPLE_APIC_DESCRIPTION_TABLE_HEADER *gMadtHdr;
 
 EFI_HARDWARE_INTERRUPT_PROTOCOL *gInterrupt = NULL;
 EFI_HARDWARE_INTERRUPT2_PROTOCOL *gInterrupt2 = NULL;
 
-
 UINT64
 pal_get_madt_ptr();
+
+
 
 /**
   @brief  Populate information about the GIC sub-system at the input address.
@@ -88,8 +91,9 @@ pal_gic_create_info_table(GIC_INFO_TABLE *GicTable)
       }
 
       if (Entry->GICRBaseAddress != 0) {
-        GicEntry->type = ENTRY_TYPE_GICRD;
+        GicEntry->type = ENTRY_TYPE_GICC_GICRD;
         GicEntry->base = Entry->GICRBaseAddress;
+        GicEntry->length = 0;
         sbsa_print(AVS_PRINT_INFO, L"GIC RD base %x \n", GicEntry->base);
         GicTable->header.num_gicrd++;
         GicEntry++;
@@ -100,14 +104,26 @@ pal_gic_create_info_table(GIC_INFO_TABLE *GicTable)
         GicEntry->type = ENTRY_TYPE_GICD;
         GicEntry->base = ((EFI_ACPI_6_1_GIC_DISTRIBUTOR_STRUCTURE *)Entry)->PhysicalBaseAddress;
         GicTable->header.gic_version = ((EFI_ACPI_6_1_GIC_DISTRIBUTOR_STRUCTURE *)Entry)->GicVersion;
+        sbsa_print(AVS_PRINT_INFO, L"GIC DIS base %x \n", GicEntry->base);
         GicTable->header.num_gicd++;
+        GicEntry++;
+    }
+
+    if (Entry->Type == EFI_ACPI_6_1_GICR) {
+        GicEntry->type = ENTRY_TYPE_GICR_GICRD;
+        GicEntry->base = ((EFI_ACPI_6_1_GICR_STRUCTURE *)Entry)->DiscoveryRangeBaseAddress;
+        GicEntry->length = ((EFI_ACPI_6_1_GICR_STRUCTURE *)Entry)->DiscoveryRangeLength;
+        sbsa_print(AVS_PRINT_INFO, L"GIC RD base Structure %x \n", GicEntry->base);
+        GicTable->header.num_gicrd++;
         GicEntry++;
     }
 
     if (Entry->Type == EFI_ACPI_6_1_GIC_ITS) {
         GicEntry->type = ENTRY_TYPE_GICITS;
         GicEntry->base = ((EFI_ACPI_6_1_GIC_ITS_STRUCTURE *)Entry)->PhysicalBaseAddress;
+        GicEntry->its_id = ((EFI_ACPI_6_1_GIC_ITS_STRUCTURE *)Entry)->GicItsId;
         sbsa_print(AVS_PRINT_INFO, L"GIC ITS base %x \n", GicEntry->base);
+        sbsa_print(AVS_PRINT_INFO, L"GIC ITS ID%x \n", GicEntry->its_id);
         GicTable->header.num_its++;
         GicEntry++;
     }
@@ -237,29 +253,4 @@ pal_gic_free_irq (
   )
 {
 
-}
-
-/* Place holder function. Need to be
- * implemented if needed in later releases
- */
-UINT32
-pal_gic_request_msi (
-  UINT32    bdf,
-  UINT32    IntID,
-  UINT32    msi_index
-  )
-{
-    return 0xFFFFFFFF;
-}
-
-/* Place holder function. Need to be
- * implemented if needed in later releases
- */
-VOID
-pal_gic_free_msi (
-  UINT32    bdf,
-  UINT32    IntID,
-  UINT32    msi_index
-  )
-{
 }

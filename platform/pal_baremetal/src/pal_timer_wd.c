@@ -15,7 +15,7 @@
  * limitations under the License.
 **/
 
-#include "include/platform_override_fvp.h"
+#include "FVP/include/platform_override_fvp.h"
 #include "include/pal_common_support.h"
 
 extern PLATFORM_OVERRIDE_TIMER_INFO_TABLE platform_timer_cfg;

@@ -18,8 +18,8 @@ function build_with_NIST()
         fi
     fi
 
-    if [ ! -d "AppPkg/Applications/sbsa-acs/test_pool/nist_sts/sts-2.1.2/" ]; then
-        /usr/bin/unzip sts-2_1_2.zip -d AppPkg/Applications/sbsa-acs/test_pool/nist_sts/.
+    if [ ! -d "ShellPkg/Application/sbsa-acs/test_pool/nist_sts/sts-2.1.2/" ]; then
+        /usr/bin/unzip sts-2_1_2.zip -d ShellPkg/Application/sbsa-acs/test_pool/nist_sts/.
 	status=$?
         if [ $status -ne 0 ]; then
             echo "unzip failed for NIST. Building sbsa without NIST"
@@ -27,7 +27,7 @@ function build_with_NIST()
         fi
     fi
 
-    cd AppPkg/Applications/sbsa-acs/test_pool/nist_sts/sts-2.1.2/
+    cd ShellPkg/Application/sbsa-acs/test_pool/nist_sts/sts-2.1.2/
     if ! patch -R -p1 -s -f --dry-run < ../../../patches/nist_sbsa_sts.diff; then
         patch -p1 < ../../../patches/nist_sbsa_sts.diff
         status=$?
@@ -38,7 +38,7 @@ function build_with_NIST()
     fi
     cd -
 
-    build -a AARCH64 -t GCC49 -p ShellPkg/ShellPkg.dsc -m AppPkg/Applications/sbsa-acs/uefi_app/SbsaAvsNist.inf -D ENABLE_NIST
+    build -a AARCH64 -t GCC49 -p ShellPkg/ShellPkg.dsc -m ShellPkg/Application/sbsa-acs/uefi_app/SbsaAvsNist.inf -D ENABLE_NIST
     status=$?
     if [ $status -ne 0 ]; then
         echo "Build failed for NIST. Building sbsa without NIST"
@@ -54,7 +54,13 @@ if [ "$1" == "NIST" ]; then
     NISTStatus=$?
 fi
 
+if [ "$1" == "ENABLE_OOB" ]; then
+    build -a AARCH64 -t GCC49 -p ShellPkg/ShellPkg.dsc -m ShellPkg/Application/sbsa-acs/uefi_app/SbsaAvs.inf -D ENABLE_OOB
+    echo "Build successful"
+    return 0;
+fi
+
 if [ $NISTStatus -ne 0 ]; then
-    build -a AARCH64 -t GCC49 -p ShellPkg/ShellPkg.dsc -m AppPkg/Applications/sbsa-acs/uefi_app/SbsaAvs.inf
+    build -a AARCH64 -t GCC49 -p ShellPkg/ShellPkg.dsc -m ShellPkg/Application/sbsa-acs/uefi_app/SbsaAvs.inf
 fi
 

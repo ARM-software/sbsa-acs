@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2020, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2021, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -66,13 +66,10 @@ val_pe_execute_tests(uint32_t level, uint32_t num_pe)
   status |= c013_entry(num_pe);
   status |= c014_entry(num_pe);
   status |= c015_entry(num_pe);
+  status |= c016_entry(num_pe);
+  status |= c017_entry(num_pe);
 
-  if (level > 2) {
-      status |= c016_entry(num_pe);
-      status |= c017_entry(num_pe);
-  }
-
-  if (level > 1) {
+  if (level > 5) {
       status |= c018_entry(num_pe);
   }
 
@@ -92,6 +89,7 @@ val_pe_execute_tests(uint32_t level, uint32_t num_pe)
   }
 
   if (level > 5) {
+      status |= c028_entry(num_pe);
       status |= c029_entry(num_pe);
       status |= c030_entry(num_pe);
       status |= c031_entry(num_pe);
@@ -100,8 +98,6 @@ val_pe_execute_tests(uint32_t level, uint32_t num_pe)
       status |= c034_entry(num_pe);
       status |= c035_entry(num_pe);
       status |= c036_entry(num_pe);
-      status |= c037_entry(num_pe);
-      status |= c038_entry(num_pe);
   }
 
   if (status != AVS_STATUS_PASS)
@@ -413,32 +409,32 @@ uint32_t val_pe_reg_read_tcr(uint32_t ttbr1, PE_TCR_BF *tcr)
 
     if (el == AARCH64_EL1 || (el == AARCH64_EL2 && e2h))
     {
-        tcr->ps = (val & TCR_IPS_MASK) >> TCR_IPS_SHIFT;
+        tcr->ps = (val & SBSA_TCR_IPS_MASK) >> SBSA_TCR_IPS_SHIFT;
         if (ttbr1) {
-            tcr->tg = (val & TCR_TG1_MASK) >> TCR_TG1_SHIFT;
+            tcr->tg = (val & SBSA_TCR_TG1_MASK) >> SBSA_TCR_TG1_SHIFT;
             if (tcr->tg == 0 || tcr->tg > 3)
                 return AVS_STATUS_ERR;
             tcr->tg_size_log2 = tg_ttbr1[tcr->tg];
-            tcr->sh = (val & TCR_SH1_MASK) >> TCR_SH1_SHIFT;
-            tcr->orgn = (val & TCR_ORGN1_MASK) >> TCR_ORGN1_SHIFT;
-            tcr->irgn = (val & TCR_IRGN1_MASK) >> TCR_IRGN1_SHIFT;
-            tcr->tsz = (val & TCR_T1SZ_MASK) >> TCR_T1SZ_SHIFT;
+            tcr->sh = (val & SBSA_TCR_SH1_MASK) >> SBSA_TCR_SH1_SHIFT;
+            tcr->orgn = (val & SBSA_TCR_ORGN1_MASK) >> SBSA_TCR_ORGN1_SHIFT;
+            tcr->irgn = (val & SBSA_TCR_IRGN1_MASK) >> SBSA_TCR_IRGN1_SHIFT;
+            tcr->tsz = (val & SBSA_TCR_T1SZ_MASK) >> SBSA_TCR_T1SZ_SHIFT;
             return 0;
         }
     }
     else if (!ttbr1)
-        tcr->ps = (val & TCR_PS_MASK) >> TCR_PS_SHIFT;
+        tcr->ps = (val & SBSA_TCR_PS_MASK) >> SBSA_TCR_PS_SHIFT;
     else
         return AVS_STATUS_ERR;
 
-    tcr->tg = (val & TCR_TG0_MASK) >> TCR_TG0_SHIFT;
+    tcr->tg = (val & SBSA_TCR_TG0_MASK) >> SBSA_TCR_TG0_SHIFT;
     if (tcr->tg > 2)
         return AVS_STATUS_ERR;
     tcr->tg_size_log2 = tg_ttbr0[tcr->tg];
-    tcr->sh = (val & TCR_SH0_MASK) >> TCR_SH0_SHIFT;
-    tcr->orgn = (val & TCR_ORGN0_MASK) >> TCR_ORGN0_SHIFT;
-    tcr->irgn = (val & TCR_IRGN0_MASK) >> TCR_IRGN0_SHIFT;
-    tcr->tsz = (val & TCR_T0SZ_MASK) >> TCR_T0SZ_SHIFT;
+    tcr->sh = (val & SBSA_TCR_SH0_MASK) >> SBSA_TCR_SH0_SHIFT;
+    tcr->orgn = (val & SBSA_TCR_ORGN0_MASK) >> SBSA_TCR_ORGN0_SHIFT;
+    tcr->irgn = (val & SBSA_TCR_IRGN0_MASK) >> SBSA_TCR_IRGN0_SHIFT;
+    tcr->tsz = (val & SBSA_TCR_T0SZ_MASK) >> SBSA_TCR_T0SZ_SHIFT;
     return 0;
 }
 

@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018, 2021 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -36,11 +36,16 @@ void
 isr()
 {
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
+  uint32_t status;
+
   //val_print(AVS_PRINT_INFO, "\n       Received interrupt            ", 0);
   if(wakeup_event == SYSTIMER_SEMF)
       val_timer_disable_system_timer((addr_t)cnt_base_n);
-  else if(wakeup_event == WATCHDOG_SEMF)
-      val_wd_set_ws0(wd_num, 0);
+  else if(wakeup_event == WATCHDOG_SEMF) {
+      status = val_wd_set_ws0(wd_num, 0);
+      if (status)
+          val_print(AVS_PRINT_ERR, "\n       Setting watchdog timeout failed", 0);
+  }
 
   val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
   val_gic_end_of_interrupt(intid);
@@ -117,7 +122,7 @@ payload()
 {
   uint64_t timeout = TIMEOUT_SMALL;
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
-  uint32_t target_pe;
+  uint32_t target_pe, status;
   uint64_t timer_expire_ticks = TIMEOUT_SMALL;
 
   // Step1: Choose the index of the target PE
@@ -155,7 +160,12 @@ payload()
       val_timer_set_system_timer((addr_t)cnt_base_n, timer_expire_ticks);
   }
   else if(wakeup_event == WATCHDOG_SEMF){
-      val_wd_set_ws0(wd_num, timer_expire_ticks);
+      status = val_wd_set_ws0(wd_num, timer_expire_ticks);
+      if (status) {
+          val_print(AVS_PRINT_ERR, "\n       Setting watchdof timeout failed", 0);
+          val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
+          return;
+      }
   }
 
   // Step6: Wait for target PE to update the status, if a timeout occurs that would mean that
@@ -170,8 +180,14 @@ payload()
       val_print(AVS_PRINT_INFO, "\n       Pending interrupt was seen for the 1st interrupt", 0);
       if(wakeup_event == SYSTIMER_SEMF)
           val_timer_disable_system_timer((addr_t)cnt_base_n);
-      else if(wakeup_event == WATCHDOG_SEMF)
-          val_wd_set_ws0(wd_num, 0);
+      else if(wakeup_event == WATCHDOG_SEMF) {
+          status = val_wd_set_ws0(wd_num, 0);
+          if (status) {
+              val_print(AVS_PRINT_ERR, "\n       Setting watchdof timeout failed", 0);
+              val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 03));
+              return;
+          }
+     }
 
       val_gic_clear_interrupt(intid);
   }
@@ -189,8 +205,14 @@ payload()
 
   if(wakeup_event == SYSTIMER_SEMF)
       val_timer_set_system_timer((addr_t)cnt_base_n, timer_expire_ticks);
-  else if(wakeup_event == WATCHDOG_SEMF)
-      val_wd_set_ws0(wd_num, timer_expire_ticks);
+  else if(wakeup_event == WATCHDOG_SEMF) {
+      status = val_wd_set_ws0(wd_num, timer_expire_ticks);
+          if (status) {
+              val_print(AVS_PRINT_ERR, "\n       Setting watchdof timeout failed", 0);
+              val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 04));
+              return;
+          }
+  }
 
   val_print(AVS_PRINT_INFO, "\n       Interrupt generating sequence triggered", 0);
 
@@ -204,8 +226,14 @@ payload()
       val_print(AVS_PRINT_INFO, "\n       Pending interrupt was seen for the 2nd interrupt", 0);
       if(wakeup_event == SYSTIMER_SEMF)
           val_timer_disable_system_timer((addr_t)cnt_base_n);
-      else if(wakeup_event == WATCHDOG_SEMF)
-          val_wd_set_ws0(wd_num, 0);
+      else if(wakeup_event == WATCHDOG_SEMF) {
+          status = val_wd_set_ws0(wd_num, 0);
+          if (status) {
+              val_print(AVS_PRINT_ERR, "\n       Setting watchdof timeout failed", 0);
+              val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 05));
+              return;
+          }
+      }
 
       val_gic_clear_interrupt(intid);
       val_gic_end_of_interrupt(intid);     // trigger END of interrupt for above interrupt

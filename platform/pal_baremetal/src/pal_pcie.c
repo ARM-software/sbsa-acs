@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2020, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2021, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,7 +17,7 @@
 
 #include "include/pal_pcie_enum.h"
 #include "include/pal_common_support.h"
-#include "include/platform_override_fvp.h"
+#include "FVP/include/platform_override_fvp.h"
 
 extern pcie_device_bdf_table *g_pcie_bdf_table;
 extern PCIE_INFO_TABLE platform_pcie_cfg;
@@ -494,27 +494,41 @@ pal_pcie_get_dma_coherent(uint32_t seg, uint32_t bus, uint32_t dev, uint32_t fn)
 }
 
 /**
+  @brief   This API checks the PCIe hierarchy fo P2P support
+           1. Caller       -  Test Suite
+  @return  1 - P2P feature not supported 0 - P2P feature supported
+**/
+uint32_t
+pal_pcie_p2p_support(void)
+{
+  // This API checks the PCIe hierarchy for P2P support as defined
+  // in the PCIe platform configuration
+
+  return PLATFORM_PCIE_P2P_NOT_SUPPORTED;
+
+}
+
+/**
   @brief   This API checks the PCIe device P2P support
            1. Caller       -  Test Suite
   @param   bdf      - PCIe BUS/Device/Function
   @return  1 - P2P feature not supported 0 - P2P feature supported
 **/
 uint32_t
-pal_pcie_p2p_support(uint32_t seg, uint32_t bus, uint32_t dev, uint32_t fn)
+pal_pcie_dev_p2p_support(uint32_t seg, uint32_t bus, uint32_t dev, uint32_t fn)
 {
-  uint32_t bdf,i;
+  uint32_t bdf, i;
 
   bdf = PCIE_CREATE_BDF(seg, bus, dev, fn);
-  for (i = 0 ; i < g_peripheral_info_table->header.num_all; i++)
+  for (i = 0; i < g_peripheral_info_table->header.num_all; i++)
   {
-      if (bdf == platform_pcie_peripheral_cfg.info[i].bdf)
-      {
-            return platform_pcie_peripheral_cfg.info[i].p2p_support;
-      }
+    if (bdf == platform_pcie_peripheral_cfg.info[i].bdf)
+    {
+      return platform_pcie_peripheral_cfg.info[i].p2p_support;
+    }
   }
 
   return 1;
-
 }
 
 /**
@@ -545,6 +559,41 @@ pal_pcie_is_devicedma_64bit(uint32_t seg, uint32_t bus, uint32_t dev, uint32_t f
 
 }
 
+/**
+  @brief  This API checks if a PCIe device has an Address
+          Translation Cache or not.
+  @param   bdf      - PCIe BUS/Device/Function
+  @return  1 - Address translations cached 0 - Address translations not cached
+ **/
+uint32_t
+pal_pcie_is_cache_present(uint32_t seg, uint32_t bus, uint32_t dev, uint32_t fn)
+{
+  uint32_t bdf = PCIE_CREATE_BDF(seg, bus, dev, fn);
+
+  // Search for the device in the manufacturer data table
+  for (uint32_t i = 0; i < g_peripheral_info_table->header.num_all; i++)
+  {
+    if (bdf == platform_pcie_peripheral_cfg.info[i].bdf)
+    {
+          // read platform peripheral configuration to check if the bdf has an ATC
+          return platform_pcie_peripheral_cfg.info[i].atc_present;
+    }
+  }
+
+  return 0;
+}
+
+/**
+    @brief   Create a list of MSI(X) vectors for a device
+
+    @param   bus        PCI bus address
+    @param   dev        PCI device address
+    @param   fn         PCI function number
+    @param   mvector    pointer to a MSI(X) list address
+
+    @return  mvector    list of MSI(X) vectors
+    @return  number of MSI(X) vectors
+**/
 uint32_t
 pal_get_msi_vectors(uint32_t Seg, uint32_t Bus, uint32_t Dev, uint32_t Fn, PERIPHERAL_VECTOR_LIST **MVector)
 {
@@ -552,10 +601,21 @@ pal_get_msi_vectors(uint32_t Seg, uint32_t Bus, uint32_t Dev, uint32_t Fn, PERIP
   return 0;
 }
 
+/**
+    @brief   Get legacy IRQ routing for a PCI device
+
+    @param   bus        PCI bus address
+    @param   dev        PCI device address
+    @param   fn         PCI function number
+    @param   irq_map    pointer to IRQ map structure
+
+    @return  irq_map    IRQ routing map
+    @return  status code
+**/
 uint32_t
 pal_pcie_get_legacy_irq_map(uint32_t Seg, uint32_t Bus, uint32_t Dev, uint32_t Fn, PERIPHERAL_IRQ_MAP *IrqMap)
 {
-  return 0;
+  return 1;
 }
 
 /**
@@ -627,5 +687,22 @@ pal_pcie_get_root_port_bdf(uint32_t *Seg, uint32_t *Bus, uint32_t *Dev, uint32_t
       }
   }
 
+  return 1;
+}
+
+/**
+    @brief   Gets RP support of transaction forwarding.
+
+    @param   bus        PCI bus address
+    @param   dev        PCI device address
+    @param   fn         PCI function number
+    @param   seg        PCI segment number
+
+    @return  0 if rp not involved in transaction forwarding
+             1 if rp is involved in transaction forwarding
+**/
+uint32_t
+pal_pcie_get_rp_transaction_frwd_support(uint32_t seg, uint32_t bus, uint32_t dev, uint32_t fn)
+{
   return 1;
 }

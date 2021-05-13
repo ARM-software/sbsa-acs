@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018, 2021 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -29,12 +29,7 @@ void payload()
 
   data = val_pe_reg_read(ID_AA64DFR0_EL1);
 
-  if ((g_sbsa_level == 0) && ((data >> 12) & 0xF) < 3) { //bits 15:12 for Number of breakpoints - 1
-      val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
-      return;
-  }
-
-  if ((g_sbsa_level > 0) && ((data >> 12) & 0xF) < 5) { //bits 15:12 for Number of breakpoints - 1
+  if (((data >> 12) & 0xF) < 5) { //bits 15:12 for Number of breakpoints - 1
       val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
       return;
   }

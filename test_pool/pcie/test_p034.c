@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2019, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2019, 2021 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -57,11 +57,8 @@ payload(void)
       /* Check for RCiEP and iEP */
       if (dp_type == RCiEP || dp_type == iEP_EP)
       {
-          /* Read 32-bits from CacheLine Size regsiter offset */
-          val_pcie_read_cfg(bdf, TYPE01_CLSR, &reg_value);
-
           /* Extract Hdr Type */
-          hdr_type = (reg_value >> TYPE01_HTR_SHIFT) & TYPE01_HTR_MASK;
+          hdr_type = val_pcie_function_header_type(bdf);
           val_print(AVS_PRINT_INFO, "\n        HDR TYPE 0x%x ", hdr_type);
 
           max_bar = 0;

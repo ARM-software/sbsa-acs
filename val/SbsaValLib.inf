@@ -1,5 +1,5 @@
 ## @file
-#  Copyright (c) 2016-2020, Arm Limited or its affiliates. All rights reserved.
+#  Copyright (c) 2016-2021, Arm Limited or its affiliates. All rights reserved.
 #  SPDX-License-Identifier : Apache-2.0
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
@@ -31,20 +31,34 @@
   src/avs_status.c
   src/avs_pe.c
   src/avs_pe_infra.c
-  src/avs_gic.c
   src/avs_gic_support.c
   src/avs_pcie.c
   src/avs_iovirt.c
   src/avs_smmu.c
   src/avs_test_infra.c
+  src/avs_peripherals.c
+  src/avs_memory.c
+  src/avs_exerciser.c
+  src/avs_gic.c
   src/avs_timer.c
   src/avs_timer_support.c
   src/avs_wd.c
+  src/avs_dma.c
   src/avs_wakeup.c
-  src/avs_peripherals.c
-  src/avs_secure.c
-  src/avs_memory.c
-  src/avs_exerciser.c
+  src/avs_pgt.c
+  sys_arch_src/smmu_v3/smmu_v3.c
+  sys_arch_src/gic_its_v3/sbsa_gic_its.c
+  sys_arch_src/gic_its_v3/sbsa_gic_redistributor.c
+
+ [Packages]
+  StdLib/StdLib.dec
+
+ [LibraryClasses]
+  LibC
+  LibStdLib
+  LibStdio
+  LibMath
+  DevShell
 
 [Packages]
   MdePkg/MdePkg.dec

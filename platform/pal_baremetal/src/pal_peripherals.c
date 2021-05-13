@@ -17,7 +17,7 @@
 
 #include "include/pal_pcie_enum.h"
 #include "include/pal_common_support.h"
-#include "include/platform_override_fvp.h"
+#include "FVP/include/platform_override_fvp.h"
 
 extern PLATFORM_PCIE_PERIPHERAL_INFO_TABLE platform_pcie_peripheral_cfg;
 extern PLATFORM_OVERRIDE_UART_INFO_TABLE platform_uart_cfg;

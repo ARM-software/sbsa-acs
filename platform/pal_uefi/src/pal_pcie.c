@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2019, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2020, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -211,9 +211,56 @@ pal_pcie_io_write_cfg(UINT32 Bdf, UINT32 offset, UINT32 data)
   }
 }
 
-/* Place holder function. Need to be
- * implemented if needed in later releases
- */
+/**
+  @brief   This API checks the PCIe Hierarchy Supports P2P
+           1. Caller       -  Test Suite
+  @return  1 - P2P feature not supported 0 - P2P feature supported
+**/
+UINT32
+pal_pcie_p2p_support()
+{
+  /*
+   * TODO
+   * PCIe support for peer to peer
+   * transactions is platform implementation specific
+   */
+
+  return 1;
+}
+
+/**
+  @brief   This API checks the PCIe device P2P support
+           1. Caller       -  Test Suite
+  @param   bdf      - PCIe BUS/Device/Function
+  @return  1 - P2P feature not supported 0 - P2P feature supported
+**/
+UINT32
+pal_pcie_dev_p2p_support (
+  UINT32 Seg,
+  UINT32 Bus,
+  UINT32 Dev,
+  UINT32 Fn)
+{
+  /*
+   * TODO
+   * Root port or Switch support for peer to peer
+   * transactions is platform implementation specific
+   */
+
+  return 1;
+}
+
+/**
+    @brief   Create a list of MSI(X) vectors for a device
+
+    @param   bus        PCI bus address
+    @param   dev        PCI device address
+    @param   fn         PCI function number
+    @param   mvector    pointer to a MSI(X) list address
+
+    @return  mvector    list of MSI(X) vectors
+    @return  number of MSI(X) vectors
+**/
 UINT32
 pal_get_msi_vectors (
   UINT32 Seg,
@@ -226,9 +273,17 @@ pal_get_msi_vectors (
   return 0;
 }
 
-/* Place holder function. Need to be
- * implemented if needed in later releases
- */
+/**
+    @brief   Get legacy IRQ routing for a PCI device
+
+    @param   bus        PCI bus address
+    @param   dev        PCI device address
+    @param   fn         PCI function number
+    @param   irq_map    pointer to IRQ map structure
+
+    @return  irq_map    IRQ routing map
+    @return  status code
+**/
 UINT32
 pal_pcie_get_legacy_irq_map (
   UINT32 Seg,
@@ -238,7 +293,7 @@ pal_pcie_get_legacy_irq_map (
   PERIPHERAL_IRQ_MAP *IrqMap
   )
 {
-  return 0;
+  return 1;
 }
 
 /* Place holder function. Need to be
@@ -255,9 +310,36 @@ pal_pcie_get_root_port_bdf (
   return 0;
 }
 
-/* Place holder function*/
+/**
+  @brief   Platform dependent API checks the Address Translation
+           Cache Support for BDF
+           1. Caller       -  Test Suite
+  @return  0 - ATC not supported 1 - ATC supported
+**/
 UINT32
-pal_pcie_read_cfg(UINT32 seg, UINT32 bus, UINT32 dev, UINT32 func, UINT32 offset, UINT32 *data)
+pal_pcie_is_cache_present (
+  UINT32 Seg,
+  UINT32 Bus,
+  UINT32 Dev,
+  UINT32 Fn
+  )
 {
   return 0;
+}
+
+/**
+    @brief   Gets RP support of transaction forwarding.
+
+    @param   bus        PCI bus address
+    @param   dev        PCI device address
+    @param   fn         PCI function number
+    @param   seg        PCI segment number
+
+    @return  0 if rp not involved in transaction forwarding
+             1 if rp is involved in transaction forwarding
+**/
+UINT32
+pal_pcie_get_rp_transaction_frwd_support(UINT32 seg, UINT32 bus, UINT32 dev, UINT32 fn)
+{
+  return 1;
 }

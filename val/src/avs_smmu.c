@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2020, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2020, 2021 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -56,12 +56,20 @@ uint32_t
 val_smmu_execute_tests(uint32_t level, uint32_t num_pe)
 {
   uint32_t status, i;
+  uint32_t num_smmu;
+  uint32_t status_version_chk;
 
   for (i=0 ; i<MAX_TEST_SKIP_NUM ; i++){
       if (g_skip_test_num[i] == AVS_SMMU_TEST_NUM_BASE) {
           val_print(AVS_PRINT_TEST, "      USER Override - Skipping all SMMU tests \n", 0);
           return AVS_STATUS_SKIP;
       }
+  }
+
+  num_smmu = val_iovirt_get_smmu_info(SMMU_NUM_CTRL, 0);
+  if (num_smmu == 0) {
+    val_print(AVS_PRINT_WARN, "\n     No SMMU Controller Found, Skipping SMMU tests...\n", 0);
+    return AVS_STATUS_SKIP;
   }
 
   status = i001_entry(num_pe);
@@ -71,6 +79,25 @@ val_smmu_execute_tests(uint32_t level, uint32_t num_pe)
   status |= i005_entry(num_pe);
   status |= i006_entry(num_pe);
 
+  status_version_chk = i007_entry(num_pe);
+  status |= status_version_chk;
+
+  if (g_sbsa_level > 5) {
+      if (status_version_chk != AVS_STATUS_PASS) {
+          val_print(AVS_PRINT_ERR, "\n      SMMU Version Not Compliant, Skipping Remaining SMMU Tests...\n", 0);
+      } else {
+          status |= i008_entry(num_pe);
+          status |= i009_entry(num_pe);
+          status |= i010_entry(num_pe);
+          status |= i011_entry(num_pe);
+          status |= i012_entry(num_pe);
+          status |= i013_entry(num_pe);
+          status |= i014_entry(num_pe);
+          status |= i015_entry(num_pe);
+          status |= i016_entry(num_pe);
+      }
+  }
+
   if (status != AVS_STATUS_PASS) {
       val_print(AVS_PRINT_ERR, "\n      One or more SMMU tests have failed...  \n", status);
   }
@@ -78,7 +105,6 @@ val_smmu_execute_tests(uint32_t level, uint32_t num_pe)
   return status;
 }
 #endif
-
 
 uint32_t
 val_smmu_start_monitor_dev(uint32_t ctrl_index)

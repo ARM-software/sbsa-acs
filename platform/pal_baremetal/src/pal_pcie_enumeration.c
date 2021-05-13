@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2020, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2021, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,7 +17,7 @@
 
 #include "include/pal_pcie_enum.h"
 #include "include/pal_common_support.h"
-#include "include/platform_override_fvp.h"
+#include "FVP/include/platform_override_fvp.h"
 
 extern PCIE_INFO_TABLE *g_pcie_info_table;
 
@@ -77,21 +77,25 @@ void pal_pcie_program_bar_reg(uint32_t bus, uint32_t dev, uint32_t func)
 {
 
   uint64_t bar_size, bar_upper_bits;
-  uint32_t bar_reg_value, offset = BAR0_OFFSET;
+  uint32_t base, bar_reg_value, bar_reg_value_1, offset = BAR0_OFFSET;
 
   while(offset <= BAR_MAX_OFFSET)
   {
     pal_pci_cfg_read(bus, dev, func, offset, &bar_reg_value);
     if (bar_reg_value == 0)
     {
-	    /** This BAR is not implemented **/
-            offset=offset + 4;
+        /** This BAR is not implemented **/
+            offset = offset + 4;
             continue;
     }
+
+    base = 0;
 
     if (BAR_REG(bar_reg_value) == BAR_64_BIT)
     {
         print(AVS_PRINT_INFO, "The BAR supports 64-bit address decoding capability \n", 0);
+        pal_pci_cfg_read(bus, dev, func, offset+4, &bar_reg_value_1);
+        base = bar_reg_value;
 
         /** BAR supports 64-bit address therefore, write all 1's
           *  to BARn and BARn+1 and identify the size requested
@@ -110,12 +114,18 @@ void pal_pcie_program_bar_reg(uint32_t bus, uint32_t dev, uint32_t func)
         pal_pci_cfg_write(bus, dev, func, offset, g_bar64_start);
         print(AVS_PRINT_INFO, "Value written to BAR register is %x\n", g_bar64_start);
         g_bar64_start = g_bar64_start + bar_size;
-        offset=offset+8;
+
+        /* Restore the original BAR value */
+        pal_pci_cfg_write(bus, dev, func, offset + 4, bar_reg_value_1);
+        pal_pci_cfg_write(bus, dev, func, offset, base);
+
+        offset = offset + 8;
     }
 
     if (BAR_REG(bar_reg_value) == BAR_32_BIT)
     {
         print(AVS_PRINT_INFO, "The BAR supports 32-bit address decoding capability\n", 0);
+        base = bar_reg_value;
 
         /**BAR supports 32-bit address. Write all 1's
          * to BARn and identify the size requested
@@ -127,7 +137,11 @@ void pal_pcie_program_bar_reg(uint32_t bus, uint32_t dev, uint32_t func)
         pal_pci_cfg_write(bus, dev, func, offset, g_bar32_start);
         print(AVS_PRINT_INFO, "Value written to BAR register is %x\n", g_bar32_start);
         g_bar32_start = g_bar32_start + bar_size;
-        offset=offset+4;
+
+        /* Restore the original BAR value */
+        pal_pci_cfg_write(bus, dev, func, offset, base);
+
+        offset = offset + 4;
      }
   }
 }
@@ -279,6 +293,8 @@ pal_pcie_get_base(uint32_t bdf, uint32_t bar_index)
   Func = PCIE_EXTRACT_BDF_FUNC(bdf);
 
   offset = BAR0_OFFSET + (4*bar_index);
+
+
   pal_pci_cfg_read(Bus, Dev, Func, offset, &bar_reg_value);
   if (BAR_REG(bar_reg_value) == BAR_64_BIT)
   {
@@ -289,7 +305,9 @@ pal_pcie_get_base(uint32_t bdf, uint32_t bar_index)
   }
   if (BAR_REG(bar_reg_value) == BAR_32_BIT)
   {
-     bar_value = bar_reg_value;
+     bar_value = bar_reg_value & 0xFFFFFFF0;
+
+
   }
   print(AVS_PRINT_INFO, "value read from BAR %x\n", bar_value);
 

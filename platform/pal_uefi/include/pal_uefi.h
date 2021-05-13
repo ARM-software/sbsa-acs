@@ -82,7 +82,8 @@ typedef struct {
 typedef enum {
   ENTRY_TYPE_CPUIF = 0x1000,
   ENTRY_TYPE_GICD,
-  ENTRY_TYPE_GICRD,
+  ENTRY_TYPE_GICC_GICRD,
+  ENTRY_TYPE_GICR_GICRD,
   ENTRY_TYPE_GICITS
 }GIC_INFO_TYPE_e;
 
@@ -100,6 +101,8 @@ typedef enum {
 typedef struct {
   UINT32 type;
   UINT64 base;
+  UINT32 its_id;  /* This its_id is only used in case of ITS Type entry */
+  UINT32 length;  /* This length is only used in case of Re-Distributor Range Address length */
 }GIC_INFO_ENTRY;
 
 /**
@@ -382,9 +385,12 @@ typedef struct {
 VOID  pal_memory_create_info_table(MEMORY_INFO_TABLE *memoryInfoTable);
 
 VOID    *pal_mem_alloc(UINT32 size);
-VOID    *pal_mem_alloc_coherent(UINT32 bdf, UINT32 size, VOID *pa);
-VOID    pal_mem_free_coherent(UINT32 bdf, UINT32 size, VOID *va, VOID *pa);
+VOID    *pal_mem_alloc_cacheable(UINT32 bdf, UINT32 size, VOID **pa);
+VOID    pal_mem_free_cacheable(UINT32 bdf, UINT32 size, VOID *va, VOID *pa);
 VOID    *pal_mem_virt_to_phys(VOID *va);
 VOID    *pal_mem_phys_to_virt(UINT64 pa);
 UINT64  pal_memory_get_unpopulated_addr(UINT64 *addr, UINT32 instance);
+
+UINT32 pal_pe_get_num();
+
 #endif

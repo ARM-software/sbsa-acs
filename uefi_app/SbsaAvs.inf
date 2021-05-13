@@ -1,5 +1,5 @@
 ## @file
-#  Copyright (c) 2016-2020, Arm Limited or its affiliates. All rights reserved.
+#  Copyright (c) 2016-2021, Arm Limited or its affiliates. All rights reserved.
 #  SPDX-License-Identifier : Apache-2.0
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
@@ -31,9 +31,6 @@
 [Sources.AARCH64]
   ../
   SbsaAvsMain.c
-  ../test_pool/secure/test_s001.c
-  ../test_pool/secure/test_s002.c
-  ../test_pool/secure/test_s003.c
   ../test_pool/pe/test_c001.c
   ../test_pool/pe/test_c002.c
   ../test_pool/pe/test_c003.c
@@ -70,8 +67,6 @@
   ../test_pool/pe/test_c034.c
   ../test_pool/pe/test_c035.c
   ../test_pool/pe/test_c036.c
-  ../test_pool/pe/test_c037.c
-  ../test_pool/pe/test_c038.c
   ../test_pool/gic/test_g001.c
   ../test_pool/gic/test_g002.c
   ../test_pool/gic/test_g003.c
@@ -86,9 +81,24 @@
   ../test_pool/timer_wd/test_t008.c
   ../test_pool/timer_wd/test_w001.c
   ../test_pool/timer_wd/test_w002.c
+  ../test_pool/timer_wd/test_w003.c
   ../test_pool/pcie/test_p001.c
   ../test_pool/pcie/test_p002.c
   ../test_pool/pcie/test_p003.c
+  ../test_pool/pcie/test_p006.c
+  ../test_pool/pcie/test_p007.c
+  ../test_pool/pcie/test_p008.c
+  ../test_pool/pcie/test_p009.c
+  ../test_pool/pcie/test_p010.c
+  ../test_pool/pcie/test_p011.c
+  ../test_pool/pcie/test_p012.c
+  ../test_pool/pcie/test_p013.c
+  ../test_pool/pcie/test_p014.c
+  ../test_pool/pcie/test_p015.c
+  ../test_pool/pcie/test_p016.c
+  ../test_pool/pcie/test_p017.c
+  ../test_pool/pcie/test_p018.c
+  ../test_pool/pcie/test_p019.c
   ../test_pool/pcie/test_p020.c
   ../test_pool/pcie/test_p021.c
   ../test_pool/pcie/test_p022.c
@@ -116,19 +126,39 @@
   ../test_pool/pcie/test_p044.c
   ../test_pool/pcie/test_p045.c
   ../test_pool/pcie/test_p046.c
+  ../test_pool/pcie/test_p047.c
+  ../test_pool/pcie/test_p048.c
+  ../test_pool/pcie/test_p049.c
+  ../test_pool/pcie/test_p050.c
+  ../test_pool/pcie/test_p051.c
+  ../test_pool/pcie/test_p052.c
+  ../test_pool/pcie/test_p053.c
+  ../test_pool/pcie/test_p054.c
+  ../test_pool/pcie/test_p055.c
+  ../test_pool/pcie/test_p056.c
+  ../test_pool/pcie/test_p057.c
   ../test_pool/io_virt/test_i001.c
   ../test_pool/io_virt/test_i002.c
   ../test_pool/io_virt/test_i003.c
   ../test_pool/io_virt/test_i004.c
   ../test_pool/io_virt/test_i005.c
   ../test_pool/io_virt/test_i006.c
+  ../test_pool/io_virt/test_i007.c
+  ../test_pool/io_virt/test_i008.c
+  ../test_pool/io_virt/test_i009.c
+  ../test_pool/io_virt/test_i010.c
+  ../test_pool/io_virt/test_i011.c
+  ../test_pool/io_virt/test_i012.c
+  ../test_pool/io_virt/test_i013.c
+  ../test_pool/io_virt/test_i014.c
+  ../test_pool/io_virt/test_i015.c
+  ../test_pool/io_virt/test_i016.c
   ../test_pool/power_wakeup/test_u001.c
   ../test_pool/power_wakeup/test_u002.c
   ../test_pool/peripherals/test_d001.c
   ../test_pool/peripherals/test_d002.c
   ../test_pool/peripherals/test_d003.c
   ../test_pool/peripherals/test_m001.c
-  ../test_pool/peripherals/test_m002.c
   ../test_pool/exerciser/test_e001.c
   ../test_pool/exerciser/test_e002.c
   ../test_pool/exerciser/test_e003.c
@@ -139,6 +169,11 @@
   ../test_pool/exerciser/test_e008.c
   ../test_pool/exerciser/test_e009.c
   ../test_pool/exerciser/test_e010.c
+  ../test_pool/exerciser/test_e011.c
+  ../test_pool/exerciser/test_e012.c
+  ../test_pool/exerciser/test_e013.c
+  ../test_pool/exerciser/test_e014.c
+  ../test_pool/exerciser/test_e015.c
 
 [Packages]
   StdLib/StdLib.dec
@@ -146,11 +181,11 @@
   MdePkg/MdePkg.dec
   MdeModulePkg/MdeModulePkg.dec
   ShellPkg/ShellPkg.dec
-  EdkCompatibilityPkg/EdkCompatibilityPkg.dec
 
 [LibraryClasses]
   SbsaValLib
-  SbsaPalLib
+  SbsaPalFVPLib
+  SbsaPalBaremetalLib
   UefiLib
   ShellLib
   DebugLib

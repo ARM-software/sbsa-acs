@@ -20,6 +20,7 @@
 #include  <Library/ShellLib.h>
 #include  <Library/PrintLib.h>
 #include  <Library/BaseMemoryLib.h>
+#include <Protocol/Cpu.h>
 
 
 #include "include/pal_uefi.h"
@@ -121,7 +122,6 @@ pal_mmio_write(UINT64 addr, UINT32 data)
 {
   sbsa_print(AVS_PRINT_INFO, L" pal_mmio_write Address = %lx  Data = %x \n", addr, data);
   *(volatile UINT32 *)addr = data;
-
 }
 
 /**
@@ -329,31 +329,73 @@ pal_mem_alloc (
 
 }
 
-/* Place holder function. Need to be
- * implemented if needed in later releases
+/**
+ * @brief  Allocates requested buffer size in bytes in a contiguous cacheable
+ *         memory and returns the base address of the range.
+ *
+ * @param  Size         allocation size in bytes
+ * @param  Pa           Pointer to Physical Addr
+ * @retval if SUCCESS   Pointer to Virtual Addr
+ * @retval if FAILURE   NULL
  */
 VOID *
-pal_mem_alloc_coherent (
+pal_mem_alloc_cacheable (
   UINT32 Bdf,
   UINT32 Size,
-  VOID *Pa
+  VOID **Pa
   )
 {
-  return NULL;
+  EFI_PHYSICAL_ADDRESS      Address;
+  EFI_CPU_ARCH_PROTOCOL     *Cpu;
+  EFI_STATUS                Status;
+
+  Status = gBS->AllocatePages (AllocateAnyPages,
+                               EfiBootServicesData,
+                               EFI_SIZE_TO_PAGES(Size),
+                               &Address);
+  if (EFI_ERROR(Status)) {
+    sbsa_print(AVS_PRINT_ERR, L"Allocate Pool failed %x \n", Status);
+    return NULL;
+  }
+
+  /* Check Whether Cpu architectural protocol is installed */
+  Status = gBS->LocateProtocol ( &gEfiCpuArchProtocolGuid, NULL, (VOID **)&Cpu);
+  if (EFI_ERROR(Status)) {
+    sbsa_print(AVS_PRINT_ERR, L"Could not get Cpu Arch Protocol %x \n", Status);
+    return NULL;
+  }
+
+  /* Set Memory Attributes */
+  Status = Cpu->SetMemoryAttributes (Cpu,
+                                     Address,
+                                     Size,
+                                     EFI_MEMORY_WB);
+  if (EFI_ERROR (Status)) {
+    sbsa_print(AVS_PRINT_ERR, L"Could not Set Memory Attribute %x \n", Status);
+    return NULL;
+  }
+
+  *Pa = (VOID *)Address;
+  return (VOID *)Address;
 }
 
-/* Place holder function. Need to be
- * implemented if needed in later releases
+/**
+ * @brief  Free the cacheable memory region allocated above
+ *
+ * @param  Size         allocation size in bytes
+ * @param  Va           Pointer to Virtual Addr
+ * @param  Pa           Pointer to Physical Addr
+ * @retval None
  */
 VOID
-pal_mem_free_coherent (
+pal_mem_free_cacheable (
   UINT32 Bdf,
   UINT32 Size,
   VOID *Va,
   VOID *Pa
   )
 {
-
+  gBS->FreePages((EFI_PHYSICAL_ADDRESS)(UINTN)Va, EFI_SIZE_TO_PAGES(Size));
 }
 
 /* Place holder function. Need to be
