@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2020, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2021, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,6 +18,23 @@
 
 #include "include/pal_pcie_enum.h"
 #include "include/pal_common_support.h"
+
+#ifdef ENABLE_OOB
+/* Below code is not applicable for Bare-metal
+ * Only for FVP OOB experience
+ */
+
+#include  <Library/ShellCEntryLib.h>
+#include  <Library/UefiBootServicesTableLib.h>
+#include  <Library/UefiLib.h>
+#include  <Library/ShellLib.h>
+#include  <Library/PrintLib.h>
+#include  <Library/BaseMemoryLib.h>
+#include <Protocol/Cpu.h>
+
+#endif
+
+extern VOID* g_sbsa_log_file_handle;
 
 uint8_t   *gSharedMemory;
 /**
@@ -188,6 +205,25 @@ void
 pal_print(char *string, uint64_t data)
 {
 
+#ifdef ENABLE_OOB
+ /* Below code is not applicable for Bare-metal
+  * Only for FVP OOB experience
+ */
+
+ if(g_sbsa_log_file_handle)
+  {
+    CHAR8 Buffer[1024];
+    UINTN BufferSize = 1;
+    EFI_STATUS Status = 0;
+    BufferSize = AsciiSPrint(Buffer, 1024, string, data);
+    AsciiPrint(Buffer);
+    Status = ShellWriteFile(g_sbsa_log_file_handle, &BufferSize, (VOID*)Buffer);
+    if(EFI_ERROR(Status))
+      print(AVS_PRINT_ERR, "Error in writing to log file\n", 0);
+  } else
+      AsciiPrint(string, data);
+#endif
+
 }
 
 /**
@@ -348,9 +384,49 @@ pal_mem_allocate_shared(uint32_t num_pe, uint32_t sizeofentry)
   @param  Pa:   physical address of the allocated memory
 **/
 void *
-pal_mem_alloc_coherent(uint32_t Bdf, uint32_t Size, void *Pa)
+pal_mem_alloc_cacheable(uint32_t Bdf, uint32_t Size, void **Pa)
 {
-  return NULL;
+
+#ifdef ENABLE_OOB
+ /* Below code is not applicable for Bare-metal
+  * Only for FVP OOB experience
+  */
+
+  EFI_PHYSICAL_ADDRESS      Address;
+  EFI_CPU_ARCH_PROTOCOL     *Cpu;
+  EFI_STATUS                Status;
+
+  Status = gBS->AllocatePages (AllocateAnyPages,
+                               EfiBootServicesData,
+                               EFI_SIZE_TO_PAGES(Size),
+                               &Address);
+  if (EFI_ERROR(Status)) {
+    print(AVS_PRINT_ERR, "Allocate Pool failed %x \n", Status);
+    return NULL;
+  }
+
+  /* Check Whether Cpu architectural protocol is installed */
+  Status = gBS->LocateProtocol ( &gEfiCpuArchProtocolGuid, NULL, (VOID **)&Cpu);
+  if (EFI_ERROR(Status)) {
+    print(AVS_PRINT_ERR, "Could not get Cpu Arch Protocol %x \n", Status);
+    return NULL;
+  }
+
+  /* Set Memory Attributes */
+  Status = Cpu->SetMemoryAttributes (Cpu,
+                                     Address,
+                                     Size,
+                                     EFI_MEMORY_WB);
+  if (EFI_ERROR (Status)) {
+    print(AVS_PRINT_ERR, "Could not Set Memory Attribute %x \n", Status);
+    return NULL;
+  }
+
+  *Pa = (VOID *)Address;
+  return (VOID *)Address;
+#endif
+
+  return 0;
 }
 
 /**
@@ -362,8 +438,16 @@ pal_mem_alloc_coherent(uint32_t Bdf, uint32_t Size, void *Pa)
   @param  Pa:   physical address of the memory to be freed
 **/
 void
-pal_mem_free_coherent(uint32_t Bdf, uint32_t Size, void *Va, void *Pa)
+pal_mem_free_cacheable(uint32_t Bdf, uint32_t Size, void *Va, void *Pa)
 {
+
+#ifdef ENABLE_OOB
+ /* Below code is not applicable for Bare-metal
+  * Only for FVP OOB experience
+  */
+
+  gBS->FreePages((EFI_PHYSICAL_ADDRESS)(UINTN)Va, EFI_SIZE_TO_PAGES(Size));
+#endif
 
 }
 
@@ -428,6 +512,13 @@ uint64_t
 pal_time_delay_ms(uint64_t MicroSeconds)
 {
   /**Need to implement**/
+#ifdef ENABLE_OOB
+ /* Below code is not applicable for Bare-metal
+ * Only for FVP OOB experience
+ */
+
+  return gBS->Stall(MicroSeconds);
+#endif
   return 0;
 }
 
@@ -439,7 +530,14 @@ pal_time_delay_ms(uint64_t MicroSeconds)
 uint32_t
 pal_mem_page_size()
 {
-  return 0;
+#ifdef ENABLE_OOB
+ /* Below code is not applicable for Bare-metal
+ * Only for FVP OOB experience
+ */
+
+    return EFI_PAGE_SIZE;
+#endif
+    return 0;
 }
 
 /**
@@ -451,7 +549,28 @@ pal_mem_page_size()
 void *
 pal_mem_alloc_pages (uint32_t NumPages)
 {
-   return 0;
+#ifdef ENABLE_OOB
+ /* Below code is not applicable for Bare-metal
+ * Only for FVP OOB experience
+ */
+
+  EFI_STATUS Status;
+  EFI_PHYSICAL_ADDRESS PageBase;
+
+  Status = gBS->AllocatePages (AllocateAnyPages,
+                               EfiBootServicesData,
+                               NumPages,
+                               &PageBase);
+  if (EFI_ERROR(Status))
+  {
+    print(AVS_PRINT_ERR, "Allocate Pages failed %x \n", Status);
+    return NULL;
+  }
+
+  return (VOID*)(UINTN)PageBase;
+#endif
+  return 0;
+
 }
 
 /**
@@ -462,5 +581,11 @@ pal_mem_alloc_pages (uint32_t NumPages)
 void
 pal_mem_free_pages(void *PageBase, uint32_t NumPages)
 {
+#ifdef ENABLE_OOB
+ /* Below code is not applicable for Bare-metal
+ * Only for FVP OOB experience
+ */
 
+  gBS->FreePages((EFI_PHYSICAL_ADDRESS)(UINTN)PageBase, NumPages);
+#endif
 }

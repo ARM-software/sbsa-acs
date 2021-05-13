@@ -26,6 +26,8 @@
 
 #define SMMUv3_IDR0   0x00
 #define SMMUv3_IDR1   0x04
+#define SMMUv3_IDR2   0x08
+#define SMMUv3_IDR3   0x0C
 #define SMMUv3_IDR5   0x14
 #define SMMUv3_IIDR   0x18
 #define SMMUv3_AIDR   0x1C
@@ -55,10 +57,10 @@ uint64_t
 val_smmu_pa2iova(uint32_t smmu_index, uint64_t pa);
 
 uint32_t
-val_smmu_init();
+val_smmu_init(void);
 
 void
-val_smmu_stop();
+val_smmu_stop(void);
 
 uint64_t
 val_smmu_map(smmu_master_attributes_t master,
@@ -80,5 +82,25 @@ uint32_t
 i005_entry(uint32_t num_pe);
 uint32_t
 i006_entry(uint32_t num_pe);
+uint32_t
+i007_entry(uint32_t num_pe);
+uint32_t
+i008_entry(uint32_t num_pe);
+uint32_t
+i009_entry(uint32_t num_pe);
+uint32_t
+i010_entry(uint32_t num_pe);
+uint32_t
+i011_entry(uint32_t num_pe);
+uint32_t
+i012_entry(uint32_t num_pe);
+uint32_t
+i013_entry(uint32_t num_pe);
+uint32_t
+i014_entry(uint32_t num_pe);
+uint32_t
+i015_entry(uint32_t num_pe);
+uint32_t
+i016_entry(uint32_t num_pe);
 
 #endif

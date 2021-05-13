@@ -33,13 +33,13 @@ uint32_t
 uart_reg_read(uint32_t offset, uint32_t width_mask)
 {
   if (width_mask & WIDTH_BIT8)
-      return *((uint8_t *)(l_uart_base + offset));
+      return *((volatile uint8_t *)(l_uart_base + offset));
 
   if (width_mask & WIDTH_BIT16)
-      return *((uint16_t *)(l_uart_base + offset));
+      return *((volatile uint16_t *)(l_uart_base + offset));
 
   if (width_mask & WIDTH_BIT32)
-      return *((uint32_t *)(l_uart_base + offset));
+      return *((volatile uint32_t *)(l_uart_base + offset));
 
   return 0;
 }
@@ -48,13 +48,13 @@ void
 uart_reg_write(uint32_t offset, uint32_t width_mask, uint32_t data)
 {
   if (width_mask & WIDTH_BIT8)
-      *((uint8_t *)(l_uart_base + offset)) = (uint8_t)data;
+      *((volatile uint8_t *)(l_uart_base + offset)) = (uint8_t)data;
 
   if (width_mask & WIDTH_BIT16)
-      *((uint16_t *)(l_uart_base + offset)) = (uint16_t)data;
+      *((volatile uint16_t *)(l_uart_base + offset)) = (uint16_t)data;
 
   if (width_mask & WIDTH_BIT32)
-      *((uint32_t *)(l_uart_base + offset)) = (uint32_t)data;
+      *((volatile uint32_t *)(l_uart_base + offset)) = (uint32_t)data;
 
 }
 

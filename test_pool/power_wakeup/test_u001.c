@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2019, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2019, 2021 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -117,7 +117,7 @@ isr5()
 void
 wakeup_set_failsafe()
 {
-  uint64_t timer_expire_val = TIMEOUT_LARGE;
+  uint64_t timer_expire_val = TIMEOUT_LARGE * 10;
 
   intid = val_timer_get_info(TIMER_INFO_PHY_EL1_INTID, 0);
   val_gic_install_isr(intid, isr_failsafe);
@@ -186,7 +186,7 @@ void
 payload4()
 {
   uint32_t status, ns_wdg = 0;
-  uint64_t timer_expire_val = TIMEOUT_SMALL;
+  uint64_t timer_expire_val = 1;
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
 
   timer_num = val_wd_get_info(0, WD_INFO_COUNT);
@@ -205,7 +205,13 @@ payload4()
       status = val_gic_install_isr(intid, isr4);
       if (status == 0) {
           wakeup_set_failsafe();
-          val_wd_set_ws0(timer_num, timer_expire_val);
+          status = val_wd_set_ws0(timer_num, timer_expire_val);
+          if (status) {
+              val_print(AVS_PRINT_ERR, "\n       Setting watchdof timeout failed", 0);
+              val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM4, 02));
+              return;
+          }
+
           val_power_enter_semantic(SBSA_POWER_SEM_B);
           wakeup_clear_failsafe();
       } else {

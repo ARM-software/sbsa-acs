@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2020, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2021, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -60,6 +60,8 @@
 
 #define MAX_BITFIELD_ENTRIES 100
 #define ERR_STRING_SIZE 64
+
+#define MEM_OFFSET_10   0x10
 
 /* Allows storage of 2048 valid BDFs */
 #define PCIE_DEVICE_BDF_TABLE_SZ 8192
@@ -191,6 +193,9 @@ uint32_t
 val_pcie_get_atomicop_requester_capable(uint32_t bdf);
 
 uint32_t
+val_pcie_is_cache_present(uint32_t bdf);
+
+uint32_t
 p001_entry(uint32_t num_pe);
 
 uint32_t
@@ -198,9 +203,6 @@ p002_entry(uint32_t num_pe);
 
 uint32_t
 p003_entry(uint32_t num_pe);
-
-uint32_t
-p004_entry(uint32_t num_pe);
 
 uint32_t
 p005_entry(uint32_t num_pe);
@@ -327,4 +329,38 @@ p045_entry(uint32_t num_pe);
 
 uint32_t
 p046_entry(uint32_t num_pe);
+
+uint32_t
+p047_entry(uint32_t num_pe);
+
+uint32_t
+p048_entry(uint32_t num_pe);
+
+uint32_t
+p049_entry(uint32_t num_pe);
+
+uint32_t
+p050_entry(uint32_t num_pe);
+
+uint32_t
+p051_entry(uint32_t num_pe);
+
+uint32_t
+p052_entry(uint32_t num_pe);
+
+uint32_t
+p053_entry(uint32_t num_pe);
+
+uint32_t
+p054_entry(uint32_t num_pe);
+
+uint32_t
+p055_entry(uint32_t num_pe);
+
+uint32_t
+p056_entry(uint32_t num_pe);
+
+uint32_t
+p057_entry(uint32_t num_pe);
+
 #endif

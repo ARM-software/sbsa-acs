@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2019-2020, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2019-2021, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -38,6 +38,10 @@
 #define TYPE01_CPR_MASK     0xff
 #define TYPE01_HTR_SHIFT    16
 #define TYPE01_HTR_MASK     0xff
+#define TYPE01_IPR_SHIFT    8
+#define TYPE01_IPR_MASK     0xFF
+#define TYPE01_ILR_SHIFT    0
+#define TYPE01_ILR_MASK     0xFF
 
 #define TYPE0_HEADER 0
 #define TYPE1_HEADER 1
@@ -64,6 +68,14 @@
 #define CR_FBTE_MASK   0x1
 #define CR_ID_MASK     0x1
 
+/* Status Register */
+#define SR_STA_SHIFT   27
+#define SR_STA_MASK    0x1
+
+/* Secondary Status Register */
+#define SSR_STA_SHIFT  27
+#define SSR_STA_MASK   0x1
+
 /* Class Code Masks */
 #define CC_SUB_MASK     0xFF   /* Sub Class */
 #define CC_BASE_MASK    0xFF   /* Base Class */
@@ -84,7 +96,9 @@
 
 /* Header type reg shifts and masks */
 #define HTR_HL_SHIFT   0x0
-#define HTR_HL_MASK    0x3f
+#define HTR_HL_MASK    0x7f
+#define HTR_MFD_SHIFT  7
+#define HTR_MFD_MASK   0x1
 
 /* BAR register shifts */
 #define BAR_MIT_SHIFT   0
@@ -98,11 +112,36 @@
 #define BAR_MT_MASK     0x1
 #define BAR_BASE_MASK   0xfffffff
 
+/*BAR offset */
+#define BAR0_OFFSET        0x10
+#define BAR_MAX_OFFSET     0x24
+#define BAR_64_BIT         1
+#define BAR_32_BIT         0
+#define BAR_REG(bar_reg_value) ((bar_reg_value >> 2) & 0x1)
+
 #define TYPE0_MAX_BARS  6
 #define TYPE1_MAX_BARS  2
 
 /* Type 1 Cfg reg offsets */
-#define TYPE1_PBN  0x18
+#define TYPE1_PBN       0x18
+#define TYPE1_SEC_STA   0x1C
+#define TYPE1_NP_MEM    0x20
+#define TYPE1_P_MEM     0x24
+#define TYPE1_P_MEM_BU  0x28    /* Prefetchable Base Upper Offset */
+#define TYPE1_P_MEM_LU  0x2C    /* Prefetchable Limit Upper Offset */
+
+/* Type 1 Bridge Control Register */
+#define BRIDGE_CTRL_SBR_SET     0x400000
+
+/* Memory Base Reg Shifts */
+#define MEM_BA_SHIFT        16
+#define MEM_BA_MASK         0xFFF0
+#define MEM_LIM_LOWER_BITS  ((1 << 20) - 1)
+#define MEM_LIM_MASK        0xFFF00000
+
+#define P_MEM_PAC_MASK  0xF
+#define P_MEM_BU_SHIFT  32      /* Base Upper Shift */
+#define P_MEM_LU_SHIFT  32      /* Limit Upper Shift */
 
 /* Bus Number reg shifts */
 #define SECBN_SHIFT 8
@@ -134,6 +173,8 @@
 #define CID_MSI        0x05
 #define CID_MSIX       0x11
 #define CID_PMC        0x01
+#define ECID_AER       0x0001
+#define ECID_ACS       0x000D
 #define ECID_ARICS     0x000E
 #define ECID_ATS       0x000F
 #define ECID_PRI       0x0013
@@ -142,9 +183,16 @@
 #define CIDR_OFFSET    0
 #define PCIECR_OFFSET  2
 #define DCAPR_OFFSET   4
+#define ACSCR_OFFSET   4
 #define DCTLR_OFFSET   8
 #define DCAP2R_OFFSET  24
 #define DCTL2R_OFFSET  28
+
+/* ACS Capability Register */
+#define ACS_CTRL_SVE_SHIFT  16
+#define ACS_CTRL_TBE_SHIFT  17
+#define ACS_CTRL_RRE_SHIFT  18
+#define ACS_CTRL_UFE_SHIFT  20
 
 /* PCIe capabilities reg shifts and masks */
 #define PCIECR_DPT_SHIFT 4
@@ -233,5 +281,17 @@
 #define iEP_EP   (1 << 0b1100)
 #define iEP_RP   (1 << 0b1011)
 #define PCIe_ALL (iEP_RP | iEP_EP | RP | EP | RCEC | RCiEP)
+
+/* MSI-X Capabilities */
+#define MSI_X_ENABLE_SHIFT          31
+
+#define MSI_X_TOR_OFFSET            0x4
+
+#define MSI_X_MSG_TBL_ADDR_OFFSET   0x0
+#define MSI_X_MSG_TBL_DATA_OFFSET   0x8
+#define MSI_X_MSG_TBL_MVC_OFFSET    0xC
+
+#define MSI_X_TABLE_BIR_MASK        0x7
+#define MSI_X_ENTRY_SIZE            16 /* Size of Single MSI Entry in MSI Table */
 
 #endif

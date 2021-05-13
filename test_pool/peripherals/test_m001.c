@@ -58,8 +58,6 @@ payload()
 
   val_pe_install_esr(EXCEPT_AARCH64_SYNCHRONOUS_EXCEPTIONS, esr);
   val_pe_install_esr(EXCEPT_AARCH64_SERROR, esr);
-  val_pe_install_esr(EXCEPT_AARCH64_IRQ, esr);
-  val_pe_install_esr(EXCEPT_AARCH64_FIQ, esr);
 
   /* If we don't find a single un-populated address, mark this test as skipped */
   val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
@@ -92,6 +90,7 @@ exception_taken:
           }
 
       }
+
       loop_var--;
       instance++;
   }

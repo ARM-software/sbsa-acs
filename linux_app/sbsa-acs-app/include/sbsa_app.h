@@ -20,8 +20,8 @@
 #define __SBSA_APP_LINUX_H__
 
 
-#define SBSA_APP_VERSION_MAJOR  2
-#define SBSA_APP_VERSION_MINOR  4
+#define SBSA_APP_VERSION_MAJOR  3
+#define SBSA_APP_VERSION_MINOR  0
 
 #include "sbsa_drv_intf.h"
 

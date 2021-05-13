@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2020, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2020, 2021 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -35,7 +35,9 @@
 #define PGT_DESC_ATTRIBUTES_MASK (PGT_DESC_ATTR_UPPER_MASK | PGT_DESC_ATTR_LOWER_MASK)
 #define PGT_DESC_ATTRIBUTES(val) (val & PGT_DESC_ATTRIBUTES_MASK)
 
+#define PGT_STAGE1_AP_RO (0x3ull << 6)
 #define PGT_STAGE1_AP_RW (0x1ull << 6)
+#define PGT_STAGE2_AP_RO (0x1ull << 6)
 #define PGT_STAGE2_AP_RW (0x3ull << 6)
 
 uint32_t val_pgt_create(memory_region_descriptor_t *mem_desc, pgt_descriptor_t *pgt_desc);

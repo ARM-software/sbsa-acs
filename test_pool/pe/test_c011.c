@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018, 2021 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -67,14 +67,11 @@ payload()
 
   int_id = val_pe_get_pmu_gsiv(index);
 
-  /* For SBSA level 2 and above, the PPI has to be a specific value. */
-  if (g_sbsa_level > 1) {
-      if (int_id != 23) {
-          timeout = 0;
-          val_print(AVS_PRINT_ERR, "\n       Incorrect PPI value      %d       ", int_id);
-          val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
-          return;
-      }
+  if (int_id != 23) {
+      timeout = 0;
+      val_print(AVS_PRINT_ERR, "\n       Incorrect PPI value      %d       ", int_id);
+      val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
+      return;
   }
 
   val_gic_install_isr(int_id, isr);

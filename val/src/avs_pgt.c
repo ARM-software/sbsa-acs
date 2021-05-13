@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2020, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2019, 2021 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,7 +21,7 @@
 #include "include/sbsa_avs_pgt.h"
 #include "include/sbsa_avs_memory.h"
 
-#define min(a, b) (a < b)?a:b
+#define get_min(a, b) ((a) < (b))?(a):(b)
 
 #define PGT_DEBUG_LEVEL AVS_PRINT_INFO
 
@@ -103,7 +103,7 @@ uint32_t fill_translation_table(tt_descriptor_t tt_desc, memory_region_descripto
 
         tt_desc_next_level.tt_base = tt_base_next_level;
         tt_desc_next_level.input_base = input_address;
-        tt_desc_next_level.input_top = min(tt_desc.input_top, (input_address + block_size - 1));
+        tt_desc_next_level.input_top = get_min(tt_desc.input_top, (input_address + block_size - 1));
         tt_desc_next_level.output_base = output_address;
         tt_desc_next_level.level = tt_desc.level + 1;
         tt_desc_next_level.size_log2 = tt_desc.size_log2 - bits_per_level;
@@ -122,7 +122,7 @@ uint32_t fill_translation_table(tt_descriptor_t tt_desc, memory_region_descripto
     return 0;
 }
 
-uint32_t ilog2(uint64_t size)
+uint32_t log2_page_size(uint64_t size)
 {
     int bit = 0;
     while (size != 0)
@@ -149,7 +149,7 @@ uint32_t val_pgt_create(memory_region_descriptor_t *mem_desc, pgt_descriptor_t *
     memory_region_descriptor_t *mem_desc_iter;
 
     page_size = val_memory_page_size();
-    page_size_log2 = ilog2(page_size);
+    page_size_log2 = log2_page_size(page_size);
     bits_per_level = page_size_log2 - 3;
     num_pgt_levels = (pgt_desc->ias - page_size_log2 + bits_per_level - 1)/bits_per_level;
     val_print(PGT_DEBUG_LEVEL, "\n      val_pgt_create: nbits_per_level = %d    ", bits_per_level);
@@ -194,13 +194,6 @@ uint32_t val_pgt_create(memory_region_descriptor_t *mem_desc, pgt_descriptor_t *
             val_print(AVS_PRINT_ERR, "\n      val_pgt_create: input page_size 0x%x not supported     ", (0x1 << pgt_desc->tcr.tg_size_log2));
             return AVS_STATUS_ERR;
         }
-
-        if (pgt_desc->stage == PGT_STAGE1)
-            mem_desc->attributes |= PGT_STAGE1_AP_RW;
-        else if (pgt_desc->stage == PGT_STAGE2)
-            mem_desc->attributes |= PGT_STAGE2_AP_RW;
-        else
-            return AVS_STATUS_ERR;
 
         tt_desc.input_base = mem_desc->virtual_address & ((0x1ull << pgt_desc->ias) - 1);
         tt_desc.input_top = tt_desc.input_base + mem_desc->length - 1;
@@ -316,7 +309,7 @@ void val_pgt_destroy(pgt_descriptor_t pgt_desc)
 
     val_print(PGT_DEBUG_LEVEL, "\n      val_pgt_destroy: pgt_base = %llx     ", pgt_desc.pgt_base);
     page_size = val_memory_page_size();
-    page_size_log2 = ilog2(page_size);
+    page_size_log2 = log2_page_size(page_size);
     bits_per_level =  page_size_log2 - 3;
     pgt_addr_mask = ((0x1ull << (pgt_desc.ias - page_size_log2)) - 1) << page_size_log2;
     num_pgt_levels = (pgt_desc.ias - page_size_log2 + bits_per_level - 1)/bits_per_level;

@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2020, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2021, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -52,21 +52,24 @@
 #define PLATFORM_OVERRIDE_PE7_PMU_GSIV  0x17
 
 /* GIC platform config parameters*/
-#define PLATFORM_OVERRIDE_GIC_VERSION   0x3
-#define PLATFORM_OVERRIDE_CORE_COUNT    0x4
-#define PLATFORM_OVERRIDE_CLUSTER_COUNT 0x2
-#define PLATFORM_OVERRIDE_GICC_COUNT    (PLATFORM_OVERRIDE_CORE_COUNT * PLATFORM_OVERRIDE_CLUSTER_COUNT)
-#define PLATFORM_OVERRIDE_GICD_COUNT    0x1
-#define PLATFORM_OVERRIDE_GICRD_COUNT   0x0
-#define PLATFORM_OVERRIDE_GICITS_COUNT  0x1
-#define PLATFORM_OVERRIDE_GICC_TYPE     0x1000
-#define PLATFORM_OVERRIDE_GICD_TYPE     0x1001
-#define PLATFORM_OVERRIDE_GICRD_TYPE    0x0
-#define PLATFORM_OVERRIDE_GICITS_TYPE   0x1003
-#define PLATFORM_OVERRIDE_GICC_BASE     0x30000000
-#define PLATFORM_OVERRIDE_GICD_BASE     0x30000000
-#define PLATFORM_OVERRIDE_GICRD_BASE    0x0
-#define PLATFORM_OVERRIDE_GICITS_BASE   0x30040000
+#define PLATFORM_OVERRIDE_GIC_VERSION       0x3
+#define PLATFORM_OVERRIDE_CORE_COUNT        0x4
+#define PLATFORM_OVERRIDE_CLUSTER_COUNT     0x2
+#define PLATFORM_OVERRIDE_GICC_COUNT        (PLATFORM_OVERRIDE_CORE_COUNT * PLATFORM_OVERRIDE_CLUSTER_COUNT)
+#define PLATFORM_OVERRIDE_GICD_COUNT        0x1
+#define PLATFORM_OVERRIDE_GICRD_COUNT       0x1
+#define PLATFORM_OVERRIDE_GICITS_COUNT      0x1
+#define PLATFORM_OVERRIDE_GICC_TYPE         0x1000
+#define PLATFORM_OVERRIDE_GICD_TYPE         0x1001
+#define PLATFORM_OVERRIDE_GICC_GICRD_TYPE   0x1002
+#define PLATFORM_OVERRIDE_GICR_GICRD_TYPE   0x1003
+#define PLATFORM_OVERRIDE_GICITS_TYPE       0x1004
+#define PLATFORM_OVERRIDE_GICC_BASE         0x30000000
+#define PLATFORM_OVERRIDE_GICD_BASE         0x30000000
+#define PLATFORM_OVERRIDE_GICRD_BASE        0x300C0000
+#define PLATFORM_OVERRIDE_GICITS_BASE       0x30040000
+#define PLATFORM_OVERRIDE_GICITS_ID         0
+#define PLATFORM_OVERRIDE_GICIRD_LENGTH     (0x20000*8)
 
 /*
  *Secure EL1 timer Flags, Non-Secure EL1 timer Flags, EL2 timer Flags,
@@ -157,10 +160,11 @@
 
 /* PCIE device hierarchy table */
 
-#define PLATFORM_PCIE_NUM_ENTRIES     21
+#define PLATFORM_PCIE_NUM_ENTRIES        21
+#define PLATFORM_PCIE_P2P_NOT_SUPPORTED  1
 
 #define PLATFORM_PCIE_DEV0_CLASSCODE  0x6040000
-#define PLATFORM_PCIE_DEV0_VENDOR_ID  0xABC
+#define PLATFORM_PCIE_DEV0_VENDOR_ID  0x13B5
 #define PLATFORM_PCIE_DEV0_DEV_ID     0xDEF
 #define PLATFORM_PCIE_DEV0_BUS_NUM    0
 #define PLATFORM_PCIE_DEV0_DEV_NUM    1
@@ -168,7 +172,7 @@
 #define PLATFORM_PCIE_DEV0_SEG_NUM    0
 
 #define PLATFORM_PCIE_DEV1_CLASSCODE  0x6040000
-#define PLATFORM_PCIE_DEV1_VENDOR_ID  0xABC
+#define PLATFORM_PCIE_DEV1_VENDOR_ID  0x13B5
 #define PLATFORM_PCIE_DEV1_DEV_ID     0xDEF
 #define PLATFORM_PCIE_DEV1_BUS_NUM    0
 #define PLATFORM_PCIE_DEV1_DEV_NUM    2
@@ -176,7 +180,7 @@
 #define PLATFORM_PCIE_DEV1_SEG_NUM    0
 
 #define PLATFORM_PCIE_DEV2_CLASSCODE  0x6040000
-#define PLATFORM_PCIE_DEV2_VENDOR_ID  0xABC
+#define PLATFORM_PCIE_DEV2_VENDOR_ID  0x13B5
 #define PLATFORM_PCIE_DEV2_DEV_ID     0xDEF
 #define PLATFORM_PCIE_DEV2_BUS_NUM    0
 #define PLATFORM_PCIE_DEV2_DEV_NUM    3
@@ -232,7 +236,7 @@
 #define PLATFORM_PCIE_DEV8_SEG_NUM    0
 
 #define PLATFORM_PCIE_DEV9_CLASSCODE  0x6040000
-#define PLATFORM_PCIE_DEV9_VENDOR_ID  0xABC
+#define PLATFORM_PCIE_DEV9_VENDOR_ID  0x13B5
 #define PLATFORM_PCIE_DEV9_DEV_ID     0xDEF
 #define PLATFORM_PCIE_DEV9_BUS_NUM    3
 #define PLATFORM_PCIE_DEV9_DEV_NUM    0
@@ -240,7 +244,7 @@
 #define PLATFORM_PCIE_DEV9_SEG_NUM    0
 
 #define PLATFORM_PCIE_DEV10_CLASSCODE 0x6040000
-#define PLATFORM_PCIE_DEV10_VENDOR_ID 0xABC
+#define PLATFORM_PCIE_DEV10_VENDOR_ID 0x13B5
 #define PLATFORM_PCIE_DEV10_DEV_ID    0xDEF
 #define PLATFORM_PCIE_DEV10_BUS_NUM   4
 #define PLATFORM_PCIE_DEV10_DEV_NUM   0
@@ -248,7 +252,7 @@
 #define PLATFORM_PCIE_DEV10_SEG_NUM   0
 
 #define PLATFORM_PCIE_DEV11_CLASSCODE 0x6040000
-#define PLATFORM_PCIE_DEV11_VENDOR_ID 0xABC
+#define PLATFORM_PCIE_DEV11_VENDOR_ID 0x13B5
 #define PLATFORM_PCIE_DEV11_DEV_ID    0xDEF
 #define PLATFORM_PCIE_DEV11_BUS_NUM   4
 #define PLATFORM_PCIE_DEV11_DEV_NUM   1
@@ -256,7 +260,7 @@
 #define PLATFORM_PCIE_DEV11_SEG_NUM   0
 
 #define PLATFORM_PCIE_DEV12_CLASSCODE 0x6040000
-#define PLATFORM_PCIE_DEV12_VENDOR_ID 0xABC
+#define PLATFORM_PCIE_DEV12_VENDOR_ID 0x13B5
 #define PLATFORM_PCIE_DEV12_DEV_ID    0xDEF
 #define PLATFORM_PCIE_DEV12_BUS_NUM   4
 #define PLATFORM_PCIE_DEV12_DEV_NUM   2
@@ -319,7 +323,7 @@
 #define PLATFORM_PCIE_DEV19_FUNC_NUM  1
 #define PLATFORM_PCIE_DEV19_SEG_NUM   0
 
-#define PLATFORM_PCIE_DEV20_CLASSCODE 0x60400000
+#define PLATFORM_PCIE_DEV20_CLASSCODE 0x6040000
 #define PLATFORM_PCIE_DEV20_VENDOR_ID 0x13B5
 #define PLATFORM_PCIE_DEV20_DEV_ID    0x0DEF
 #define PLATFORM_PCIE_DEV20_BUS_NUM   0
@@ -353,15 +357,18 @@
 #define PERIPHERAL0_P2P_SUPPORT     1
 #define PERIPHERAL0_DMA_64BIT       0
 #define PERIPHERAL0_BEHIND_SMMU     1
+#define PERIPHERAL0_ATC_SUPPORT     0
 #define PERIPHERAL1_DMA_SUPPORT     1
 #define PERIPHERAL1_DMA_COHERENT    1
 #define PERIPHERAL1_P2P_SUPPORT     1
 #define PERIPHERAL1_DMA_64BIT       0
 #define PERIPHERAL1_BEHIND_SMMU     1
+#define PERIPHERAL1_ATC_SUPPORT     0
+
 
 /* IOVIRT platform config parameters */
 #define IOVIRT_ADDRESS               0xF9780000
-#define NODE_COUNT                   2
+#define IORT_NODE_COUNT              3
 #define IOVIRT_ITS_COUNT             1
 #define IOVIRT_SMMUV3_BASE_ADDRESS   0x4F000000
 #define IOVIRT_SMMU_CTX_INT_OFFSET   0x0
@@ -372,15 +379,84 @@
 #define RC_MAP0_INPUT_BASE           0x0
 #define RC_MAP0_ID_COUNT             0xFFFF
 #define RC_MAP0_OUTPUT_BASE          0x0
-#define RC_MAP0_OUTPUT_REF           0x48
+#define RC_MAP0_OUTPUT_REF           0x134
+
+#define SMMUV3_ID_MAP0_INPUT_BASE       0x0
+#define SMMUV3_ID_MAP0_ID_COUNT         0xFFFF
+#define SMMUV3_ID_MAP0_OUTPUT_BASE      0x0
+#define SMMUV3_ID_MAP0_OUTPUT_REF       0x30
+#define SMMUV3_ID_MAP1_INPUT_BASE       0x0
+#define SMMUV3_ID_MAP1_ID_COUNT         0x1
+#define SMMUV3_ID_MAP1_OUTPUT_BASE      0x10000
+#define SMMUV3_ID_MAP1_OUTPUT_REF       0x30
 #define IOVIRT_RC_NUM_MAP            1
-#define IOVIRT_MAX_NUM_MAP           1
+#define IOVIRT_SMMUV3_NUM_MAP        2
+#define IOVIRT_MAX_NUM_MAP           3
 
 /* DMA platform config parameters */
 #define PLATFORM_OVERRIDE_DMA_CNT   0
 
 /*Exerciser platform config details*/
 #define TEST_REG_COUNT              10
+#define EXERCISER_ID                0xED0113B5
+#define PCIE_CAP_CTRL_OFFSET        0x4// offset from the extended capability header
+
+/* Exerciser MMIO Offsets */
+#define INTXCTL         0x004
+#define MSICTL          0x000
+#define DMACTL1         0x08
+#define DMA_BUS_ADDR    0x010
+#define DMA_LEN         0x018
+#define DMASTATUS       0x01C
+#define PCI_MAX_BUS     255
+#define PCI_MAX_DEVICE  31
+
+#define PCI_EXT_CAP_ID  0x10
+#define PASID           0x1B
+#define PCIE            0x1
+#define PCI             0x0
+
+/* PCI/PCIe express extended capability structure's
+   next capability pointer mask and cap ID mask */
+#define PCIE_NXT_CAP_PTR_MASK 0x0FFF
+#define PCIE_CAP_ID_MASK      0xFFFF
+#define PCI_CAP_ID_MASK       0x00FF
+#define PCI_NXT_CAP_PTR_MASK  0x00FF
+#define CAP_PTR_MASK          0x00FF
+
+#define CLR_INTR_MASK       0xFFFFFFFE
+#define PASID_TLP_STOP_MASK 0xFFFFFFBF
+#define PASID_VAL_MASK      ((0x1ul << 20) - 1)
+#define PASID_VAL_SHIFT     12
+#define PASID_LEN_SHIFT     7
+#define PASID_LEN_MASK      0x7ul
+#define DMA_TO_DEVICE_MASK  0xFFFFFFEF
+
+/* shift_bit */
+#define SHIFT_1BIT             1
+#define SHIFT_2BIT             2
+#define SHIFT_4BIT             4
+#define SHITT_8BIT             8
+#define MASK_BIT               1
+#define PREFETCHABLE_BIT_SHIFT 3
+
+#define PCI_CAP_PTR_OFFSET  8
+#define PCIE_CAP_PTR_OFFSET 20
+
+#define MSI_GENERATION_MASK (1 << 31)
+
+#define NO_SNOOP_START_MASK 0x20
+#define NO_SNOOP_STOP_MASK  0xFFFFFFDF
+#define PCIE_CAP_DIS_MASK   0xFFFEFFFF
+#define PCIE_CAP_EN_MASK    (1 << 16)
+#define PASID_EN_MASK       (1 << 6)
+/* PCIe Config space Offset */
+#define BAR0_OFFSET        0x10
+#define COMMAND_REG_OFFSET 0x04
+#define CAP_PTR_OFFSET     0x34
+#define PCIE_CAP_OFFSET    0x100
+
+#define PCIE_CAP_CTRL_OFFSET 0x4// offset from the extended capability header
 
 /** End config **/
 
@@ -393,11 +469,13 @@ typedef struct {
   uint32_t gicc_type;
   uint32_t gicd_type;
   uint32_t gicrd_type;
+  uint32_t gicrd_length;
   uint32_t gicits_type;
   uint64_t gicc_base[PLATFORM_OVERRIDE_GICC_COUNT];
   uint64_t gicd_base[PLATFORM_OVERRIDE_GICD_COUNT];
   uint64_t gicrd_base[PLATFORM_OVERRIDE_GICRD_COUNT];
   uint64_t gicits_base[PLATFORM_OVERRIDE_GICITS_COUNT];
+  uint64_t gicits_id[PLATFORM_OVERRIDE_GICITS_COUNT];
 } PLATFORM_OVERRIDE_GIC_INFO_TABLE;
 
 typedef struct {
@@ -469,9 +547,9 @@ typedef struct {
 typedef struct {
   uint64_t Address;
   uint32_t node_count;
-  uint32_t type[NODE_COUNT];
-  uint32_t num_map[NODE_COUNT];
-  PLATFORM_OVERRIDE_NODE_DATA_MAP map[NODE_COUNT];
+  uint32_t type[IORT_NODE_COUNT];
+  uint32_t num_map[IORT_NODE_COUNT];
+  PLATFORM_OVERRIDE_NODE_DATA_MAP map[IORT_NODE_COUNT];
 } PLATFORM_OVERRIDE_IOVIRT_INFO_TABLE;
 
 typedef struct {
@@ -481,6 +559,7 @@ typedef struct {
   uint32_t p2p_support;
   uint32_t dma_64bit;
   uint32_t behind_smmu;
+  uint32_t atc_present;
 } PLATFORM_PCIE_PERIPHERAL_INFO_BLOCK;
 
 typedef struct {
@@ -516,3 +595,45 @@ typedef enum {
     EXERCISER_DATA_CFG_SPACE = 0x1,
     EXERCISER_DATA_BAR0_SPACE = 0x2,
 } EXERCISER_DATA_TYPE;
+
+typedef enum {
+    ACCESS_TYPE_RD = 0x0,
+    ACCESS_TYPE_RW = 0x1
+} ECAM_REG_ATTRIBUTE;
+
+typedef enum {
+    TYPE0 = 0x0,
+    TYPE1 = 0x1,
+} EXERCISER_CFG_HEADER_TYPE;
+
+
+typedef enum {
+    CFG_READ   = 0x0,
+    CFG_WRITE  = 0x1,
+} EXERCISER_CFG_TXN_ATTR;
+
+
+typedef enum {
+    TXN_REQ_ID     = 0x0,
+    TXN_ADDR_TYPE  = 0x1,
+} EXERCISER_TXN_ATTR;
+
+typedef enum {
+    AT_UNTRANSLATED = 0x0,
+    AT_TRANS_REQ    = 0x1,
+    AT_TRANSLATED   = 0x2,
+    AT_RESERVED     = 0x3
+} EXERCISER_TXN_ADDR_TYPE;
+
+
+typedef enum {
+    DEVICE_nGnRnE = 0x0,
+    DEVICE_nGnRE  = 0x1,
+    DEVICE_nGRE   = 0x2,
+    DEVICE_GRE    = 0x3
+} ARM_DEVICE_MEM;
+
+typedef enum {
+    NORMAL_NC = 0x4,
+    NORMAL_WT = 0x5
+} ARM_NORMAL_MEM;

@@ -1,0 +1,63 @@
+## @file
+# Copyright (c) 2016-2020,2021 Arm Limited or its affiliates. All rights reserved.
+#  SPDX-License-Identifier : Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#  http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+##
+
+[Defines]
+  INF_VERSION                    = 0x00010005
+  BASE_NAME                      = SbsaPalFVPLib
+  FILE_GUID                      = 7f2093fb-2e69-46eb-af52-ba1df42f6195
+  MODULE_TYPE                    = UEFI_APPLICATION
+  VERSION_STRING                 = 1.0
+  LIBRARY_CLASS                  = SbsaPalFVPLib|UEFI_APPLICATION UEFI_DRIVER
+
+[Sources.common]
+  src/platform_cfg_fvp.c
+
+[Packages]
+  StdLib/StdLib.dec
+  MdePkg/MdePkg.dec
+  ShellPkg/ShellPkg.dec
+  EmbeddedPkg/EmbeddedPkg.dec
+  MdeModulePkg/MdeModulePkg.dec
+
+[LibraryClasses]
+  LibC
+  LibStdLib
+  LibStdio
+  IoLib
+  BaseLib
+  UefiLib
+  ShellLib
+  DebugLib
+  BaseMemoryLib
+  ShellCEntryLib
+  UefiBootServicesTableLib
+  UefiRuntimeServicesTableLib
+
+[Protocols]
+  gEfiAcpiTableProtocolGuid                     ## CONSUMES
+  gHardwareInterruptProtocolGuid                ## CONSUMES
+  gEfiCpuArchProtocolGuid                       ## CONSUMES
+  gEfiPciIoProtocolGuid                         ## CONSUMES
+  gHardwareInterrupt2ProtocolGuid               ## CONSUMES
+
+[Guids]
+  gEfiAcpi20TableGuid
+  gEfiAcpiTableGuid
+
+[BuildOptions]
+  GCC:*_*_*_ASM_FLAGS  =  -march=armv8.2-a

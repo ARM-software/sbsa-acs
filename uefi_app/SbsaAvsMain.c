@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2020, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2021, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -26,6 +26,7 @@
 #include "val/include/val_interface.h"
 #include "val/include/sbsa_avs_pe.h"
 #include "val/include/sbsa_avs_val.h"
+#include "val/include/sbsa_avs_memory.h"
 
 #include "SbsaAvs.h"
 
@@ -33,7 +34,6 @@
 UINT32  g_sbsa_level;
 UINT32  g_enable_pcie_tests;
 UINT32  g_print_level;
-UINT32  g_execute_secure;
 UINT32  g_execute_nist;
 UINT32  g_skip_test_num[3] = {10000, 10000, 10000};
 UINT32  g_sbsa_tests_total;
@@ -68,15 +68,7 @@ createPeInfoTable (
   UINT64   *PeInfoTable;
 
 /* allowing room for growth, at present each entry is 16 bytes, so we can support upto 511 PEs with 8192 bytes*/
-  Status = gBS->AllocatePool ( EfiBootServicesData,
-                               PE_INFO_TBL_SZ,
-                               (VOID **) &PeInfoTable );
-
-  if (EFI_ERROR(Status))
-  {
-    Print(L"Allocate Pool failed %x \n", Status);
-    return Status;
-  }
+  PeInfoTable = val_memory_alloc(PE_INFO_TBL_SZ);
 
   Status = val_pe_create_info_table(PeInfoTable);
 
@@ -91,134 +83,78 @@ createGicInfoTable (
   EFI_STATUS Status;
   UINT64     *GicInfoTable;
 
-  Status = gBS->AllocatePool (EfiBootServicesData,
-                               GIC_INFO_TBL_SZ,
-                               (VOID **) &GicInfoTable);
 
-  if (EFI_ERROR(Status))
-  {
-    Print(L"Allocate Pool failed %x \n", Status);
-    return Status;
-  }
-
+  GicInfoTable = val_memory_alloc(GIC_INFO_TBL_SZ);
   Status = val_gic_create_info_table(GicInfoTable);
 
   return Status;
 
 }
 
-
 EFI_STATUS
+configureGicIts (
+)
+{
+  EFI_STATUS Status;
+
+  Status = val_gic_its_configure();
+
+  return Status;
+}
+
+VOID
 createTimerInfoTable(
 )
 {
   UINT64   *TimerInfoTable;
-  EFI_STATUS Status;
 
-  Status = gBS->AllocatePool (EfiBootServicesData,
-                              TIMER_INFO_TBL_SZ,
-                              (VOID **) &TimerInfoTable);
-
-  if (EFI_ERROR(Status))
-  {
-    Print(L"Allocate Pool failed %x \n", Status);
-    return Status;
-  }
+  TimerInfoTable = val_memory_alloc(TIMER_INFO_TBL_SZ);
   val_timer_create_info_table(TimerInfoTable);
 
-  return Status;
 }
 
-EFI_STATUS
+VOID
 createWatchdogInfoTable(
 )
 {
   UINT64   *WdInfoTable;
-  EFI_STATUS Status;
 
-  Status = gBS->AllocatePool (EfiBootServicesData,
-                              WD_INFO_TBL_SZ,
-                              (VOID **) &WdInfoTable);
-
-  if (EFI_ERROR(Status))
-  {
-    Print(L"Allocate Pool failed %x \n", Status);
-    return Status;
-  }
+  WdInfoTable = val_memory_alloc(WD_INFO_TBL_SZ);
   val_wd_create_info_table(WdInfoTable);
 
-  return Status;
 
 }
 
 
-EFI_STATUS
+VOID
 createPcieVirtInfoTable(
 )
 {
   UINT64   *PcieInfoTable;
   UINT64   *IoVirtInfoTable;
 
-  EFI_STATUS Status;
 
-  Status = gBS->AllocatePool (EfiBootServicesData,
-                              PCIE_INFO_TBL_SZ,
-                              (VOID **) &PcieInfoTable);
-
-  if (EFI_ERROR(Status))
-  {
-    Print(L"Allocate Pool failed %x \n", Status);
-    return Status;
-  }
+  PcieInfoTable = val_memory_alloc(PCIE_INFO_TBL_SZ);
   val_pcie_create_info_table(PcieInfoTable);
 
-  Status = gBS->AllocatePool (EfiBootServicesData,
-                              IOVIRT_INFO_TBL_SZ,
-                              (VOID **) &IoVirtInfoTable);
-
-  if (EFI_ERROR(Status))
-  {
-    Print(L"Allocate Pool failed %x \n", Status);
-    return Status;
-  }
+  IoVirtInfoTable = val_memory_alloc(IOVIRT_INFO_TBL_SZ);
   val_iovirt_create_info_table(IoVirtInfoTable);
 
-  return Status;
 }
 
-EFI_STATUS
+VOID
 createPeripheralInfoTable(
 )
 {
   UINT64   *PeripheralInfoTable;
   UINT64   *MemoryInfoTable;
 
-  EFI_STATUS Status;
 
-  Status = gBS->AllocatePool (EfiBootServicesData,
-                              PERIPHERAL_INFO_TBL_SZ,
-                              (VOID **) &PeripheralInfoTable);
-
-  if (EFI_ERROR(Status))
-  {
-    Print(L"Allocate Pool failed %x \n", Status);
-    return Status;
-  }
+  PeripheralInfoTable = val_memory_alloc(PERIPHERAL_INFO_TBL_SZ);
   val_peripheral_create_info_table(PeripheralInfoTable);
 
-  Status = gBS->AllocatePool (EfiBootServicesData,
-                              MEM_INFO_TBL_SZ,
-                              (VOID **) &MemoryInfoTable);
-
-  if (EFI_ERROR(Status))
-  {
-    Print(L"Allocate Pool failed %x \n", Status);
-    return Status;
-  }
-
+  MemoryInfoTable = val_memory_alloc(MEM_INFO_TBL_SZ);
   val_memory_create_info_table(MemoryInfoTable);
-
-  return Status;
 }
 
 VOID
@@ -245,9 +181,8 @@ HelpMsg (
          "-v      Verbosity of the Prints\n"
          "        1 shows all prints, 5 shows Errors\n"
          "-l      Level of compliance to be tested for\n"
-         "        As per SBSA spec, 0 to 3\n"
+         "        As per SBSA spec, 0 to 6\n"
          "-f      Name of the log file to record the test results in\n"
-         "-s      Enable the execution of secure tests\n"
          "-skip   Test(s) to be skipped\n"
          "        Refer to section 4 of SBSA_ACS_User_Guide\n"
          "        To skip a module, use Model_ID as mentioned in user guide\n"
@@ -262,7 +197,6 @@ STATIC CONST SHELL_PARAM_ITEM ParamList[] = {
   {L"-v"    , TypeValue},    // -v    # Verbosity of the Prints. 1 shows all prints, 5 shows Errors
   {L"-l"    , TypeValue},    // -l    # Level of compliance to be tested for.
   {L"-f"    , TypeValue},    // -f    # Name of the log file to record the test results in.
-  {L"-s"    , TypeFlag},     // -s    # Binary Flag to enable the execution of secure tests.
   {L"-skip" , TypeValue},    // -skip # test(s) to skip execution
   {L"-help" , TypeFlag},     // -help # help : info about commands
   {L"-h"    , TypeFlag},     // -h    # help : info about commands
@@ -318,13 +252,6 @@ ShellAppMainsbsa (
       }
   }
 
-  // Options with Flag
-  if (ShellCommandLineGetFlag (ParamPackage, L"-s")) {
-    g_execute_secure = TRUE;
-  } else {
-    g_execute_secure = FALSE;
-  }
-
   // Options with Values
   CmdLineArg  = ShellCommandLineGetValue (ParamPackage, L"-l");
   if (CmdLineArg == NULL) {
@@ -334,6 +261,12 @@ ShellAppMainsbsa (
     if (g_sbsa_level > SBSA_MAX_LEVEL_SUPPORTED) {
       g_sbsa_level = G_SBSA_LEVEL;
     }
+    if (g_sbsa_level < SBSA_MIN_LEVEL_SUPPORTED) {
+      Print(L"SBSA Level %d is not supported.\n", g_sbsa_level);
+      HelpMsg();
+      return SHELL_INVALID_PARAMETER;
+    }
+
   }
 
 
@@ -412,6 +345,16 @@ ShellAppMainsbsa (
   if (Status)
     return Status;
 
+  /*
+   * Configure Gic Redistributor and ITS to support
+   * Generation of LPIs.
+  */
+  Status = configureGicIts();
+  if (Status) {
+    Print(L" GIC ITS Initialization Failed.\n");
+    Print(L" LPI Interrupt related test may not pass.\n");
+  }
+
   createTimerInfoTable();
   createWatchdogInfoTable();
   createPcieVirtInfoTable();
@@ -424,12 +367,6 @@ ShellAppMainsbsa (
   val_pe_context_save(AA64ReadSp(), (uint64_t)branch_label);
   val_pe_initialize_default_exception_handler(val_pe_default_esr);
   FlushImage();
-
-  if (g_execute_secure == TRUE) {
-    Print(L"\n      ***  Starting Secure FW tests ***  \n");
-    val_secure_execute_tests(g_sbsa_level, val_pe_get_num());
-    Print(L"\n      ***  Secure FW tests completed ***  \n");
-  }
 
   Print(L"\n      ***  Starting PE tests ***  \n");
   Status = val_pe_execute_tests(g_sbsa_level, val_pe_get_num());
@@ -458,13 +395,14 @@ ShellAppMainsbsa (
   Print(L"\n      *** Starting PCIe Exerciser tests ***  \n");
   Status |= val_exerciser_execute_tests(g_sbsa_level);
 
-  #ifdef ENABLE_NIST
+/* Commenting NIST tests as not required for baremetal */
+/*  #ifdef ENABLE_NIST
   if (g_execute_nist == TRUE) {
     Print(L"\n      ***  Starting NIST statistical tests***  \n");
     Status |= val_nist_execute_tests(g_sbsa_level, val_pe_get_num());
   }
   #endif
-
+*/
 print_test_status:
   val_print(AVS_PRINT_TEST, "\n     ------------------------------------------------------- \n", 0);
   val_print(AVS_PRINT_TEST, "     Total Tests run  = %4d;", g_sbsa_tests_total);
@@ -484,7 +422,7 @@ print_test_status:
 
   return(0);
 }
-
+#if 0
 #ifndef ENABLE_NIST
 /***
   SBSA Compliance Suite Entry Point. This function is to
@@ -504,4 +442,5 @@ ShellAppMain(
 {
  return ShellAppMainsbsa(Argc, Argv);
 }
+#endif
 #endif

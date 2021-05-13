@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018, 2020 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -81,27 +81,10 @@ static void payload()
                 val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 03));
                 return;
             }
-
-            data = val_smmu_read_cfg(SMMUv3_AIDR, num_smmu);
-
-            if (g_sbsa_level < 5) {
-                if (((data & 0xFF) != 0) && ((data & 0xFF) != 0x1) && ((data & 0xFF) != 0x2)) {
-                    val_print(AVS_PRINT_ERR, "\n\t Invalid Architecture Revision %x  ", data);
-                    val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 04));
-                    return;
-                }
-            } else {
-                if ((data & 0xFF) < 0x2) {
-                    /* Smmuv3.2 or higher not implemented */
-                    val_print(AVS_PRINT_ERR, "\n\t Level %x should support Smmuv3.2 or higher  ",
-                                             g_sbsa_level);
-                    val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 04));
-                    return;
-                }
-            }
         }
-        val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
     }
+
+    val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
 
 }
 

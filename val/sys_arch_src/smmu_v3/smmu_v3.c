@@ -1,20 +1,19 @@
-/* @file
- * Copyright (c) 2020, Arm Limited or its affiliates. All rights reserved.
+/** @file
+ * Copyright (c) 2020, 2021 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     https://www.apache.org/licenses/LICENSE-2.0
+ *  http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */
-
+ **/
 #include "smmu_v3.h"
 
 smmu_dev_t *g_smmu;
@@ -172,7 +171,8 @@ static void smmu_strtab_write_ste(smmu_master_t *master, uint64_t *ste)
     }
 
     if (stage2_cfg) {
-        ste[1] |= BITFIELD_SET(STRTAB_STE_1_STRW, 0x2);
+        ste[1] |= BITFIELD_SET(STRTAB_STE_1_STRW, 0x2) |
+                  BITFIELD_SET(STRTAB_STE_1_EATS, 0x1);
         ste[2] = (BITFIELD_SET(STRTAB_STE_2_S2VMID, stage2_cfg->vmid) |
               BITFIELD_SET(STRTAB_STE_2_VTCR, stage2_cfg->vtcr) |
               STRTAB_STE_2_S2PTW | STRTAB_STE_2_S2AA64 |
@@ -187,7 +187,8 @@ static void smmu_strtab_write_ste(smmu_master_t *master, uint64_t *ste)
         ste[1] = BITFIELD_SET(STRTAB_STE_1_S1DSS, STRTAB_STE_1_S1DSS_SSID0) |
              BITFIELD_SET(STRTAB_STE_1_S1CIR, STRTAB_STE_1_S1C_CACHE_WBRA) |
              BITFIELD_SET(STRTAB_STE_1_S1COR, STRTAB_STE_1_S1C_CACHE_WBRA) |
-             BITFIELD_SET(STRTAB_STE_1_S1CSH, SMMU_SH_ISH);
+             BITFIELD_SET(STRTAB_STE_1_S1CSH, SMMU_SH_ISH) |
+             BITFIELD_SET(STRTAB_STE_1_EATS, 0x1);
 
         val |= (stage1_cfg->cdcfg.cdtab_phys & STRTAB_STE_0_S1CONTEXTPTR_MASK) |
             BITFIELD_SET(STRTAB_STE_0_CONFIG, STRTAB_STE_0_CONFIG_S1_TRANS) |
@@ -253,13 +254,15 @@ static uint32_t smmu_cmd_queue_init(smmu_dev_t *smmu)
 
 static void smmu_free_strtab(smmu_dev_t *smmu)
 {
+    uint32_t i;
+
     smmu_strtab_config_t *cfg = &smmu->strtab_cfg;
     if (cfg->strtab_ptr == NULL)
         return;
     if (smmu->supported.st_level_2lvl &&
         cfg->l1_desc != NULL)
     {
-        for (uint32_t i = 0; i < cfg->l1_ent_count; ++i)
+        for (i = 0; i < cfg->l1_ent_count; ++i)
         {
             if (cfg->l1_desc[i].l2ptr != NULL)
                 val_memory_free(cfg->l1_desc[i].l2ptr);
@@ -479,27 +482,31 @@ static int smmu_reset(smmu_dev_t *smmu)
 
 uint32_t smmu_set_state(uint32_t smmu_index, uint32_t en)
 {
+    smmu_dev_t *smmu;
+    uint32_t cr0_val;
+    int ret;
+
     if (smmu_index >= g_num_smmus)
     {
         val_print(AVS_PRINT_ERR, "\n      smmu_set_state: invalid smmu index    ", 0);
         return 1;
     }
 
-    smmu_dev_t *smmu = &g_smmu[smmu_index];
+    smmu = &g_smmu[smmu_index];
     if (smmu->base == 0)
     {
         val_print(AVS_PRINT_ERR, "\n      smmu_set_state: smmu unsupported     ", 0);
         return 1;
     }
 
-    uint32_t cr0_val = val_mmio_read(smmu->base + SMMU_CR0_OFFSET);
+    cr0_val = val_mmio_read(smmu->base + SMMU_CR0_OFFSET);
 
     if (en)
         cr0_val |= (uint32_t)CR0_SMMUEN;
     else
         cr0_val &= ~((uint32_t)CR0_SMMUEN);
 
-    int ret = smmu_reg_write_sync(smmu, cr0_val, SMMU_CR0_OFFSET,
+    ret = smmu_reg_write_sync(smmu, cr0_val, SMMU_CR0_OFFSET,
                       SMMU_CR0ACK_OFFSET);
     if (ret)
     {
@@ -592,7 +599,7 @@ static uint32_t smmu_probe(smmu_dev_t *smmu)
         return 0;
     }
     smmu->oas = smmu_oas[BITFIELD_GET(IDR5_OAS, data)];
-    smmu->ias = max(smmu->ias, smmu->oas);
+    smmu->ias = get_max(smmu->ias, smmu->oas);
 
     val_print(AVS_PRINT_INFO, "ias %d-bit ", smmu->ias);
     val_print(AVS_PRINT_INFO, "oas %d-bit ", smmu->oas);
@@ -716,6 +723,8 @@ static int smmu_cdtab_write_ctx_desc(smmu_master_t *master,
 static void smmu_cdtab_free(smmu_master_t *master)
 {
     uint64_t max_contexts;
+    uint32_t i;
+    uint32_t num_l1_ents;
     smmu_stage1_config_t *cfg = &master->stage1_config;
     smmu_cdtab_config_t *cdcfg = &cfg->cdcfg;
     max_contexts = 1 << cfg->s1cdmax;
@@ -723,8 +732,8 @@ static void smmu_cdtab_free(smmu_master_t *master)
     if (master->smmu->supported.cd2l &&
         max_contexts > CDTAB_L2_ENTRY_COUNT)
     {
-        uint32_t num_l1_ents = (max_contexts + CDTAB_L2_ENTRY_COUNT - 1)/CDTAB_L2_ENTRY_COUNT;
-        for (uint32_t i = 0; i < num_l1_ents; i++)
+        num_l1_ents = (max_contexts + CDTAB_L2_ENTRY_COUNT - 1)/CDTAB_L2_ENTRY_COUNT;
+        for (i = 0; i < num_l1_ents; i++)
         {
             if (cdcfg->l1_desc[i].l2ptr != NULL)
                 val_memory_free(cdcfg->l1_desc[i].l2ptr);
@@ -979,7 +988,7 @@ uint32_t smmu_init(smmu_dev_t *smmu)
   @brief  Disable all SMMUs and free all associated memory
   @return void
 **/
-void val_smmu_stop()
+void val_smmu_stop(void)
 {
     int i;
     smmu_dev_t *smmu;
@@ -1001,7 +1010,7 @@ void val_smmu_stop()
   @brief  Scan all available SMMUs in the system and initialize all v3.x SMMUs
   @return Initialzation status
 **/
-uint32_t val_smmu_init()
+uint32_t val_smmu_init(void)
 {
     int i;
     g_num_smmus = val_iovirt_get_smmu_info(SMMU_NUM_CTRL, 0);

@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2020 Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2021 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,9 +17,20 @@
 
 #include "include/pal_common_support.h"
 #include "include/pal_pcie_enum.h"
-#include "include/platform_override_fvp.h"
+#include "FVP/include/platform_override_fvp.h"
+
+#ifdef ENABLE_OOB
+/* Below code is not applicable for Bare-metal
+ * Only for FVP OOB experience
+ */
+
+#include <Library/UefiBootServicesTableLib.h>
+#include <Protocol/Cpu.h>
+#endif
 
 extern PE_INFO_TABLE platform_pe_cfg;
+extern PE_INFO_TABLE *g_pe_info_table;
+
 uint8_t   *gSecondaryPeStack;
 uint64_t  gMpidrMax;
 
@@ -151,12 +162,38 @@ uint32_t
 pal_pe_install_esr(uint32_t ExceptionType,  void (*esr)(uint64_t, VOID *))
 {
 
-  /* TO DO - Baremetal
-   * Place holder to:
+#ifdef ENABLE_OOB
+ /* Below code is not applicable for Bare-metal
+ * Only for FVP OOB experience
+ */
+
+   /*
    *   1. Unregister the default exception handler
    *   2. Register the handler to receive interrupts
    */
+  EFI_STATUS  Status;
+  EFI_CPU_ARCH_PROTOCOL   *Cpu;
 
+  // Get the CPU protocol that this driver requires.
+  Status = gBS->LocateProtocol (&gEfiCpuArchProtocolGuid, NULL, (VOID **)&Cpu);
+  if (EFI_ERROR (Status)) {
+    return Status;
+  }
+
+  // Unregister the default exception handler.
+  Status = Cpu->RegisterInterruptHandler (Cpu, ExceptionType, NULL);
+  if (EFI_ERROR (Status)) {
+    return Status;
+  }
+
+  // Register to receive interrupts
+  Status = Cpu->RegisterInterruptHandler (Cpu, ExceptionType, (EFI_CPU_INTERRUPT_HANDLER)esr);
+  if (EFI_ERROR (Status)) {
+    return Status;
+  }
+
+  return EFI_SUCCESS;
+#endif
   return 0;
 }
 
@@ -215,9 +252,14 @@ pal_pe_execute_payload(ARM_SMC_ARGS *ArmSmcArgs)
 void
 pal_pe_update_elr(void *context, uint64_t offset)
 {
-  /* TO DO - Baremetal
-   * Place holder to save offset into context saving structure ELR
-   */
+#ifdef ENABLE_OOB
+ /* Below code is not applicable for Bare-metal
+ * Only for FVP OOB experience
+ */
+
+  ((EFI_SYSTEM_CONTEXT_AARCH64*)context)->ELR = offset;
+#endif
+
 }
 
 /**
@@ -286,4 +328,18 @@ pal_pe_data_cache_ops_by_va(uint64_t addr, uint32_t type)
           DataCacheCleanInvalidateVA(addr);
   }
 
+}
+
+/**
+  @brief Returns the number of currently present PEs
+
+  @return  The number of PEs that are present in the system
+**/
+uint32_t
+pal_pe_get_num()
+{
+  if (g_pe_info_table == NULL) {
+      return 0;
+  }
+  return g_pe_info_table->header.num_of_pe;
 }

@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2020, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2020, 2021 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,7 +16,7 @@
 **/
 
 #include "include/pal_common_support.h"
-#include "include/platform_override_fvp.h"
+#include "FVP/include/platform_override_fvp.h"
 
 extern PLATFORM_OVERRIDE_IOVIRT_INFO_TABLE platform_iovirt_cfg;
 extern PLATFORM_OVERRIDE_NODE_DATA platform_node_type;
@@ -27,7 +27,7 @@ pal_iovirt_get_rc_smmu_base (
   uint32_t RcSegmentNum
   )
 {
-  return 0;
+  return IOVIRT_SMMUV3_BASE_ADDRESS;
 }
 
 /**

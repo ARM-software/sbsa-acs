@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2020, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2020,2021 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,7 +16,7 @@
 **/
 
 
-#include "include/platform_override_fvp.h"
+#include "FVP/include/platform_override_fvp.h"
 #include "include/pal_common_support.h"
 #include "include/pal_pcie_enum.h"
 
@@ -141,15 +141,15 @@ pal_dma_scsi_get_dma_addr(void *port, void *dma_addr, unsigned int *dma_len)
   @param   attr  - Variable to return the attributes
   @param   sh    - Inner sharable domain or not
 
-  @return  0 on SUCCESS or -1 for FAIL
+  @return  0 on SUCCESS or 1 for FAIL
 **/
 int
 pal_dma_mem_get_attrs(VOID *buf, UINT32 *attr, UINT32 *sh)
 {
 
-  /* Pointer to return the attributes
-   * and Shareable domain
+  /* Pointer to return: the attributes (attr)
+   * and shareable domain (sh)
   */
 
-  return 0;
+  return 1;
 }

@@ -78,6 +78,8 @@
 #define PCI_CAP_PTR_OFFSET 8
 #define PCIE_CAP_PTR_OFFSET 20
 
+#define MSI_GENERATION_MASK     (1 << 31)
+
 #define NO_SNOOP_START_MASK 0x20
 #define NO_SNOOP_STOP_MASK  0xFFFFFFDF
 #define PCIE_CAP_DIS_MASK 0xFFFEFFFF
@@ -110,8 +112,23 @@ typedef enum {
     DMA_ATTRIBUTES   = 0x4,
     P2P_ATTRIBUTES   = 0x5,
     PASID_ATTRIBUTES = 0x6,
-    CFG_TXN_ATTRIBUTES = 0x7
+    CFG_TXN_ATTRIBUTES = 0x7,
+    ATS_RES_ATTRIBUTES = 0x8,
+    TRANSACTION_TYPE  = 0x9,
+    NUM_TRANSACTIONS  = 0xA
 } EXERCISER_PARAM_TYPE;
+
+typedef enum {
+    TXN_REQ_ID     = 0x0,
+    TXN_ADDR_TYPE  = 0x1,
+} EXERCISER_TXN_ATTR;
+
+typedef enum {
+    AT_UNTRANSLATED = 0x0,
+    AT_TRANS_REQ    = 0x1,
+    AT_TRANSLATED   = 0x2,
+    AT_RESERVED     = 0x3
+} EXERCISER_TXN_ADDR_TYPE;
 
 typedef enum {
     EXERCISER_RESET = 0x1,
@@ -129,10 +146,11 @@ typedef enum {
     CLEAR_INTR    = 0x6,
     PASID_TLP_START = 0x7,
     PASID_TLP_STOP  = 0x8,
-    NO_SNOOP_CLEAR_TLP_START = 0x9,
-    NO_SNOOP_CLEAR_TLP_STOP  = 0xa,
-    START_TXN_MONITOR        = 0xb,
-    STOP_TXN_MONITOR         = 0xc
+    TXN_NO_SNOOP_ENABLE  = 0x9,
+    TXN_NO_SNOOP_DISABLE = 0xa,
+    START_TXN_MONITOR    = 0xb,
+    STOP_TXN_MONITOR     = 0xc,
+    ATS_TXN_REQ          = 0xd
 } EXERCISER_OPS;
 
 typedef enum {

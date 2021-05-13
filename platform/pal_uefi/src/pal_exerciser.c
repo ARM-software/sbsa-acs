@@ -93,6 +93,26 @@ pal_exerciser_get_pcie_config_offset(UINT32 Bdf)
   return cfg_addr;
 }
 
+
+/**
+  @brief  This API returns if the device is a exerciser
+  @param  bdf - Bus/Device/Function
+  @return 1 - true 0 - false
+**/
+UINT32
+pal_is_bdf_exerciser(UINT32 bdf)
+{
+  UINT32 Ecam;
+  UINT32 vendor_dev_id;
+  Ecam = pal_pcie_get_mcfg_ecam();
+
+  vendor_dev_id = pal_mmio_read(Ecam + pal_exerciser_get_pcie_config_offset(bdf));
+  if (vendor_dev_id == EXERCISER_ID)
+     return 1;
+  else
+     return 0;
+}
+
 /**
   @brief This function triggers the DMA operation
 **/
@@ -103,6 +123,7 @@ pal_exerciser_start_dma_direction (
   )
 {
   UINT32 Mask;
+  UINT32 Status;
 
   if (Direction == EDMA_TO_DEVICE) {
       Mask = DMA_TO_DEVICE_MASK;//  DMA direction:to Device
@@ -118,7 +139,8 @@ pal_exerciser_start_dma_direction (
   pal_mmio_write(Base + DMACTL1, (pal_mmio_read(Base + DMACTL1) | MASK_BIT));
 
   // Reading the Status of the DMA
-  return (pal_mmio_read(Base + DMASTATUS) & ((MASK_BIT << 1) | MASK_BIT));
+  Status = (pal_mmio_read(Base + DMASTATUS) & ((MASK_BIT << 1) | MASK_BIT));
+  return Status;
 }
 
 /**
@@ -204,17 +226,30 @@ UINT32 pal_exerciser_set_param (
           return Status;
 
       case P2P_ATTRIBUTES:
+          return 0;
+
+      case PASID_ATTRIBUTES:
           Data = pal_mmio_read(Base + DMACTL1);
           Data &= ~(PASID_LEN_MASK << PASID_LEN_SHIFT);
           Data |= ((Value1 - 16) & PASID_LEN_MASK) << PASID_LEN_SHIFT;
           pal_mmio_write(Base + DMACTL1, Data);
           return 0;
 
-      case PASID_ATTRIBUTES:
-          return 0;
-
       case MSIX_ATTRIBUTES:
           return 0;
+
+      case CFG_TXN_ATTRIBUTES:
+          switch (Value1) {
+
+            case TXN_REQ_ID:
+                /* Change Requester ID for DMA Transaction.*/
+                return 0;
+            case TXN_ADDR_TYPE:
+                /* Change Address Type for DMA Transaction.*/
+                return 0;
+            default:
+                return 1;
+          }
 
       default:
           return 1;
@@ -342,9 +377,9 @@ pal_exerciser_ops (
         }
 
     case GENERATE_MSI:
-        pal_mmio_write( Base + MSICTL , Param << 1);
-        pal_mmio_write( Base + MSICTL ,(pal_mmio_read(Base + MSICTL) | MASK_BIT));
-        return (pal_mmio_read(Base + MSICTL ) & MASK_BIT);
+        /* Param is the msi_index */
+        pal_mmio_write( Base + MSICTL ,(pal_mmio_read(Base + MSICTL) | (MSI_GENERATION_MASK) | (Param)));
+        return 0;
 
     case GENERATE_L_INTR:
         pal_mmio_write(Base + INTXCTL , (pal_mmio_read(Base + INTXCTL) | MASK_BIT));
@@ -383,11 +418,11 @@ pal_exerciser_ops (
         }
         return 1;
 
-    case NO_SNOOP_CLEAR_TLP_START:
+    case TXN_NO_SNOOP_ENABLE:
         pal_mmio_write(Base + DMACTL1, (pal_mmio_read(Base + DMACTL1)) | NO_SNOOP_START_MASK);//enabling the NO SNOOP
         return 0;
 
-    case NO_SNOOP_CLEAR_TLP_STOP:
+    case TXN_NO_SNOOP_DISABLE:
         pal_mmio_write(Base + DMACTL1, (pal_mmio_read(Base + DMACTL1)) & NO_SNOOP_STOP_MASK);//disabling the NO SNOOP
         return 0;
 
@@ -413,6 +448,7 @@ pal_exerciser_get_data (
 {
   UINT32 Index;
   UINT64 EcamBase;
+  UINT64 EcamBAR0;
 
   EcamBase = (Ecam + pal_exerciser_get_pcie_config_offset(Bdf));
 
@@ -430,7 +466,8 @@ pal_exerciser_get_data (
           }
           return 0;
       case EXERCISER_DATA_BAR0_SPACE:
-          Data->bar_space.base_addr = &EcamBase;
+          EcamBAR0 = pal_exerciser_get_ecsr_base(Bdf, 0);
+          Data->bar_space.base_addr = (void *)EcamBAR0;
           if (((pal_exerciser_get_ecsr_base(Bdf,0) >> PREFETCHABLE_BIT_SHIFT) & MASK_BIT) == 0x1)
               Data->bar_space.type = MMIO_PREFETCHABLE;
           else

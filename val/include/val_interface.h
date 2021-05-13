@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2020, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2021, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -90,7 +90,8 @@ void val_gic_cpuif_init(void);
 uint32_t val_gic_request_irq(uint32_t irq_num, uint32_t mapped_irq_num, void *isr);
 void val_gic_free_irq(uint32_t irq_num, uint32_t mapped_irq_num);
 void val_gic_set_intr_trigger(uint32_t int_id, INTR_TRIGGER_INFO_TYPE_e trigger_type);
-uint32_t val_gic_its_configure();
+uint32_t val_gic_get_intr_trigger_type(uint32_t int_id, INTR_TRIGGER_INFO_TYPE_e *trigger_type);
+uint32_t val_gic_its_configure(void);
 uint32_t val_gic_request_msi(uint32_t bdf, uint32_t IntID, uint32_t msi_index);
 void val_gic_free_msi(uint32_t bdf, uint32_t IntID, uint32_t msi_index);
 
@@ -143,7 +144,7 @@ void     val_wd_create_info_table(uint64_t *wd_info_table);
 void     val_wd_free_info_table(void);
 uint32_t val_wd_execute_tests(uint32_t level, uint32_t num_pe);
 uint64_t val_wd_get_info(uint32_t index, uint32_t info_type);
-void     val_wd_set_ws0(uint32_t index, uint32_t timeout);
+uint32_t val_wd_set_ws0(uint32_t index, uint32_t timeout);
 
 
 /* PCIE VAL APIs */
@@ -158,7 +159,8 @@ uint32_t val_pcie_is_devicedma_64bit(uint32_t bdf);
 uint32_t val_pcie_scan_bridge_devices_and_check_memtype(uint32_t bdf);
 void val_pcie_read_ext_cap_word(uint32_t bdf, uint32_t ext_cap_id, uint8_t offset, uint16_t *val);
 uint32_t val_pcie_get_pcie_type(uint32_t bdf);
-uint32_t val_pcie_p2p_support(uint32_t bdf);
+uint32_t val_pcie_p2p_support(void);
+uint32_t val_pcie_dev_p2p_support(uint32_t bdf);
 uint32_t val_pcie_multifunction_support(uint32_t bdf);
 uint32_t val_pcie_is_onchip_peripheral(uint32_t bdf);
 uint32_t val_pcie_device_port_type(uint32_t bdf);
@@ -179,6 +181,10 @@ uint32_t val_pcie_get_downstream_function(uint32_t bdf, uint32_t *dsf_bdf);
 uint32_t val_pcie_get_rootport(uint32_t bdf, uint32_t *rp_bdf);
 uint8_t val_pcie_parent_is_rootport(uint32_t dsf_bdf, uint32_t *rp_bdf);
 uint8_t val_pcie_is_host_bridge(uint32_t bdf);
+void val_pcie_clear_device_status_error(uint32_t bdf);
+uint32_t val_pcie_is_device_status_error(uint32_t bdf);
+uint32_t val_pcie_is_sig_target_abort(uint32_t bdf);
+void val_pcie_clear_sig_target_abort(uint32_t bdf);
 
 /* IO-VIRT APIs */
 typedef enum {

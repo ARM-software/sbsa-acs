@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2020, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2021, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -187,6 +187,8 @@ typedef enum {
 typedef struct {
   uint32_t type;
   uint64_t base;
+  uint32_t its_id;  /* This its_id is only used in case of ITS Type entry */
+  uint32_t length;  /* This length is only used in case of Re-Distributor Range Address length */
 }GIC_INFO_ENTRY;
 
 /**
@@ -555,10 +557,11 @@ typedef enum {
     CLEAR_INTR    = 0x6,
     PASID_TLP_START = 0x7,
     PASID_TLP_STOP  = 0x8,
-    NO_SNOOP_CLEAR_TLP_START = 0x9,
-    NO_SNOOP_CLEAR_TLP_STOP  = 0xa,
-    START_TXN_MONITOR        = 0xb,
-    STOP_TXN_MONITOR         = 0xc
+    TXN_NO_SNOOP_ENABLE = 0x9,
+    TXN_NO_SNOOP_DISABLE  = 0xa,
+    START_TXN_MONITOR    = 0xb,
+    STOP_TXN_MONITOR     = 0xc,
+    ATS_TXN_REQ          = 0xd
 } EXERCISER_OPS;
 
 #endif

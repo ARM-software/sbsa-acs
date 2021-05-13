@@ -26,7 +26,7 @@ TEST_POOL = $(ACS_DIR)/
 obj-m += sbsa_acs_test.o
 sbsa_acs_test-objs += $(TEST_POOL)/pcie/test_p001.o \
     $(TEST_POOL)/pcie/test_p002.o \
-    $(TEST_POOL)/pcie/test_p003.o $(TEST_POOL)/pcie/test_p004.o \
+    $(TEST_POOL)/pcie/test_p003.o \
     $(TEST_POOL)/pcie/test_p005.o $(TEST_POOL)/pcie/test_p006.o \
     $(TEST_POOL)/pcie/test_p007.o $(TEST_POOL)/pcie/test_p008.o \
     $(TEST_POOL)/pcie/test_p009.o $(TEST_POOL)/pcie/test_p010.o \
@@ -35,11 +35,6 @@ sbsa_acs_test-objs += $(TEST_POOL)/pcie/test_p001.o \
     $(TEST_POOL)/pcie/test_p015.o $(TEST_POOL)/pcie/test_p016.o \
     $(TEST_POOL)/pcie/test_p017.o $(TEST_POOL)/pcie/test_p018.o \
     $(TEST_POOL)/pcie/test_p019.o \
-    $(TEST_POOL)/exerciser/test_e001.o $(TEST_POOL)/exerciser/test_e002.o \
-    $(TEST_POOL)/exerciser/test_e003.o $(TEST_POOL)/exerciser/test_e004.o \
-    $(TEST_POOL)/exerciser/test_e005.o $(TEST_POOL)/exerciser/test_e006.o \
-    $(TEST_POOL)/exerciser/test_e007.o $(TEST_POOL)/exerciser/test_e008.o \
-    $(TEST_POOL)/exerciser/test_e009.o $(TEST_POOL)/exerciser/test_e010.o \
 
 ccflags-y=-I$(PWD)/$(ACS_DIR)/.. -I$(PWD)/$(ACS_DIR)/val/ -I$(PWD)/$(ACS_DIR)/ -DTARGET_LINUX -Wall -Werror
 

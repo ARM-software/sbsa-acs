@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2020, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2021, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -90,7 +90,7 @@ val_memory_get_entry_index(uint32_t type, uint32_t instance)
 {
   uint32_t  i = 0;
 
-  while (g_memory_info_table->info[i].type != 0xFF) {
+  while (g_memory_info_table->info[i].type != MEMORY_TYPE_LAST_ENTRY) {
       if (g_memory_info_table->info[i].type == type) {
           if (instance == 0)
              return i;
@@ -187,9 +187,9 @@ val_memory_alloc(uint32_t size)
 }
 
 void *
-val_memory_alloc_coherent(uint32_t bdf, uint32_t size, void **pa)
+val_memory_alloc_cacheable(uint32_t bdf, uint32_t size, void **pa)
 {
-  return pal_mem_alloc_coherent(bdf, size, pa);
+  return pal_mem_alloc_cacheable(bdf, size, pa);
 }
 
 void
@@ -211,9 +211,9 @@ val_memory_set(void *buf, uint32_t size, uint8_t value)
 }
 
 void
-val_memory_free_coherent(uint32_t bdf, uint32_t size, void *va, void *pa)
+val_memory_free_cacheable(uint32_t bdf, uint32_t size, void *va, void *pa)
 {
-  pal_mem_free_coherent(bdf, size, va, pa);
+  pal_mem_free_cacheable(bdf, size, va, pa);
 }
 
 void *
@@ -228,7 +228,13 @@ val_memory_phys_to_virt(uint64_t pa)
   return pal_mem_phys_to_virt(pa);
 }
 
-uint32_t val_memory_page_size()
+uint64_t
+val_memory_get_unpopulated_addr(addr_t *addr, uint32_t instance)
+{
+  return pal_memory_get_unpopulated_addr(addr, instance);
+}
+
+uint32_t val_memory_page_size(void)
 {
     return pal_mem_page_size();
 }
@@ -245,8 +251,31 @@ val_memory_free_pages(void *addr, uint32_t num_pages)
     pal_mem_free_pages(addr, num_pages);
 }
 
-uint64_t
-val_memory_get_unpopulated_addr(addr_t *addr, uint32_t instance)
+/**
+  @brief  Allocates memory with the given alignement.
+
+  @param  Alignment   Specifies the alignment.
+  @param  Size        Requested memory allocation size.
+
+  @return Pointer to the allocated memory with requested alignment.
+**/
+void
+*val_aligned_alloc( uint32_t alignment, uint32_t size )
 {
-    return pal_memory_get_unpopulated_addr(addr, instance);
+  void *Mem = NULL;
+  void *Aligned_Ptr = NULL;
+
+  /* Generate mask for the Alignment parameter*/
+  uint64_t Mask = ~(uint64_t)(alignment - 1);
+
+  /* Allocate memory with extra bytes, so we can return an aligned address*/
+  Mem = (void *)pal_mem_alloc(size + alignment);
+
+  if( Mem == NULL)
+    return 0;
+
+  /* Add the alignment to allocated memory address and align it to target alignment*/
+  Aligned_Ptr = (void *)(((uint64_t) Mem + alignment-1) & Mask);
+
+  return Aligned_Ptr;
 }
