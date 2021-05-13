@@ -93,6 +93,26 @@ pal_exerciser_get_pcie_config_offset(UINT32 Bdf)
   return cfg_addr;
 }
 
+
+/**
+  @brief  This API returns if the device is a exerciser
+  @param  bdf - Bus/Device/Function
+  @return 1 - true 0 - false
+**/
+UINT32
+pal_is_bdf_exerciser(UINT32 bdf)
+{
+  UINT32 Ecam;
+  UINT32 vendor_dev_id;
+  Ecam = pal_pcie_get_mcfg_ecam();
+
+  vendor_dev_id = pal_mmio_read(Ecam + pal_exerciser_get_pcie_config_offset(bdf));
+  if (vendor_dev_id == EXERCISER_ID)
+     return 1;
+  else
+     return 0;
+}
+
 /**
   @brief This function triggers the DMA operation
 **/
@@ -428,6 +448,7 @@ pal_exerciser_get_data (
 {
   UINT32 Index;
   UINT64 EcamBase;
+  UINT64 EcamBAR0;
 
   EcamBase = (Ecam + pal_exerciser_get_pcie_config_offset(Bdf));
 
@@ -445,7 +466,8 @@ pal_exerciser_get_data (
           }
           return 0;
       case EXERCISER_DATA_BAR0_SPACE:
-          Data->bar_space.base_addr = &EcamBase;
+          EcamBAR0 = pal_exerciser_get_ecsr_base(Bdf, 0);
+          Data->bar_space.base_addr = (void *)EcamBAR0;
           if (((pal_exerciser_get_ecsr_base(Bdf,0) >> PREFETCHABLE_BIT_SHIFT) & MASK_BIT) == 0x1)
               Data->bar_space.type = MMIO_PREFETCHABLE;
           else

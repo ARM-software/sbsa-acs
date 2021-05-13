@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2020 Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2021 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,9 +16,12 @@
 **/
 
 #include "include/pal_common_support.h"
+#include "include/pal_pcie_enum.h"
 #include "include/platform_override_fvp.h"
 
 extern PE_INFO_TABLE platform_pe_cfg;
+extern PE_INFO_TABLE *g_pe_info_table;
+
 uint8_t   *gSecondaryPeStack;
 uint64_t  gMpidrMax;
 
@@ -70,7 +73,7 @@ PalGetMaxMpidr()
 void
 PalAllocateSecondaryStack(uint64_t mpidr)
 {
-  uint32_t Status;
+
   uint32_t NumPe, Aff0, Aff1, Aff2, Aff3;
 
   Aff0 = ((mpidr & 0x00000000ff) >>  0);
@@ -80,17 +83,15 @@ PalAllocateSecondaryStack(uint64_t mpidr)
 
   NumPe = ((Aff3+1) * (Aff2+1) * (Aff1+1) * (Aff0+1));
 
-  if (gSecondaryPeStack == NULL) {
-
-      /* TO DO - Baremetal
-       * Place holder to allocate memory to gSecondaryPeStack
-       */
-
+  if (gSecondaryPeStack == NULL)
+  {
+      gSecondaryPeStack = pal_mem_alloc(NumPe * SIZE_STACK_SECONDARY_PE);
+      if (gSecondaryPeStack == NULL){
+          print(AVS_PRINT_ERR, "FATAL - Allocation for Secondary stack failed \n", 0);
       }
       pal_pe_data_cache_ops_by_va((uint64_t)&gSecondaryPeStack, CLEAN_AND_INVALIDATE);
   }
-
-
+}
 
 /**
   @brief  This API fills in the PE_INFO Table with information about the PEs in the
@@ -151,8 +152,6 @@ pal_pe_create_info_table(PE_INFO_TABLE *PeTable)
 uint32_t
 pal_pe_install_esr(uint32_t ExceptionType,  void (*esr)(uint64_t, VOID *))
 {
-
-  uint32_t  Status;
 
   /* TO DO - Baremetal
    * Place holder to:
@@ -289,4 +288,18 @@ pal_pe_data_cache_ops_by_va(uint64_t addr, uint32_t type)
           DataCacheCleanInvalidateVA(addr);
   }
 
+}
+
+/**
+  @brief Returns the number of currently present PEs
+
+  @return  The number of PEs that are present in the system
+**/
+uint32_t
+pal_pe_get_num()
+{
+  if (g_pe_info_table == NULL) {
+      return 0;
+  }
+  return g_pe_info_table->header.num_of_pe;
 }

@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2020, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2021, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -27,7 +27,7 @@
 
 #include "include/pal_uefi.h"
 #include "include/sbsa_pcie_enum.h"
-#include "src_gic_its/sbsa_gic_its.h"
+
 
 static EFI_ACPI_6_1_MULTIPLE_APIC_DESCRIPTION_TABLE_HEADER *gMadtHdr;
 
@@ -37,8 +37,7 @@ EFI_HARDWARE_INTERRUPT2_PROTOCOL *gInterrupt2 = NULL;
 UINT64
 pal_get_madt_ptr();
 
-GIC_INFO_ENTRY  *g_gic_entry = NULL;
-GIC_ITS_INFO    *g_gic_its_info;
+
 
 /**
   @brief  Populate information about the GIC sub-system at the input address.
@@ -62,7 +61,6 @@ pal_gic_create_info_table(GIC_INFO_TABLE *GicTable)
   }
 
   GicEntry = GicTable->gic_info;
-  g_gic_entry = GicTable->gic_info;
   GicTable->header.gic_version = 0;
   GicTable->header.num_gicrd = 0;
   GicTable->header.num_gicd = 0;
@@ -223,7 +221,7 @@ pal_gic_set_intr_trigger(UINT32 int_id, INTR_TRIGGER_INFO_TYPE_e trigger_type)
   Status = gInterrupt2->SetTriggerType (
                    gInterrupt2,
                    int_id,
-                   (EFI_HARDWARE_INTERRUPT2_TRIGGER_TYPE)trigger_type
+                   trigger_type
                    );
 
   if (EFI_ERROR(Status))
@@ -255,172 +253,4 @@ pal_gic_free_irq (
   )
 {
 
-}
-
-UINT32
-pal_gic_its_configure (
-  )
-{
-  /*
-   * This function configure the gic to have support for LPIs,
-   * If supported in the system.
-  */
-  EFI_STATUS Status;
-
-  /* Allocate memory to store ITS info */
-  g_gic_its_info = (GIC_ITS_INFO *) pal_mem_alloc(1024);
-  if (!g_gic_its_info) {
-      sbsa_print(AVS_PRINT_DEBUG, L"GIC : ITS table memory allocation failed\n", 0);
-      goto its_fail;
-  }
-
-  g_gic_its_info->GicNumIts = 0;
-  g_gic_its_info->GicRdBase = 0;
-  g_gic_its_info->GicDBase  = 0;
-
-  while (g_gic_entry->type != 0xFF)
-  {
-    if (g_gic_entry->type == ENTRY_TYPE_GICD)
-    {
-        g_gic_its_info->GicDBase = g_gic_entry->base;
-    }
-    else if ((g_gic_entry->type == ENTRY_TYPE_GICR_GICRD) || (g_gic_entry->type == ENTRY_TYPE_GICC_GICRD))
-    {
-        /* Calculate Current PE Redistributor Base Address */
-        if (g_gic_its_info->GicRdBase == 0)
-        {
-            if (g_gic_entry->type == ENTRY_TYPE_GICR_GICRD)
-                g_gic_its_info->GicRdBase = GetCurrentCpuRDBase(g_gic_entry->base, g_gic_entry->length);
-            else
-                g_gic_its_info->GicRdBase = GetCurrentCpuRDBase(g_gic_entry->base, 0);
-        }
-    }
-    else if (g_gic_entry->type == ENTRY_TYPE_GICITS)
-    {
-        g_gic_its_info->GicIts[g_gic_its_info->GicNumIts].Base = g_gic_entry->base;
-        g_gic_its_info->GicIts[g_gic_its_info->GicNumIts++].ID = g_gic_entry->its_id;
-    }
-    g_gic_entry++;
-  }
-
-  /* Return if no ITS */
-  if (g_gic_its_info->GicNumIts == 0)
-  {
-    sbsa_print(AVS_PRINT_DEBUG, L"No ITS Found in the MADT.\n", 0);
-    goto its_fail;
-  }
-
-  /* Base Address Check. */
-  if ((g_gic_its_info->GicRdBase == 0) || (g_gic_its_info->GicDBase == 0))
-  {
-    sbsa_print(AVS_PRINT_DEBUG, L"Could not get GICD/GICRD Base.\n", 0);
-    goto its_fail;
-  }
-
-  if (ArmGICDSupportsLPIs(g_gic_its_info->GicDBase) && ArmGICRSupportsLPIs(g_gic_its_info->GicRdBase))
-  {
-    Status = ArmGicItsConfiguration();
-    if (EFI_ERROR(Status))
-    {
-      sbsa_print(AVS_PRINT_DEBUG, L"Could Not Configure ITS.\n", 0);
-      goto its_fail;
-    }
-  }
-  else
-  {
-    sbsa_print(AVS_PRINT_DEBUG, L"LPIs not supported in the system.\n", 0);
-    goto its_fail;
-  }
-
-  return 0;
-
-its_fail:
-  sbsa_print(AVS_PRINT_DEBUG, L"GIC ITS Initialization Failed.\n", 0);
-  sbsa_print(AVS_PRINT_DEBUG, L"LPI Interrupt related test may not pass.\n", 0);
-  return 0xFFFFFFFF;
-}
-
-UINT32
-pal_gic_get_max_lpi_id (
-  )
-{
-  return ArmGicItsGetMaxLpiID();
-}
-
-UINT32
-getItsIndex (
-  IN UINT32   ItsID
-  )
-{
-  UINT32  index;
-
-  for (index=0; index<g_gic_its_info->GicNumIts; index++)
-  {
-    if (ItsID == g_gic_its_info->GicIts[index].ID)
-      return index;
-  }
-  return 0xFFFFFFFF;
-}
-
-UINT32
-pal_gic_request_msi (
-  UINT32    ItsID,
-  UINT32    DevID,
-  UINT32    IntID,
-  UINT32    msi_index,
-  UINT32    *msi_addr,
-  UINT32    *msi_data
-  )
-{
-  UINT32  ItsIndex;
-
-  if ((g_gic_its_info == NULL) || (g_gic_its_info->GicNumIts == 0))
-    return 0xFFFFFFFF;
-
-  ItsIndex = getItsIndex(ItsID);
-  if (ItsIndex > g_gic_its_info->GicNumIts) {
-    sbsa_print(AVS_PRINT_ERR, L"\n       Could not find ITS block in MADT", 0);
-    return 0xFFFFFFFF;
-  }
-
-  if ((g_gic_its_info->GicRdBase == 0) || (g_gic_its_info->GicDBase == 0))
-  {
-    sbsa_print(AVS_PRINT_DEBUG, L"GICD/GICRD Base Invalid value.\n", 0);
-    return 0xFFFFFFFF;
-  }
-
-  ArmGicItsCreateLpiMap(ItsIndex, DevID, IntID, LPI_PRIORITY1);
-
-  *msi_addr = ArmGicItsGetGITSTranslatorAddress(ItsIndex);
-  *msi_data = IntID;
-
-  return 0;
-}
-
-VOID
-pal_gic_free_msi (
-  UINT32    ItsID,
-  UINT32    DevID,
-  UINT32    IntID,
-  UINT32    msi_index
-  )
-{
-  UINT32  ItsIndex;
-
-  if ((g_gic_its_info == NULL) || (g_gic_its_info->GicNumIts == 0))
-    return;
-
-  ItsIndex = getItsIndex(ItsID);
-  if (ItsIndex > g_gic_its_info->GicNumIts)
-  {
-    sbsa_print(AVS_PRINT_ERR, L"\n       Could not find ITS block in MADT", 0);
-    return;
-  }
-  if ((g_gic_its_info->GicRdBase == 0) || (g_gic_its_info->GicDBase == 0))
-  {
-    sbsa_print(AVS_PRINT_DEBUG, L"GICD/GICRD Base Invalid value.\n", 0);
-    return;
-  }
-
-  ArmGicItsClearLpiMappings(ItsIndex, DevID, IntID);
 }

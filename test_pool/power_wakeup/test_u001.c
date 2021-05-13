@@ -205,7 +205,13 @@ payload4()
       status = val_gic_install_isr(intid, isr4);
       if (status == 0) {
           wakeup_set_failsafe();
-          val_wd_set_ws0(timer_num, timer_expire_val);
+          status = val_wd_set_ws0(timer_num, timer_expire_val);
+          if (status) {
+              val_print(AVS_PRINT_ERR, "\n       Setting watchdof timeout failed", 0);
+              val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM4, 02));
+              return;
+          }
+
           val_power_enter_semantic(SBSA_POWER_SEM_B);
           wakeup_clear_failsafe();
       } else {

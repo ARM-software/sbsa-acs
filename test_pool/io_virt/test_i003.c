@@ -41,10 +41,10 @@ static void payload()
     while (num_smmu--)
     {
         if (val_smmu_get_info(SMMU_CTRL_ARCH_MAJOR_REV, num_smmu) == 2) {
-            val_print(AVS_PRINT_INFO, "\n\t Detected SMMU v2 ", 0);
+            val_print(AVS_PRINT_INFO, "\n\t Detected SMMUv2 ", 0);
 
             if (g_sbsa_level > 3) {
-                val_print(AVS_PRINT_ERR, "\n\t SMMU v3 should be supported Level %x", g_sbsa_level);
+                val_print(AVS_PRINT_ERR, "\n\t Smmuv3 should be supported Level %x", g_sbsa_level);
                 val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
                 return;
             }

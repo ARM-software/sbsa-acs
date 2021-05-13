@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2020 Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2021 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -56,7 +56,7 @@ void val_exerciser_create_info_table(void)
       }
 
       /* Store the Function's BDF if there was a valid response */
-      if (reg_value == EXERCISER_ID)
+      if (pal_is_bdf_exerciser(Bdf))
       {
           g_exercier_info_table.e_info[g_exercier_info_table.num_exerciser].bdf = Bdf;
           g_exercier_info_table.e_info[g_exercier_info_table.num_exerciser++].initialized = 0;

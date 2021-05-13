@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2020, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2021, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -545,6 +545,7 @@ val_pcie_create_device_bdf_table()
   }
 
   val_print(AVS_PRINT_INFO, "\n       Number of valid BDFs is %x\n", g_pcie_bdf_table->num_entries);
+
   /* Sanity Check : Confirm all EP (normal, integrated) have a rootport */
   if (val_pcie_populate_device_rootport())
   {
@@ -1176,9 +1177,10 @@ val_pcie_disable_bme(uint32_t bdf)
 uint32_t
 val_pcie_get_rp_transaction_frwd_support(uint32_t bdf)
 {
-    /* TO DO */
-    //return pal_get_rp_transaction_frwd_support(bdf);
-    return 0;
+  return pal_pcie_get_rp_transaction_frwd_support(PCIE_EXTRACT_BDF_SEG (bdf),
+                                                  PCIE_EXTRACT_BDF_BUS (bdf),
+                                                  PCIE_EXTRACT_BDF_DEV (bdf),
+                                                  PCIE_EXTRACT_BDF_FUNC(bdf));
 }
 
 /**
