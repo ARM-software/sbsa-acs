@@ -39,9 +39,8 @@ val_memory_execute_tests(uint32_t level, uint32_t num_pe)
 
   status = m001_entry(num_pe);
 
-  if (status == AVS_STATUS_FAIL) {
-      val_print(AVS_PRINT_ERR, "\nOne or more Memory tests have failed. Check Output..\n", status);
-  }
+  val_print_test_end(status, "Memory");
+
   return status;
 }
 

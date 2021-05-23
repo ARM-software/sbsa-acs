@@ -150,7 +150,7 @@ payload()
   uint32_t data;
 
   if (count == 0) {
-      val_print(AVS_PRINT_WARN, "\n        No UART defined by Platform      ", 0);
+      val_print(AVS_PRINT_TEST, "\n        No UART defined by Platform      ", 0);
       val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
       return;
   }
@@ -214,7 +214,7 @@ payload1()
           val_set_status(index, RESULT_PENDING(g_sbsa_level, TEST_NUM2));
           val_gic_install_isr(int_id, isr);
           uart_enable_txintr();
-          val_print_raw(g_print_level, "\n       Test Message                      ", 0);
+          val_print_raw(AVS_PRINT_DEBUG, "\n       Test Message                      ", 0);
 
           while ((--timeout > 0) && (IS_RESULT_PENDING(val_get_status(index))));
 

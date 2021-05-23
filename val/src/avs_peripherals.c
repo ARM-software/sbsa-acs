@@ -50,9 +50,8 @@ val_peripheral_execute_tests(uint32_t level, uint32_t num_pe)
   status |= d003_entry(num_pe);
   status |= m001_entry(num_pe);
 
-  if (status == AVS_STATUS_FAIL) {
-      val_print(AVS_PRINT_ERR, "\n    One or more Peripheral tests have failed...\n", status);
-  }
+  val_print_test_end(status, "Peripheral");
+
   return status;
 }
 #endif

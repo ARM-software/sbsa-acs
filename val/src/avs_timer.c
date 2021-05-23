@@ -66,10 +66,7 @@ val_timer_execute_tests(uint32_t level, uint32_t num_pe)
 
   g_timer_info_table->header.sys_timer_status = status_sys_timer;
 
-  if (status != 0)
-    val_print(AVS_PRINT_TEST, "\n      *** One or more tests have Failed/Skipped.*** \n", 0);
-  else
-    val_print(AVS_PRINT_TEST, "\n      All Timer tests passed!! \n", 0);
+  val_print_test_end(status, "Timer");
 
   return status;
 }

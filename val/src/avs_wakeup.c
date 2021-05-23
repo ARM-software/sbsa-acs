@@ -45,6 +45,7 @@ val_wakeup_execute_tests(uint32_t level, uint32_t num_pe)
   status = u001_entry(num_pe);
   //status |= u002_entry(num_pe);
 
+  val_print_test_end(status, "Wakeup");
   return status;
 
 }

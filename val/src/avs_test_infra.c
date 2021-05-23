@@ -40,6 +40,26 @@ val_print(uint32_t level, char8_t *string, uint64_t data)
 
 }
 
+void
+val_print_test_end(uint32_t status, char8_t *string)
+{
+  pal_print("\n      ",0);
+
+  if (status != AVS_STATUS_PASS){
+      pal_print("One of more ", 0);
+      pal_print(string, 0);
+      pal_print(" tests failed.", 0);
+  }
+  else{
+      pal_print("All ", 0);
+      pal_print(string, 0);
+      pal_print(" tests passed.", 0);
+  }
+
+  pal_print("\n",0);
+
+}
+
 /**
   @brief  This API calls PAL layer to print a string to the output console.
           1. Caller       - Application layer
@@ -221,7 +241,7 @@ val_initialize_test(uint32_t test_num, char8_t *desc, uint32_t num_pe, uint32_t 
   uint32_t i;
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
 
-  val_print(AVS_PRINT_ERR, "%4d : ", test_num); //Always print this
+  val_print(AVS_PRINT_TEST, "%4d : ", test_num); //Always print this
   val_print(AVS_PRINT_TEST, desc, 0);
   val_report_status(0, SBSA_AVS_START(level, test_num));
   val_pe_initialize_default_exception_handler(val_pe_default_esr);

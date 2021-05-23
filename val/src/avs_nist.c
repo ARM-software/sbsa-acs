@@ -40,10 +40,8 @@ val_nist_execute_tests(uint32_t level, uint32_t num_pe)
   }
 
   status = n001_entry(num_pe);
-  if (status != AVS_STATUS_PASS)
-      val_print(AVS_PRINT_ERR, "\n      NIST tests failed. Check Log \n", 0);
-  else
-      val_print(AVS_PRINT_TEST, "\n     All NIST tests Passed!! \n", 0);
+
+  val_print_test_end(status, "NIST");
 
   return status;
 }
