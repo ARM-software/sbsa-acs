@@ -185,8 +185,10 @@
 #define DCAPR_OFFSET   4
 #define ACSCR_OFFSET   4
 #define DCTLR_OFFSET   8
-#define DCAP2R_OFFSET  24
-#define DCTL2R_OFFSET  28
+#define LCAPR_OFFSET   0xC
+#define LCTRLR_OFFSET  0x10
+#define DCAP2R_OFFSET  0x24
+#define DCTL2R_OFFSET  0x28
 
 /* ACS Capability Register */
 #define ACS_CTRL_SVE_SHIFT  16
@@ -197,6 +199,14 @@
 /* PCIe capabilities reg shifts and masks */
 #define PCIECR_DPT_SHIFT 4
 #define PCIECR_DPT_MASK  0xf
+
+/* Link Capabilities register shifts and masks */
+#define LCAPR_DLLLARC_SHIFT 20
+#define LCAPR_DLLLARC_MASK  0x100000
+
+/* Link Status register shifts and masks */
+#define LSTAT_DLLLA_SHIFT   13
+#define LSTAT_DLLLA_MASK    0x20000000
 
 /* Device Capabilities register */
 #define DCAPR_MPSS_SHIFT 0

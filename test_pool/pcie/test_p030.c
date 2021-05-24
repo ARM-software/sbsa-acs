@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2019-2020, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2019-2021, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -54,14 +54,22 @@ payload(void)
   uint32_t test_fails;
   uint32_t test_skip = 1;
   uint64_t bar_base;
+  uint32_t status;
   pcie_device_bdf_table *bdf_tbl_ptr;
 
   pe_index = val_pe_get_index_mpid(val_pe_get_mpid());
   bdf_tbl_ptr = val_pcie_bdf_table_ptr();
 
   /* Install sync and async handlers to handle exceptions.*/
-  val_pe_install_esr(EXCEPT_AARCH64_SYNCHRONOUS_EXCEPTIONS, esr);
-  val_pe_install_esr(EXCEPT_AARCH64_SERROR, esr);
+  status = val_pe_install_esr(EXCEPT_AARCH64_SYNCHRONOUS_EXCEPTIONS, esr);
+  status |= val_pe_install_esr(EXCEPT_AARCH64_SERROR, esr);
+  if (status)
+  {
+      val_print(AVS_PRINT_ERR, "\n      Failed in installing the exception handler", 0);
+      val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
+      return;
+  }
+
   branch_to_test = &&exception_return;
 
   bar_data = 0;

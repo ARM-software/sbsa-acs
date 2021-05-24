@@ -157,7 +157,7 @@ pal_exerciser_find_pcie_capability (
   UINT64 NxtPtr;
   UINT32 Data;
   UINT32 TempId;
-  UINT32 Ecam;
+  UINT64 Ecam;
   UINT32 IdMask;
   UINT32 PtrMask;
   UINT32 PtrOffset;
@@ -351,7 +351,7 @@ pal_exerciser_ops (
   )
 {
   UINT64 Base;
-  UINT32 Ecam;
+  UINT64 Ecam;
   UINT32 CapabilityOffset;
   UINT32 data;
 
@@ -477,3 +477,24 @@ pal_exerciser_get_data (
           return 1;
     }
 }
+
+/**
+  @brief   This API checks if the given Bdf is an exerciser
+  @param   Bdf         - Bdf of the device
+  @return  status      - 1 if bdf is exerciser
+                         0 if bdf is not exerciser
+**/
+UINT32
+pal_is_bdf_exerciser(UINT32 bdf)
+{
+  UINT64 Ecam;
+  UINT32 vendor_dev_id;
+  Ecam = pal_pcie_get_mcfg_ecam();
+
+  vendor_dev_id = pal_mmio_read(Ecam + pal_exerciser_get_pcie_config_offset(bdf));
+  if (vendor_dev_id == EXERCISER_ID)
+     return 1;
+  else
+     return 0;
+}
+

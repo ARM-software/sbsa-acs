@@ -194,7 +194,7 @@ pal_pe_install_esr(uint32_t ExceptionType,  void (*esr)(uint64_t, VOID *))
 
   return EFI_SUCCESS;
 #endif
-  return 0;
+  return 1;
 }
 
 /**

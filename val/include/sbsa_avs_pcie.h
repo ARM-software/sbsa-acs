@@ -54,6 +54,10 @@
 #define WORD_ALIGN_MASK 0x3
 #define BITS_IN_BYTE 0x8
 
+#define PCIE_DLL_LINK_STATUS_NOT_ACTIVE       0x0
+#define PCIE_DLL_LINK_STATUS_ACTIVE           0x1
+#define PCIE_DLL_LINK_ACTIVE_NOT_SUPPORTED    0x2
+
 #define REG_MASK(end, start) (((~(uint32_t)0 << (start)) & \
                              (((uint32_t)1 << ((end)+1)) - 1)) >> (start))
 #define REG_SHIFT(alignment_byte_cnt, start) (((alignment_byte_cnt)*BITS_IN_BYTE) + start)
@@ -194,6 +198,9 @@ val_pcie_get_atomicop_requester_capable(uint32_t bdf);
 
 uint32_t
 val_pcie_is_cache_present(uint32_t bdf);
+
+uint32_t
+val_pcie_data_link_layer_status(uint32_t bdf);
 
 uint32_t
 p001_entry(uint32_t num_pe);

@@ -31,8 +31,8 @@ Contact your EDA vendor and ask if they include these tests as part of their ver
 ## Additional reading
   - For details on the SBSA ACS test execution, see [SBSA ACS User Guide](platform/pal_baremetal/docs/Arm_SBSA_ACS_Bare-metal_User_Guide.pdf).
   - For details on the Design of the SBSA ACS, see [Validation Methodology Document](docs/Arm_SBSA_Architecture_Compliance_Validation_Methodology.pdf).
-  - For information about the test coverage scenarios that are implemented in the current release of ACS and the scenarios that are   planned for the future releases, see [Testcase checklist](docs/testcase-checklist.md).
-
+  - For information about the test coverage scenarios that are implemented in the current release of ACS and the scenarios that are   planned for the future releases, see [Testcase checklist](docs/testcase-checklist.md). <br />
+Note: The Baremetal PCIe enumeration code provided as part of the SBSA ACS should be used and should not be replaced. This code is vital in analyzing the test result.
 
 ## Target platforms
   Any 64-bit Arm based Server design presented as a full chip Emulation or Simulation environment

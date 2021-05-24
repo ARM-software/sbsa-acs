@@ -461,7 +461,7 @@ pal_memcpy (
 
   @param  MicroSeconds  The minimum number of microseconds to delay.
 
-  @return The value of MicroSeconds inputted.
+  @return 1 - Success, 0 -Failure
 
 **/
 UINT64
@@ -469,7 +469,8 @@ pal_time_delay_ms (
   UINT64 MicroSeconds
   )
 {
-  return gBS->Stall(MicroSeconds);
+  gBS->Stall(MicroSeconds);
+  return 1;
 }
 
 UINT32

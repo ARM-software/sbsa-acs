@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, 2020 Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018, 2020-2021 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -299,7 +299,9 @@ pal_memory_unmap(VOID *ptr)
   @param  addr      - Address of the unpopulated memory
           instance  - Instance of memory
 
-  @return  EFI_STATUS
+  @return 0 - SUCCESS
+          1 - No unpopulated memory present
+          2 - FAILURE
 **/
 UINT64
 pal_memory_get_unpopulated_addr(UINT64 *addr, UINT32 instance)
@@ -313,7 +315,15 @@ pal_memory_get_unpopulated_addr(UINT64 *addr, UINT32 instance)
   /* Get the Global Coherency Domain Memory Space map table */
   Status = gDS->GetMemorySpaceMap(&NumberOfDescriptors, &MemorySpaceMap);
   if (Status != EFI_SUCCESS)
-    return Status;
+  {
+    sbsa_print(AVS_PRINT_ERR,L"Failed to get GCD memory with error: %x\n", Status);
+    if (Status == EFI_NO_MAPPING)
+    {
+        return MEM_MAP_NO_MEM;
+    }
+
+    return MEM_MAP_FAILURE;
+  }
 
   for (Index = 0; Index < NumberOfDescriptors; Index++, MemorySpaceMap++)
   {
@@ -326,12 +336,12 @@ pal_memory_get_unpopulated_addr(UINT64 *addr, UINT32 instance)
           continue;
 
         sbsa_print(AVS_PRINT_INFO,L"Unpopulated region with base address 0x%lX found\n", *addr);
-        return EFI_SUCCESS;
+        return MEM_MAP_SUCCESS;
       }
 
       Memory_instance++;
     }
   }
 
-  return EFI_NO_MAPPING;
+  return MEM_MAP_NO_MEM;
 }

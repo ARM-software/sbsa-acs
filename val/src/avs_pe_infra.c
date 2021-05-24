@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, 2020 Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018, 2020-2021 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -245,13 +245,19 @@ val_execute_on_pe(uint32_t index, void (*payload)(void), uint64_t test_input)
 uint32_t
 val_pe_install_esr(uint32_t exception_type, void (*esr)(uint64_t, void *))
 {
+  uint32_t status;
 
   if (exception_type > 3) {
       val_print(AVS_PRINT_ERR, "Invalid Exception type %x \n", exception_type);
       return AVS_STATUS_ERR;
   }
 
-  pal_pe_install_esr(exception_type, esr);
+  status = pal_pe_install_esr(exception_type, esr);
+  if (status) {
+      val_print(AVS_PRINT_ERR, "Install exception handler failed with error: %x ", status);
+      val_print(AVS_PRINT_ERR, "for type%x \n", exception_type);
+      return 1;
+  }
 
   return 0;
 }
