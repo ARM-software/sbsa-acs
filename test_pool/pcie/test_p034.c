@@ -54,8 +54,9 @@ payload(void)
       bdf = bdf_tbl_ptr->device[tbl_index++].bdf;
       dp_type = val_pcie_device_port_type(bdf);
 
-      /* Check for RCiEP and iEP */
-      if (dp_type == RCiEP || dp_type == iEP_EP)
+      /* Check for RCiEP, iEP, RCEC, RP */
+      if (dp_type == RCiEP || dp_type == iEP_EP || dp_type == iEP_RP
+                           || dp_type == RCEC || dp_type == RP)
       {
           /* Extract Hdr Type */
           hdr_type = val_pcie_function_header_type(bdf);

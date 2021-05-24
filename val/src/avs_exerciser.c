@@ -150,7 +150,7 @@ uint32_t val_exerciser_get_state(EXERCISER_STATE *state, uint32_t instance)
 uint32_t val_exerciser_init(uint32_t instance)
 {
   uint32_t Bdf;
-  uint32_t Ecam;
+  uint64_t Ecam;
   uint64_t cfg_addr;
   EXERCISER_STATE state;
 

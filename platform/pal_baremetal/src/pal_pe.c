@@ -159,7 +159,7 @@ pal_pe_install_esr(uint32_t ExceptionType,  void (*esr)(uint64_t, VOID *))
    *   2. Register the handler to receive interrupts
    */
 
-  return 0;
+  return 1;
 }
 
 /**

@@ -18,6 +18,10 @@
 #ifndef __SBSA_AVS_MEMORY_H__
 #define __SBSA_AVS_MEMORY_H__
 
+#define MEM_MAP_SUCCESS  0x0
+#define MEM_MAP_NO_MEM   0x1
+#define MEM_MAP_FAILURE  0x2
+
 addr_t val_memory_ioremap(void *addr, uint32_t size, uint64_t attr);
 
 void val_memory_unmap(void *ptr);

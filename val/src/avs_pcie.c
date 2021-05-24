@@ -406,11 +406,12 @@ val_pcie_print_device_info(void)
 void
 val_pcie_create_info_table(uint64_t *pcie_info_table)
 {
-
   if (pcie_info_table == NULL) {
       val_print(AVS_PRINT_ERR, "Input for Create Info table cannot be NULL \n", 0);
       return;
   }
+
+  val_pcie_enumerate();
 
   g_pcie_info_table = (PCIE_INFO_TABLE *)pcie_info_table;
 
@@ -426,7 +427,6 @@ val_pcie_create_info_table(uint64_t *pcie_info_table)
 
   val_pcie_print_device_info();
 
-  val_pcie_enumerate();
 }
 
 /**
@@ -440,6 +440,7 @@ static uint32_t val_pcie_populate_device_rootport(void)
   uint32_t bdf;
   uint32_t rp_bdf;
   uint32_t tbl_index;
+  uint32_t status;
   pcie_device_bdf_table *bdf_tbl_ptr;
 
   bdf_tbl_ptr = val_pcie_bdf_table_ptr();
@@ -450,10 +451,11 @@ static uint32_t val_pcie_populate_device_rootport(void)
       bdf = bdf_tbl_ptr->device[tbl_index].bdf;
       val_print(AVS_PRINT_DEBUG, "\n       Device bdf 0x%x", bdf);
 
-      /* Fn returns rp_bdf = 0, if RP not found */
-      val_pcie_get_rootport(bdf, &rp_bdf);
-      if (rp_bdf == 0)
+      /* Fn returns rp_bdf = 0 and status = 1, if RP not found */
+      status = val_pcie_get_rootport(bdf, &rp_bdf);
+      if ((rp_bdf == 0) && status)
         return 1;
+
       bdf_tbl_ptr->device[tbl_index].rp_bdf = rp_bdf;
       val_print(AVS_PRINT_DEBUG, " RP bdf 0x%x", rp_bdf);
   }
@@ -1027,9 +1029,7 @@ val_pcie_read_ext_cap_word(uint32_t bdf, uint32_t ext_cap_id, uint8_t offset, ui
 uint32_t
 val_pcie_is_onchip_peripheral(uint32_t bdf)
 {
-  /* TO DO */
-  //return pal_pcie_is_onchip_peripheral(bdf);
-  return 0;
+  return pal_pcie_is_onchip_peripheral(bdf);
 }
 
 /**
@@ -1930,4 +1930,40 @@ val_pcie_is_cache_present(uint32_t bdf)
                                    PCIE_EXTRACT_BDF_BUS (bdf),
                                    PCIE_EXTRACT_BDF_DEV (bdf),
                                    PCIE_EXTRACT_BDF_FUNC (bdf));
+}
+
+/**
+  @brief  Returns data link layer link active status of the given PCIe function
+
+  @param  bdf        - Segment/Bus/Dev/Func in the format of PCIE_CREATE_BDF
+  @return Returns PCIE_DLL_LINK_STATUS_NOT_ACTIVE    - If the Link status is not active.
+                  PCIE_DLL_LINK_STATUS_ACTIVE        - If the Link status is active.
+                  PCIE_DLL_LINK_ACTIVE_NOT_SUPPORTED - If the Link status is not supported
+**/
+uint32_t
+val_pcie_data_link_layer_status(uint32_t bdf)
+{
+   uint32_t pciecs_base;
+   uint32_t data_link_report;
+   uint32_t dll_status;
+
+   /* Obtain the Data Link Layer Link Active Reporting Capable to check if the
+    * link status can be polled.
+    */
+   val_pcie_find_capability(bdf, PCIE_CAP, CID_PCIECS, &pciecs_base);
+   val_pcie_read_cfg(bdf, pciecs_base + LCAPR_OFFSET, &data_link_report);
+   data_link_report = (data_link_report & LCAPR_DLLLARC_MASK) >> LCAPR_DLLLARC_SHIFT;
+
+   /* If  Data Link Layer Link Active Reporting is supported, the check the
+    * status of Data Link Layer Link Active.
+    */
+   if (data_link_report)
+   {
+       val_pcie_find_capability(bdf, PCIE_CAP, CID_PCIECS, &pciecs_base);
+       val_pcie_read_cfg(bdf, pciecs_base + LCTRLR_OFFSET, &dll_status);
+       dll_status = (dll_status & LSTAT_DLLLA_MASK) >> LSTAT_DLLLA_SHIFT;
+       return dll_status;
+   }
+
+   return PCIE_DLL_LINK_ACTIVE_NOT_SUPPORTED;
 }

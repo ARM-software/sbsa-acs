@@ -34,6 +34,11 @@ A few tests are executed by running the SBSA ACS Linux application which in turn
   - For details on the Design of the SBSA ACS, see [Validation Methodology Document](docs/Arm_SBSA_Architecture_Compliance_Validation_Methodology.pdf).
   - For information about the test coverage scenarios that are implemented in the current release of ACS and the scenarios that are   planned for the future releases, see [Testcase checklist](docs/testcase-checklist.md).
 
+## SBSA ACS Baremetal Reference Code
+Baremetal reference code is added as part of this release. For more information, see
+  - [Baremetal User Guide](platform/pal_baremetal/docs/Arm_SBSA_ACS_Bare-metal_User_Guide.pdf).
+  - [Baremetal Code](platform/pal_baremetal/). <br />
+Note: The Baremetal PCIe enumeration code provided as part of the SBSA ACS should be used and should not be replaced. This code is vital in analyzing the test result.
 
 ## SBSA ACS Linux kernel module
 To enable the export of a few kernel APIs that are necessary for PCIe and IOMMU tests, Linux kernel module and a kernel patch file are required. These files are available at [linux-arm.org/git](http://www.linux-arm.org/git?p=linux-acs.git).
