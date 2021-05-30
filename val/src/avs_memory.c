@@ -228,6 +228,17 @@ val_memory_phys_to_virt(uint64_t pa)
   return pal_mem_phys_to_virt(pa);
 }
 
+/**
+  @brief  Return the address of unpopulated memory of requested
+          instance from the GCD memory map.
+
+  @param  addr      - Address of the unpopulated memory
+          instance  - Instance of memory
+
+  @return 0 - SUCCESS
+          1 - No unpopulated memory present
+          2 - FAILURE
+**/
 uint64_t
 val_memory_get_unpopulated_addr(addr_t *addr, uint32_t instance)
 {

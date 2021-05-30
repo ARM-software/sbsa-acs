@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2019-2020, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2019-2021, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -62,6 +62,7 @@ payload(void)
   uint32_t fail_cnt;
   uint32_t smmu_index;
   uint32_t dma_len;
+  uint32_t status;
   void *dram_buf_virt;
   void *dram_buf_phys;
   void *dram_buf_iova;
@@ -71,8 +72,15 @@ payload(void)
   instance = val_exerciser_get_info(EXERCISER_NUM_CARDS, 0);
 
   /* Install sync and async handlers to handle exceptions.*/
-  val_pe_install_esr(EXCEPT_AARCH64_SYNCHRONOUS_EXCEPTIONS, esr);
-  val_pe_install_esr(EXCEPT_AARCH64_SERROR, esr);
+  status = val_pe_install_esr(EXCEPT_AARCH64_SYNCHRONOUS_EXCEPTIONS, esr);
+  status |= val_pe_install_esr(EXCEPT_AARCH64_SERROR, esr);
+  if (status)
+  {
+      val_print(AVS_PRINT_ERR, "\n      Failed in installing the exception handler", 0);
+      val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
+      return;
+  }
+
   branch_to_test = &&exception_return;
 
   /* Create a buffer of size TEST_DMA_SIZE in DRAM */

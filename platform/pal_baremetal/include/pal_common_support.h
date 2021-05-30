@@ -477,6 +477,10 @@ typedef struct {
 #define IOVIRT_CCA_MASK ~((uint32_t)0)
 
 /* Memory INFO table */
+#define MEM_MAP_SUCCESS  0x0
+#define MEM_MAP_NO_MEM   0x1
+#define MEM_MAP_FAILURE  0x2
+
 typedef enum {
   MEMORY_TYPE_DEVICE = 0x1000,
   MEMORY_TYPE_NORMAL,

@@ -53,6 +53,7 @@ payload(void)
   uint32_t pe_index;
   uint32_t tbl_index;
   uint32_t read_value, old_value;
+  uint32_t status;
   uint32_t test_skip = 1;
   uint64_t mem_base = 0, mem_base_upper = 0;
   uint64_t mem_lim = 0, mem_lim_upper = 0;
@@ -63,8 +64,15 @@ payload(void)
   pe_index = val_pe_get_index_mpid(val_pe_get_mpid());
 
   /* Install sync and async handlers to handle exceptions.*/
-  val_pe_install_esr(EXCEPT_AARCH64_SYNCHRONOUS_EXCEPTIONS, esr);
-  val_pe_install_esr(EXCEPT_AARCH64_SERROR, esr);
+  status = val_pe_install_esr(EXCEPT_AARCH64_SYNCHRONOUS_EXCEPTIONS, esr);
+  status |= val_pe_install_esr(EXCEPT_AARCH64_SERROR, esr);
+  if (status)
+  {
+      val_print(AVS_PRINT_ERR, "\n      Failed in installing the exception handler", 0);
+      val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
+      return;
+  }
+
   branch_to_test = &&exception_return;
 
   /* Since this is a memory space access test.
