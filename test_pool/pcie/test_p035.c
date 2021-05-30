@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2019, 2020 Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2019-2021 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -77,6 +77,7 @@ payload(void)
   uint32_t test_fails;
   uint32_t test_skip = 1;
   uint32_t idx;
+  uint32_t status;
   addr_t config_space_addr;
   void *func_config_space;
   pcie_device_bdf_table *bdf_tbl_ptr;
@@ -133,7 +134,14 @@ payload(void)
           val_pcie_write_cfg(bdf, cap_base + DCTLR_OFFSET, reg_value);
 
           /* Wait for 100 ms */
-          val_time_delay_ms(100 * ONE_MILLISECOND);
+          status = val_time_delay_ms(100 * ONE_MILLISECOND);
+          if (!status)
+          {
+              val_print(AVS_PRINT_ERR, "\n Failed to time delay for BDF 0x%x ", bdf);
+              val_memory_free(func_config_space);
+              val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
+              return;
+          }
 
           /* If test runs for atleast an endpoint */
           test_skip = 0;

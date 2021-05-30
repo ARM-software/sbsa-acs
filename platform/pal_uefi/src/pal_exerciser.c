@@ -157,7 +157,7 @@ pal_exerciser_find_pcie_capability (
   UINT64 NxtPtr;
   UINT32 Data;
   UINT32 TempId;
-  UINT32 Ecam;
+  UINT64 Ecam;
   UINT32 IdMask;
   UINT32 PtrMask;
   UINT32 PtrOffset;
@@ -351,7 +351,7 @@ pal_exerciser_ops (
   )
 {
   UINT64 Base;
-  UINT32 Ecam;
+  UINT64 Ecam;
   UINT32 CapabilityOffset;
   UINT32 data;
 

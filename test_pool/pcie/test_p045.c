@@ -36,14 +36,14 @@ payload(void)
   uint32_t pe_index;
   uint32_t tbl_index;
   uint32_t ecam_index;
-  uint32_t ecam_base;
+  uint64_t ecam_base;
   uint32_t reg_value;
   uint16_t vendor_id;
   uint32_t device_id;
   uint32_t test_skip = 1;
   uint32_t test_fail = 0;
   uint32_t segment;
-  uint32_t rp_ecam_base;
+  uint64_t rp_ecam_base;
   uint32_t rp_segment;
 
   pcie_device_bdf_table *bdf_tbl_ptr;

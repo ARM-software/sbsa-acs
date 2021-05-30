@@ -142,7 +142,7 @@ uint32_t pal_exerciser_set_state (EXERCISER_STATE State, uint64_t *Value, uint32
   @param   instance     - Stimulus hardware instance number
   @return  status       - SUCCESS if the requested data is successfully filled
 **/
-uint32_t pal_exerciser_get_data(EXERCISER_DATA_TYPE Type, exerciser_data_t *Data, uint32_t Bdf, uint32_t Ecam)
+uint32_t pal_exerciser_get_data(EXERCISER_DATA_TYPE Type, exerciser_data_t *Data, uint32_t Bdf, uint64_t Ecam)
 {
   return 1;
 }

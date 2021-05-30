@@ -424,7 +424,7 @@ pal_memcpy(void *DestinationBuffer, void *SourceBuffer, uint32_t Length)
 
   @param  MicroSeconds  The minimum number of microseconds to delay.
 
-  @return The value of MicroSeconds inputted.
+  @return 1 - Success, 0 -Failure
 
 **/
 uint64_t

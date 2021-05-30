@@ -343,3 +343,16 @@ pal_pcie_get_rp_transaction_frwd_support(UINT32 seg, UINT32 bus, UINT32 dev, UIN
 {
   return 1;
 }
+
+/**
+  @brief  Returns whether a PCIe Function is an on-chip peripheral or not
+
+  @param  bdf        - Segment/Bus/Dev/Func in the format of PCIE_CREATE_BDF
+  @return Returns TRUE if the Function is on-chip peripheral, FALSE if it is
+          not an on-chip peripheral
+**/
+UINT32
+pal_pcie_is_onchip_peripheral(UINT32 bdf)
+{
+  return 0;
+}

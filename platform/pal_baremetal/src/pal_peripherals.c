@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2020, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2021, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -267,7 +267,9 @@ pal_memory_unmap(void *ptr)
   @param  addr      - Address of the unpopulated memory
           instance  - Instance of memory
 
-  @return  STATUS
+  @return 0 - SUCCESS
+          1 - No unpopulated memory present
+          2 - FAILURE
 **/
 uint64_t
 pal_memory_get_unpopulated_addr(uint64_t *addr, uint32_t instance)

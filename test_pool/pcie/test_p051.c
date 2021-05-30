@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2020, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2021, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -105,6 +105,8 @@ payload(void)
   uint32_t iep_rp_found;
   uint32_t test_fails;
   uint32_t idx;
+  uint32_t status;
+  uint32_t delay_status;
   void     *cfg_space_buf;
   addr_t   cfg_space_addr;
   pcie_device_bdf_table *bdf_tbl_ptr;
@@ -164,7 +166,40 @@ payload(void)
           val_pcie_write_cfg(bdf,TYPE01_ILR, reg_value);
 
           /* Wait for Timeout */
-          val_time_delay_ms(100 * ONE_MILLISECOND);
+          delay_status = val_time_delay_ms(100 * ONE_MILLISECOND);
+          if (!delay_status)
+          {
+              val_print(AVS_PRINT_ERR, "\n Failed to time delay for BDF 0x%x ", bdf);
+              val_memory_free(cfg_space_buf);
+              val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
+              return;
+          }
+
+          status = val_pcie_data_link_layer_status(bdf);
+          if (status != PCIE_DLL_LINK_ACTIVE_NOT_SUPPORTED)
+          {
+              if (!status)
+              {
+                  /* Wait for for additional Timeout and check the status*/
+                  delay_status = val_time_delay_ms(100 * ONE_MILLISECOND);
+                  if (!delay_status)
+                  {
+                      val_print(AVS_PRINT_ERR, "\n Failed to time delay for BDF 0x%x ", bdf);
+                      val_memory_free(cfg_space_buf);
+                      val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
+                      return;
+                  }
+
+                  status = val_pcie_data_link_layer_status(bdf);
+              }
+          }
+
+          if (status == PCIE_DLL_LINK_STATUS_NOT_ACTIVE)
+          {
+              val_print(AVS_PRINT_INFO, "\n       The link is not active after reset for BDF 0x%x : ", bdf);
+              test_fails++;
+              goto free_cfg;
+          }
 
           /* Check whether iEP_RP Secondary Bus Reset works fine. */
           if (is_sbr_failed(iep_bdf)) {
@@ -176,6 +211,7 @@ payload(void)
               *((uint32_t *)cfg_space_addr + idx) = *((uint32_t *)cfg_space_buf + idx);
           }
 
+free_cfg:
           val_memory_free(cfg_space_buf);
       }
   }
