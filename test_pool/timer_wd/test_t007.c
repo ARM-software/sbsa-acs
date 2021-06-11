@@ -31,7 +31,7 @@ payload()
 {
 
   uint64_t cnt_ctl_base, cnt_base_n;
-  uint32_t data;
+  uint32_t data, data1;
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
   uint64_t timer_num = val_timer_get_info(TIMER_INFO_NUM_PLATFORM_TIMERS, 0);
 
@@ -76,10 +76,15 @@ payload()
       }
 
       data = val_mmio_read(cnt_base_n + 0x0);
-      val_mmio_write(cnt_base_n + 0x0, data - ARBIT_VALUE);  // Writes to Read-Only registers should be ignored
-      if(val_mmio_read(cnt_base_n + 0x0) < data) {
+      data1 = val_mmio_read(cnt_base_n + 0x4);
+
+      // Writes to Read-Only registers should be ignore
+      val_mmio_write(cnt_base_n + 0x0, data - ARBIT_VALUE);
+      val_mmio_write(cnt_base_n + 0x4, data1 - ARBIT_VALUE);
+
+      if((val_mmio_read(cnt_base_n + 0x0) != data) || (val_mmio_read(cnt_base_n + 0x4) != data1)){
           val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 0x4));
-          val_print(AVS_PRINT_ERR, "\n      CNTBaseN offset 0 should be read-only ", 0);
+          val_print(AVS_PRINT_ERR, "\n      CNTBaseN: CNTPCT reg should be read-only ", 0);
           return;
       }
 
