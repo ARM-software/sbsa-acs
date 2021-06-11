@@ -94,16 +94,17 @@ payload()
       }
       val_mmio_write(cnt_base_n + 0x2C, 0x0); // Disable timer
 
+      /* Write random value to CNTP_CVAL[0:31] & CNTP_CVAL[32:64]*/
       data = 0xFF00FF00;
       val_mmio_write(cnt_base_n + 0x20, data);
+      val_mmio_write(cnt_base_n + 0x24, data);
+
       if(data != val_mmio_read(cnt_base_n + 0x20)) {
           val_print(AVS_PRINT_ERR, "\n       Read-write check failed for CNTBaseN.CNTP_CVAL[31:0], expected value %x ", data);
           val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 0x6));
           return;
       }
 
-      data = 0x00FF00FF;
-      val_mmio_write(cnt_base_n + 0x24, data);
       if(data != val_mmio_read(cnt_base_n + 0x24)) {
           val_print(AVS_PRINT_ERR, "\n       Read-write check failed for CNTBaseN.CNTP_CVAL[63:32], expected value %x ", data);
           val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 0x7));
