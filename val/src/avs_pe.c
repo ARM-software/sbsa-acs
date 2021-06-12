@@ -59,7 +59,6 @@ val_pe_execute_tests(uint32_t level, uint32_t num_pe)
   status |= c006_entry(num_pe);
   status |= c007_entry(num_pe);
   status |= c008_entry(num_pe);
-  status |= c009_entry(num_pe);
   status |= c010_entry(num_pe);
   status |= c011_entry(num_pe);
   status |= c012_entry(num_pe);
