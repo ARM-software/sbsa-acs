@@ -155,12 +155,24 @@ exception_return:
           val_pcie_clear_urd(erp_bdf);
       } else
       {
-          val_print(AVS_PRINT_ERR, "\n      BDF 0x%x BME functionality failure", erp_bdf);
+          val_print(AVS_PRINT_ERR, "\n      Root Port BDF 0x%x BME functionality failure", erp_bdf);
           fail_cnt++;
       }
 
       /* Restore Rootport Bus Master Enable */
       val_pcie_enable_bme(erp_bdf);
+
+      /* Check if UR detected bit is set in the Exerciser */
+      if (val_pcie_is_urd(e_bdf))
+      {
+          /* Clear urd bit in Device Status Register */
+          val_pcie_clear_urd(e_bdf);
+      } else
+      {
+          val_print(AVS_PRINT_ERR, "\n      Exerciser BDF 0x%x BME functionality failure", e_bdf);
+          fail_cnt++;
+      }
+
 
   }
 

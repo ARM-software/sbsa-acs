@@ -25,6 +25,8 @@ extern PCIE_READ_TABLE platform_pcie_device_hierarchy;
 extern PERIPHERAL_INFO_TABLE  *g_peripheral_info_table;
 extern PLATFORM_PCIE_PERIPHERAL_INFO_TABLE platform_pcie_peripheral_cfg;
 
+void *pal_memcpy(void *dest_buffer, void *src_buffer, uint32_t len);
+
 uint64_t
 pal_pcie_get_mcfg_ecam()
 {
@@ -615,6 +617,24 @@ pal_get_msi_vectors(uint32_t Seg, uint32_t Bus, uint32_t Dev, uint32_t Fn, PERIP
 uint32_t
 pal_pcie_get_legacy_irq_map(uint32_t Seg, uint32_t Bus, uint32_t Dev, uint32_t Fn, PERIPHERAL_IRQ_MAP *IrqMap)
 {
+  uint32_t i;
+
+  for(i = 0; i < platform_pcie_device_hierarchy.num_entries; i++)
+  {
+     if(Seg  == platform_pcie_device_hierarchy.device[i].seg &&
+        Bus  == platform_pcie_device_hierarchy.device[i].bus &&
+        Dev  == platform_pcie_device_hierarchy.device[i].dev &&
+        Fn == platform_pcie_device_hierarchy.device[i].function)
+        {
+            pal_memcpy(IrqMap, &platform_pcie_device_hierarchy.device[i].irq_map,
+                       sizeof(platform_pcie_device_hierarchy.device[i].irq_map));
+            return 0;
+        }
+  }
+
+  print(AVS_PRINT_ERR, "No PCI devices found in the system\n");
+  return PCIE_NO_MAPPING;
+
   return 1;
 }
 

@@ -17,6 +17,7 @@
 #include "val/include/sbsa_avs_val.h"
 #include "val/include/val_interface.h"
 
+#include "val/include/sbsa_avs_pe.h"
 #include "val/include/sbsa_avs_pcie.h"
 #include "val/include/sbsa_avs_memory.h"
 
@@ -26,12 +27,27 @@
 
 #define DATA 0xC0DECAFE
 
+static void *branch_to_test;
+
+static
+void
+esr(uint64_t interrupt_type, void *context)
+{
+  uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
+
+  /* Update the ELR to point to next instrcution */
+  val_pe_update_elr(context, (uint64_t)branch_to_test);
+
+  val_print(AVS_PRINT_ERR, "\n       Received Exception ", 0);
+  val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
+}
+
 static
 void
 payload(void)
 {
-  uint32_t count = 0;
   uint32_t data;
+  uint32_t old_data;
   uint32_t bdf;
   uint32_t bar_reg_value;
   uint64_t bar_upper_bits;
@@ -44,15 +60,42 @@ payload(void)
   uint32_t test_fail = 0;
   uint64_t offset;
   uint64_t base;
+  pcie_device_bdf_table *bdf_tbl_ptr;
+  uint32_t tbl_index = 0;
+  uint32_t status;
+  uint32_t dev_type;
+  uint32_t max_bar_offset;
+  uint32_t msa_en = 0;
 
-  count = val_peripheral_get_info(NUM_SATA, 0);
+  val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 0));
 
-  while (count--) {
+  /* Install exception handlers */
+  status = val_pe_install_esr(EXCEPT_AARCH64_SYNCHRONOUS_EXCEPTIONS, esr);
+  status |= val_pe_install_esr(EXCEPT_AARCH64_SERROR, esr);
+  if (status)
+  {
+      val_print(AVS_PRINT_ERR, "\n      Failed in installing the exception handler", 0);
+      val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
+      return;
+  }
+
+  bdf_tbl_ptr = val_pcie_bdf_table_ptr();
+
 next_bdf:
-      bdf = val_peripheral_get_info(SATA_BDF, count);
+  for (;tbl_index < bdf_tbl_ptr->num_entries; tbl_index++) {
+      msa_en = 0;
+      bdf = bdf_tbl_ptr->device[tbl_index].bdf;
+
+      /* Configure the max BAR offset */
+      dev_type = val_pcie_get_device_type(bdf);
+      if (dev_type == 0)
+          max_bar_offset = BAR_TYPE_0_MAX_OFFSET;
+      else
+          max_bar_offset = BAR_TYPE_1_MAX_OFFSET;
+
       offset = BAR0_OFFSET;
 
-      while(offset <= BAR_MAX_OFFSET) {
+      while(offset <= max_bar_offset) {
           val_pcie_read_cfg(bdf, offset, &bar_value);
           val_print(AVS_PRINT_DEBUG, "\n The BAR value of bdf %x", bdf);
           val_print(AVS_PRINT_DEBUG, " is %x ", bar_value);
@@ -61,13 +104,13 @@ next_bdf:
           if (bar_value == 0)
           {
               /** This BAR is not implemented **/
-              count--;
+              tbl_index++;
               goto next_bdf;
           }
 
           /* Skip for IO address space */
           if (bar_value & 0x1) {
-              count--;
+              tbl_index++;
               goto next_bdf;
           }
 
@@ -121,30 +164,58 @@ next_bdf:
 
           test_skip = 0;
 
-          /* Map SATA Controller BARs to a NORMAL memory attribute. check unaligned access */
+          /* Enable Memory Space Access to the BDF if not enabled */
+          msa_en = val_pcie_is_msa_enabled(bdf);
+          if (msa_en)
+              val_pcie_enable_msa(bdf);
+
+          branch_to_test = &&exception_return_normal;
+
+          /* Map the BARs to a NORMAL memory attribute. check unaligned access */
           baseptr = (char *)val_memory_ioremap((void *)base, 1024, NORMAL_NC);
 
-          /* Check for unaligned access */
+          /* Check for unaligned access. Normal memory can be read-only.
+           * Not performing data comparison check.
+           */
+          old_data = *(uint32_t *)(baseptr);
           *(uint32_t *)(baseptr) = DATA;
           data = *(char *)(baseptr+3);
+          *(uint32_t *)(baseptr) = old_data;
 
+exception_return_normal:
           val_memory_unmap(baseptr);
+          if (IS_TEST_FAIL(val_get_status(index))) {
+              val_print(AVS_PRINT_ERR, "\n       Normal memory access failed for Bdf: 0x%x", bdf);
 
-          if (data != (DATA >> 24)) {
-              val_print(AVS_PRINT_ERR, "Unaligned data mismatch", 0);
+              /* Setting the status to Pass to enable next check for current BDF.
+               * Failure has been recorded with test_fail.
+               */
+              val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
               test_fail++;
           }
 
-          /* Map SATA Controller BARs to a DEVICE memory attribute and check transaction */
+          branch_to_test = &&exception_return_device;
+
+          /* Map the BARs to a DEVICE memory (non-cachable) attribute
+           * and check transaction.
+           */
           baseptr = (char *)val_memory_ioremap((void *)base, 1024, DEVICE_nGnRnE);
 
+          /* Access check. Not performing data comparison check. */
+          old_data = *(uint32_t *)(baseptr);
           *(uint32_t *)(baseptr) = DATA;
           data = *(uint32_t *)(baseptr);
+          *(uint32_t *)(baseptr) = old_data;
 
           val_memory_unmap(baseptr);
 
-          if (data != DATA) {
-              val_print(AVS_PRINT_ERR, "Data value mismatch", 0);
+exception_return_device:
+          if (IS_TEST_FAIL(val_get_status(index))) {
+              val_print(AVS_PRINT_ERR, "\n       Device memory access failed for Bdf: 0x%x", bdf);
+              /* Setting the status to Pass to enable test for next BDF.
+               * Failure has been recorded with test_fail.
+               */
+              val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 02));
               test_fail++;
           }
 
@@ -154,15 +225,18 @@ next_bar:
 
           if (BAR_REG(bar_reg_value) == BAR_64_BIT)
               offset=offset+8;
+
+          if (msa_en)
+              val_pcie_disable_msa(bdf);
       }
   }
 
   if (test_skip)
       val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 0));
   else if (test_fail)
-      val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, test_fail));
+      val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 03));
   else
-      val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 0));
+      val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 03));
 
 }
 

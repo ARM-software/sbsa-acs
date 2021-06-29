@@ -170,6 +170,7 @@ void val_pcie_disable_bme(uint32_t bdf);
 void val_pcie_enable_bme(uint32_t bdf);
 void val_pcie_disable_msa(uint32_t bdf);
 void val_pcie_enable_msa(uint32_t bdf);
+uint32_t val_pcie_is_msa_enabled(uint32_t bdf);
 void val_pcie_clear_urd(uint32_t bdf);
 uint32_t val_pcie_is_urd(uint32_t bdf);
 void val_pcie_disable_eru(uint32_t bdf);

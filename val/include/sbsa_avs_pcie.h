@@ -41,7 +41,8 @@
 
 #define PCIE_INTERRUPT_LINE  0x3c
 #define PCIE_INTERRUPT_PIN   0x3d
-
+#define PCIE_INTERRUPT_PIN_SHIFT 0x8
+#define PCIE_INTERRUPT_PIN_MASK  0xFF
 #define PCIE_TYPE_ROOT_PORT  0x04 /* Root Port */
 #define PCIE_TYPE_DOWNSTREAM 0x06 /* Downstream Port */
 #define PCIE_TYPE_ENDPOINT   0x0  /* Express Endpoint */
@@ -201,6 +202,9 @@ val_pcie_is_cache_present(uint32_t bdf);
 
 uint32_t
 val_pcie_data_link_layer_status(uint32_t bdf);
+
+uint32_t
+val_pcie_check_interrupt_status(uint32_t bdf);
 
 uint32_t
 p001_entry(uint32_t num_pe);

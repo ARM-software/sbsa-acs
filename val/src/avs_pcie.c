@@ -1245,6 +1245,28 @@ val_pcie_enable_msa(uint32_t bdf)
 }
 
 /**
+  @brief  Reads the BAR memory space access in the command register.
+
+  @param  bdf   - Segment/Bus/Dev/Func in the format of PCIE_CREATE_BDF
+  @return 0 - Success
+          1 - Failure
+**/
+uint32_t
+val_pcie_is_msa_enabled(uint32_t bdf)
+{
+
+  uint32_t reg_value;
+
+  /* Enable MSE bit in Command Register to enable BAR memory space accesses */
+  val_pcie_read_cfg(bdf, TYPE01_CR, &reg_value);
+  reg_value &= (1 << CR_MSE_SHIFT);
+  if (reg_value)
+      return 0;
+  else
+      return 1;
+}
+
+/**
   @brief  Clears unsupported request detected bit in Device Status Register
 
   @param  bdf   - Segment/Bus/Dev/Func in the format of PCIE_CREATE_BDF
@@ -1967,3 +1989,23 @@ val_pcie_data_link_layer_status(uint32_t bdf)
 
    return PCIE_DLL_LINK_ACTIVE_NOT_SUPPORTED;
 }
+
+/**
+  @brief  Returns whether a PCIe Function has detected an Interrupt request
+
+  @param  bdf        - Segment/Bus/Dev/Func in the format of PCIE_CREATE_BDF
+  @return Returns 1 - if the Function has received an Interrupt Request or
+                  0 - if it does not detect Interrupt request
+**/
+uint32_t
+val_pcie_check_interrupt_status(uint32_t bdf)
+{
+
+  uint32_t reg_value;
+
+  val_pcie_read_cfg(bdf, TYPE01_CR, &reg_value);
+  reg_value = (reg_value >> SR_IS_SHIFT) & SR_IS_MASK;
+
+  return reg_value;
+}
+

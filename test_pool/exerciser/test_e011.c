@@ -86,6 +86,7 @@ payload(void)
   uint32_t test_data_blk_size = page_size * TEST_DATA_NUM_PAGES;
   uint64_t *pgt_base_array;
   uint64_t translated_addr;
+  uint32_t test_skip = 1;
 
   /* Initialize DMA master and memory descriptors */
   val_memory_set(&master, sizeof(master), 0);
@@ -207,6 +208,8 @@ payload(void)
         dram_buf_out_iova = dram_buf_in_iova + (test_data_blk_size / 2);
     }
 
+    test_skip = 0;
+
     /* Send an ATS Translation Request for the VA */
     if (val_exerciser_ops(ATS_TXN_REQ, (uint64_t)dram_buf_in_virt + instance * test_data_blk_size, instance)) {
         val_print(AVS_PRINT_ERR, "\n       ATS Translation Req Failed exerciser %4x", instance);
@@ -260,7 +263,11 @@ payload(void)
     clear_dram_buf(dram_buf_in_virt, test_data_blk_size);
   }
 
-  val_set_status(pe_index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
+  if (test_skip)
+    val_set_status(pe_index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
+  else
+    val_set_status(pe_index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
+
   goto test_clean;
 
 test_fail:
