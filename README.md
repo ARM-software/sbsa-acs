@@ -11,7 +11,7 @@ For more information, download the [SBSA specification](https://developer.arm.co
 ## SBSA - Architecture Compliance Suite
 
 SBSA **Architecture Compliance Suite** (ACS) is a collection of self-checking, portable C-based tests.
-This suite includes a set of examples of the invariant behaviors that are provided by the [SBSA](http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.den0029b/index.html) specification, so that implementers can verify if these behaviours have been interpreted correctly.
+This suite includes a set of examples of the invariant behaviors that are provided by the [SBSA specification](https://developer.arm.com/documentation/den0029/d/?lang=en), so that implementers can verify if these behaviours have been interpreted correctly.
 Most of the tests are executed from UEFI Shell by executing the SBSA UEFI shell application.
 A few tests are executed by running the SBSA ACS Linux application which in turn depends on the SBSA ACS Linux kernel module.
 
@@ -41,7 +41,7 @@ Baremetal reference code is added as part of this release. For more information,
 Note: The Baremetal PCIe enumeration code provided as part of the SBSA ACS should be used and should not be replaced. This code is vital in analyzing the test result.
 
 ## SBSA ACS Linux kernel module
-To enable the export of a few kernel APIs that are necessary for PCIe and IOMMU tests, Linux kernel module and a kernel patch file are required. These files are available at [linux-arm.org/git](http://www.linux-arm.org/git?p=linux-acs.git).
+To enable the export of a few kernel APIs that are necessary for PCIe and IOMMU tests, Linux kernel module and a kernel patch file are required. These files are available at [linux-acs](https://gitlab.arm.com/linux-arm/linux-acs).
 
 ## Target platforms
   Any AARCH64 Enterprise Platform that boots UEFI and Linux OS.
