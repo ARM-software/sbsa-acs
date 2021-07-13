@@ -102,7 +102,7 @@ pal_exerciser_get_pcie_config_offset(UINT32 Bdf)
 UINT32
 pal_is_bdf_exerciser(UINT32 bdf)
 {
-  UINT32 Ecam;
+  UINT64 Ecam;
   UINT32 vendor_dev_id;
   Ecam = pal_pcie_get_mcfg_ecam();
 
