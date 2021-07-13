@@ -411,13 +411,13 @@ val_pcie_create_info_table(uint64_t *pcie_info_table)
       return;
   }
 
-  val_pcie_enumerate();
-
   g_pcie_info_table = (PCIE_INFO_TABLE *)pcie_info_table;
 
   pal_pcie_create_info_table(g_pcie_info_table);
 
   val_print(AVS_PRINT_TEST, " PCIE_INFO: Number of ECAM regions    :    %lx \n", val_pcie_get_info(PCIE_INFO_NUM_ECAM, 0));
+
+  val_pcie_enumerate();
 
   /* Create the list of valid Pcie Device Functions */
   if (val_pcie_create_device_bdf_table()) {
