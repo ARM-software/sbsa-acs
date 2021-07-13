@@ -69,6 +69,8 @@
 #define CR_ID_MASK     0x1
 
 /* Status Register */
+#define SR_IS_SHIFT    19
+#define SR_IS_MASK     0x1
 #define SR_STA_SHIFT   27
 #define SR_STA_MASK    0x1
 
@@ -113,10 +115,11 @@
 #define BAR_BASE_MASK   0xfffffff
 
 /*BAR offset */
-#define BAR0_OFFSET        0x10
-#define BAR_MAX_OFFSET     0x24
-#define BAR_64_BIT         1
-#define BAR_32_BIT         0
+#define BAR0_OFFSET               0x10
+#define BAR_TYPE_0_MAX_OFFSET     0x24
+#define BAR_TYPE_1_MAX_OFFSET     0x14
+#define BAR_64_BIT                0x1
+#define BAR_32_BIT                0x0
 #define BAR_REG(bar_reg_value) ((bar_reg_value >> 2) & 0x1)
 
 #define TYPE0_MAX_BARS  6

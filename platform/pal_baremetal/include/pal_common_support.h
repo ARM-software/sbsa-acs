@@ -266,6 +266,18 @@ typedef struct {
   @brief PCIe Info Table
 **/
 
+#define LEGACY_PCI_IRQ_CNT 4  // Legacy PCI IRQ A, B, C. and D
+#define MAX_IRQ_CNT 0xFFFF    // This value is arbitrary and may have to be adjusted
+
+typedef struct {
+  uint32_t  irq_list[MAX_IRQ_CNT];
+  uint32_t  irq_count;
+} PERIFERAL_IRQ_LIST;
+
+typedef struct {
+  PERIFERAL_IRQ_LIST  legacy_irq_map[LEGACY_PCI_IRQ_CNT];
+} PERIPHERAL_IRQ_MAP;
+
 typedef struct {
   uint64_t   ecam_base;     ///< ECAM Base address
   uint32_t   segment_num;   ///< Segment number of this ECAM
@@ -286,6 +298,7 @@ typedef struct {
   uint32_t   dev;
   uint32_t   function;
   uint32_t   seg;
+  PERIPHERAL_IRQ_MAP irq_map;
 } PCIE_READ_BLOCK;
 
 typedef struct {
@@ -384,18 +397,6 @@ typedef struct PERIPHERAL_VECTOR_LIST_STRUCT
 }PERIPHERAL_VECTOR_LIST;
 
 uint32_t pal_get_msi_vectors (uint32_t seg, uint32_t bus, uint32_t dev, uint32_t fn, PERIPHERAL_VECTOR_LIST **mvector);
-
-#define LEGACY_PCI_IRQ_CNT 4  // Legacy PCI IRQ A, B, C. and D
-#define MAX_IRQ_CNT 0xFFFF    // This value is arbitrary and may have to be adjusted
-
-typedef struct {
-  uint32_t  irq_list[MAX_IRQ_CNT];
-  uint32_t  irq_count;
-} PERIFERAL_IRQ_LIST;
-
-typedef struct {
-  PERIFERAL_IRQ_LIST  legacy_irq_map[LEGACY_PCI_IRQ_CNT];
-} PERIPHERAL_IRQ_MAP;
 
 /**
   @brief  Instance of SMMU INFO block

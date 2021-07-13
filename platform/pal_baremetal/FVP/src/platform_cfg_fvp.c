@@ -245,6 +245,9 @@ PCIE_READ_TABLE platform_pcie_device_hierarchy = {
     .device[3].dev           = PLATFORM_PCIE_DEV3_DEV_NUM,
     .device[3].function      = PLATFORM_PCIE_DEV3_FUNC_NUM,
     .device[3].seg           = PLATFORM_PCIE_DEV3_SEG_NUM,
+    /* IRQ list of interrupt pin INTC# */
+    .device[3].irq_map.legacy_irq_map[2].irq_count = 1,
+    .device[3].irq_map.legacy_irq_map[2].irq_list[0] = 200,
 
     .device[4].class_code    = PLATFORM_PCIE_DEV4_CLASSCODE,
     .device[4].vendor_id     = PLATFORM_PCIE_DEV4_VENDOR_ID,
@@ -277,6 +280,9 @@ PCIE_READ_TABLE platform_pcie_device_hierarchy = {
     .device[7].dev           = PLATFORM_PCIE_DEV7_DEV_NUM,
     .device[7].function      = PLATFORM_PCIE_DEV7_FUNC_NUM,
     .device[7].seg           = PLATFORM_PCIE_DEV7_SEG_NUM,
+    /* IRQ list of interrupt pin INTC# */
+    .device[7].irq_map.legacy_irq_map[2].irq_count = 1,
+    .device[7].irq_map.legacy_irq_map[2].irq_list[0] = 200,
 
     .device[8].class_code    = PLATFORM_PCIE_DEV8_CLASSCODE,
     .device[8].vendor_id     = PLATFORM_PCIE_DEV8_VENDOR_ID,
@@ -285,6 +291,9 @@ PCIE_READ_TABLE platform_pcie_device_hierarchy = {
     .device[8].dev           = PLATFORM_PCIE_DEV8_DEV_NUM,
     .device[8].function      = PLATFORM_PCIE_DEV8_FUNC_NUM,
     .device[8].seg           = PLATFORM_PCIE_DEV8_SEG_NUM,
+    /* IRQ list of interrupt pin INTC# */
+    .device[8].irq_map.legacy_irq_map[2].irq_count = 1,
+    .device[8].irq_map.legacy_irq_map[2].irq_list[0] = 200,
 
     .device[9].class_code    = PLATFORM_PCIE_DEV9_CLASSCODE,
     .device[9].vendor_id     = PLATFORM_PCIE_DEV9_VENDOR_ID,
@@ -333,6 +342,9 @@ PCIE_READ_TABLE platform_pcie_device_hierarchy = {
     .device[14].dev           = PLATFORM_PCIE_DEV14_DEV_NUM,
     .device[14].function      = PLATFORM_PCIE_DEV14_FUNC_NUM,
     .device[14].seg           = PLATFORM_PCIE_DEV14_SEG_NUM,
+    /* IRQ list of interrupt pin INTA# */
+    .device[14].irq_map.legacy_irq_map[0].irq_count = 1,
+    .device[14].irq_map.legacy_irq_map[0].irq_list[0] = 500,
 
     .device[15].class_code    = PLATFORM_PCIE_DEV15_CLASSCODE,
     .device[15].vendor_id     = PLATFORM_PCIE_DEV15_VENDOR_ID,
