@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2020, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2021, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -24,6 +24,7 @@
 #include "val/include/sbsa_avs_smmu.h"
 #include "val/include/sbsa_avs_memory.h"
 #include "val/include/sbsa_avs_exerciser.h"
+#include "val/include/sbsa_avs_pcie.h"
 
 #define TEST_NUM   (AVS_EXERCISER_TEST_NUM_BASE + 12)
 #define TEST_DESC  "Check P2P ACS Functionality       "
@@ -101,7 +102,7 @@ check_source_validation (uint32_t req_instance, uint32_t req_e_bdf,
   val_exerciser_set_param(DMA_ATTRIBUTES, (uint64_t)bar_base, 1, req_instance);
 
   if (val_exerciser_ops(START_DMA, EDMA_FROM_DEVICE, req_instance)) {
-      val_print(AVS_PRINT_DEBUG, "\n       DMA failure from exerciser %4x", req_instance);
+      val_print(AVS_PRINT_ERR, "\n Source Validation 1st DMA failure from exerciser %4x", req_instance);
       return AVS_STATUS_FAIL;
   }
 
@@ -116,12 +117,13 @@ check_source_validation (uint32_t req_instance, uint32_t req_e_bdf,
   sub_bus = (reg_value >> SUBBN_SHIFT) & SUBBN_MASK;
   new_bdf = PCIE_CREATE_BDF(PCIE_EXTRACT_BDF_SEG(req_rp_bdf),
                             (sub_bus+1), 0, 0);
+  new_bdf = PCIE_CREATE_BDF_PACKED(new_bdf);
 
   val_exerciser_set_param(CFG_TXN_ATTRIBUTES, TXN_REQ_ID, new_bdf, req_instance);
   val_exerciser_set_param(DMA_ATTRIBUTES, (uint64_t)bar_base, 1, req_instance);
 
-  if (val_exerciser_ops(START_DMA, EDMA_FROM_DEVICE, req_instance)) {
-      val_print(AVS_PRINT_DEBUG, "\n       DMA failure from exerciser %4x", req_instance);
+  if (!val_exerciser_ops(START_DMA, EDMA_FROM_DEVICE, req_instance)) {
+      val_print(AVS_PRINT_ERR, "\n Source Validation 2nd DMA failure from exerciser %4x", req_instance);
       return AVS_STATUS_FAIL;
   }
 
@@ -131,7 +133,7 @@ check_source_validation (uint32_t req_instance, uint32_t req_e_bdf,
   if ((val_pcie_is_device_status_error(req_rp_bdf) == 0) &&
      (val_pcie_is_sig_target_abort(req_rp_bdf) == 0)) {
       /* Fail the part */
-      val_print(AVS_PRINT_DEBUG, "\n       Src Validation Expected Error RootPort : 0x%x", req_rp_bdf);
+      val_print(AVS_PRINT_ERR, "\n       Src Validation Expected Error RootPort : 0x%x", req_rp_bdf);
       return AVS_STATUS_FAIL;
   }
 
@@ -155,8 +157,8 @@ check_transaction_blocking (uint32_t req_instance, uint32_t req_e_bdf,
   val_exerciser_set_param(CFG_TXN_ATTRIBUTES, TXN_ADDR_TYPE, AT_RESERVED, req_instance);
   val_exerciser_set_param(DMA_ATTRIBUTES, (uint64_t)bar_base, 1, req_instance);
 
-  if (val_exerciser_ops(START_DMA, EDMA_FROM_DEVICE, req_instance)) {
-      val_print(AVS_PRINT_DEBUG, "\n       DMA failure from exerciser %4x", req_instance);
+  if (!val_exerciser_ops(START_DMA, EDMA_FROM_DEVICE, req_instance)) {
+      val_print(AVS_PRINT_ERR, "\n Transaction blocking DMA failure from exerciser %4x", req_instance);
       return AVS_STATUS_FAIL;
   }
 
@@ -166,7 +168,7 @@ check_transaction_blocking (uint32_t req_instance, uint32_t req_e_bdf,
   if ((val_pcie_is_device_status_error(req_rp_bdf) == 0) &&
      (val_pcie_is_sig_target_abort(req_rp_bdf) == 0)) {
       /* Fail the part */
-      val_print(AVS_PRINT_DEBUG, "\n       Traxn Blocking Expected Error RootPort : 0x%x", req_rp_bdf);
+      val_print(AVS_PRINT_ERR, "\n       Traxn Blocking Expected Error RootPort : 0x%x", req_rp_bdf);
       return AVS_STATUS_FAIL;
   }
 
@@ -232,9 +234,12 @@ payload(void)
       /* Find another exerciser on other rootport,
          Break from the test if no such exerciser if found */
       if (get_target_exer_bdf(req_rp_bdf, &tgt_e_bdf, &tgt_rp_bdf, &bar_base))
-          break;
+          continue;
 
-      /* If Both RP's Supports ACS Then Only Run Otherwise Skip the EP */
+      /* Enable Source Validation & Transaction Blocking */
+      val_pcie_read_cfg(tgt_rp_bdf, cap_base + ACSCR_OFFSET, &reg_value);
+      reg_value = reg_value | (1 << ACS_CTRL_SVE_SHIFT) | (1 << ACS_CTRL_TBE_SHIFT);
+      val_pcie_write_cfg(tgt_rp_bdf, cap_base + ACSCR_OFFSET, reg_value);
       test_skip = 0;
 
       /* Check For ACS Functionality */
@@ -243,6 +248,8 @@ payload(void)
           val_print(AVS_PRINT_DEBUG, "\n       ACS Source Validation Skipped for 0x%x", req_rp_bdf);
       else if (status)
           curr_bdf_failed++;
+
+      val_exerciser_set_param(CFG_TXN_ATTRIBUTES, TXN_REQ_ID, RID_NOT_VALID, instance);
 
       status = check_transaction_blocking(instance, req_e_bdf, req_rp_bdf, tgt_e_bdf, bar_base);
       if (status == AVS_STATUS_SKIP)

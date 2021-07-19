@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2020, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2021, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -192,9 +192,9 @@ val_iovirt_get_device_info(uint32_t rid, uint32_t segment, uint32_t *device_id,
                   id =  (rid - (*map).map.input_base) + (*map).map.output_base;
                   oref = (*map).map.output_ref;
                   mapping_found = 1;
+                  break;
               }
           }
-          break;
       }
   }
   if (!mapping_found) {
@@ -306,13 +306,13 @@ val_iovirt_free_info_table()
 }
 
 uint32_t
-val_iovirt_get_rc_smmu_index(uint32_t rc_seg_num)
+val_iovirt_get_rc_smmu_index(uint32_t rc_seg_num, uint32_t rid)
 {
 
   uint32_t num_smmu;
   uint64_t smmu_base;
 
-  smmu_base = pal_iovirt_get_rc_smmu_base(g_iovirt_info_table, rc_seg_num);
+  smmu_base = pal_iovirt_get_rc_smmu_base(g_iovirt_info_table, rc_seg_num, rid);
   if (smmu_base) {
       num_smmu = val_smmu_get_info(SMMU_NUM_CTRL, 0);
       while (num_smmu--) {

@@ -207,6 +207,9 @@ uint32_t
 val_pcie_check_interrupt_status(uint32_t bdf);
 
 uint32_t
+val_pcie_get_max_pasid_width(uint32_t bdf, uint32_t *max_pasid_width);
+
+uint32_t
 p001_entry(uint32_t num_pe);
 
 uint32_t

@@ -537,10 +537,6 @@ val_pcie_create_device_bdf_table()
 
                       g_pcie_bdf_table->device[g_pcie_bdf_table->num_entries++].bdf = bdf;
                   }
-                  else
-                      /* None of the other Function's exist if zeroth Function doesn't exist */
-                      if (func_index == 0)
-                          break;
               }
           }
       }
@@ -1870,7 +1866,7 @@ val_pcie_get_rootport(uint32_t bdf, uint32_t *rp_bdf)
       sub_bus = ((reg_value >> SUBBN_SHIFT) & SUBBN_MASK);
       dp_type = val_pcie_device_port_type(*rp_bdf);
 
-      if (((dp_type == RP) || (dp_type = iEP_RP)) &&
+      if (((dp_type == RP) || (dp_type == iEP_RP)) &&
           (sec_bus <= PCIE_EXTRACT_BDF_BUS(bdf)) &&
           (sub_bus >= PCIE_EXTRACT_BDF_BUS(bdf)))
           return 0;
@@ -2009,3 +2005,18 @@ val_pcie_check_interrupt_status(uint32_t bdf)
   return reg_value;
 }
 
+uint32_t
+val_pcie_get_max_pasid_width(uint32_t bdf, uint32_t *max_pasid_width)
+{
+  uint32_t status;
+  uint32_t pciecs_base;
+
+  status = val_pcie_find_capability(bdf, PCIE_ECAP, ECID_PASID, &pciecs_base);
+  if (status)
+      return status;
+
+  val_pcie_read_cfg(bdf, pciecs_base + PASID_CAPABILITY_OFFSET, max_pasid_width);
+  *max_pasid_width = (*max_pasid_width & MAX_PASID_MASK) >> MAX_PASID_SHIFT;
+
+  return 0;
+}
