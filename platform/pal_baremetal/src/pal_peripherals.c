@@ -19,7 +19,6 @@
 #include "include/pal_common_support.h"
 #include "include/platform_override_fvp.h"
 
-extern PLATFORM_PCIE_PERIPHERAL_INFO_TABLE platform_pcie_peripheral_cfg;
 extern PLATFORM_OVERRIDE_UART_INFO_TABLE platform_uart_cfg;
 
 #define USB_CLASSCODE   0x0C0300
@@ -73,7 +72,6 @@ pal_peripheral_create_info_table(PERIPHERAL_INFO_TABLE *peripheralInfoTable)
           per_info->type  = PERIPHERAL_TYPE_USB;
           per_info->base0 = pal_pcie_get_base(DeviceBdf, BAR0);
           per_info->bdf   = DeviceBdf;
-          platform_pcie_peripheral_cfg.info[i].bdf = DeviceBdf;
           per_info->max_pasids = 0;
           per_info->flags = 0;
           per_info->irq = 0;
@@ -129,7 +127,6 @@ pal_peripheral_create_info_table(PERIPHERAL_INFO_TABLE *peripheralInfoTable)
           per_info->base0 = pal_pcie_get_base(DeviceBdf, BAR0);
           per_info->base1 = pal_pcie_get_base(DeviceBdf, BAR5);
           per_info->bdf   = DeviceBdf;
-          platform_pcie_peripheral_cfg.info[i].bdf = DeviceBdf;
           per_info->max_pasids = 0;
           per_info->flags = 0;
           per_info->irq = 0;
@@ -275,5 +272,5 @@ uint64_t
 pal_memory_get_unpopulated_addr(uint64_t *addr, uint32_t instance)
 {
 
-  return 0;
+  return MEM_MAP_FAILURE;
 }
