@@ -23,7 +23,6 @@ extern pcie_device_bdf_table *g_pcie_bdf_table;
 extern PCIE_INFO_TABLE platform_pcie_cfg;
 extern PCIE_READ_TABLE platform_pcie_device_hierarchy;
 extern PERIPHERAL_INFO_TABLE  *g_peripheral_info_table;
-extern PLATFORM_PCIE_PERIPHERAL_INFO_TABLE platform_pcie_peripheral_cfg;
 
 void *pal_memcpy(void *dest_buffer, void *src_buffer, uint32_t len);
 
@@ -160,7 +159,7 @@ pal_pcie_io_read_cfg(uint32_t Bdf, uint32_t offset, uint32_t *data)
      if(InputSeg  == platform_pcie_device_hierarchy.device[i].seg &&
         InputBus  == platform_pcie_device_hierarchy.device[i].bus &&
         InputDev  == platform_pcie_device_hierarchy.device[i].dev &&
-        InputFunc == platform_pcie_device_hierarchy.device[i].function)
+        InputFunc == platform_pcie_device_hierarchy.device[i].func)
         {
            if (offset == TYPE01_RIDR)
            {
@@ -420,16 +419,17 @@ uint32_t
 pal_pcie_is_device_behind_smmu(uint32_t seg, uint32_t bus, uint32_t dev, uint32_t fn)
 {
 
-  uint32_t per_bdf;
   uint32_t i;
 
-  per_bdf = PCIE_CREATE_BDF(seg, bus, dev, fn);
-  for (i = 0 ; i < g_peripheral_info_table->header.num_all; i++)
+  for(i = 0; i < platform_pcie_device_hierarchy.num_entries; i++)
   {
-      if (per_bdf == platform_pcie_peripheral_cfg.info[i].bdf)
-      {
-            return platform_pcie_peripheral_cfg.info[i].behind_smmu;
-      }
+     if(seg == platform_pcie_device_hierarchy.device[i].seg &&
+        bus == platform_pcie_device_hierarchy.device[i].bus &&
+        dev == platform_pcie_device_hierarchy.device[i].dev &&
+        fn  == platform_pcie_device_hierarchy.device[i].func)
+        {
+              return platform_pcie_device_hierarchy.device[i].behind_smmu;
+        }
   }
 
   return 0;
@@ -450,15 +450,17 @@ uint32_t
 pal_pcie_get_dma_support(uint32_t seg, uint32_t bus, uint32_t dev, uint32_t fn)
 {
 
-  uint32_t bdf,i;
+  uint32_t i;
 
-  bdf = PCIE_CREATE_BDF(seg, bus, dev, fn);
-  for (i = 0 ; i < g_peripheral_info_table->header.num_all; i++)
+  for(i = 0; i < platform_pcie_device_hierarchy.num_entries; i++)
   {
-      if (bdf == platform_pcie_peripheral_cfg.info[i].bdf)
-      {
-            return platform_pcie_peripheral_cfg.info[i].dma_support;
-      }
+     if(seg == platform_pcie_device_hierarchy.device[i].seg &&
+        bus == platform_pcie_device_hierarchy.device[i].bus &&
+        dev == platform_pcie_device_hierarchy.device[i].dev &&
+        fn  == platform_pcie_device_hierarchy.device[i].func)
+        {
+              return platform_pcie_device_hierarchy.device[i].dma_support;
+        }
   }
 
   return 2;
@@ -480,15 +482,17 @@ uint32_t
 pal_pcie_get_dma_coherent(uint32_t seg, uint32_t bus, uint32_t dev, uint32_t fn)
 {
 
-  uint32_t bdf,i;
+  uint32_t i;
 
-  bdf = PCIE_CREATE_BDF(seg, bus, dev, fn);
-  for (i = 0 ; i < g_peripheral_info_table->header.num_all; i++)
+  for(i = 0; i < platform_pcie_device_hierarchy.num_entries; i++)
   {
-      if (bdf == platform_pcie_peripheral_cfg.info[i].bdf)
-      {
-            return platform_pcie_peripheral_cfg.info[i].dma_coherent;
-      }
+     if(seg == platform_pcie_device_hierarchy.device[i].seg &&
+        bus == platform_pcie_device_hierarchy.device[i].bus &&
+        dev == platform_pcie_device_hierarchy.device[i].dev &&
+        fn  == platform_pcie_device_hierarchy.device[i].func)
+        {
+              return platform_pcie_device_hierarchy.device[i].dma_coherent;
+        }
   }
 
   return 2;
@@ -519,15 +523,17 @@ pal_pcie_p2p_support(void)
 uint32_t
 pal_pcie_dev_p2p_support(uint32_t seg, uint32_t bus, uint32_t dev, uint32_t fn)
 {
-  uint32_t bdf, i;
+  uint32_t i;
 
-  bdf = PCIE_CREATE_BDF(seg, bus, dev, fn);
-  for (i = 0; i < g_peripheral_info_table->header.num_all; i++)
+  for(i = 0; i < platform_pcie_device_hierarchy.num_entries; i++)
   {
-    if (bdf == platform_pcie_peripheral_cfg.info[i].bdf)
-    {
-      return platform_pcie_peripheral_cfg.info[i].p2p_support;
-    }
+     if(seg == platform_pcie_device_hierarchy.device[i].seg &&
+        bus == platform_pcie_device_hierarchy.device[i].bus &&
+        dev == platform_pcie_device_hierarchy.device[i].dev &&
+        fn  == platform_pcie_device_hierarchy.device[i].func)
+        {
+              return platform_pcie_device_hierarchy.device[i].p2p_support;
+        }
   }
 
   return 1;
@@ -546,15 +552,17 @@ uint32_t
 pal_pcie_is_devicedma_64bit(uint32_t seg, uint32_t bus, uint32_t dev, uint32_t fn)
 {
 
-  uint32_t bdf,i;
+  uint32_t i;
 
-  bdf = PCIE_CREATE_BDF(seg, bus, dev, fn);
-  for (i = 0 ; i < g_peripheral_info_table->header.num_all; i++)
+  for(i = 0; i < platform_pcie_device_hierarchy.num_entries; i++)
   {
-      if (bdf == platform_pcie_peripheral_cfg.info[i].bdf)
-      {
-            return platform_pcie_peripheral_cfg.info[i].dma_64bit;
-      }
+     if(seg == platform_pcie_device_hierarchy.device[i].seg &&
+        bus == platform_pcie_device_hierarchy.device[i].bus &&
+        dev == platform_pcie_device_hierarchy.device[i].dev &&
+        fn  == platform_pcie_device_hierarchy.device[i].func)
+        {
+              return platform_pcie_device_hierarchy.device[i].dma_64bit;
+        }
   }
 
   return 0;
@@ -570,16 +578,18 @@ pal_pcie_is_devicedma_64bit(uint32_t seg, uint32_t bus, uint32_t dev, uint32_t f
 uint32_t
 pal_pcie_is_cache_present(uint32_t seg, uint32_t bus, uint32_t dev, uint32_t fn)
 {
-  uint32_t bdf = PCIE_CREATE_BDF(seg, bus, dev, fn);
+  uint32_t i;
 
   // Search for the device in the manufacturer data table
-  for (uint32_t i = 0; i < g_peripheral_info_table->header.num_all; i++)
+  for(i = 0; i < platform_pcie_device_hierarchy.num_entries; i++)
   {
-    if (bdf == platform_pcie_peripheral_cfg.info[i].bdf)
-    {
-          // read platform peripheral configuration to check if the bdf has an ATC
-          return platform_pcie_peripheral_cfg.info[i].atc_present;
-    }
+     if(seg == platform_pcie_device_hierarchy.device[i].seg &&
+        bus == platform_pcie_device_hierarchy.device[i].bus &&
+        dev == platform_pcie_device_hierarchy.device[i].dev &&
+        fn  == platform_pcie_device_hierarchy.device[i].func)
+        {
+              return platform_pcie_device_hierarchy.device[i].atc_present;
+        }
   }
 
   return 0;
@@ -624,7 +634,7 @@ pal_pcie_get_legacy_irq_map(uint32_t Seg, uint32_t Bus, uint32_t Dev, uint32_t F
      if(Seg  == platform_pcie_device_hierarchy.device[i].seg &&
         Bus  == platform_pcie_device_hierarchy.device[i].bus &&
         Dev  == platform_pcie_device_hierarchy.device[i].dev &&
-        Fn == platform_pcie_device_hierarchy.device[i].function)
+        Fn == platform_pcie_device_hierarchy.device[i].func)
         {
             pal_memcpy(IrqMap, &platform_pcie_device_hierarchy.device[i].irq_map,
                        sizeof(platform_pcie_device_hierarchy.device[i].irq_map));
@@ -634,8 +644,6 @@ pal_pcie_get_legacy_irq_map(uint32_t Seg, uint32_t Bus, uint32_t Dev, uint32_t F
 
   print(AVS_PRINT_ERR, "No PCI devices found in the system\n");
   return PCIE_NO_MAPPING;
-
-  return 1;
 }
 
 /**

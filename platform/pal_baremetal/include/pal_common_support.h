@@ -296,8 +296,14 @@ typedef struct {
   uint32_t   vendor_id;
   uint32_t   bus;
   uint32_t   dev;
-  uint32_t   function;
+  uint32_t   func;
   uint32_t   seg;
+  uint32_t   dma_support;
+  uint32_t   dma_coherent;
+  uint32_t   p2p_support;
+  uint32_t   dma_64bit;
+  uint32_t   behind_smmu;
+  uint32_t   atc_present;
   PERIPHERAL_IRQ_MAP irq_map;
 } PCIE_READ_BLOCK;
 
@@ -478,6 +484,10 @@ typedef struct {
 #define IOVIRT_CCA_MASK ~((uint32_t)0)
 
 /* Memory INFO table */
+#define MEM_MAP_SUCCESS  0x0
+#define MEM_MAP_NO_MEM   0x1
+#define MEM_MAP_FAILURE  0x2
+
 typedef enum {
   MEMORY_TYPE_DEVICE = 0x1000,
   MEMORY_TYPE_NORMAL,
