@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2020, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2021, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -131,7 +131,7 @@ create_va_pa_mapping (uint64_t txn_va, uint64_t txn_pa,
      val_smmu_enable(instance);
 
   /* Get SMMU node index for this exerciser instance */
-  master.smmu_index = val_iovirt_get_rc_smmu_index(PCIE_EXTRACT_BDF_SEG(e_bdf));
+  master.smmu_index = val_iovirt_get_rc_smmu_index(PCIE_EXTRACT_BDF_SEG(e_bdf), PCIE_CREATE_BDF_PACKED(e_bdf));
 
   if (master.smmu_index != AVS_INVALID_INDEX &&
       val_iovirt_get_smmu_info(SMMU_CTRL_ARCH_MAJOR_REV, master.smmu_index) == 3) {
@@ -362,9 +362,9 @@ payload(void)
       }
 
       /* Find another exerciser on other rootport,
-         Break from the test if no such exerciser if found */
+         Skip the current exerciser if no such exerciser if found */
       if (get_target_exer_bdf(req_rp_bdf, &tgt_e_bdf, &tgt_rp_bdf, &bar_base))
-          break;
+          continue;
 
       /* If Both RP's Supports ACS Then Only Run Otherwise Skip the EP */
       test_skip = 0;

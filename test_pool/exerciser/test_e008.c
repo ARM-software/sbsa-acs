@@ -132,7 +132,7 @@ payload(void)
        * Get SMMU node index for this exerciser instance to convert
        * the dram physical addresses to IOVA addresses for DMA purposes.
        */
-      smmu_index = val_iovirt_get_rc_smmu_index(PCIE_EXTRACT_BDF_SEG(e_bdf));
+      smmu_index = val_iovirt_get_rc_smmu_index(PCIE_EXTRACT_BDF_SEG(e_bdf), PCIE_CREATE_BDF_PACKED(e_bdf));
       if (smmu_index == AVS_INVALID_INDEX)
           dram_buf_iova = dram_buf_phys;
       else

@@ -181,6 +181,7 @@
 #define ECID_ARICS     0x000E
 #define ECID_ATS       0x000F
 #define ECID_PRI       0x0013
+#define ECID_PASID     0x001B
 
 /* PCI Express capability struct offsets */
 #define CIDR_OFFSET    0
@@ -307,4 +308,13 @@
 #define MSI_X_TABLE_BIR_MASK        0x7
 #define MSI_X_ENTRY_SIZE            16 /* Size of Single MSI Entry in MSI Table */
 
+/* PASID Capabilities */
+#define PASID_CAPABILITY_OFFSET     0x4
+#define MAX_PASID_MASK              0x1F00
+#define MAX_PASID_SHIFT             0x8
+
+/* ATS Capabilities */
+#define ATS_CTRL                    0x4
+#define ATS_CACHING_EN              (1 << 31)
+#define ATS_CACHING_DIS             0x7FFFFFFF
 #endif

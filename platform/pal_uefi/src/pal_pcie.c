@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2020, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2021, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -225,7 +225,7 @@ pal_pcie_p2p_support()
    * transactions is platform implementation specific
    */
 
-  return 1;
+  return 0;
 }
 
 /**
@@ -324,7 +324,7 @@ pal_pcie_is_cache_present (
   UINT32 Fn
   )
 {
-  return 0;
+  return 1;
 }
 
 /**
