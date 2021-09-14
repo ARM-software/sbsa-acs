@@ -33,16 +33,18 @@ payload()
 
   data = val_gic_get_info(GIC_INFO_VERSION);
   if (data < 3) {
-     val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
+     val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 1));
      return;
   }
 
   data = val_gic_get_info(GIC_INFO_SEC_STATES);
 
-  if (data != 0)
-      val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
+  if (data != 0) {
+      val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 1));
+      return;
+  }
 
-  val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
+  val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 1));
 }
 
 uint32_t

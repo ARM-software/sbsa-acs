@@ -361,6 +361,7 @@ UINT32 pal_pcie_max_pasid_bits(UINT32 bdf);
 #define MEM_MAP_SUCCESS  0x0
 #define MEM_MAP_NO_MEM   0x1
 #define MEM_MAP_FAILURE  0x2
+#define MEM_INFO_TBL_MAX_ENTRY  500 /* Maximum entries to be added in Mem info table*/
 
 typedef enum {
   MEMORY_TYPE_DEVICE = 0x1000,
