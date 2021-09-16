@@ -51,6 +51,7 @@ val_pe_execute_tests(uint32_t level, uint32_t num_pe)
       }
   }
 
+  g_curr_module = 1 << PE_MODULE;
   status = c001_entry();
   status |= c002_entry(num_pe);
   status |= c003_entry(num_pe);

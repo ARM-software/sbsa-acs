@@ -43,6 +43,7 @@ val_gic_execute_tests(uint32_t level, uint32_t num_pe)
       }
   }
 
+  g_curr_module = 1 << GIC_MODULE;
   status = g001_entry(num_pe);
   status |= g002_entry(num_pe);
   status |= g003_entry(num_pe);

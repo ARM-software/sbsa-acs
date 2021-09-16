@@ -81,8 +81,6 @@ val_pcie_read_cfg(uint32_t bdf, uint32_t offset, uint32_t *data)
   cfg_addr = (bus * PCIE_MAX_DEV * PCIE_MAX_FUNC * 4096) + \
                (dev * PCIE_MAX_FUNC * 4096) + (func * 4096);
 
-  val_print(AVS_PRINT_INFO, "\n       Calculated config address is %lx", ecam_base + cfg_addr + offset);
-
   *data = pal_mmio_read(ecam_base + cfg_addr + offset);
   return 0;
 
@@ -267,6 +265,7 @@ val_pcie_execute_tests(uint32_t enable_pcie, uint32_t level, uint32_t num_pe)
       }
   }
 
+  g_curr_module = 1 << PCIE_MODULE;
   status = p001_entry(num_pe);
 
   if (status != AVS_STATUS_PASS) {

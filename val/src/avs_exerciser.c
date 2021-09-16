@@ -245,6 +245,7 @@ val_exerciser_execute_tests(uint32_t level)
       return AVS_STATUS_SKIP;
   }
 
+  g_curr_module = 1 << EXERCISER_MODULE;
   status = e001_entry();
   status |= e002_entry();
   status |= e003_entry();

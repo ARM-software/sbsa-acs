@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2020, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2021, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -72,6 +72,7 @@ val_smmu_execute_tests(uint32_t level, uint32_t num_pe)
     return AVS_STATUS_SKIP;
   }
 
+  g_curr_module = 1 << SMMU_MODULE;
   status = i001_entry(num_pe);
   status |= i002_entry(num_pe);
   status |= i003_entry(num_pe);
