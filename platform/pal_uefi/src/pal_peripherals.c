@@ -268,7 +268,10 @@ pal_memory_create_info_table(MEMORY_INFO_TABLE *memoryInfoTable)
       memoryInfoTable->info[i].virt_addr = MemoryMapPtr->VirtualStart;
       memoryInfoTable->info[i].size      = (MemoryMapPtr->NumberOfPages * EFI_PAGE_SIZE);
       i++;
-
+      if (i >= MEM_INFO_TBL_MAX_ENTRY) {
+        sbsa_print(AVS_PRINT_DEBUG, L"Memory Info tbl limit exceeded, Skipping remaining\n", 0);
+        break;
+      }
       MemoryMapPtr = (EFI_MEMORY_DESCRIPTOR*)((UINTN)MemoryMapPtr + DescriptorSize);
     }
     memoryInfoTable->info[i].type      = MEMORY_TYPE_LAST_ENTRY;

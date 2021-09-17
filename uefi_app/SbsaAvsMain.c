@@ -34,7 +34,8 @@ UINT32  g_sbsa_level;
 UINT32  g_enable_pcie_tests;
 UINT32  g_print_level;
 UINT32  g_execute_nist;
-UINT32  g_skip_test_num[3] = {10000, 10000, 10000};
+UINT32  g_skip_test_num[MAX_TEST_SKIP_NUM] = { 10000, 10000, 10000, 10000, 10000,
+                                               10000, 10000, 10000, 10000 };
 UINT32  g_sbsa_tests_total;
 UINT32  g_sbsa_tests_pass;
 UINT32  g_sbsa_tests_fail;
