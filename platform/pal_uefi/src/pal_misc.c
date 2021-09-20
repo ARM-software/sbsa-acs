@@ -141,20 +141,25 @@ pal_mmio_write(UINT64 addr, UINT32 data)
   @return None
 **/
 VOID
-pal_print(CHAR8 *string, UINT64 data)
+pal_print(UINT32 level, CHAR8 *string, UINT64 data)
 {
-  if(g_sbsa_log_file_handle)
+
+  if((level > AVS_PRINT_DEBUG) ||
+     ((level < AVS_PRINT_TEST) && (g_curr_module & g_enable_module)))
   {
-    CHAR8 Buffer[1024];
-    UINTN BufferSize = 1;
-    EFI_STATUS Status = 0;
-    BufferSize = AsciiSPrint(Buffer, 1024, string, data);
-    AsciiPrint(Buffer);
-    Status = ShellWriteFile(g_sbsa_log_file_handle, &BufferSize, (VOID*)Buffer);
-    if(EFI_ERROR(Status))
-      sbsa_print(AVS_PRINT_ERR, L"Error in writing to log file\n");
-  } else
-      AsciiPrint(string, data);
+    if(g_sbsa_log_file_handle)
+    {
+      CHAR8 Buffer[1024];
+      UINTN BufferSize = 1;
+      EFI_STATUS Status = 0;
+      BufferSize = AsciiSPrint(Buffer, 1024, string, data);
+      AsciiPrint(Buffer);
+      Status = ShellWriteFile(g_sbsa_log_file_handle, &BufferSize, (VOID*)Buffer);
+      if(EFI_ERROR(Status))
+        sbsa_print(AVS_PRINT_ERR, L"Error in writing to log file\n");
+    } else
+        AsciiPrint(string, data);
+  }
 }
 
 /**
