@@ -151,8 +151,10 @@
 #define SUBBN_SHIFT 16
 
 /* Bus Number reg masks */
+#define PRIBN_MASK  0xff
 #define SECBN_MASK  0xff
 #define SUBBN_MASK  0xff
+#define SECBN_EXTRACT 0xffff00ff
 
 /* Capability header reg shifts */
 #define PCIE_CIDR_SHIFT      0
@@ -193,6 +195,7 @@
 #define LCTRLR_OFFSET  0x10
 #define DCAP2R_OFFSET  0x24
 #define DCTL2R_OFFSET  0x28
+#define DCTL2R_MASK    0xFFFF
 
 /* ACS Capability Register */
 #define ACS_CTRL_SVE_SHIFT  16
@@ -284,6 +287,7 @@
 
 /* Device Control 2 reg mask */
 #define DCTL2R_AFE_MASK  0x1
+#define DCTL2R_AFE_NORMAL 0xFFDF
 
 /* Device bitmask definitions */
 #define RCiEP    (1 << 0b1001)

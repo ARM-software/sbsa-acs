@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2019, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2019, 2021 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -44,6 +44,7 @@ val_timer_execute_tests(uint32_t level, uint32_t num_pe)
       }
   }
 
+  g_curr_module = 1 << TIMER_MODULE;
   status = t001_entry(num_pe);
   status |= t002_entry(num_pe);
   status |= t003_entry(num_pe);

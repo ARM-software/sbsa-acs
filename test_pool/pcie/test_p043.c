@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2020, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2021, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -35,7 +35,6 @@ payload(void)
   uint32_t tbl_index;
   uint32_t dp_type;
   uint32_t cap_base;
-  uint32_t ari_frwd_enable;
   uint32_t seg_num;
   uint32_t dev_num;
   uint32_t dev_bdf;
@@ -44,6 +43,7 @@ payload(void)
   uint32_t test_fails;
   uint32_t test_skip = 1;
   uint32_t reg_value;
+  uint32_t status;
   pcie_device_bdf_table *bdf_tbl_ptr;
 
   pe_index = val_pe_get_index_mpid(val_pe_get_mpid());
@@ -60,34 +60,39 @@ payload(void)
       /* Check entry is Downstream port or RP */
       if ((dp_type == DP) || (dp_type == iEP_RP) || (dp_type == RP))
       {
-          /* Read the ARI forwarding enable bit */
+          /* Disable the ARI forwarding enable bit */
           val_pcie_find_capability(bdf, PCIE_CAP, CID_PCIECS, &cap_base);
           val_pcie_read_cfg(bdf, cap_base + DCTL2R_OFFSET, &reg_value);
-          ari_frwd_enable = (reg_value >> DCTL2R_AFE_SHIFT) & DCTL2R_AFE_MASK;
+          reg_value &= DCTL2R_AFE_NORMAL;
+          val_pcie_write_cfg(bdf, cap_base + DCTL2R_OFFSET, reg_value);
 
-          /* If ARI forwarding enable set, skip the entry */
-          if (ari_frwd_enable != 0)
-              continue;
-
+          /* Read the secondary and subordinate bus number */
           val_pcie_read_cfg(bdf, TYPE1_PBN, &reg_value);
           sec_bus = ((reg_value >> SECBN_SHIFT) & SECBN_MASK);
           sub_bus = ((reg_value >> SUBBN_SHIFT) & SUBBN_MASK);
 
-          /* Skip the port, if switch is present below it */
-          if (sec_bus != sub_bus)
+          /* Skip the port, if switch is present below it or no device present*/
+          if ((sec_bus != sub_bus) || (sec_bus == 0))
               continue;
 
           /* If test runs for atleast an endpoint */
           test_skip = 0;
 
+          seg_num = PCIE_EXTRACT_BDF_SEG(bdf);
+          dev_bdf = PCIE_CREATE_BDF(seg_num, sec_bus, 0, 0);
+          status = val_pcie_read_cfg(dev_bdf, TYPE01_VIDR, &reg_value);
+          if (status || (reg_value == PCIE_UNKNOWN_RESPONSE))
+          {
+              test_fails++;
+              val_print(AVS_PRINT_ERR, "\n    Dev 0x%x found under", dev_bdf);
+              val_print(AVS_PRINT_ERR, " RP bdf 0x%x", bdf);
+          }
+
           /* Configuration Requests specifying Device Numbers (1-31) must be terminated by the
            * Downstream Port or the Root Port with an Unsupported Request Completion Status
            */
-
           for (dev_num = 1; dev_num < PCIE_MAX_DEV; dev_num++)
           {
-              seg_num = PCIE_EXTRACT_BDF_SEG(bdf);
-
               /* Create bdf for Dev 1 to 31 below the RP */
               dev_bdf = PCIE_CREATE_BDF(seg_num, sec_bus, dev_num, 0);
               val_pcie_read_cfg(dev_bdf, TYPE01_VIDR, &reg_value);

@@ -37,6 +37,7 @@
 #define PCIE_MAX_DEV    32
 #define PCIE_MAX_FUNC    8
 
+#define PCIE_BUS_SHIFT 8
 #define PCIE_CFG_SIZE  4096
 
 #define PCIE_INTERRUPT_LINE  0x3c
@@ -67,6 +68,10 @@
 #define ERR_STRING_SIZE 64
 
 #define MEM_OFFSET_10   0x10
+#define MEM_OFF_100000  0x100000
+#define MEM_SHIFT       20
+#define MEM_BASE_SHIFT  16
+#define BAR_MASK        0xFFFFFFF0
 
 /* Allows storage of 2048 valid BDFs */
 #define PCIE_DEVICE_BDF_TABLE_SZ 8192
@@ -208,6 +213,9 @@ val_pcie_check_interrupt_status(uint32_t bdf);
 
 uint32_t
 val_pcie_get_max_pasid_width(uint32_t bdf, uint32_t *max_pasid_width);
+
+uint32_t
+val_pcie_get_ecam_index(uint32_t bdf, uint32_t *ecam_index);
 
 uint32_t
 p001_entry(uint32_t num_pe);

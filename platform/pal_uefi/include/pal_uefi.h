@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2020, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2021, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,6 +20,9 @@
 
 extern VOID* g_sbsa_log_file_handle;
 extern UINT32 g_print_level;
+extern UINT32 g_print_mmio;
+extern UINT32 g_curr_module;
+extern UINT32 g_enable_module;
 
 #define AVS_PRINT_ERR   5      /* Only Errors. use this to de-clutter the terminal and focus only on specifics */
 #define AVS_PRINT_WARN  4      /* Only warnings & errors. use this to de-clutter the terminal and focus only on specifics */
@@ -77,6 +80,8 @@ typedef struct {
   UINT32   num_gicd;
   UINT32   num_gicrd;
   UINT32   num_its;
+  UINT32   num_msi_frame;
+  UINT32   num_gich;
 }GIC_INFO_HDR;
 
 typedef enum {
@@ -84,7 +89,9 @@ typedef enum {
   ENTRY_TYPE_GICD,
   ENTRY_TYPE_GICC_GICRD,
   ENTRY_TYPE_GICR_GICRD,
-  ENTRY_TYPE_GICITS
+  ENTRY_TYPE_GICITS,
+  ENTRY_TYPE_GIC_MSI_FRAME,
+  ENTRY_TYPE_GICH
 }GIC_INFO_TYPE_e;
 
 /* Interrupt Trigger Type */
@@ -101,8 +108,11 @@ typedef enum {
 typedef struct {
   UINT32 type;
   UINT64 base;
-  UINT32 its_id;  /* This its_id is only used in case of ITS Type entry */
-  UINT32 length;  /* This length is only used in case of Re-Distributor Range Address length */
+  UINT32 entry_id;  /* This entry_id is used to tell component ID */
+  UINT64 length;  /* This length is only used in case of Re-Distributor Range Address length */
+  UINT32 flags;
+  UINT32 spi_count;
+  UINT32 spi_base;
 }GIC_INFO_ENTRY;
 
 /**
@@ -114,7 +124,7 @@ typedef struct {
 }GIC_INFO_TABLE;
 
 typedef struct {
-  UINT32   s_el1_timer_flag;
+  UINT32 s_el1_timer_flag;
   UINT32 ns_el1_timer_flag;
   UINT32 el2_timer_flag;
   UINT32 el2_virt_timer_flag;

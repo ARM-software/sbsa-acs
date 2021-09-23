@@ -66,7 +66,7 @@ uint32_t fill_translation_table(tt_descriptor_t tt_desc, memory_region_descripto
         {
             //Create level 3 page descriptor entry
             *table_desc = PGT_ENTRY_PAGE_MASK | PGT_ENTRY_VALID_MASK;
-            *table_desc |= (output_address & ~(page_size - 1));
+            *table_desc |= (output_address & ~(uint64_t)(page_size - 1));
             *table_desc |= mem_desc->attributes;
             val_print(PGT_DEBUG_LEVEL, "\n      page_descriptor = 0x%llx     ", *table_desc);
             continue;
@@ -116,7 +116,8 @@ uint32_t fill_translation_table(tt_descriptor_t tt_desc, memory_region_descripto
         }
 
         *table_desc = PGT_ENTRY_TABLE_MASK | PGT_ENTRY_VALID_MASK;
-        *table_desc |= (uint64_t)val_memory_virt_to_phys(tt_base_next_level) & ~(page_size - 1);
+        *table_desc |= (uint64_t)val_memory_virt_to_phys(tt_base_next_level) &
+                       ~(uint64_t)(page_size - 1);
         val_print(PGT_DEBUG_LEVEL, "\n      table_descriptor = 0x%llx     ", *table_desc);
     }
     return 0;

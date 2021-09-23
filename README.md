@@ -17,7 +17,7 @@ A few tests are executed by running the SBSA ACS Linux application which in turn
 
 
 ## Release details
- - Code Quality: REL v3.0
+ - Code Quality: REL v3.1
  - The tests are written for version 6.0 of the SBSA specification.
  - PCIe RCiEP tests for Appendix E of SBSA 6.0 specification are also included.
  - The compliance suite is not a substitute for design verification.
@@ -30,8 +30,8 @@ A few tests are executed by running the SBSA ACS Linux application which in turn
   - To get the latest version of the code with bug fixes and new features, use the master branch.
 
 ## Additional reading
-  - For details on the SBSA ACS UEFI Shell Application, see [SBSA ACS User Guide](docs/Arm_SBSA_Architecture_Compliance_User_Guide.pdf).
-  - For details on the Design of the SBSA ACS, see [Validation Methodology Document](docs/Arm_SBSA_Architecture_Compliance_Validation_Methodology.pdf).
+  - For details on the SBSA ACS UEFI Shell Application, see [Arm SBSA ACS User Guide](docs/Arm_SBSA_Architecture_Compliance_User_Guide.pdf).
+  - For details on the Design of the SBSA ACS, see [Arm SBSA Validation Methodology Document](docs/Arm_SBSA_Architecture_Compliance_Validation_Methodology.pdf).
   - For information about the test coverage scenarios that are implemented in the current release of ACS and the scenarios that are   planned for the future releases, see [Testcase checklist](docs/testcase-checklist.md).
 
 ## SBSA ACS Baremetal Reference Code
@@ -49,7 +49,7 @@ To enable the export of a few kernel APIs that are necessary for PCIe and IOMMU 
 ## ACS build steps - UEFI Shell application
 
 ### Prebuilt images
-Prebuilt images for each release are available in the prebuilt_images folder of the release branch. You can choose to use these images or build your own image by following the steps below. If you choose to use the prebuilt image, please jump to the test suite execution section below for details on how to run the application.
+Prebuilt images for each release are available in the prebuilt_images folder of the release branch. You can choose to use these images or build your own image by following the steps below. If you choose to use the prebuilt image, jump to the test suite execution section below for details on how to run the application.
 
 ### Prerequisites
     Before starting the ACS build, ensure that the following requirements are met.
@@ -65,11 +65,12 @@ To start the ACS build, perform the following steps:
 
 1.  cd local_edk2_path
 2.  git clone https://github.com/tianocore/edk2-libc
-3.  git clone https://github.com/ARM-software/sbsa-acs ShellPkg/Application/sbsa-acs
-4.  Add the following to the [LibraryClasses.common] section in ShellPkg/ShellPkg.dsc
+3.  git submodule update --init --recursive
+4.  git clone https://github.com/ARM-software/sbsa-acs ShellPkg/Application/sbsa-acs
+5.  Add the following to the [LibraryClasses.common] section in ShellPkg/ShellPkg.dsc
    - Add  SbsaValLib|ShellPkg/Application/sbsa-acs/val/SbsaValLib.inf
    - Add  SbsaPalLib|ShellPkg/Application/sbsa-acs/platform/pal_uefi/SbsaPalLib.inf
-5.  Add ShellPkg/Application/sbsa-acs/uefi_app/SbsaAvs.inf in the [components] section of ShellPkg/ShellPkg.dsc
+6.  Add ShellPkg/Application/sbsa-acs/uefi_app/SbsaAvs.inf in the [components] section of ShellPkg/ShellPkg.dsc
 
 ### Linux build environment
 If the build environment is Linux, perform the following steps:
@@ -104,7 +105,7 @@ For details about the SBSA ACS UEFI Shell application, see [SBSA ACS USER Guide]
 
 ### Prerequisites
 - If the system supports LPI’s (Interrupt ID > 8192) then Firmware should have support for installing handler for LPI interrupts.
-    - If you are using edk2, please change the ArmGic driver in the ArmPkg to have support for installing handler for LPI’s.
+    - If you are using edk2, change the ArmGic driver in the ArmPkg to have support for installing handler for LPI’s.
     - Add the following in edk2/ArmPkg/Drivers/ArmGic/GicV3/ArmGicV3Dxe.c
 >        - After [#define ARM_GIC_DEFAULT_PRIORITY  0x80]
 >          +#define ARM_GIC_MAX_NUM_INTERRUPT 16384
@@ -131,7 +132,7 @@ On an emulation environment with secondary storage, perform the following steps:
 
 1. Create an image file which contains the 'Sbsa.efi' file. For Example:
   - mkfs.vfat -C -n HD0 hda.img 2097152
-  - sudo mount -o rw,loop=/dev/loop0,uid=`whoami`,gid=`whoami` hda.img /mnt/sbsa
+  - sudo mount -o rw,loop=/dev/loop0,uid=`whoami`,gid=`whoami` hda.img /mnt/sbsa. If loop0 is busy, specify the loop that is free
   - cp  "<path to application>/Sbsa.efi" /mnt/sbsa/
   - sudo umount /mnt/sbsa
 2. Load the image file to the secondary storage using a backdoor. The steps followed to load the image file are Emulation environment specific and beyond the scope of this document. 
@@ -139,7 +140,7 @@ On an emulation environment with secondary storage, perform the following steps:
 4. To determine the file system number of the secondary storage, execute 'map -r' command. 
 5. Type 'fsx' where 'x' is replaced by the number determined in step 4.
 6. To start the compliance tests, run the executable Sbsa.efi with the appropriate parameters. 
-   For details on the parameters, see [SBSA ACS User Guide](docs/Arm_SBSA_Architecture_Compliance_User_Guide.pdf)
+   For details on the parameters, see the [Arm SBSA ACS User Guide](docs/Arm_SBSA_Architecture_Compliance_User_Guide.pdf)
 7. Copy the UART console output to a log file for analysis and certification.
 
 
@@ -151,7 +152,7 @@ On an Emulation platform where secondary storage is not available, perform the f
 2. Build UEFI image including the UEFI Shell.
 3. Boot the system to UEFI shell.
 4. Run the executable 'Sbsa.efi' to start the compliance tests. For details about the parameters,
-   see [SBSA ACS User Guide](docs/Arm_SBSA_Architecture_Compliance_User_Guide.pdf).
+   see the [SBSA ACS User Guide](docs/Arm_SBSA_Architecture_Compliance_User_Guide.pdf).
 5. Copy the UART console output to a log file for analysis and certification.
 
 
@@ -162,6 +163,21 @@ The procedure to build and run these tests is described in [SBSA ACS User Guide]
 ## Security implication
 Arm Enterprise ACS test suite may run at higher privilege level. An attacker may utilize these tests as a means to elevate privilege which can potentially reveal the platform security assets. To prevent the leakage of secure information, it is strongly recommended that the ACS test suite is run only on development platforms. If it is run on production systems, the system should be scrubbed after running the test suite.
 
+## Limitations
+Validating the compliance of certain PCIe rules defined in the SBSA specification requires the PCIe end-point to generate specific stimulus during the runtime of the test. Examples of such stimulus are  P2P, PASID, ATC, etc. The tests that requires these stimuli are grouped together in the exerciser module. The exerciser layer is an abstraction layer that enables the integration of hardware capable of generating such stimuli to the test framework.
+The details of the hardware or Verification IP which enable these exerciser tests are platform specific and are beyond the scope of this document.
+
+ - Some PCIe and Exerciser test are dependent on PCIe features supported by the test system.
+   Please fill the required API's with test system information.
+   - pal_pcie_p2p_support : If the test system PCIe supports peer to peer transaction.
+   - pal_pcie_is_cache_present : If the test system supports PCIe address translation cache.
+   - pal_pcie_get_legacy_ir_map : Fill system legacy irq map.
+   Below exerciser capabilities are required by exerciser test.
+   - MSI-X interrupt generation.
+   - Incoming Transaction Monitoring(order, type).
+   - Initiating transacions from and to the exerciser.
+   - Ability to check on BDF and register address seen for each configuration address along with access type.
+
 
 ## License
 SBSA ACS is distributed under Apache v2.0 License.
@@ -170,10 +186,10 @@ SBSA ACS is distributed under Apache v2.0 License.
 ## Feedback, contributions and support
 
  - For feedback, use the GitHub Issue Tracker that is associated with this repository.
- - For support, please send an email to "support-enterprise-acs@arm.com" with details.
+ - For support, send an email to "support-enterprise-acs@arm.com" with details.
  - Arm licensees may contact Arm directly through their partner managers.
  - Arm welcomes code contributions through GitHub pull requests. See GitHub documentation on how to raise pull requests.
 
 --------------
 
-*Copyright (c) 2018-2020, Arm Limited and Contributors. All rights reserved.*
+*Copyright (c) 2018-2021, Arm Limited and Contributors. All rights reserved.*

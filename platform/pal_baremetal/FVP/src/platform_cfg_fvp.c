@@ -59,11 +59,14 @@ PE_INFO_TABLE platform_pe_cfg = {
 
 PLATFORM_OVERRIDE_GIC_INFO_TABLE platform_gic_cfg = {
 
-    .gic_version  = PLATFORM_OVERRIDE_GIC_VERSION,
-    .num_gicc     = PLATFORM_OVERRIDE_GICC_COUNT,
-    .num_gicd     = PLATFORM_OVERRIDE_GICD_COUNT,
-    .num_gicrd    = PLATFORM_OVERRIDE_GICRD_COUNT,
-    .num_gicits   = PLATFORM_OVERRIDE_GICITS_COUNT,
+    .gic_version   = PLATFORM_OVERRIDE_GIC_VERSION,
+    .num_gicc      = PLATFORM_OVERRIDE_GICC_COUNT,
+    .num_gicd      = PLATFORM_OVERRIDE_GICD_COUNT,
+    .num_gicrd     = PLATFORM_OVERRIDE_GICRD_COUNT,
+    .num_gicits    = PLATFORM_OVERRIDE_GICITS_COUNT,
+    .num_gich      = PLATFORM_OVERRIDE_GICH_COUNT,
+    .num_msiframes = PLATFORM_OVERRIDE_GICMSIFRAME_COUNT,
+
     .gicrd_length = PLATFORM_OVERRIDE_GICIRD_LENGTH,
 
     .gicc_base[0]   = PLATFORM_OVERRIDE_GICC_BASE,
@@ -78,7 +81,8 @@ PLATFORM_OVERRIDE_GIC_INFO_TABLE platform_gic_cfg = {
     .gicd_base[0]   = PLATFORM_OVERRIDE_GICD_BASE,
     .gicrd_base[0]  = PLATFORM_OVERRIDE_GICRD_BASE,
     .gicits_base[0] = PLATFORM_OVERRIDE_GICITS_BASE,
-    .gicits_id[0]   = PLATFORM_OVERRIDE_GICITS_ID
+    .gicits_id[0]   = PLATFORM_OVERRIDE_GICITS_ID,
+    .gich_base[0]   = PLATFORM_OVERRIDE_GICH_BASE
 
 };
 
@@ -193,6 +197,26 @@ DMA_INFO_TABLE platform_dma_cfg = {
     .info[0].flags = FLAGS,
     .info[0].type = TYPE**/
 
+};
+
+PLATFORM_OVERRIDE_MEMORY_INFO_TABLE platform_mem_cfg = {
+    .count                   = PLATFORM_OVERRIDE_MEMORY_ENTRY_COUNT,
+    .info[0].phy_addr        = PLATFORM_OVERRIDE_MEMORY_ENTRY0_PHY_ADDR,
+    .info[0].virt_addr       = PLATFORM_OVERRIDE_MEMORY_ENTRY0_VIRT_ADDR,
+    .info[0].size            = PLATFORM_OVERRIDE_MEMORY_ENTRY0_SIZE,
+    .info[0].type            = PLATFORM_OVERRIDE_MEMORY_ENTRY0_TYPE,
+    .info[1].phy_addr        = PLATFORM_OVERRIDE_MEMORY_ENTRY1_PHY_ADDR,
+    .info[1].virt_addr       = PLATFORM_OVERRIDE_MEMORY_ENTRY1_VIRT_ADDR,
+    .info[1].size            = PLATFORM_OVERRIDE_MEMORY_ENTRY1_SIZE,
+    .info[1].type            = PLATFORM_OVERRIDE_MEMORY_ENTRY1_TYPE,
+    .info[2].phy_addr        = PLATFORM_OVERRIDE_MEMORY_ENTRY2_PHY_ADDR,
+    .info[2].virt_addr       = PLATFORM_OVERRIDE_MEMORY_ENTRY2_VIRT_ADDR,
+    .info[2].size            = PLATFORM_OVERRIDE_MEMORY_ENTRY2_SIZE,
+    .info[2].type            = PLATFORM_OVERRIDE_MEMORY_ENTRY2_TYPE,
+    .info[3].phy_addr        = PLATFORM_OVERRIDE_MEMORY_ENTRY3_PHY_ADDR,
+    .info[3].virt_addr       = PLATFORM_OVERRIDE_MEMORY_ENTRY3_VIRT_ADDR,
+    .info[3].size            = PLATFORM_OVERRIDE_MEMORY_ENTRY3_SIZE,
+    .info[3].type            = PLATFORM_OVERRIDE_MEMORY_ENTRY3_TYPE,
 };
 
 PCIE_READ_TABLE platform_pcie_device_hierarchy = {

@@ -19,7 +19,7 @@
 #include "include/sbsa_avs_pe.h"
 #include "include/sbsa_avs_common.h"
 #include "include/sbsa_std_smc.h"
-
+#include "sys_arch_src/gic/sbsa_exception.h"
 
 /**
   @brief   Pointer to the memory location of the PE Information table
@@ -62,6 +62,13 @@ val_pe_create_info_table(uint64_t *pe_info_table)
   return AVS_STATUS_PASS;
 }
 
+/**
+  @brief  Free the memory allocated for the pe_info_table
+
+  @param  None
+
+  @return None
+**/
 void
 val_pe_free_info_table()
 {
@@ -123,7 +130,7 @@ val_pe_get_mpid_index(uint32_t index)
 
   if (index > g_pe_info_table->header.num_of_pe) {
         val_report_status(index, RESULT_FAIL(g_sbsa_level, 0, 0xFF));
-	return 0xFFFFFF;
+        return 0xFFFFFF;
   }
 
   entry = g_pe_info_table->pe_info;
@@ -220,14 +227,14 @@ val_execute_on_pe(uint32_t index, void (*payload)(void), uint64_t test_input)
   } while (g_smc_args.Arg0 == (uint64_t)ARM_SMC_PSCI_RET_ALREADY_ON && timeout--);
 
   if (g_smc_args.Arg0 == (uint64_t)ARM_SMC_PSCI_RET_ALREADY_ON)
-      val_print(AVS_PRINT_ERR, "       PSCI_CPU_ON: cpu already on  \n", 0);
+      val_print(AVS_PRINT_ERR, "\n       PSCI_CPU_ON: cpu already on  ", 0);
   else {
       if(g_smc_args.Arg0 == 0) {
-          val_print(AVS_PRINT_INFO, "       PSCI_CPU_ON: success  \n", 0);
+          val_print(AVS_PRINT_INFO, "\n       PSCI_CPU_ON: success  ", 0);
           return;
       }
       else
-          val_print(AVS_PRINT_ERR, "       PSCI_CPU_ON: failure  \n", 0);
+          val_print(AVS_PRINT_ERR, "\n       PSCI_CPU_ON: failure  ", 0);
 
   }
   val_set_status(index, RESULT_FAIL(g_sbsa_level, 0, 0x120 - (int)g_smc_args.Arg0));
@@ -245,19 +252,18 @@ val_execute_on_pe(uint32_t index, void (*payload)(void), uint64_t test_input)
 uint32_t
 val_pe_install_esr(uint32_t exception_type, void (*esr)(uint64_t, void *))
 {
-  uint32_t status;
 
   if (exception_type > 3) {
       val_print(AVS_PRINT_ERR, "Invalid Exception type %x \n", exception_type);
       return AVS_STATUS_ERR;
   }
 
-  status = pal_pe_install_esr(exception_type, esr);
-  if (status) {
-      val_print(AVS_PRINT_ERR, "Install exception handler failed with error: %x ", status);
-      val_print(AVS_PRINT_ERR, "for type%x \n", exception_type);
-      return 1;
-  }
+#ifndef TARGET_LINUX
+  if (pal_target_is_bm())
+      val_gic_sbsa_install_esr(exception_type, esr);
+  else
+      pal_pe_install_esr(exception_type, esr);
+#endif
 
   return 0;
 }
@@ -265,6 +271,11 @@ val_pe_install_esr(uint32_t exception_type, void (*esr)(uint64_t, void *))
 
 /**
   @brief  Save context data (LR, SP and ELR in case of unexpected exception)
+
+  @param  sp Stack Pointer
+  @param  elr ELR register
+
+  @return None
 **/
 void
 val_pe_context_save(uint64_t sp, uint64_t elr)
@@ -276,6 +287,10 @@ val_pe_context_save(uint64_t sp, uint64_t elr)
 
 /**
   @brief  Restore context data (LR, SP for return to a known location)
+
+  @param  sp Stack Pointer
+
+  @return None
 **/
 void
 val_pe_context_restore(uint64_t sp)
@@ -286,6 +301,10 @@ val_pe_context_restore(uint64_t sp)
 
 /**
   @brief  Initialise exception vector with the default handler
+
+  @param  esr Exception Handler function pointer
+
+  @return None
 **/
 void
 val_pe_initialize_default_exception_handler(void (*esr)(uint64_t, void *))
@@ -296,15 +315,26 @@ val_pe_initialize_default_exception_handler(void (*esr)(uint64_t, void *))
 /**
   @brief  Default handler which, if installed into exception vector, will be
           called in case of unexpected exceptions
+
+  @param  interrupt_type Type of Interrupt(IRQ/FIQ/ASYNC/SERROR)
+  @param  context To restore the context
+
+  @return None
 **/
 void
 val_pe_default_esr(uint64_t interrupt_type, void *context)
 {
     uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
-    val_print(AVS_PRINT_WARN, "\n        Unexpected exception occurred", 0);
+    val_print(AVS_PRINT_WARN, "\n        Unexpected exception occured", 0);
+
 #ifndef TARGET_LINUX
-    val_print(AVS_PRINT_WARN, "\n        FAR reported = 0x%llx", val_pe_get_far(context));
-    val_print(AVS_PRINT_WARN, "\n        ESR reported = 0x%llx", val_pe_get_esr(context));
+    if (pal_target_is_bm()) {
+        val_print(AVS_PRINT_WARN, "\n        FAR reported = 0x%llx", sbsa_gic_get_far());
+        val_print(AVS_PRINT_WARN, "\n        ESR reported = 0x%llx", sbsa_gic_get_esr());
+    } else {
+        val_print(AVS_PRINT_WARN, "\n        FAR reported = 0x%llx", val_pe_get_far(context));
+        val_print(AVS_PRINT_WARN, "\n        ESR reported = 0x%llx", val_pe_get_esr(context));
+    }
 #endif
     val_set_status(index, RESULT_FAIL(g_sbsa_level, 0, 01));
     val_pe_update_elr(context, g_exception_ret_addr);
@@ -312,6 +342,11 @@ val_pe_default_esr(uint64_t interrupt_type, void *context)
 
 /**
   @brief  Cache clean operation on a defined address range
+
+  @param  start_addr Start Address
+  @param  length Length of the block
+
+  @return None
 **/
 void
 val_pe_cache_clean_range(uint64_t start_addr, uint64_t length)

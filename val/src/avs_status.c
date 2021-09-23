@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2020, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2021, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -47,10 +47,10 @@ val_report_status(uint32_t index, uint32_t status)
         val_print(AVS_PRINT_WARN, ": Result:  -SKIPPED- %x \n", status & STATUS_MASK);
       else
         if (IS_TEST_START(status))
-          val_print(AVS_PRINT_INFO, "         START  ", status);
+          val_print(AVS_PRINT_INFO, "\n       START  ", status);
         else
           if (IS_TEST_END(status))
-            val_print(AVS_PRINT_INFO, "         END  \n\n", status);
+            val_print(AVS_PRINT_INFO, "       END  \n\n", status);
           else
             val_print(AVS_PRINT_ERR, ": Result:  %8x  \n", status);
 
