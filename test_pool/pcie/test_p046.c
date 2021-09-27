@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2020 Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2021 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -35,9 +35,10 @@ payload(void)
   uint32_t pe_index;
   uint32_t tbl_index;
   uint32_t test_skip = 1;
-  uint32_t ecam_cr, ecam_cr_8, ecam_cr_16, ecam_cr_new;
+  uint32_t test_fail = 0;
+  uint32_t ecam_cr, ecam_cr_8, ecam_cr_16, ecam_cr_new, ecam_cr_save;
   uint32_t write_value = 0;
-  uint32_t command_reg_offset;
+  uint32_t busnum_reg_offset;
   addr_t ecam_base;
   pcie_device_bdf_table *bdf_tbl_ptr;
 
@@ -60,89 +61,79 @@ payload(void)
         /* If test runs for atleast an endpoint */
         test_skip = 0;
 
+        /* Get the offset for bus number register in the config header which has
+         * bit[23:0] as read/write. Only these 3 bytes are used for this test.
+         */
         ecam_base = val_pcie_get_ecam_base(bdf);
-        command_reg_offset = PCIE_EXTRACT_BDF_BUS(bdf) * PCIE_MAX_DEV * PCIE_MAX_FUNC * PCIE_CFG_SIZE +
+        busnum_reg_offset = PCIE_EXTRACT_BDF_BUS(bdf) * PCIE_MAX_DEV * PCIE_MAX_FUNC * PCIE_CFG_SIZE +
                              PCIE_EXTRACT_BDF_DEV(bdf) * PCIE_MAX_FUNC * PCIE_CFG_SIZE +
                              PCIE_EXTRACT_BDF_FUNC(bdf) * PCIE_CFG_SIZE +
-                             TYPE01_CR;
+                             TYPE1_PBN;
 
-        /* Read Command Register of RP with 8 Bit, 16 Bit, 32 Bit and compare it */
-        ecam_cr = val_mmio_read(ecam_base + command_reg_offset);
+        /* Read Bus number register of RP with 8 Bit, 16 Bit, 32 Bit and compare it */
+        ecam_cr = val_mmio_read(ecam_base + busnum_reg_offset);
         for (i = 3; i >= 0; i--) {
           ecam_cr_8 = ecam_cr_8 << 8;
-          ecam_cr_8 |= val_mmio_read8(ecam_base + command_reg_offset + i);
+          ecam_cr_8 |= val_mmio_read8(ecam_base + busnum_reg_offset + i);
         }
+
         for (i = 1; i >= 0; i--) {
           ecam_cr_16 = ecam_cr_16 << 16;
-          ecam_cr_16 |= val_mmio_read16(ecam_base + command_reg_offset + i*2);
+          ecam_cr_16 |= val_mmio_read16(ecam_base + busnum_reg_offset + (i * 2));
         }
 
         if ((ecam_cr != ecam_cr_8) || (ecam_cr_8 != ecam_cr_16))
         {
-          val_print(AVS_PRINT_ERR, "\n        Byte Enable Read Failed", 0);
-          val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
-          return;
+          val_print(AVS_PRINT_ERR, "\n        Byte Enable Read Failed for Bdf: 0x%x", bdf);
+          test_fail++;
         }
 
-        /* Check Read-Write-Read Behaviour for each 8 Bit */
-        ecam_cr = val_mmio_read8(ecam_base + command_reg_offset);
+        /* Save the register to restore later */
+        ecam_cr_save = val_mmio_read(ecam_base + busnum_reg_offset);
 
-        /* Change BME & MSE Bit Value */
-        write_value = ecam_cr ^ ((1 << CR_MSE_SHIFT) | (1 << CR_BME_SHIFT));
-        val_mmio_write8(ecam_base + command_reg_offset, write_value);
+        /* Check Read-Write-Read Behaviour for 8 Bit */
+        for (i = 2; i >= 0; i--) {
+            ecam_cr = val_mmio_read8(ecam_base + busnum_reg_offset + i);
+            write_value = (uint8_t)~ecam_cr;
+            val_mmio_write8(ecam_base + busnum_reg_offset + i, write_value);
 
-        ecam_cr_new = val_mmio_read8(ecam_base + command_reg_offset);
-        if (write_value != ecam_cr_new)
-        {
-          val_print(AVS_PRINT_ERR, "\n        8 Bit Write Failed", 0);
-          val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
-          return;
-        }
-
-        /* Restore the value */
-        val_mmio_write8(ecam_base + command_reg_offset, ecam_cr);
-
-        /* Check Read-Write-Read Behaviour for each 16 Bit */
-        ecam_cr = val_mmio_read16(ecam_base + command_reg_offset);
-
-        /* Change BME & MSE Bit Value */
-        write_value = ecam_cr ^ ((1 << CR_MSE_SHIFT) | (1 << CR_BME_SHIFT));
-        val_mmio_write16(ecam_base + command_reg_offset, write_value);
-
-        ecam_cr_new = val_mmio_read16(ecam_base + command_reg_offset);
-        if (write_value != ecam_cr_new)
-        {
-          val_print(AVS_PRINT_ERR, "\n        16 Bit Write Failed", 0);
-          val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 03));
-          return;
+            ecam_cr_new = val_mmio_read8(ecam_base + busnum_reg_offset + i);
+            if (write_value != ecam_cr_new)
+            {
+              val_print(AVS_PRINT_ERR, "\n        8 Bit Write Failed for Bdf: 0x%x", bdf);
+              test_fail++;
+            }
         }
 
         /* Restore the value */
-        val_mmio_write16(ecam_base + command_reg_offset, ecam_cr);
+        val_mmio_write(ecam_base + busnum_reg_offset, ecam_cr_save);
 
-        /* Check Read-Write-Read Behaviour for 32 Bit */
-        ecam_cr = val_mmio_read(ecam_base + command_reg_offset);
+        /* Check Read-Write-Read Behaviour for 16 Bit */
+        ecam_cr = val_mmio_read16(ecam_base + busnum_reg_offset);
+        write_value = (uint16_t)~ecam_cr;
+        val_mmio_write16(ecam_base + busnum_reg_offset, write_value);
 
-        /* Change BME & MSE Bit Value */
-        write_value = ecam_cr ^ ((1 << CR_MSE_SHIFT) | (1 << CR_BME_SHIFT));
-        val_mmio_write(ecam_base + command_reg_offset, write_value);
-
-        ecam_cr_new = val_mmio_read(ecam_base + command_reg_offset);
+        ecam_cr_new = val_mmio_read16(ecam_base + busnum_reg_offset);
         if (write_value != ecam_cr_new)
         {
-          val_print(AVS_PRINT_ERR, "\n        32 Bit Write Failed", 0);
-          val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 04));
-          return;
+          val_print(AVS_PRINT_ERR, "\n        16 Bit Write Failed for Bdf: 0x%x", bdf);
+          test_fail++;
         }
 
         /* Restore the value */
-        val_mmio_write(ecam_base + command_reg_offset, ecam_cr);
+        val_mmio_write(ecam_base + busnum_reg_offset, ecam_cr_save);
 
+        /* 32 Bit write have been performed during enumeration and
+         * during pcie_create_device_bdf_table(). So the check has
+         * not been performed
+         */
       }
   }
 
-  if (test_skip == 1)
+  if (test_skip)
       val_set_status(pe_index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
+  if (test_fail)
+      val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
   else
       val_set_status(pe_index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
 }

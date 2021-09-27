@@ -21,6 +21,7 @@
 #include "include/sbsa_avs_smmu.h"
 
 EXERCISER_INFO_TABLE g_exercier_info_table;
+extern uint32_t pcie_bdf_table_list_flag;
 /**
   @brief   This API popultaes information from all the PCIe stimulus generation IP available
            in the system into exerciser_info_table structure
@@ -236,6 +237,12 @@ val_exerciser_execute_tests(uint32_t level)
       return AVS_STATUS_SKIP;
   }
 
+   if (pcie_bdf_table_list_flag == 1) {
+    val_print(AVS_PRINT_WARN, "\n     *** Created device list with valid bdf doesn't match \
+                with the platform pcie device hierarchy, Skipping exerciser tests *** \n", 0);
+    return AVS_STATUS_SKIP;
+  }
+
   val_exerciser_create_info_table();
   num_instances = val_exerciser_get_info(EXERCISER_NUM_CARDS, 0);
 
@@ -244,6 +251,7 @@ val_exerciser_execute_tests(uint32_t level)
       return AVS_STATUS_SKIP;
   }
 
+  g_curr_module = 1 << EXERCISER_MODULE;
   status = e001_entry();
   status |= e002_entry();
   status |= e003_entry();
@@ -259,6 +267,7 @@ val_exerciser_execute_tests(uint32_t level)
   status |= e013_entry();
   status |= e014_entry();
   status |= e015_entry();
+  status |= e016_entry();
 
   if (status != AVS_STATUS_PASS) {
       val_print(AVS_PRINT_ERR, "\n     One or more Exerciser tests have failed.... \n", status);

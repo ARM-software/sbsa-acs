@@ -24,7 +24,8 @@ extern PLATFORM_OVERRIDE_NODE_DATA platform_node_type;
 uint64_t
 pal_iovirt_get_rc_smmu_base (
   IOVIRT_INFO_TABLE *Iovirt,
-  uint32_t RcSegmentNum
+  uint32_t RcSegmentNum,
+  uint32_t rid
   )
 {
   return IOVIRT_SMMUV3_BASE_ADDRESS;

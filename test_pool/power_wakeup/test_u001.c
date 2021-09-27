@@ -304,11 +304,13 @@ u001_entry(uint32_t num_pe)
   if (status_test != AVS_STATUS_SKIP)
       val_run_test_payload(TEST_NUM, num_pe, payload1, 0);
   status = val_check_for_error(TEST_NUM, num_pe);
+  val_report_status(0, SBSA_AVS_END(g_sbsa_level, TEST_NUM));
 
   status_test = val_initialize_test(TEST_NUM2, TEST_DESC2, num_pe, g_sbsa_level);
   if (status_test != AVS_STATUS_SKIP)
       val_run_test_payload(TEST_NUM2, num_pe, payload2, 0);
   status |= val_check_for_error(TEST_NUM2, num_pe);
+  val_report_status(0, SBSA_AVS_END(g_sbsa_level, TEST_NUM2));
 
   /* Run this test if current exception level is EL2 */
   if (val_pe_reg_read(CurrentEL) == AARCH64_EL2) {
@@ -316,19 +318,20 @@ u001_entry(uint32_t num_pe)
       if (status_test != AVS_STATUS_SKIP)
           val_run_test_payload(TEST_NUM3, num_pe, payload3, 0);
       status |= val_check_for_error(TEST_NUM3, num_pe);
+      val_report_status(0, SBSA_AVS_END(g_sbsa_level, TEST_NUM3));
   }
 
   status_test = val_initialize_test(TEST_NUM4, TEST_DESC4, num_pe, g_sbsa_level);
   if (status_test != AVS_STATUS_SKIP)
       val_run_test_payload(TEST_NUM4, num_pe, payload4, 0);
   status |= val_check_for_error(TEST_NUM4, num_pe);
+  val_report_status(0, SBSA_AVS_END(g_sbsa_level, TEST_NUM4));
 
   status_test = val_initialize_test(TEST_NUM5, TEST_DESC5, num_pe, g_sbsa_level);
   if (status_test != AVS_STATUS_SKIP)
       val_run_test_payload(TEST_NUM5, num_pe, payload5, 0);
   status |= val_check_for_error(TEST_NUM5, num_pe);
-
-  val_report_status(0, SBSA_AVS_END(g_sbsa_level, TEST_NUM));
+  val_report_status(0, SBSA_AVS_END(g_sbsa_level, TEST_NUM5));
 
   return status;
 }

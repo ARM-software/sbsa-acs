@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018, 2021 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -79,6 +79,7 @@ payload (void)
   uint8_t status;
   PERIPHERAL_VECTOR_LIST *dev_mvec, *mvec;
   uint64_t dev_bdf;
+  uint32_t test_skip = 1;
 
   if(!count) {
      val_set_status (index, RESULT_SKIP (g_sbsa_level, TEST_NUM, 2));
@@ -100,6 +101,7 @@ payload (void)
         val_print (AVS_PRINT_INFO, "       Checking PCI device with BDF %4X\n", dev_bdf);
         /* Read MSI(X) vectors */
         if (val_get_msi_vectors (dev_bdf, &dev_mvec)) {
+          test_skip = 0;
           mvec = dev_mvec;
           while(mvec) {
               if(mvec->vector.vector_irq_base < LPI_BASE) {
@@ -116,8 +118,11 @@ payload (void)
     count--;
   }
 
-  if (!status) {
-    val_set_status (index, RESULT_PASS (g_sbsa_level, TEST_NUM, 0));
+  if (test_skip) {
+    val_print(AVS_PRINT_ERR, "\n       No MSI vectors found ", 0);
+    val_set_status (index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 0));
+  } else if (!status) {
+    val_set_status (index, RESULT_PASS(g_sbsa_level, TEST_NUM, 0));
   }
 }
 

@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018, 2021 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -130,7 +130,7 @@ pal_pe_create_info_table(PE_INFO_TABLE *PeTable)
 
 
   if (PeTable == NULL) {
-    sbsa_print(AVS_PRINT_ERR, L"Input PE Table Pointer is NULL. Cannot create PE INFO \n");
+    sbsa_print(AVS_PRINT_ERR, L" Input PE Table Pointer is NULL. Cannot create PE INFO \n");
     return;
   }
 
@@ -140,7 +140,7 @@ pal_pe_create_info_table(PE_INFO_TABLE *PeTable)
     TableLength =  gMadtHdr->Header.Length;
     sbsa_print(AVS_PRINT_INFO, L" MADT is at %x and length is %x \n", gMadtHdr, TableLength);
   } else {
-    sbsa_print(AVS_PRINT_ERR, L"MADT not found \n");
+    sbsa_print(AVS_PRINT_ERR, L" MADT not found \n");
     return;
   }
 
@@ -157,7 +157,7 @@ pal_pe_create_info_table(PE_INFO_TABLE *PeTable)
       Ptr->mpidr    = Entry->MPIDR;
       Ptr->pe_num   = PeTable->header.num_of_pe;
       Ptr->pmu_gsiv = Entry->PerformanceInterruptGsiv;
-      sbsa_print(AVS_PRINT_DEBUG, L"MPIDR %x PE num %x \n", Ptr->mpidr, Ptr->pe_num);
+      sbsa_print(AVS_PRINT_DEBUG, L" MPIDR %x PE num %x \n", Ptr->mpidr, Ptr->pe_num);
       pal_pe_data_cache_ops_by_va((UINT64)Ptr, CLEAN_AND_INVALIDATE);
       Ptr++;
       PeTable->header.num_of_pe++;

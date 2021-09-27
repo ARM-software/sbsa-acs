@@ -50,7 +50,7 @@ isr()
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
   /* We received our interrupt, so disable PMUIRQ from generating further interrupts */
   val_pe_reg_write(PMOVSCLR_EL0, 0x1);
-  val_print(AVS_PRINT_INFO, "\n Received PMUIRQ ", 0);
+  val_print(AVS_PRINT_INFO, "\n       Received PMUIRQ ", 0);
   val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
   val_gic_end_of_interrupt(int_id);
 

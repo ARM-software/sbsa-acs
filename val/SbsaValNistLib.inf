@@ -40,12 +40,14 @@
   src/avs_timer.c
   src/avs_timer_support.c
   src/avs_wd.c
+  src/avs_dma.c
   src/avs_wakeup.c
   src/avs_peripherals.c
   src/avs_secure.c
   src/avs_memory.c
   src/avs_exerciser.c
-  src/avs_nist.c
+  sys_arch_src/smmu_v3/smmu_v3.c
+  src/avs_pgt.c
 
  [Packages]
   StdLib/StdLib.dec

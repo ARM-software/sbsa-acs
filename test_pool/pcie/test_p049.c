@@ -56,7 +56,7 @@ payload(void)
   uint32_t status;
   uint32_t test_skip = 1;
   uint64_t mem_base = 0, mem_base_upper = 0;
-  uint64_t mem_lim = 0, mem_lim_upper = 0;
+  uint64_t mem_lim = 0, mem_lim_upper = 0, new_mem_lim;
   pcie_device_bdf_table *bdf_tbl_ptr;
 
   tbl_index = 0;
@@ -134,6 +134,27 @@ payload(void)
         old_value = (*(volatile addr_t *)(mem_base + MEM_OFFSET_10));
         *(volatile addr_t *)(mem_base + MEM_OFFSET_10) = KNOWN_DATA;
         read_value = (*(volatile addr_t *)(mem_base + MEM_OFFSET_10));
+
+        /*Accessing out of range of limit should return 0xFFFFFFFF*/
+        if ((mem_lim >> MEM_SHIFT) > (mem_base >> MEM_SHIFT))
+        {
+           new_mem_lim  = mem_base + MEM_OFF_100000;
+           mem_base = mem_base | (mem_base  >> MEM_BASE_SHIFT);
+           val_pcie_write_cfg(bdf, TYPE1_P_MEM, mem_base);
+           val_pcie_read_cfg(bdf, TYPE1_P_MEM, &read_value);
+
+           uint32_t value = (*(volatile uint32_t *)(new_mem_lim + MEM_OFFSET_10));
+           /*Write back original value */
+           val_pcie_write_cfg(bdf, TYPE1_P_MEM, ((mem_lim & MEM_LIM_MASK) | (mem_base  >> 16)));
+
+           if (value != PCIE_UNKNOWN_RESPONSE)
+           {
+               val_print(AVS_PRINT_ERR, "\n Memory range for bdf 0x%x", bdf);
+               val_print(AVS_PRINT_ERR, " is 0x%x", read_value);
+               val_print(AVS_PRINT_ERR, "\n Out of range addr %x ", (new_mem_lim + MEM_OFFSET_10));
+               val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
+           }
+        }
 
 exception_return:
         /* Memory Space might have constraint on RW/RO behaviour

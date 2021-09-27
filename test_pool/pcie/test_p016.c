@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018,2021 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -27,13 +27,17 @@
 static void payload(void)
 {
     uint32_t index;
-    uint32_t count;
+    uint32_t tbl_index;
     uint32_t status = 0;
     uint32_t ret;
     uint32_t bar_data;
     uint32_t data;
     uint32_t dev_type;
     uint64_t dev_bdf;
+    pcie_device_bdf_table *bdf_tbl_ptr;
+
+    bdf_tbl_ptr = val_pcie_bdf_table_ptr();
+    tbl_index = 0;
 
     index = val_pe_get_index_mpid(val_pe_get_mpid());
     if (g_sbsa_level < 4) {
@@ -41,20 +45,16 @@ static void payload(void)
         return ;
     }
 
-    count = val_peripheral_get_info (NUM_ALL, 0);
-    if (!count) {
-        val_set_status(index, RESULT_SKIP (g_sbsa_level, TEST_NUM, 3));
-        return;
-    }
 
-    while (count > 0) {
-        count--;
-        dev_bdf = val_peripheral_get_info (ANY_BDF, count);
+    while (tbl_index < bdf_tbl_ptr->num_entries)
+    {
+        dev_bdf = bdf_tbl_ptr->device[tbl_index++].bdf;
 
         dev_type = val_pcie_get_device_type(dev_bdf);
         /* Allow only type-1 headers and skip others */
         if (dev_type != 3)
             continue;
+
         ret = val_pcie_read_cfg(dev_bdf, BAR0, &bar_data);
         if (bar_data) {
             /* Extract pref type */

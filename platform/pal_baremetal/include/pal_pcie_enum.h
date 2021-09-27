@@ -45,8 +45,19 @@
 #define BAR_64_BIT         1
 #define BAR_32_BIT         0
 
-#define BAR_REG(bar_reg_value) ((bar_reg_value >> 2) & 0x1)
+#define BAR_NON_PRE_MEM    0
+#define BAR_PRE_MEM        0x1
 
+#define MEM_BASE32_LIM_MASK      0xFFF00000
+#define MEM_BASE64_LIM_MASK      0xFFFFFFFFFFF00000
+#define NON_PRE_FET_OFFSET       0x20
+#define PRE_FET_OFFSET           0x24
+#define BAR_INCREMENT            0x100000
+
+#define PRI_BUS_CLEAR_MASK       0xFFFFFF00
+#define BAR_REG(bar_reg_value) ((bar_reg_value >> 2) & 0x1)
+#define BAR_MEM(bar_reg_value) ((bar_reg_value & 0xF) >> 3)
+#define REG_MASK_SHIFT(bar_value) ((bar_value & MEM_BASE32_LIM_MASK) >> 16)
 
 uint8_t  pal_mmio_read8(uint64_t addr);
 uint16_t pal_mmio_read16(uint64_t addr);

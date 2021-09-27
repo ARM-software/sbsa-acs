@@ -58,10 +58,12 @@ pal_gic_create_info_table(GIC_INFO_TABLE *GicTable)
     return;
   }
 
-  GicTable->header.gic_version = platform_gic_cfg.gic_version;
-  GicTable->header.num_gicrd   = platform_gic_cfg.num_gicrd;
-  GicTable->header.num_gicd    = platform_gic_cfg.num_gicd;
-  GicTable->header.num_its     = platform_gic_cfg.num_gicits;
+  GicTable->header.gic_version    = platform_gic_cfg.gic_version;
+  GicTable->header.num_gicrd      = platform_gic_cfg.num_gicrd;
+  GicTable->header.num_gicd       = platform_gic_cfg.num_gicd;
+  GicTable->header.num_its        = platform_gic_cfg.num_gicits;
+  GicTable->header.num_gich       = platform_gic_cfg.num_gich;
+  GicTable->header.num_msi_frames  = platform_gic_cfg.num_msiframes;
 
   for (Index = 0; Index < platform_gic_cfg.num_gicc; Index++) {
     GicTable->gic_info[InfoIndex].type   = PLATFORM_OVERRIDE_GICC_TYPE;
@@ -82,11 +84,25 @@ pal_gic_create_info_table(GIC_INFO_TABLE *GicTable)
   for (Index = 0; Index < platform_gic_cfg.num_gicits; Index++) {
     GicTable->gic_info[InfoIndex].type     = PLATFORM_OVERRIDE_GICITS_TYPE;
     GicTable->gic_info[InfoIndex].base     = platform_gic_cfg.gicits_base[Index];
-    GicTable->gic_info[InfoIndex++].its_id = platform_gic_cfg.gicits_id[Index];
+    GicTable->gic_info[InfoIndex++].entry_id = platform_gic_cfg.gicits_id[Index];
+  }
+
+  for (Index = 0; Index < platform_gic_cfg.num_gich; Index++) {
+    GicTable->gic_info[InfoIndex].type     = PLATFORM_OVERRIDE_GICH_TYPE;
+    GicTable->gic_info[InfoIndex].base     = platform_gic_cfg.gich_base[Index];
+    GicTable->gic_info[InfoIndex++].length = 0;
+  }
+
+  for (Index = 0; Index < platform_gic_cfg.num_msiframes; Index++) {
+    GicTable->gic_info[InfoIndex].type       = PLATFORM_OVERRIDE_GICMSIFRAME_TYPE;
+    GicTable->gic_info[InfoIndex].base       = platform_gic_cfg.gicmsiframe_base[Index];
+    GicTable->gic_info[InfoIndex].entry_id   = platform_gic_cfg.gicmsiframe_id[Index];
+    GicTable->gic_info[InfoIndex].flags      = platform_gic_cfg.gicmsiframe_flags[Index];
+    GicTable->gic_info[InfoIndex].spi_count  = platform_gic_cfg.gicmsiframe_spi_count[Index];
+    GicTable->gic_info[InfoIndex++].spi_base   = platform_gic_cfg.gicmsiframe_spi_base[Index];
   }
 
   GicTable->gic_info[InfoIndex].type = 0xFF;  //Indicate end of data
-
 
 }
 

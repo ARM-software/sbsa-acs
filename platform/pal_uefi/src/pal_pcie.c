@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2020, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2021, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -53,7 +53,7 @@ pal_pcie_get_mcfg_ecam()
   gMcfgHdr = (EFI_ACPI_MEMORY_MAPPED_CONFIGURATION_BASE_ADDRESS_TABLE_HEADER *) pal_get_mcfg_ptr();
 
   if (gMcfgHdr == NULL) {
-      sbsa_print(AVS_PRINT_WARN, L"ACPI - MCFG Table not found. Setting ECAM Base to 0. \n");
+      sbsa_print(AVS_PRINT_WARN, L" ACPI - MCFG Table not found. Setting ECAM Base to 0. \n");
       return 0x0;
   }
 
@@ -79,7 +79,7 @@ pal_pcie_create_info_table(PCIE_INFO_TABLE *PcieTable)
   UINT32 i = 0;
 
   if (PcieTable == NULL) {
-    sbsa_print(AVS_PRINT_ERR, L"Input PCIe Table Pointer is NULL. Cannot create PCIe INFO \n");
+    sbsa_print(AVS_PRINT_ERR, L" Input PCIe Table Pointer is NULL. Cannot create PCIe INFO \n");
     return;
   }
 
@@ -88,7 +88,7 @@ pal_pcie_create_info_table(PCIE_INFO_TABLE *PcieTable)
   gMcfgHdr = (EFI_ACPI_MEMORY_MAPPED_CONFIGURATION_BASE_ADDRESS_TABLE_HEADER *) pal_get_mcfg_ptr();
 
   if (gMcfgHdr == NULL) {
-      sbsa_print(AVS_PRINT_DEBUG, L"ACPI - MCFG Table not found. \n");
+      sbsa_print(AVS_PRINT_DEBUG, L" ACPI - MCFG Table not found. \n");
       return;
   }
 
@@ -142,7 +142,7 @@ pal_pcie_io_read_cfg(UINT32 Bdf, UINT32 offset, UINT32 *data)
 
   Status = gBS->LocateHandleBuffer (ByProtocol, &gEfiPciIoProtocolGuid, NULL, &HandleCount, &HandleBuffer);
   if (EFI_ERROR (Status)) {
-    sbsa_print(AVS_PRINT_INFO,L"No PCI devices found in the system\n");
+    sbsa_print(AVS_PRINT_INFO, L" No PCI devices found in the system\n");
     return PCIE_NO_MAPPING;
   }
 
@@ -191,7 +191,7 @@ pal_pcie_io_write_cfg(UINT32 Bdf, UINT32 offset, UINT32 data)
 
   Status = gBS->LocateHandleBuffer (ByProtocol, &gEfiPciIoProtocolGuid, NULL, &HandleCount, &HandleBuffer);
   if (EFI_ERROR (Status)) {
-    sbsa_print(AVS_PRINT_INFO,L"No PCI devices found in the system\n");
+    sbsa_print(AVS_PRINT_INFO, L" No PCI devices found in the system\n");
     return;
   }
 
@@ -225,7 +225,7 @@ pal_pcie_p2p_support()
    * transactions is platform implementation specific
    */
 
-  return 1;
+  return 0;
 }
 
 /**
@@ -324,7 +324,7 @@ pal_pcie_is_cache_present (
   UINT32 Fn
   )
 {
-  return 0;
+  return 1;
 }
 
 /**
@@ -353,6 +353,17 @@ pal_pcie_get_rp_transaction_frwd_support(UINT32 seg, UINT32 bus, UINT32 dev, UIN
 **/
 UINT32
 pal_pcie_is_onchip_peripheral(UINT32 bdf)
+{
+  return 0;
+}
+
+/**
+  @brief  Checks the discovered PCIe hierarchy is matching with the
+          topology described in info table.
+  @return Returns 0 if device entries matches , 1 if there is mismatch.
+**/
+UINT32
+pal_pcie_check_device_list(void)
 {
   return 0;
 }

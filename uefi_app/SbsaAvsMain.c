@@ -35,7 +35,11 @@ UINT32  g_sbsa_level;
 UINT32  g_enable_pcie_tests;
 UINT32  g_print_level;
 UINT32  g_execute_nist;
-UINT32  g_skip_test_num[3] = {10000, 10000, 10000};
+UINT32 g_print_mmio;
+UINT32 g_curr_module;
+UINT32 g_enable_module;
+UINT32  g_skip_test_num[MAX_TEST_SKIP_NUM] = { 10000, 10000, 10000, 10000, 10000,
+                                               10000, 10000, 10000, 10000 };
 UINT32  g_sbsa_tests_total;
 UINT32  g_sbsa_tests_pass;
 UINT32  g_sbsa_tests_fail;
@@ -176,10 +180,15 @@ HelpMsg (
   VOID
   )
 {
-  Print (L"\nUsage: Sbsa.efi [-v <n>] | [-l <n>] | [-f <filename>] | [-s] | [-skip <n>] | [-nist] | [-p <n>]\n"
+  Print (L"\nUsage: Sbsa.efi [-v <nn>] | [-l <n>] | [-f <filename>] | "
+         "[-skip <n>] | [-nist] | [-p <n>]\n"
          "Options:\n"
          "-v      Verbosity of the Prints\n"
          "        1 shows all prints, 5 shows Errors\n"
+         "        Note: pal_mmio prints can be enabled for specific modules by passing\n"
+         "              module numbers along with global verbosity level 1\n"
+         "              Module numbers are PE 0, GIC 1,  ...\n"
+         "              E.g., To enable mmio prints for PE and TIMER pass -v 102 \n"
          "-l      Level of compliance to be tested for\n"
          "        As per SBSA spec, 0 to 6\n"
          "-f      Name of the log file to record the test results in\n"
@@ -187,8 +196,9 @@ HelpMsg (
          "        Refer to section 4 of SBSA_ACS_User_Guide\n"
          "        To skip a module, use Model_ID as mentioned in user guide\n"
          "        To skip a particular test within a module, use the exact testcase number\n"
-	 "-nist   Enable the NIST Statistical test suite\n"
+         "-nist   Enable the NIST Statistical test suite\n"
          "-p      Enable/disable PCIe SBSA 6.0 (RCiEP) compliance tests\n"
+         "-mmio Pass this flag to enable pal_mmio_read/write prints, use with -v 1\n"
          "        1 - enables PCIe tests, 0 - disables PCIe tests\n"
   );
 }
@@ -202,6 +212,7 @@ STATIC CONST SHELL_PARAM_ITEM ParamList[] = {
   {L"-h"    , TypeFlag},     // -h    # help : info about commands
   {L"-nist" , TypeFlag},     // -nist # Binary Flag to enable the execution of NIST STS
   {L"-p"    , TypeValue},    // -p    # Enable/disable PCIe SBSA 6.0 (RCiEP) compliance tests.
+  {L"-mmio", TypeFlag},      // -mmio # Enable pal_mmio prints
   {NULL     , TypeMax}
   };
 
@@ -225,6 +236,7 @@ ShellAppMainsbsa (
   CONST CHAR16       *CmdLineArg;
   CHAR16             *ProbParam;
   UINT32             Status;
+  UINT32             ReadVerbosity;
   UINT32             i,j=0;
   VOID               *branch_label;
 
@@ -275,7 +287,12 @@ ShellAppMainsbsa (
   if (CmdLineArg == NULL) {
     g_print_level = G_PRINT_LEVEL;
   } else {
-    g_print_level = StrDecimalToUintn(CmdLineArg);
+    ReadVerbosity = StrDecimalToUintn(CmdLineArg);
+    while (ReadVerbosity/10) {
+      g_enable_module |= (1 << ReadVerbosity%10);
+      ReadVerbosity /= 10;
+    }
+    g_print_level = ReadVerbosity;
     if (g_print_level > 5) {
       g_print_level = G_PRINT_LEVEL;
     }
@@ -306,6 +323,12 @@ ShellAppMainsbsa (
     g_execute_nist = TRUE;
   } else {
     g_execute_nist = FALSE;
+  }
+
+  if (ShellCommandLineGetFlag (ParamPackage, L"-mmio")) {
+    g_print_mmio = TRUE;
+  } else {
+    g_print_mmio = FALSE;
   }
 
   // Options with Values

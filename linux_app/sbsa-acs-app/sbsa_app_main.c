@@ -28,6 +28,9 @@ int  g_sbsa_level = 4;
 int  g_print_level = 3;
 int  g_skip_test_num[3] = {10000, 10000, 10000};
 unsigned long int  g_exception_ret_addr;
+unsigned int g_print_mmio;
+unsigned int g_curr_module;
+unsigned int g_enable_module;
 
 int
 initialize_test_environment(unsigned int print_level)

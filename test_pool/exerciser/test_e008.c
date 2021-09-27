@@ -28,7 +28,7 @@
 #define TEST_NUM   (AVS_EXERCISER_TEST_NUM_BASE + 8)
 #define TEST_DESC  "Check BME functionality of RP     "
 
-#define TEST_DMA_SIZE (4*1024)
+#define TEST_DATA_NUM_PAGES  1
 
 static void *branch_to_test;
 
@@ -66,6 +66,7 @@ payload(void)
   void *dram_buf_virt;
   void *dram_buf_phys;
   void *dram_buf_iova;
+  uint32_t page_size = val_memory_page_size();
 
   fail_cnt = 0;
   pe_index = val_pe_get_index_mpid(val_pe_get_mpid());
@@ -84,7 +85,8 @@ payload(void)
   branch_to_test = &&exception_return;
 
   /* Create a buffer of size TEST_DMA_SIZE in DRAM */
-  dram_buf_virt = val_memory_alloc(TEST_DMA_SIZE);
+  dram_buf_virt = val_memory_alloc_pages(TEST_DATA_NUM_PAGES);
+
   if (!dram_buf_virt)
   {
       val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
@@ -92,7 +94,7 @@ payload(void)
   }
 
   dram_buf_phys = val_memory_virt_to_phys(dram_buf_virt);
-  dma_len = TEST_DMA_SIZE;
+  dma_len = page_size * TEST_DATA_NUM_PAGES;;
 
   while (instance-- != 0) {
 
@@ -132,7 +134,7 @@ payload(void)
        * Get SMMU node index for this exerciser instance to convert
        * the dram physical addresses to IOVA addresses for DMA purposes.
        */
-      smmu_index = val_iovirt_get_rc_smmu_index(PCIE_EXTRACT_BDF_SEG(e_bdf));
+      smmu_index = val_iovirt_get_rc_smmu_index(PCIE_EXTRACT_BDF_SEG(e_bdf), PCIE_CREATE_BDF_PACKED(e_bdf));
       if (smmu_index == AVS_INVALID_INDEX)
           dram_buf_iova = dram_buf_phys;
       else
@@ -155,17 +157,29 @@ exception_return:
           val_pcie_clear_urd(erp_bdf);
       } else
       {
-          val_print(AVS_PRINT_ERR, "\n      BDF 0x%x BME functionality failure", erp_bdf);
+          val_print(AVS_PRINT_ERR, "\n      Root Port BDF 0x%x BME functionality failure", erp_bdf);
           fail_cnt++;
       }
 
       /* Restore Rootport Bus Master Enable */
       val_pcie_enable_bme(erp_bdf);
 
+      /* Check if UR detected bit is set in the Exerciser */
+      if (val_pcie_is_urd(e_bdf))
+      {
+          /* Clear urd bit in Device Status Register */
+          val_pcie_clear_urd(e_bdf);
+      } else
+      {
+          val_print(AVS_PRINT_ERR, "\n      Exerciser BDF 0x%x BME functionality failure", e_bdf);
+          fail_cnt++;
+      }
+
+
   }
 
   /* Return the buffer to the heap manager */
-  val_memory_free(dram_buf_virt);
+  val_memory_free_pages(dram_buf_virt, TEST_DATA_NUM_PAGES);
 
   if (fail_cnt)
       val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, fail_cnt));

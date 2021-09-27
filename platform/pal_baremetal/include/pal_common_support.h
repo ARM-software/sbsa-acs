@@ -24,6 +24,9 @@
 #include <stdlib.h>
 
 extern uint32_t g_print_level;
+extern uint32_t g_print_mmio;
+extern uint32_t g_curr_module;
+extern uint32_t g_enable_module;
 
 #define AVS_PRINT_ERR   5      /* Only Errors. use this to de-clutter the terminal and focus only on specifics */
 #define AVS_PRINT_WARN  4      /* Only warnings & errors. use this to de-clutter the terminal and focus only on specifics */
@@ -55,12 +58,15 @@ extern uint32_t g_print_level;
 /* TYPE 0/1 Cmn Cfg reg offsets and mask*/
 #define TYPE01_CPR           0x34
 #define TYPE01_CPR_MASK      0xff
+#define COMMAND_REG_OFFSET   0x04
+#define REG_ACC_DATA         0x7
 
 /* Class Code Masks */
 #define CC_SUB_MASK     0xFF   /* Sub Class */
 #define CC_BASE_MASK    0xFF   /* Base Class */
 
 /* Class Code Shifts */
+#define CC_SHIFT        8
 #define CC_SUB_SHIFT    16
 #define CC_BASE_SHIFT   24
 
@@ -170,6 +176,8 @@ typedef struct {
   uint32_t   num_gicd;
   uint32_t   num_gicrd;
   uint32_t   num_its;
+  uint32_t   num_msi_frames;
+  uint32_t   num_gich;
 }GIC_INFO_HDR;
 
 
@@ -185,10 +193,13 @@ typedef enum {
   @brief  structure instance for GIC entry
 **/
 typedef struct {
-  uint32_t type;
-  uint64_t base;
-  uint32_t its_id;  /* This its_id is only used in case of ITS Type entry */
-  uint32_t length;  /* This length is only used in case of Re-Distributor Range Address length */
+  UINT32 type;
+  UINT64 base;
+  UINT32 entry_id;  /* This entry_id is used to tell component ID */
+  UINT64 length;  /* This length is only used in case of Re-Distributor Range Address length */
+  UINT32 flags;
+  UINT32 spi_count;
+  UINT32 spi_base;
 }GIC_INFO_ENTRY;
 
 /**
@@ -266,6 +277,18 @@ typedef struct {
   @brief PCIe Info Table
 **/
 
+#define LEGACY_PCI_IRQ_CNT 4  // Legacy PCI IRQ A, B, C. and D
+#define MAX_IRQ_CNT 0xFFFF    // This value is arbitrary and may have to be adjusted
+
+typedef struct {
+  uint32_t  irq_list[MAX_IRQ_CNT];
+  uint32_t  irq_count;
+} PERIFERAL_IRQ_LIST;
+
+typedef struct {
+  PERIFERAL_IRQ_LIST  legacy_irq_map[LEGACY_PCI_IRQ_CNT];
+} PERIPHERAL_IRQ_MAP;
+
 typedef struct {
   uint64_t   ecam_base;     ///< ECAM Base address
   uint32_t   segment_num;   ///< Segment number of this ECAM
@@ -284,8 +307,15 @@ typedef struct {
   uint32_t   vendor_id;
   uint32_t   bus;
   uint32_t   dev;
-  uint32_t   function;
+  uint32_t   func;
   uint32_t   seg;
+  uint32_t   dma_support;
+  uint32_t   dma_coherent;
+  uint32_t   p2p_support;
+  uint32_t   dma_64bit;
+  uint32_t   behind_smmu;
+  uint32_t   atc_present;
+  PERIPHERAL_IRQ_MAP irq_map;
 } PCIE_READ_BLOCK;
 
 typedef struct {
@@ -384,18 +414,6 @@ typedef struct PERIPHERAL_VECTOR_LIST_STRUCT
 }PERIPHERAL_VECTOR_LIST;
 
 uint32_t pal_get_msi_vectors (uint32_t seg, uint32_t bus, uint32_t dev, uint32_t fn, PERIPHERAL_VECTOR_LIST **mvector);
-
-#define LEGACY_PCI_IRQ_CNT 4  // Legacy PCI IRQ A, B, C. and D
-#define MAX_IRQ_CNT 0xFFFF    // This value is arbitrary and may have to be adjusted
-
-typedef struct {
-  uint32_t  irq_list[MAX_IRQ_CNT];
-  uint32_t  irq_count;
-} PERIFERAL_IRQ_LIST;
-
-typedef struct {
-  PERIFERAL_IRQ_LIST  legacy_irq_map[LEGACY_PCI_IRQ_CNT];
-} PERIPHERAL_IRQ_MAP;
 
 /**
   @brief  Instance of SMMU INFO block
@@ -542,7 +560,8 @@ typedef enum {
     DMA_ATTRIBUTES   = 0x4,
     P2P_ATTRIBUTES   = 0x5,
     PASID_ATTRIBUTES = 0x6,
-    CFG_TXN_ATTRIBUTES = 0x7
+    CFG_TXN_ATTRIBUTES = 0x7,
+    ATS_RES_ATTRIBUTES = 0x8,
 } EXERCISER_PARAM_TYPE;
 
 typedef enum {
