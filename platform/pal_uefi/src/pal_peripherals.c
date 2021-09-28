@@ -57,7 +57,8 @@ pal_peripheral_create_info_table(PERIPHERAL_INFO_TABLE *peripheralInfoTable)
   EFI_ACPI_SERIAL_PORT_CONSOLE_REDIRECTION_TABLE *spcr = NULL;
 
   if (peripheralInfoTable == NULL) {
-    sbsa_print(AVS_PRINT_ERR, L"Input Peripheral Table Pointer is NULL. Cannot create Peripheral INFO \n");
+    sbsa_print(AVS_PRINT_ERR,
+               L" Input Peripheral Table Pointer is NULL. Cannot create Peripheral INFO \n");
     return;
   }
 
@@ -75,7 +76,7 @@ pal_peripheral_create_info_table(PERIPHERAL_INFO_TABLE *peripheralInfoTable)
           per_info->type  = PERIPHERAL_TYPE_USB;
           per_info->base0 = palPcieGetBase(DeviceBdf, BAR0);
           per_info->bdf   = DeviceBdf;
-          sbsa_print(AVS_PRINT_INFO, L"Found a USB controller %4x \n", per_info->base0);
+          sbsa_print(AVS_PRINT_INFO, L" Found a USB controller %4x \n", per_info->base0);
           peripheralInfoTable->header.num_usb++;
           per_info++;
        }
@@ -92,7 +93,7 @@ pal_peripheral_create_info_table(PERIPHERAL_INFO_TABLE *peripheralInfoTable)
           per_info->type  = PERIPHERAL_TYPE_SATA;
           per_info->base0 = palPcieGetBase(DeviceBdf, BAR0);
           per_info->bdf   = DeviceBdf;
-          sbsa_print(AVS_PRINT_INFO, L"Found a SATA controller %4x \n", per_info->base0);
+          sbsa_print(AVS_PRINT_INFO, L" Found a SATA controller %4x \n", per_info->base0);
           peripheralInfoTable->header.num_sata++;
           per_info++;
        }
@@ -222,7 +223,7 @@ pal_memory_create_info_table(MEMORY_INFO_TABLE *memoryInfoTable)
   UINT32                Index, i = 0;
 
   if (memoryInfoTable == NULL) {
-    sbsa_print(AVS_PRINT_ERR, L"Input Memory Table Pointer is NULL. Cannot create Memory INFO \n");
+    sbsa_print(AVS_PRINT_ERR, L" Input Memory Table Pointer is NULL. Cannot create Memory INFO \n");
     return;
   }
 
@@ -248,7 +249,7 @@ pal_memory_create_info_table(MEMORY_INFO_TABLE *memoryInfoTable)
   if (!EFI_ERROR (Status)) {
     MemoryMapPtr = MemoryMap;
     for (Index = 0; Index < (MemoryMapSize / DescriptorSize); Index++) {
-          sbsa_print(AVS_PRINT_INFO, L"Reserved region of type %d [0x%lX, 0x%lX]\n",
+          sbsa_print(AVS_PRINT_INFO, L" Reserved region of type %d [0x%lX, 0x%lX]\n",
             MemoryMapPtr->Type, (UINTN)MemoryMapPtr->PhysicalStart,
             (UINTN)(MemoryMapPtr->PhysicalStart + MemoryMapPtr->NumberOfPages * EFI_PAGE_SIZE));
       if (IsUefiMemory ((EFI_MEMORY_TYPE)MemoryMapPtr->Type)) {
@@ -268,7 +269,10 @@ pal_memory_create_info_table(MEMORY_INFO_TABLE *memoryInfoTable)
       memoryInfoTable->info[i].virt_addr = MemoryMapPtr->VirtualStart;
       memoryInfoTable->info[i].size      = (MemoryMapPtr->NumberOfPages * EFI_PAGE_SIZE);
       i++;
-
+      if (i >= MEM_INFO_TBL_MAX_ENTRY) {
+        sbsa_print(AVS_PRINT_DEBUG, L"Memory Info tbl limit exceeded, Skipping remaining\n", 0);
+        break;
+      }
       MemoryMapPtr = (EFI_MEMORY_DESCRIPTOR*)((UINTN)MemoryMapPtr + DescriptorSize);
     }
     memoryInfoTable->info[i].type      = MEMORY_TYPE_LAST_ENTRY;
@@ -316,7 +320,7 @@ pal_memory_get_unpopulated_addr(UINT64 *addr, UINT32 instance)
   Status = gDS->GetMemorySpaceMap(&NumberOfDescriptors, &MemorySpaceMap);
   if (Status != EFI_SUCCESS)
   {
-    sbsa_print(AVS_PRINT_ERR,L"Failed to get GCD memory with error: %x\n", Status);
+    sbsa_print(AVS_PRINT_ERR, L" Failed to get GCD memory with error: %x\n", Status);
     if (Status == EFI_NO_MAPPING)
     {
         return MEM_MAP_NO_MEM;
@@ -335,7 +339,7 @@ pal_memory_get_unpopulated_addr(UINT64 *addr, UINT32 instance)
         if (*addr == 0)
           continue;
 
-        sbsa_print(AVS_PRINT_INFO,L"Unpopulated region with base address 0x%lX found\n", *addr);
+        sbsa_print(AVS_PRINT_INFO, L" Unpopulated region with base address 0x%lX found\n", *addr);
         return MEM_MAP_SUCCESS;
       }
 

@@ -175,7 +175,7 @@ payload (void)
     e_bdf = val_exerciser_get_bdf(instance);
 
     /* Find SMMU node index for this exerciser instance */
-    smmu_index = val_iovirt_get_rc_smmu_index(PCIE_EXTRACT_BDF_SEG(e_bdf));
+    smmu_index = val_iovirt_get_rc_smmu_index(PCIE_EXTRACT_BDF_SEG(e_bdf), PCIE_CREATE_BDF_PACKED(e_bdf));
 
     /* Disable SMMU globally so that the transaction passes
      * through the SMMU without any address modification.

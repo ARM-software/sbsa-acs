@@ -19,7 +19,7 @@
 
 #define BITFIELD_DECL(type, name, msb, lsb) \
         const uint32_t name##_SHIFT = lsb; \
-        const type name##_MASK = ((((type)0x1) << (msb - lsb +1)) - 1);
+        const type name##_MASK = ((((type)0x1) << (msb - lsb + 1)) - 1);
 
 #define BITFIELD_GET(name, val) ((val >> name##_SHIFT) & name##_MASK)
 #define BITFIELD_SET(name, val) ((val & name##_MASK) << name##_SHIFT)

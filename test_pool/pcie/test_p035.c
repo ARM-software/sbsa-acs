@@ -38,7 +38,7 @@ uint32_t is_flr_failed(uint32_t bdf)
       val_pcie_read_cfg(bdf, TYPE01_BAR + (index * BAR_BASE_SHIFT), &reg_value);
       if ((reg_value >> BAR_BASE_SHIFT) != 0)
       {
-          val_print(AVS_PRINT_ERR, "\n BAR%d base addr not cleared", 0);
+          val_print(AVS_PRINT_ERR, "\n       BAR%d base addr not cleared", 0);
           check_failed++;
       }
   }
@@ -47,7 +47,7 @@ uint32_t is_flr_failed(uint32_t bdf)
   val_pcie_read_cfg(bdf, TYPE01_CR, &reg_value);
   if (((reg_value >> CR_BME_SHIFT) & CR_BME_MASK) != 0)
   {
-      val_print(AVS_PRINT_ERR, "\n BME is not cleared", 0);
+      val_print(AVS_PRINT_ERR, "\n       BME is not cleared", 0);
       check_failed++;
   }
 
@@ -55,7 +55,7 @@ uint32_t is_flr_failed(uint32_t bdf)
   val_pcie_read_cfg(bdf, TYPE01_CR, &reg_value);
   if (((reg_value >> CR_MSE_SHIFT) & CR_MSE_MASK) != 0)
   {
-      val_print(AVS_PRINT_ERR, "\n MSE is not cleared", 0);
+      val_print(AVS_PRINT_ERR, "\n       MSE is not cleared", 0);
       check_failed++;
   }
 
@@ -113,14 +113,14 @@ payload(void)
           /* If memory allocation fail, fail the test */
           if (func_config_space == NULL)
           {
-              val_print(AVS_PRINT_ERR, "\n Memory allocation fail", 0);
+              val_print(AVS_PRINT_ERR, "\n       Memory allocation fail", 0);
               val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, test_fails));
               return;
           }
 
           /* Get function configuration space address */
           config_space_addr = val_pcie_get_bdf_config_addr(bdf);
-          val_print(AVS_PRINT_INFO, "\n    BDF 0x%x ", bdf);
+          val_print(AVS_PRINT_INFO, "\n       BDF 0x%x ", bdf);
           val_print(AVS_PRINT_INFO, "config space addr 0x%x", config_space_addr);
 
           /* Save the function config space to restore after FLR */
@@ -137,7 +137,7 @@ payload(void)
           status = val_time_delay_ms(100 * ONE_MILLISECOND);
           if (!status)
           {
-              val_print(AVS_PRINT_ERR, "\n Failed to time delay for BDF 0x%x ", bdf);
+              val_print(AVS_PRINT_ERR, "\n       Failed to time delay for BDF 0x%x ", bdf);
               val_memory_free(func_config_space);
               val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
               return;
@@ -150,7 +150,7 @@ payload(void)
           val_pcie_read_cfg(bdf, 0, &reg_value);
           if ((reg_value & TYPE01_VIDR_MASK) == TYPE01_VIDR_MASK)
           {
-              val_print(AVS_PRINT_ERR, "\n BDF 0x%x not present", bdf);
+              val_print(AVS_PRINT_ERR, "\n       BDF 0x%x not present", bdf);
               test_fails++;
               val_memory_free(func_config_space);
               continue;

@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2020, 2021 Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2021, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -585,8 +585,8 @@ static uint32_t smmu_probe(smmu_dev_t *smmu)
     smmu->sid_bits = BITFIELD_GET(IDR1_SIDSIZE, data);
     smmu->ssid_bits = BITFIELD_GET(IDR1_SSIDSIZE, data);
 
-    val_print(AVS_PRINT_INFO, "ssid_bits = %d\n", smmu->ssid_bits);
-    val_print(AVS_PRINT_INFO, "sid_bits = %d\n", smmu->sid_bits);
+    val_print(AVS_PRINT_INFO, " ssid_bits = %d", smmu->ssid_bits);
+    val_print(AVS_PRINT_INFO, " sid_bits = %d\n", smmu->sid_bits);
 
     if (smmu->sid_bits <= STRTAB_SPLIT)
         smmu->supported.st_level_2lvl = 0;
@@ -601,8 +601,8 @@ static uint32_t smmu_probe(smmu_dev_t *smmu)
     smmu->oas = smmu_oas[BITFIELD_GET(IDR5_OAS, data)];
     smmu->ias = get_max(smmu->ias, smmu->oas);
 
-    val_print(AVS_PRINT_INFO, "ias %d-bit ", smmu->ias);
-    val_print(AVS_PRINT_INFO, "oas %d-bit ", smmu->oas);
+    val_print(AVS_PRINT_INFO, " ias %d-bit ", smmu->ias);
+    val_print(AVS_PRINT_INFO, "oas %d-bit\n", smmu->oas);
 
     return 1;
 }

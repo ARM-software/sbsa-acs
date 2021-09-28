@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2018-2019, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2018-2019, 2021 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -70,7 +70,7 @@ pal_timer_create_info_table(TIMER_INFO_TABLE *TimerTable)
   UINT32                      num_of_entries;
 
   if (TimerTable == NULL) {
-    sbsa_print(AVS_PRINT_ERR, L"Input Timer Table Pointer is NULL. Cannot create Timer INFO \n");
+    sbsa_print(AVS_PRINT_ERR, L" Input Timer Table Pointer is NULL. Cannot create Timer INFO \n");
     return;
   }
 
@@ -80,7 +80,7 @@ pal_timer_create_info_table(TIMER_INFO_TABLE *TimerTable)
   gGtdtHdr = (EFI_ACPI_6_1_GENERIC_TIMER_DESCRIPTION_TABLE *) pal_get_gtdt_ptr();
 
   if (gGtdtHdr == NULL) {
-    sbsa_print(AVS_PRINT_ERR, L"GTDT not found \n");
+    sbsa_print(AVS_PRINT_ERR, L" GTDT not found \n");
     return;
   }
   sbsa_print(AVS_PRINT_INFO, L" GTDT is at %x and length is %x \n", gGtdtHdr, gGtdtHdr->Header.Length);
@@ -103,21 +103,22 @@ pal_timer_create_info_table(TIMER_INFO_TABLE *TimerTable)
   while(num_of_entries) {
 
     if (Entry->Type == EFI_ACPI_6_1_GTDT_GT_BLOCK) {
-      sbsa_print(AVS_PRINT_INFO, L"Found block entry \n");
+      sbsa_print(AVS_PRINT_INFO, L" Found block entry \n");
       GtEntry->type = TIMER_TYPE_SYS_TIMER;
       GtEntry->block_cntl_base = Entry->CntCtlBase;
       GtEntry->timer_count     = Entry->GTBlockTimerCount;
-      sbsa_print(AVS_PRINT_DEBUG, L"CNTCTLBase = %x \n", GtEntry->block_cntl_base);
+      sbsa_print(AVS_PRINT_DEBUG, L" CNTCTLBase = %x \n", GtEntry->block_cntl_base);
       GtBlockTimer = (EFI_ACPI_6_1_GTDT_GT_BLOCK_TIMER_STRUCTURE *)(((UINT8 *)Entry) + Entry->GTBlockTimerOffset);
       for (i = 0; i < GtEntry->timer_count; i++) {
-        sbsa_print(AVS_PRINT_INFO, L"Found timer entry \n");
+        sbsa_print(AVS_PRINT_INFO, L" Found timer entry \n");
         GtEntry->frame_num[i]    = GtBlockTimer->GTFrameNumber;
         GtEntry->GtCntBase[i]    = GtBlockTimer->CntBaseX;
         GtEntry->GtCntEl0Base[i] = GtBlockTimer->CntEL0BaseX;
         GtEntry->gsiv[i]         = GtBlockTimer->GTxPhysicalTimerGSIV;
         GtEntry->virt_gsiv[i]    = GtBlockTimer->GTxVirtualTimerGSIV;
         GtEntry->flags[i]        = GtBlockTimer->GTxPhysicalTimerFlags | (GtBlockTimer->GTxVirtualTimerFlags << 8) | (GtBlockTimer->GTxCommonFlags << 16);
-        sbsa_print(AVS_PRINT_DEBUG, L"CNTBaseN = %x for sys counter = %d\n", GtEntry->GtCntBase[i], i);
+        sbsa_print(AVS_PRINT_DEBUG,
+                   L" CNTBaseN = %x for sys counter = %d\n", GtEntry->GtCntBase[i], i);
         GtBlockTimer++;
         TimerTable->header.num_platform_timer++;
       }
@@ -172,7 +173,8 @@ pal_wd_create_info_table(WD_INFO_TABLE *WdTable)
   UINT32                      num_of_entries;
 
   if (WdTable == NULL) {
-    sbsa_print(AVS_PRINT_ERR, L"Input Watchdog Table Pointer is NULL. Cannot create Watchdog INFO \n");
+    sbsa_print(AVS_PRINT_ERR,
+               L" Input Watchdog Table Pointer is NULL. Cannot create Watchdog INFO \n");
     return;
   }
 
@@ -181,7 +183,7 @@ pal_wd_create_info_table(WD_INFO_TABLE *WdTable)
   gGtdtHdr = (EFI_ACPI_6_1_GENERIC_TIMER_DESCRIPTION_TABLE *) pal_get_gtdt_ptr();
 
   if (gGtdtHdr == NULL) {
-    sbsa_print(AVS_PRINT_ERR, L"GTDT not found \n");
+    sbsa_print(AVS_PRINT_ERR, L" GTDT not found \n");
     return;
   }
 
@@ -203,7 +205,9 @@ pal_wd_create_info_table(WD_INFO_TABLE *WdTable)
       WdEntry->wd_gsiv         = Entry->WatchdogTimerGSIV;
       WdEntry->wd_flags        = Entry->WatchdogTimerFlags;
       WdTable->header.num_wd++;
-      sbsa_print(AVS_PRINT_DEBUG, L"Watchdog base = 0x%x INTID = 0x%x \n", WdEntry->wd_ctrl_base, WdEntry->wd_gsiv);
+      sbsa_print(AVS_PRINT_DEBUG,
+                 L" Watchdog base = 0x%x INTID = 0x%x \n", WdEntry->wd_ctrl_base,
+                 WdEntry->wd_gsiv);
       WdEntry++;
     }
     Entry = (EFI_ACPI_6_1_GTDT_SBSA_GENERIC_WATCHDOG_STRUCTURE *) ((UINT8 *)Entry + (Entry->Length));

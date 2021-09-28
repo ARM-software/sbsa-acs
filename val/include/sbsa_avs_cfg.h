@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018, 2021 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,7 +18,11 @@
 #ifndef __SBSA_AVS_CFG_H__
 #define __SBSA_AVS_CFG_H__
 
+#ifndef TARGET_LINUX
+#define MAX_TEST_SKIP_NUM  9
+#else
 #define MAX_TEST_SKIP_NUM  3
+#endif
 
 extern uint32_t g_sbsa_level;
 extern uint32_t g_print_level;
@@ -30,5 +34,6 @@ extern uint32_t g_sbsa_tests_fail;
 extern uint64_t g_stack_pointer;
 extern uint64_t g_exception_ret_addr;
 extern uint64_t g_ret_addr;
+extern uint32_t g_curr_module;
 
 #endif

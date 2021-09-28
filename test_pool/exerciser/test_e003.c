@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2018-2020, 2021 Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2018-2021, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -150,7 +150,7 @@ payload(void)
     e_bdf = val_exerciser_get_bdf(instance);
 
     /* Get SMMU node index for this exerciser instance */
-    master.smmu_index = val_iovirt_get_rc_smmu_index(PCIE_EXTRACT_BDF_SEG(e_bdf));
+    master.smmu_index = val_iovirt_get_rc_smmu_index(PCIE_EXTRACT_BDF_SEG(e_bdf), PCIE_CREATE_BDF_PACKED(e_bdf));
 
     clear_dram_buf(dram_buf_in_virt, test_data_blk_size);
 
@@ -243,7 +243,7 @@ test_clean:
   for (instance = 0; instance < num_exercisers; ++instance)
   {
     e_bdf = val_exerciser_get_bdf(instance);
-    master.smmu_index = val_iovirt_get_rc_smmu_index(PCIE_EXTRACT_BDF_SEG(e_bdf));
+    master.smmu_index = val_iovirt_get_rc_smmu_index(PCIE_EXTRACT_BDF_SEG(e_bdf), PCIE_CREATE_BDF_PACKED(e_bdf));
     if (val_iovirt_get_device_info(PCIE_CREATE_BDF_PACKED(e_bdf),
                                    PCIE_EXTRACT_BDF_SEG(e_bdf),
                                    &device_id, &master.streamid,

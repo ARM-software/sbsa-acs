@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018, 2021 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,7 +22,8 @@
 #include "val/include/sbsa_avs_gic.h"
 
 #define TEST_NUM   (AVS_PER_TEST_NUM_BASE + 3)
-#define TEST_DESC  "Check SBSA UART register offsets  "
+/*one space character is removed from TEST_DESC, to nullify a space written as part of the test */
+#define TEST_DESC  "Check SBSA UART register offsets "
 #define TEST_NUM2  (AVS_PER_TEST_NUM_BASE + 4)
 #define TEST_DESC1 "Check GENERIC UART Interrupt      "
 
@@ -97,7 +98,7 @@ isr()
 {
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
   uart_disable_txintr();
-  val_print(AVS_PRINT_DEBUG, "\n      Received interrupt      ", 0);
+  val_print(AVS_PRINT_DEBUG, "\n       Received interrupt      ", 0);
   val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 0x01));
   val_gic_end_of_interrupt(int_id);
 }
@@ -147,10 +148,10 @@ payload()
 
   uint32_t count = val_peripheral_get_info(NUM_UART, 0);
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
-  uint32_t data;
+  uint32_t data1, data2;
 
   if (count == 0) {
-      val_print(AVS_PRINT_WARN, "\n        No UART defined by Platform      ", 0);
+      val_print(AVS_PRINT_WARN, "\n       No UART defined by Platform      ", 0);
       val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
       return;
   }
@@ -175,11 +176,14 @@ payload()
           return;
 
       /* Check bits 11:8 in the UARTDR reg are read-only */
-      data = uart_reg_read(SBSA_UARTDR, WIDTH_BIT32);
-      uart_reg_write(SBSA_UARTDR, WIDTH_BIT32, data | 0x0F00);
-      data = (data >> 8) & 0x0F;
-      if (data != ((uart_reg_read(SBSA_UARTDR, WIDTH_BIT32)>>8) & 0x0F)) {
-          val_print(AVS_PRINT_ERR, "\n     UARTDR Bits 11:8 are not Read Only", 0);
+      data1 = uart_reg_read(SBSA_UARTDR, WIDTH_BIT32);
+      /* Negating bits 11:8 and writing space character (0x20) to UART data register */
+      data2 = data1 ^ 0x0F00 ;
+      data2 = (data2 & (~0xFF)) | 0x20;
+      uart_reg_write(SBSA_UARTDR, WIDTH_BIT32, data2);
+      data1 = (data1 >> 8) & 0x0F;
+      if (data1 != ((uart_reg_read(SBSA_UARTDR, WIDTH_BIT32)>>8) & 0x0F)) {
+          val_print(AVS_PRINT_ERR, "\n       UARTDR Bits 11:8 are not Read Only", 0);
           val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, SBSA_UARTDR));
           return;
       }
@@ -219,7 +223,8 @@ payload1()
           while ((--timeout > 0) && (IS_RESULT_PENDING(val_get_status(index))));
 
           if (timeout == 0) {
-              val_print(AVS_PRINT_ERR, "\n     Did not receive UART interrupt on %d  ", int_id);
+              val_print(AVS_PRINT_ERR,
+                        "\n       Did not receive UART interrupt on %d  ", int_id);
               val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM2, 02));
               return;
           }
@@ -251,6 +256,7 @@ d003_entry(uint32_t num_pe)
 
   /* get the result from all PE and check for failure */
   status = val_check_for_error(TEST_NUM, num_pe);
+  val_report_status(0, SBSA_AVS_END(g_sbsa_level, TEST_NUM));
 
   if (!status) {
       status = val_initialize_test(TEST_NUM2, TEST_DESC1, val_pe_get_num(), g_sbsa_level);
@@ -259,9 +265,9 @@ d003_entry(uint32_t num_pe)
 
       /* get the result from all PE and check for failure */
       status = val_check_for_error(TEST_NUM2, num_pe);
+      val_report_status(0, SBSA_AVS_END(g_sbsa_level, TEST_NUM2));
   }
 
-  val_report_status(0, SBSA_AVS_END(g_sbsa_level, TEST_NUM));
 
   return status;
 }

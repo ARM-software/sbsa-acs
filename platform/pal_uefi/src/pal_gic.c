@@ -56,7 +56,7 @@ pal_gic_create_info_table(GIC_INFO_TABLE *GicTable)
   UINT32                         TableLength;
 
   if (GicTable == NULL) {
-    sbsa_print(AVS_PRINT_ERR, L"Input GIC Table Pointer is NULL. Cannot create GIC INFO \n");
+    sbsa_print(AVS_PRINT_ERR, L" Input GIC Table Pointer is NULL. Cannot create GIC INFO \n");
     return;
   }
 
@@ -86,7 +86,7 @@ pal_gic_create_info_table(GIC_INFO_TABLE *GicTable)
       if (Entry->PhysicalBaseAddress != 0) {
         GicEntry->type = ENTRY_TYPE_CPUIF;
         GicEntry->base = Entry->PhysicalBaseAddress;
-        sbsa_print(AVS_PRINT_INFO, L"GIC CPUIF base %x \n", GicEntry->base);
+        sbsa_print(AVS_PRINT_INFO, L" GIC CPUIF base %x \n", GicEntry->base);
         GicEntry++;
       }
 
@@ -94,8 +94,16 @@ pal_gic_create_info_table(GIC_INFO_TABLE *GicTable)
         GicEntry->type = ENTRY_TYPE_GICC_GICRD;
         GicEntry->base = Entry->GICRBaseAddress;
         GicEntry->length = 0;
-        sbsa_print(AVS_PRINT_INFO, L"GIC RD base %x \n", GicEntry->base);
+        sbsa_print(AVS_PRINT_INFO, L" GIC RD base %x \n", GicEntry->base);
         GicTable->header.num_gicrd++;
+        GicEntry++;
+      }
+
+      if (Entry->GICH != 0) {
+        GicEntry->type = ENTRY_TYPE_GICH;
+        GicEntry->base = Entry->GICH;
+        GicEntry->length = 0;
+        sbsa_print(AVS_PRINT_INFO, L" GICH base %x \n", GicEntry->base);
         GicEntry++;
       }
     }
@@ -104,7 +112,7 @@ pal_gic_create_info_table(GIC_INFO_TABLE *GicTable)
         GicEntry->type = ENTRY_TYPE_GICD;
         GicEntry->base = ((EFI_ACPI_6_1_GIC_DISTRIBUTOR_STRUCTURE *)Entry)->PhysicalBaseAddress;
         GicTable->header.gic_version = ((EFI_ACPI_6_1_GIC_DISTRIBUTOR_STRUCTURE *)Entry)->GicVersion;
-        sbsa_print(AVS_PRINT_INFO, L"GIC DIS base %x \n", GicEntry->base);
+        sbsa_print(AVS_PRINT_INFO, L" GIC DIS base %x \n", GicEntry->base);
         GicTable->header.num_gicd++;
         GicEntry++;
     }
@@ -113,7 +121,7 @@ pal_gic_create_info_table(GIC_INFO_TABLE *GicTable)
         GicEntry->type = ENTRY_TYPE_GICR_GICRD;
         GicEntry->base = ((EFI_ACPI_6_1_GICR_STRUCTURE *)Entry)->DiscoveryRangeBaseAddress;
         GicEntry->length = ((EFI_ACPI_6_1_GICR_STRUCTURE *)Entry)->DiscoveryRangeLength;
-        sbsa_print(AVS_PRINT_INFO, L"GIC RD base Structure %x \n", GicEntry->base);
+        sbsa_print(AVS_PRINT_INFO, L" GIC RD base Structure %x \n", GicEntry->base);
         GicTable->header.num_gicrd++;
         GicEntry++;
     }
@@ -121,10 +129,24 @@ pal_gic_create_info_table(GIC_INFO_TABLE *GicTable)
     if (Entry->Type == EFI_ACPI_6_1_GIC_ITS) {
         GicEntry->type = ENTRY_TYPE_GICITS;
         GicEntry->base = ((EFI_ACPI_6_1_GIC_ITS_STRUCTURE *)Entry)->PhysicalBaseAddress;
-        GicEntry->its_id = ((EFI_ACPI_6_1_GIC_ITS_STRUCTURE *)Entry)->GicItsId;
-        sbsa_print(AVS_PRINT_INFO, L"GIC ITS base %x \n", GicEntry->base);
-        sbsa_print(AVS_PRINT_INFO, L"GIC ITS ID%x \n", GicEntry->its_id);
+        GicEntry->entry_id = ((EFI_ACPI_6_1_GIC_ITS_STRUCTURE *)Entry)->GicItsId;
+        sbsa_print(AVS_PRINT_INFO, L" GIC ITS base %x \n", GicEntry->base);
+        sbsa_print(AVS_PRINT_INFO, L" GIC ITS ID%x \n", GicEntry->entry_id);
         GicTable->header.num_its++;
+        GicEntry++;
+    }
+
+    if (Entry->Type == EFI_ACPI_6_1_GIC_MSI_FRAME) {
+        GicEntry->type = ENTRY_TYPE_GIC_MSI_FRAME;
+        GicEntry->base = ((EFI_ACPI_6_1_GIC_MSI_FRAME_STRUCTURE *)Entry)->PhysicalBaseAddress;
+        GicEntry->entry_id = ((EFI_ACPI_6_1_GIC_MSI_FRAME_STRUCTURE *)Entry)->GicMsiFrameId;
+        GicEntry->flags = ((EFI_ACPI_6_1_GIC_MSI_FRAME_STRUCTURE *)Entry)->Flags;
+        GicEntry->spi_count = ((EFI_ACPI_6_1_GIC_MSI_FRAME_STRUCTURE *)Entry)->SPICount;
+        GicEntry->spi_base = ((EFI_ACPI_6_1_GIC_MSI_FRAME_STRUCTURE *)Entry)->SPIBase;
+        sbsa_print(AVS_PRINT_INFO, L" GIC MSI Frame base %x \n", GicEntry->base);
+        sbsa_print(AVS_PRINT_INFO, L" GIC MSI SPI base %x \n", GicEntry->spi_base);
+        sbsa_print(AVS_PRINT_INFO, L" GIC MSI SPI Count %x \n", GicEntry->spi_count);
+        GicTable->header.num_msi_frame++;
         GicEntry++;
     }
     Length += Entry->Length;
@@ -221,7 +243,7 @@ pal_gic_set_intr_trigger(UINT32 int_id, INTR_TRIGGER_INFO_TYPE_e trigger_type)
   Status = gInterrupt2->SetTriggerType (
                    gInterrupt2,
                    int_id,
-                   trigger_type
+                   (EFI_HARDWARE_INTERRUPT2_TRIGGER_TYPE)trigger_type
                    );
 
   if (EFI_ERROR(Status))
@@ -230,9 +252,15 @@ pal_gic_set_intr_trigger(UINT32 int_id, INTR_TRIGGER_INFO_TYPE_e trigger_type)
   return 0;
 }
 
-/* Place holder function. Need to be
- * implemented if needed in later releases
- */
+/** Place holder function. Need to be implemented if needed in later releases
+  @brief Registers the interrupt handler for a given IRQ
+
+  @param IrqNum Hardware IRQ number
+  @param MappedIrqNum Mapped IRQ number
+  @param Isr Interrupt Service Routine that returns the status
+
+  @return Status of the operation
+**/
 UINT32
 pal_gic_request_irq (
   UINT32 IrqNum,

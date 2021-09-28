@@ -96,7 +96,6 @@ uint32_t pal_exerciser_set_param(EXERCISER_PARAM_TYPE Type, uint64_t Value1, uin
   * Only for FVP OOB experience
   */
 
-  uint32_t Status;
   uint32_t Data;
   uint64_t Base;
 
@@ -113,9 +112,7 @@ uint32_t pal_exerciser_set_param(EXERCISER_PARAM_TYPE Type, uint64_t Value1, uin
       case DMA_ATTRIBUTES:
           pal_mmio_write(Base + DMA_BUS_ADDR,Value1);// wrting into the DMA Control Register 2
           pal_mmio_write(Base + DMA_LEN,Value2);// writing into the DMA Control Register 3
-          Data = pal_mmio_read(Base + DMASTATUS);// Reading the DMA status register
-          Status = Data & ((MASK_BIT << 1) | MASK_BIT);
-          return Status;
+          return 0; 
 
       case P2P_ATTRIBUTES:
           return 0;
@@ -135,9 +132,38 @@ uint32_t pal_exerciser_set_param(EXERCISER_PARAM_TYPE Type, uint64_t Value1, uin
 
             case TXN_REQ_ID:
                 /* Change Requester ID for DMA Transaction.*/
+                Data = (Value2 & RID_VALUE_MASK) | RID_VALID_MASK;
+                pal_mmio_write(Base + RID_CTL_REG, Data);
                 return 0;
+            case TXN_REQ_ID_VALID:
+                switch (Value2)
+                {
+                    case RID_VALID:
+                        Data = pal_mmio_read(Base + RID_CTL_REG);
+                        Data |= RID_VALID_MASK;
+                        pal_mmio_write(Base + RID_CTL_REG, Data);
+                        return 0;
+                    case RID_NOT_VALID:
+                        pal_mmio_write(Base + RID_CTL_REG, 0);
+                        return 0;
+                }
             case TXN_ADDR_TYPE:
                 /* Change Address Type for DMA Transaction.*/
+                switch (Value2)
+                {
+                    case AT_UNTRANSLATED:
+                        Data = 0x1;
+                        pal_mmio_write(Base + DMACTL1, pal_mmio_read(Base + DMACTL1) | (Data << 10));
+                        break;
+                    case AT_TRANSLATED:
+                        Data = 0x2;
+                        pal_mmio_write(Base + DMACTL1, pal_mmio_read(Base + DMACTL1) | (Data << 10));
+                        break;
+                    case AT_RESERVED:
+                        Data = 0x3;
+                        pal_mmio_write(Base + DMACTL1, pal_mmio_read(Base + DMACTL1) | (Data << 10));
+                        break;
+                }
                 return 0;
             default:
                 return 1;
@@ -275,6 +301,9 @@ uint32_t pal_exerciser_get_param(EXERCISER_PARAM_TYPE Type, uint64_t *Value1, ui
       case MSIX_ATTRIBUTES:
           *Value1 = pal_mmio_read(Base + MSICTL);
           return pal_mmio_read(Base + MSICTL) | MASK_BIT;
+      case ATS_RES_ATTRIBUTES:
+          *Value1 = pal_mmio_read(Base + ATS_ADDR);
+          return 0;
       default:
           return 1;
   }
@@ -363,9 +392,10 @@ uint32_t pal_exerciser_ops(EXERCISER_OPS Ops, uint64_t Param, uint32_t Bdf)
 
     case PASID_TLP_START:
         data = pal_mmio_read(Base + DMACTL1);
-        data &= ~(PASID_VAL_MASK << PASID_VAL_SHIFT);
-        data |= (MASK_BIT << 6) | ((Param & PASID_VAL_MASK) << PASID_VAL_SHIFT);
+        data |= (MASK_BIT << PASID_EN_SHIFT);
         pal_mmio_write(Base + DMACTL1, data);
+        data = ((Param & PASID_VAL_MASK));
+        pal_mmio_write(Base + PASID_VAL, data);
 
         if (!pal_exerciser_find_pcie_capability(PASID, Bdf, PCIE, &CapabilityOffset)) {
             pal_mmio_write(Ecam + pal_exerciser_get_pcie_config_offset(Bdf) + CapabilityOffset + PCIE_CAP_CTRL_OFFSET,
@@ -392,12 +422,19 @@ uint32_t pal_exerciser_ops(EXERCISER_OPS Ops, uint64_t Param, uint32_t Bdf)
         pal_mmio_write(Base + DMACTL1, (pal_mmio_read(Base + DMACTL1)) & NO_SNOOP_STOP_MASK);//disabling the NO SNOOP
         return 0;
 
+    case ATS_TXN_REQ:
+        pal_mmio_write(Base + DMA_BUS_ADDR, Param);
+        pal_mmio_write(Base + ATSCTL, ATS_TRIGGER);
+        return !(pal_mmio_read(Base + ATSCTL) & ATS_STATUS);
+
     default:
-        return 1;
+        return PCIE_CAP_NOT_FOUND;;
   }
 #endif
   return 1;
 }
+
+
 
 /**
   @brief   This API sets the state of the PCIe stimulus generation hardware
@@ -441,7 +478,7 @@ uint32_t pal_exerciser_get_data(EXERCISER_DATA_TYPE Type, exerciser_data_t *Data
           for (Index = 0; Index < TEST_REG_COUNT; Index++) {
               Data->cfg_space.reg[Index].offset = (offset_table[Index] + pal_exerciser_get_pcie_config_offset (Bdf));
               Data->cfg_space.reg[Index].attribute = attr_table[Index];
-              Data->cfg_space.reg[Index].value = pal_mmio_read(EcamBase +  offset_table[Index]);
+              Data->cfg_space.reg[Index].value = pal_mmio_read(EcamBase + offset_table[Index]);
           }
           return 0;
       case EXERCISER_DATA_BAR0_SPACE:

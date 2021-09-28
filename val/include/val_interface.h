@@ -66,15 +66,21 @@ void     val_suspend_pe(uint32_t power_state, uint64_t entry, uint32_t context_i
 
 /* GIC VAL APIs */
 uint32_t    val_gic_create_info_table(uint64_t *gic_info_table);
+
 typedef enum {
   GIC_INFO_VERSION=1,
   GIC_INFO_SEC_STATES,
+  GIC_INFO_AFFINITY_NS,
+  GIC_INFO_ENABLE_GROUP1NS,
+  GIC_INFO_SGI_NON_SECURE,
+  GIC_INFO_SGI_NON_SECURE_LEGACY,
   GIC_INFO_DIST_BASE,
   GIC_INFO_CITF_BASE,
   GIC_INFO_NUM_RDIST,
   GIC_INFO_RDIST_BASE,
   GIC_INFO_NUM_ITS,
-  GIC_INFO_ITS_BASE
+  GIC_INFO_ITS_BASE,
+  GIC_INFO_NUM_MSI_FRAME
 }GIC_INFO_e;
 
 uint32_t
@@ -92,8 +98,11 @@ void val_gic_free_irq(uint32_t irq_num, uint32_t mapped_irq_num);
 void val_gic_set_intr_trigger(uint32_t int_id, INTR_TRIGGER_INFO_TYPE_e trigger_type);
 uint32_t val_gic_get_intr_trigger_type(uint32_t int_id, INTR_TRIGGER_INFO_TYPE_e *trigger_type);
 uint32_t val_gic_its_configure(void);
-uint32_t val_gic_request_msi(uint32_t bdf, uint32_t IntID, uint32_t msi_index);
-void val_gic_free_msi(uint32_t bdf, uint32_t IntID, uint32_t msi_index);
+uint32_t val_gic_request_msi(uint32_t bdf, uint32_t device_id, uint32_t its_id,
+                             uint32_t int_id, uint32_t msi_index);
+void val_gic_free_msi(uint32_t bdf, uint32_t device_id, uint32_t its_id,
+                      uint32_t int_id, uint32_t msi_index);
+uint32_t val_gic_its_get_base(uint32_t its_id, uint64_t *its_base);
 
 /*TIMER VAL APIs */
 typedef enum {
@@ -170,6 +179,7 @@ void val_pcie_disable_bme(uint32_t bdf);
 void val_pcie_enable_bme(uint32_t bdf);
 void val_pcie_disable_msa(uint32_t bdf);
 void val_pcie_enable_msa(uint32_t bdf);
+uint32_t val_pcie_is_msa_enabled(uint32_t bdf);
 void val_pcie_clear_urd(uint32_t bdf);
 uint32_t val_pcie_is_urd(uint32_t bdf);
 void val_pcie_disable_eru(uint32_t bdf);
@@ -220,7 +230,7 @@ typedef enum {
 
 void     val_iovirt_create_info_table(uint64_t *iovirt_info_table);
 void     val_iovirt_free_info_table(void);
-uint32_t val_iovirt_get_rc_smmu_index(uint32_t rc_seg_num);
+uint32_t val_iovirt_get_rc_smmu_index(uint32_t rc_seg_num, uint32_t rid);
 uint32_t val_smmu_execute_tests(uint32_t level, uint32_t num_pe);
 uint64_t val_smmu_get_info(SMMU_INFO_e, uint32_t index);
 

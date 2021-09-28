@@ -72,6 +72,7 @@ val_smmu_execute_tests(uint32_t level, uint32_t num_pe)
     return AVS_STATUS_SKIP;
   }
 
+  g_curr_module = 1 << SMMU_MODULE;
   status = i001_entry(num_pe);
   status |= i002_entry(num_pe);
   status |= i003_entry(num_pe);
@@ -158,7 +159,7 @@ val_smmu_check_device_iova(uint32_t ctrl_index, addr_t dma_addr)
       val_print(AVS_PRINT_ERR, "Invalid Controller index %d \n", ctrl_index);
       return AVS_STATUS_ERR;
   }
-  val_print(AVS_PRINT_DEBUG, "Input dma addr = %lx \n", dma_addr);
+  val_print(AVS_PRINT_DEBUG, "Input dma addr = %llx \n", dma_addr);
 
   status = pal_smmu_check_device_iova(ap, dma_addr);
 
