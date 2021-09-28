@@ -142,7 +142,6 @@
   ../test_pool/peripherals/test_d001.c
   ../test_pool/peripherals/test_d002.c
   ../test_pool/peripherals/test_d003.c
-  ../test_pool/peripherals/test_m001.c
   ../test_pool/exerciser/test_e001.c
   ../test_pool/exerciser/test_e002.c
   ../test_pool/exerciser/test_e003.c
@@ -158,6 +157,7 @@
   ../test_pool/exerciser/test_e013.c
   ../test_pool/exerciser/test_e014.c
   ../test_pool/exerciser/test_e015.c
+  ../test_pool/exerciser/test_e016.c
 
 [Packages]
   StdLib/StdLib.dec

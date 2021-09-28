@@ -53,30 +53,34 @@ dump_block(IOVIRT_BLOCK *block) {
   NODE_DATA_MAP *map = &block->data_map[0];
   switch(block->type) {
       case IOVIRT_NODE_ITS_GROUP:
-      sbsa_print(AVS_PRINT_INFO, L"\nITS Group:\n Num ITS:%d\n", (*map).id[0]);
+      sbsa_print(AVS_PRINT_INFO, L"\n ITS Group: Num ITS:%d\n", (*map).id[0]);
       for(i = 0; i < block->data.its_count; i++)
-          sbsa_print(AVS_PRINT_INFO, L"%d ", (*map).id[i]);
-      sbsa_print(AVS_PRINT_INFO, L"\n");
+          sbsa_print(AVS_PRINT_INFO, L"  ITS ID : %d\n", (*map).id[i]);
       return;
       case IOVIRT_NODE_NAMED_COMPONENT:
-      sbsa_print(AVS_PRINT_INFO, L"\nNamed Component:\n Device Name:%a\n", block->data.name);
+      sbsa_print(AVS_PRINT_INFO,
+                 L" Named Component: Device Name:%a\n", block->data.name);
       break;
       case IOVIRT_NODE_PCI_ROOT_COMPLEX:
-      sbsa_print(AVS_PRINT_INFO, L"\nRoot Complex:\n PCI segment number:%d\n", block->data.rc.segment);
+      sbsa_print(AVS_PRINT_INFO,
+                 L" Root Complex: PCI segment number:%d\n", block->data.rc.segment);
       break;
       case IOVIRT_NODE_SMMU:
       case IOVIRT_NODE_SMMU_V3:
-      sbsa_print(AVS_PRINT_INFO, L"\nSMMU:\n Major Rev:%d\n Base Address:0x%x\n",
+      sbsa_print(AVS_PRINT_INFO, L" SMMU: Major Rev:%d Base Address:0x%x\n",
                  block->data.smmu.arch_major_rev, block->data.smmu.base);
       break;
       case IOVIRT_NODE_PMCG:
-      sbsa_print(AVS_PRINT_INFO, L"\nPMCG:\n Base:0x%x\n Overflow GSIV:0x%x\n Node Reference:0x%x\n",
+      sbsa_print(AVS_PRINT_INFO,
+                 L" PMCG: Base:0x%x\n Overflow GSIV:0x%x Node Reference:0x%x\n",
                  block->data.pmcg.base, block->data.pmcg.overflow_gsiv, block->data.pmcg.node_ref);
       break;
   }
-  sbsa_print(AVS_PRINT_INFO, L"Number of ID Mappings:%d\n", block->num_data_map);
+  sbsa_print(AVS_PRINT_INFO,
+             L" Number of ID Mappings:%d\n", block->num_data_map);
   for(i = 0; i < block->num_data_map; i++, map++) {
-      sbsa_print(AVS_PRINT_INFO, L"\n input_base:0x%x\n id_count:0x%x\n output_base:0x%x\n output ref:0x%x\n",
+      sbsa_print(AVS_PRINT_INFO,
+                 L"  input_base:0x%x id_count:0x%x\n  output_base:0x%x output ref:0x%x\n",
             (*map).map.input_base, (*map).map.id_count,
             (*map).map.output_base, (*map).map.output_ref);
   }
@@ -100,7 +104,7 @@ dump_iort_table(IOVIRT_INFO_TABLE *iovirt)
 {
   UINT32 i;
   IOVIRT_BLOCK *block = &iovirt->blocks[0];
-  sbsa_print(AVS_PRINT_INFO, L"Number of IOVIRT blocks = %d\n", iovirt->num_blocks);
+  sbsa_print(AVS_PRINT_INFO, L" Number of IOVIRT blocks = %d\n", iovirt->num_blocks);
   for(i = 0; i < iovirt->num_blocks; i++, block = IOVIRT_NEXT_BLOCK(block))
     dump_block(block);
 }
@@ -156,13 +160,13 @@ check_mapping_overlap(IOVIRT_INFO_TABLE *iovirt)
             if(tmp->type == IOVIRT_NODE_ITS_GROUP) {
                key_block->flags |= (1 << IOVIRT_FLAG_DEVID_OVERLAP_SHIFT);
                block->flags |= (1 << IOVIRT_FLAG_DEVID_OVERLAP_SHIFT);
-               sbsa_print(AVS_PRINT_INFO, L"\nOverlapping device ids %x-%x and %x-%x \n",
+               sbsa_print(AVS_PRINT_INFO, L"\n Overlapping device ids %x-%x and %x-%x \n",
                           key_start, key_end, start, end);
             }
             else {
                key_block->flags |= (1 << IOVIRT_FLAG_STRID_OVERLAP_SHIFT);
                block->flags |= (1 << IOVIRT_FLAG_STRID_OVERLAP_SHIFT);
-               sbsa_print(AVS_PRINT_INFO, L"\nOverlapping stream ids %x-%x and %x-%x \n",
+               sbsa_print(AVS_PRINT_INFO, L"\n Overlapping stream ids %x-%x and %x-%x \n",
                           key_start, key_end, start, end);
             }
           }
@@ -226,7 +230,9 @@ iort_add_block(IORT_TABLE *iort, IORT_NODE *iort_node, IOVIRT_INFO_TABLE *IoVirt
   NODE_DATA *data = &((*block)->data);
   VOID *node_data = &(iort_node->node_data[0]);
 
-  sbsa_print(AVS_PRINT_INFO, L"IORT node offset:%x, type: %d\n", (UINT8*)iort_node - (UINT8*)iort, iort_node->type);
+  sbsa_print(AVS_PRINT_INFO,
+             L" IORT node offset:%x, type: %d\n", (UINT8 *)iort_node - (UINT8 *)iort,
+             iort_node->type);
 
   SetMem(data, sizeof(NODE_DATA), 0);
 
@@ -277,7 +283,7 @@ iort_add_block(IORT_TABLE *iort, IORT_NODE *iort_node, IOVIRT_INFO_TABLE *IoVirt
       count = &IoVirtTable->num_pmcgs;
       break;
     default:
-       sbsa_print(AVS_PRINT_ERR, L"Invalid IORT node type\n");
+       sbsa_print(AVS_PRINT_ERR, L" Invalid IORT node type\n");
        return (UINT32) -1;
   }
 
@@ -387,7 +393,7 @@ pal_iovirt_create_info_table(IOVIRT_INFO_TABLE *IoVirtTable)
   /* Create iovirt block for each IORT node*/
   for (i = 0; i < iort->node_count; i++) {
     if (iort_node >= iort_end) {
-      sbsa_print(AVS_PRINT_ERR, L"Bad IORT table \n");
+      sbsa_print(AVS_PRINT_ERR, L" Bad IORT table \n");
       return;
     }
     iort_add_block(iort, iort_node, IoVirtTable, &next_block);
@@ -470,7 +476,7 @@ pal_iovirt_get_rc_smmu_base (
 
   if (!mapping_found) {
       sbsa_print(AVS_PRINT_ERR,
-               L"GET_DEVICE_ID: Requestor ID to Stream ID/Device ID mapping not found\n", 0);
+               L"\n       RID to Stream ID/Dev ID map not found ", 0);
       return 0xFFFFFFFF;
   }
 
@@ -484,7 +490,8 @@ pal_iovirt_get_rc_smmu_base (
           if(sid >= (*map).map.input_base && sid <= ((*map).map.input_base +
                                                     (*map).map.id_count))
           {
-              sbsa_print(AVS_PRINT_DEBUG, L" find RC block->data.smmu.base : %llx", block->data.smmu.base);
+              sbsa_print(AVS_PRINT_DEBUG,
+                         L"\n       find RC block->data.smmu.base : %llx", block->data.smmu.base);
               return block->data.smmu.base;
           }
       }
@@ -493,6 +500,7 @@ pal_iovirt_get_rc_smmu_base (
   /* The Root Complex represented by rc_seg_num
    * is not behind any SMMU. Return NULL pointer
    */
-  sbsa_print(AVS_PRINT_DEBUG, L"No SMMU found behind the RootComplex with segment :%x", RcSegmentNum);
+  sbsa_print(AVS_PRINT_DEBUG,
+             L" No SMMU found behind the RootComplex with segment :%x", RcSegmentNum);
   return 0;
 }

@@ -38,6 +38,9 @@ void GicWriteIchHcr(uint64_t write_data);
 void GicWriteIccIgrpen1(uint64_t write_data);
 void GicWriteIccBpr1(uint64_t write_data);
 void GicWriteIccPmr(uint64_t write_data);
+void GicClearDaif(void);
+void TestExecuteBarrier(void);
+void GicWriteHcr(uint64_t write_data);
 
 
 #endif // __GIC_SYS_REGS_H__

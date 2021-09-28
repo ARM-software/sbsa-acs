@@ -134,12 +134,6 @@ payload(void)
                            &ttbr))
     goto test_fail;
 
-  /* Get memory attributes of the test buffer, we'll use the same attibutes to create
-   * our own page table later.
-   */
-  if (val_pgt_get_attributes(pgt_desc, (uint64_t)dram_buf_in_virt, &mem_desc->attributes))
-    goto test_fail;
-
   /* Enable all SMMUs */
   for (instance = 0; instance < num_smmus; ++instance)
      val_smmu_enable(instance);
@@ -164,6 +158,12 @@ payload(void)
     pgt_desc.pgt_base = (ttbr & AARCH64_TTBR_ADDR_MASK);
     pgt_desc.mair = val_pe_reg_read(MAIR_ELx);
     pgt_desc.stage = PGT_STAGE1;
+
+    /* Get memory attributes of the test buffer, we'll use the same attibutes to create
+     * our own page table later.
+     */
+    if (val_pgt_get_attributes(pgt_desc, (uint64_t)dram_buf_in_virt, &mem_desc->attributes))
+        goto test_fail;
 
     /* Get SMMU node index for this exerciser instance */
     master.smmu_index = val_iovirt_get_rc_smmu_index(PCIE_EXTRACT_BDF_SEG(e_bdf), PCIE_CREATE_BDF_PACKED(e_bdf));

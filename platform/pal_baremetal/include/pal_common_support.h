@@ -24,6 +24,9 @@
 #include <stdlib.h>
 
 extern uint32_t g_print_level;
+extern uint32_t g_print_mmio;
+extern uint32_t g_curr_module;
+extern uint32_t g_enable_module;
 
 #define AVS_PRINT_ERR   5      /* Only Errors. use this to de-clutter the terminal and focus only on specifics */
 #define AVS_PRINT_WARN  4      /* Only warnings & errors. use this to de-clutter the terminal and focus only on specifics */
@@ -55,12 +58,15 @@ extern uint32_t g_print_level;
 /* TYPE 0/1 Cmn Cfg reg offsets and mask*/
 #define TYPE01_CPR           0x34
 #define TYPE01_CPR_MASK      0xff
+#define COMMAND_REG_OFFSET   0x04
+#define REG_ACC_DATA         0x7
 
 /* Class Code Masks */
 #define CC_SUB_MASK     0xFF   /* Sub Class */
 #define CC_BASE_MASK    0xFF   /* Base Class */
 
 /* Class Code Shifts */
+#define CC_SHIFT        8
 #define CC_SUB_SHIFT    16
 #define CC_BASE_SHIFT   24
 
@@ -170,6 +176,8 @@ typedef struct {
   uint32_t   num_gicd;
   uint32_t   num_gicrd;
   uint32_t   num_its;
+  uint32_t   num_msi_frames;
+  uint32_t   num_gich;
 }GIC_INFO_HDR;
 
 
@@ -185,10 +193,13 @@ typedef enum {
   @brief  structure instance for GIC entry
 **/
 typedef struct {
-  uint32_t type;
-  uint64_t base;
-  uint32_t its_id;  /* This its_id is only used in case of ITS Type entry */
-  uint32_t length;  /* This length is only used in case of Re-Distributor Range Address length */
+  UINT32 type;
+  UINT64 base;
+  UINT32 entry_id;  /* This entry_id is used to tell component ID */
+  UINT64 length;  /* This length is only used in case of Re-Distributor Range Address length */
+  UINT32 flags;
+  UINT32 spi_count;
+  UINT32 spi_base;
 }GIC_INFO_ENTRY;
 
 /**

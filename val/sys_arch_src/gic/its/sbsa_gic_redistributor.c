@@ -21,7 +21,7 @@
 static uint64_t ConfigBase;
 
 uint32_t
-ArmGicSetItsConfigTableBase (
+ArmGicSetItsConfigTableBase(
     uint64_t    GicDistributorBase,
     uint64_t    GicRedistributorBase
   )
@@ -36,19 +36,20 @@ ArmGicSetItsConfigTableBase (
   uint32_t                gicr_propbaser_idbits;
 
   /* Get Memory size by reading the GICR_PROPBASER.IDBits field */
-  gicr_propbaser_idbits = ARM_GICR_PROPBASER_IDbits(val_mmio_read64(GicRedistributorBase + ARM_GICR_PROPBASER));
+  gicr_propbaser_idbits = ARM_GICR_PROPBASER_IDbits(
+                          val_mmio_read64(GicRedistributorBase + ARM_GICR_PROPBASER));
   ConfigTableSize = ((1 << (gicr_propbaser_idbits+1)) - ARM_LPI_MINID);
 
-  Pages = SIZE_TO_PAGES (ConfigTableSize) + 1;
+  Pages = SIZE_TO_PAGES(ConfigTableSize) + 1;
 
-  Address = (uint64_t)val_aligned_alloc(SIZE_4KB, ConfigTableSize );
+  Address = (uint64_t)val_aligned_alloc(SIZE_4KB, PAGES_TO_SIZE(Pages));
 
-  if (! Address) {
-      val_print(AVS_PRINT_ERR,  "ITS : Could Not Allocate Memory For Config Table. Test may not pass.\n", 0);
-      return 1;
+  if (!Address) {
+    val_print(AVS_PRINT_ERR,  "ITS : Could Not get Mem Config Table. Test may not pass.\n", 0);
+    return 1;
   }
 
-  val_memory_set((void *)Address,  PAGES_TO_SIZE(Pages), 0);
+  val_memory_set((void *)Address, PAGES_TO_SIZE(Pages), 0);
 
   write_value = val_mmio_read64(GicRedistributorBase + ARM_GICR_PROPBASER);
   write_value = write_value & (~ARM_GICR_PROPBASER_PA_MASK);
@@ -63,7 +64,7 @@ ArmGicSetItsConfigTableBase (
 
 
 uint32_t
-ArmGicSetItsPendingTableBase (
+ArmGicSetItsPendingTableBase(
     uint64_t    GicDistributorBase,
     uint64_t    GicRedistributorBase
   )
@@ -79,20 +80,21 @@ ArmGicSetItsPendingTableBase (
 
 
   /* Get Memory size by reading the GICD_TYPER.IDBits, GICR_PROPBASER.IDBits field */
-  gicr_propbaser_idbits = ARM_GICR_PROPBASER_IDbits(val_mmio_read64(GicRedistributorBase + ARM_GICR_PROPBASER));
+  gicr_propbaser_idbits = ARM_GICR_PROPBASER_IDbits(
+                          val_mmio_read64(GicRedistributorBase + ARM_GICR_PROPBASER));
 
   PendingTableSize = ((1 << (gicr_propbaser_idbits+1))/8);
 
-  Pages = SIZE_TO_PAGES (PendingTableSize) + 1;
+  Pages = SIZE_TO_PAGES(PendingTableSize) + 1;
 
-  Address = (uint64_t)val_aligned_alloc(SIZE_64KB, PendingTableSize );
+  Address = (uint64_t)val_aligned_alloc(SIZE_64KB, PAGES_TO_SIZE(Pages));
 
-  if (!Address ) {
-    val_print(AVS_PRINT_ERR, "ITS : Could Not Allocate Memory For Pending Table. Test may not pass.\n", 0);
+  if (!Address) {
+    val_print(AVS_PRINT_ERR, "ITS : Could Not get Memory Pending Table. Test may not pass.\n", 0);
     return 1;
   }
 
-  val_memory_set((VOID *)Address,  PAGES_TO_SIZE(Pages), 0);
+  val_memory_set((VOID *)Address, PAGES_TO_SIZE(Pages), 0);
 
   write_value = val_mmio_read64(GicRedistributorBase + ARM_GICR_PENDBASER);
   write_value = write_value & (~ARM_GICR_PENDBASER_PA_MASK);
@@ -104,20 +106,13 @@ ArmGicSetItsPendingTableBase (
 }
 
 
-void
-ClearConfigTable (
-    uint32_t          IntID
-  )
+void ClearConfigTable(uint32_t IntID)
 {
   val_mmio_write8(ConfigBase + (IntID - ARM_LPI_MINID), LPI_DISABLE);
 }
 
 
-void
-SetConfigTable (
-    uint32_t          IntID,
-    uint32_t          Priority
-  )
+void SetConfigTable(uint32_t IntID, uint32_t Priority)
 {
   uint8_t    value;
 
@@ -126,10 +121,7 @@ SetConfigTable (
 }
 
 
-void
-EnableLPIsRD (
-    uint64_t    GicRedistributorBase
-  )
+void EnableLPIsRD(uint64_t GicRedistributorBase)
 {
   uint32_t    value;
   value = val_mmio_read(GicRedistributorBase + ARM_GICR_CTLR);
@@ -140,7 +132,7 @@ EnableLPIsRD (
 
 
 uint32_t
-ArmGicRedistributorConfigurationForLPI (
+ArmGicRedistributorConfigurationForLPI(
     uint64_t    GicDistributorBase,
     uint64_t    GicRedistributorBase
   )

@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2020-2021, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2020, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -230,8 +230,8 @@ cfgspace_transactions_order_check(void)
     /* Get exerciser bdf */
     bdf = val_exerciser_get_bdf(instance);
 
-    /* If exerciser doesn't have PCI_ECAP skip the bdf */
-    if (val_pcie_find_capability(bdf, PCIE_ECAP, CID_PCIECS, &cid_offset) == PCIE_CAP_NOT_FOUND)
+    /* If exerciser doesn't have PCI_CAP skip the bdf */
+    if (val_pcie_find_capability(bdf, PCIE_CAP, CID_PCIECS, &cid_offset) == PCIE_CAP_NOT_FOUND)
         continue;
 
     bdf_addr = val_pcie_get_bdf_config_addr(bdf);

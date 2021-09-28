@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, 2020 Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018, 2020-2021 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -26,6 +26,21 @@
 #include "Include/IndustryStandard/Acpi61.h"
 
 #include "include/pal_uefi.h"
+
+/**
+  @brief   Checks if System information is passed using Baremetal (BM)
+           This api is also used to check if GIC/Interrupt Init ACS Code
+           is used or not. In case of BM, ACS Code is used for INIT
+
+  @param  None
+
+  @return True/False
+*/
+UINT32
+pal_target_is_bm()
+{
+  return 0;
+}
 
 /**
   @brief   Use UEFI System Table to look up Acpi20TableGuid and returns the Xsdt Address
@@ -75,7 +90,7 @@ pal_get_madt_ptr()
 
   Xsdt = (EFI_ACPI_DESCRIPTION_HEADER *) pal_get_xsdt_ptr();
   if (Xsdt == NULL) {
-      sbsa_print(AVS_PRINT_ERR, L"XSDT not found \n");
+      sbsa_print(AVS_PRINT_ERR, L" XSDT not found \n");
       return 0;
   }
 
@@ -109,7 +124,7 @@ pal_get_gtdt_ptr()
 
   Xsdt = (EFI_ACPI_DESCRIPTION_HEADER *) pal_get_xsdt_ptr();
   if (Xsdt == NULL) {
-      sbsa_print(AVS_PRINT_ERR, L"XSDT not found \n");
+      sbsa_print(AVS_PRINT_ERR, L" XSDT not found \n");
       return 0;
   }
 
@@ -142,7 +157,7 @@ pal_get_mcfg_ptr()
 
   Xsdt = (EFI_ACPI_DESCRIPTION_HEADER *) pal_get_xsdt_ptr();
   if (Xsdt == NULL) {
-      sbsa_print(AVS_PRINT_ERR, L"XSDT not found \n");
+      sbsa_print(AVS_PRINT_ERR, L" XSDT not found \n");
       return 0;
   }
 
@@ -175,7 +190,7 @@ pal_get_spcr_ptr()
 
   Xsdt = (EFI_ACPI_DESCRIPTION_HEADER *) pal_get_xsdt_ptr();
   if (Xsdt == NULL) {
-      sbsa_print(AVS_PRINT_ERR, L"XSDT not found \n");
+      sbsa_print(AVS_PRINT_ERR, L" XSDT not found \n");
       return 0;
   }
 
@@ -208,7 +223,7 @@ pal_get_iort_ptr()
 
   Xsdt = (EFI_ACPI_DESCRIPTION_HEADER *) pal_get_xsdt_ptr();
   if (Xsdt == NULL) {
-      sbsa_print(AVS_PRINT_ERR, L"XSDT not found \n");
+      sbsa_print(AVS_PRINT_ERR, L" XSDT not found \n");
       return 0;
   }
 

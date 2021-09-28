@@ -43,7 +43,7 @@ val_wd_execute_tests(uint32_t level, uint32_t num_pe)
       }
   }
 
-
+  g_curr_module = 1 << WD_MODULE;
   status = w001_entry(num_pe);
   status |= w002_entry(num_pe);
   status |= w003_entry(num_pe);

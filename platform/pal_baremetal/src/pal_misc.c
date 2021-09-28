@@ -36,7 +36,8 @@ pal_mmio_read8(uint64_t addr)
   uint8_t data;
 
   data = (*(volatile uint8_t *)addr);
-  print(AVS_PRINT_INFO, " pal_mmio_read8 Address = %lx  Data = %lx \n", addr, data);
+  if (g_print_mmio || (g_curr_module & g_enable_module))
+      print(AVS_PRINT_INFO, " pal_mmio_read8 Address = %llx  Data = %lx \n", addr, data);
 
   return data;
 }
@@ -55,7 +56,8 @@ pal_mmio_read16(uint64_t addr)
   uint16_t data;
 
   data = (*(volatile uint16_t *)addr);
-  print(AVS_PRINT_INFO, " pal_mmio_read16 Address = %lx  Data = %lx \n", addr, data);
+  if (g_print_mmio || (g_curr_module & g_enable_module))
+      print(AVS_PRINT_INFO, " pal_mmio_read16 Address = %llx  Data = %lx \n", addr, data);
 
   return data;
 }
@@ -74,7 +76,8 @@ pal_mmio_read64(uint64_t addr)
   uint64_t data;
 
   data = (*(volatile uint64_t *)addr);
-  print(AVS_PRINT_INFO, " pal_mmio_read64 Address = %lx  Data = %lx \n", addr, data);
+  if (g_print_mmio || (g_curr_module & g_enable_module))
+      print(AVS_PRINT_INFO, " pal_mmio_read64 Address = %llx  Data = %llx \n", addr, data);
 
   return data;
 }
@@ -98,7 +101,8 @@ pal_mmio_read(uint64_t addr)
   }
 
   data = (*(volatile uint32_t *)addr);
-  print(AVS_PRINT_INFO, " pal_mmio_read Address = %8x  Data = %x \n", addr, data);
+  if (g_print_mmio || (g_curr_module & g_enable_module))
+      print(AVS_PRINT_INFO, " pal_mmio_read Address = %8x  Data = %x \n", addr, data);
 
   return data;
 
@@ -117,7 +121,8 @@ void
 pal_mmio_write8(uint64_t addr, uint8_t data)
 {
   *(volatile uint8_t *)addr = data;
-  print(AVS_PRINT_INFO, " pal_mmio_write8 Address = %lx  Data = %lx \n", addr, data);
+  if (g_print_mmio || (g_curr_module & g_enable_module))
+      print(AVS_PRINT_INFO, " pal_mmio_write8 Address = %llx  Data = %lx \n", addr, data);
 
 }
 
@@ -134,7 +139,8 @@ void
 pal_mmio_write16(uint64_t addr, uint16_t data)
 {
   *(volatile uint16_t *)addr = data;
-  print(AVS_PRINT_INFO, " pal_mmio_write16 Address = %lx  Data = %lx \n", addr, data);
+  if (g_print_mmio || (g_curr_module & g_enable_module))
+      print(AVS_PRINT_INFO, " pal_mmio_write16 Address = %llx  Data = %lx \n", addr, data);
 
 }
 
@@ -151,7 +157,8 @@ void
 pal_mmio_write64(uint64_t addr, uint64_t data)
 {
   *(volatile uint64_t *)addr = data;
-  print(AVS_PRINT_INFO, " pal_mmio_write64 Address = %lx  Data = %lx \n", addr, data);
+  if (g_print_mmio || (g_curr_module & g_enable_module))
+      print(AVS_PRINT_INFO, " pal_mmio_write64 Address = %llx  Data = %llx \n", addr, data);
 
 }
 
@@ -173,8 +180,9 @@ pal_mmio_write(uint64_t addr, uint32_t data)
       addr = addr & ~(0x3);  //make sure addr is aligned to 4 bytes
   }
 
-  print(AVS_PRINT_INFO, " pal_mmio_write Address = %8x  Data = %x \n", addr, data);
-  *(volatile uint32_t *)addr = data;
+    *(volatile uint32_t *)addr = data;
+  if (g_print_mmio || (g_curr_module & g_enable_module))
+      print(AVS_PRINT_INFO, " pal_mmio_write Address = %8x  Data = %x \n", addr, data);
 
 }
 
@@ -467,3 +475,19 @@ pal_mem_free_pages(void *PageBase, uint32_t NumPages)
 {
 
 }
+
+/**
+  @brief   Checks if System information is passed using Baremetal (BM)
+           This api is also used to check if GIC/Interrupt Init ACS Code
+           is used or not. In case of BM, ACS Code is used for INIT
+
+  @param  None
+
+  @return True/False
+*/
+UINT32
+pal_target_is_bm()
+{
+  return 1;
+}
+

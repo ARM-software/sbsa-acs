@@ -59,7 +59,6 @@
 #define BAR_MEM(bar_reg_value) ((bar_reg_value & 0xF) >> 3)
 #define REG_MASK_SHIFT(bar_value) ((bar_value & MEM_BASE32_LIM_MASK) >> 16)
 
-
 uint8_t  pal_mmio_read8(uint64_t addr);
 uint16_t pal_mmio_read16(uint64_t addr);
 uint32_t pal_mmio_read(uint64_t addr);

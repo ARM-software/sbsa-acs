@@ -461,7 +461,7 @@ pal_exerciser_ops (
         return !(pal_mmio_read(Base + ATSCTL) & ATS_STATUS);
 
     default:
-        return 1;
+        return PCIE_CAP_NOT_FOUND;
   }
 }
 

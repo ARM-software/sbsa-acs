@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018, 2021 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -138,7 +138,7 @@ return_reg_value(uint32_t reg, uint8_t dependency)
         break;
 
     default:
-        val_print(AVS_PRINT_ERR, "\n Unknown dependency = %d ", dependency);
+        val_print(AVS_PRINT_ERR, "\n       Unknown dependency = %d ", dependency);
         return 0x0;
   }
 
@@ -208,7 +208,7 @@ payload(uint32_t num_pe)
          val_pe_reg_write(CSSELR_EL1, i << 1);
          cache_list[i] = return_reg_value(reg_list[0].reg_name, reg_list[0].dependency);
          val_data_cache_ops_by_va((addr_t)(cache_list + i), CLEAN_AND_INVALIDATE);
-         val_print(AVS_PRINT_INFO, "\n      cache size read is %x ", cache_list[i]);
+         val_print(AVS_PRINT_INFO, "\n       Cache size read is %x ", cache_list[i]);
       }
       i++;
   }

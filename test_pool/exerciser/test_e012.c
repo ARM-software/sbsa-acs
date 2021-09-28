@@ -39,6 +39,9 @@ get_target_exer_bdf(uint32_t req_rp_bdf, uint32_t *tgt_e_bdf,
   uint32_t e_bdf;
   uint32_t instance;
   uint32_t cap_base;
+  uint32_t req_rp_ecam_index;
+  uint32_t erp_ecam_index;
+  uint32_t status;
 
   instance = val_exerciser_get_info(EXERCISER_NUM_CARDS, 0);
 
@@ -68,6 +71,23 @@ get_target_exer_bdf(uint32_t req_rp_bdf, uint32_t *tgt_e_bdf,
 
       if(req_rp_bdf != erp_bdf)
       {
+          status = val_pcie_get_ecam_index(req_rp_bdf, &req_rp_ecam_index);
+          if (status)
+          {
+             val_print(AVS_PRINT_ERR, "\n       Error Ecam index for req RP BDF: 0x%x", req_rp_bdf);
+             goto clean_fail;
+          }
+
+          status = val_pcie_get_ecam_index(erp_bdf, &erp_ecam_index);
+          if (status)
+          {
+             val_print(AVS_PRINT_ERR, "\n       Error Ecam index for tgt RP BDF: 0x%x", erp_bdf);
+             goto clean_fail;
+          }
+
+          if (req_rp_ecam_index != erp_ecam_index)
+              continue;
+
           *tgt_e_bdf = e_bdf;
           *tgt_rp_bdf = erp_bdf;
 
@@ -80,6 +100,7 @@ get_target_exer_bdf(uint32_t req_rp_bdf, uint32_t *tgt_e_bdf,
       }
   }
 
+clean_fail:
   /* Return failure if No Such Exerciser Found */
   *tgt_e_bdf = 0;
   *tgt_rp_bdf = 0;

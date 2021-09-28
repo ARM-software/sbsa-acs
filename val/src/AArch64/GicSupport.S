@@ -25,6 +25,9 @@ GCC_ASM_EXPORT(GicReadIchMisr)
 GCC_ASM_EXPORT(GicWriteIccIgrpen1)
 GCC_ASM_EXPORT(GicWriteIccBpr1)
 GCC_ASM_EXPORT(GicWriteIccPmr)
+GCC_ASM_EXPORT(GicClearDaif)
+GCC_ASM_EXPORT(GicWriteHcr)
+GCC_ASM_EXPORT(TestExecuteBarrier)
 
 ASM_PFX(GicReadIchHcr):
   //mrs_s   x0, ich_hcr_el2
@@ -60,5 +63,18 @@ ASM_PFX(GicWriteIccPmr):
   isb
   ret
 
+ASM_PFX(GicClearDaif):
+  msr      daifclr, 0x7
+  isb
+  ret
+
+ASM_PFX(GicWriteHcr):
+  msr   hcr_el2, x0
+  ret
+
+ASM_PFX(TestExecuteBarrier):
+  dsb sy
+  isb
+  ret
 
 ASM_FUNCTION_REMOVE_IF_UNREFERENCED

@@ -28,7 +28,7 @@
 #define TEST_NUM   (AVS_EXERCISER_TEST_NUM_BASE + 8)
 #define TEST_DESC  "Check BME functionality of RP     "
 
-#define TEST_DMA_SIZE (4*1024)
+#define TEST_DATA_NUM_PAGES  1
 
 static void *branch_to_test;
 
@@ -66,6 +66,7 @@ payload(void)
   void *dram_buf_virt;
   void *dram_buf_phys;
   void *dram_buf_iova;
+  uint32_t page_size = val_memory_page_size();
 
   fail_cnt = 0;
   pe_index = val_pe_get_index_mpid(val_pe_get_mpid());
@@ -84,7 +85,8 @@ payload(void)
   branch_to_test = &&exception_return;
 
   /* Create a buffer of size TEST_DMA_SIZE in DRAM */
-  dram_buf_virt = val_memory_alloc(TEST_DMA_SIZE);
+  dram_buf_virt = val_memory_alloc_pages(TEST_DATA_NUM_PAGES);
+
   if (!dram_buf_virt)
   {
       val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
@@ -92,7 +94,7 @@ payload(void)
   }
 
   dram_buf_phys = val_memory_virt_to_phys(dram_buf_virt);
-  dma_len = TEST_DMA_SIZE;
+  dma_len = page_size * TEST_DATA_NUM_PAGES;;
 
   while (instance-- != 0) {
 
@@ -177,7 +179,7 @@ exception_return:
   }
 
   /* Return the buffer to the heap manager */
-  val_memory_free(dram_buf_virt);
+  val_memory_free_pages(dram_buf_virt, TEST_DATA_NUM_PAGES);
 
   if (fail_cnt)
       val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, fail_cnt));
