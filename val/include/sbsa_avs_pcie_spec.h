@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2019-2020, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2019-2021, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -69,6 +69,8 @@
 #define CR_ID_MASK     0x1
 
 /* Status Register */
+#define SR_IS_SHIFT    19
+#define SR_IS_MASK     0x1
 #define SR_STA_SHIFT   27
 #define SR_STA_MASK    0x1
 
@@ -96,7 +98,7 @@
 
 /* Header type reg shifts and masks */
 #define HTR_HL_SHIFT   0x0
-#define HTR_HL_MASK    0x3f
+#define HTR_HL_MASK    0x7f
 #define HTR_MFD_SHIFT  7
 #define HTR_MFD_MASK   0x1
 
@@ -111,6 +113,14 @@
 #define BAR_MDT_MASK    0x3
 #define BAR_MT_MASK     0x1
 #define BAR_BASE_MASK   0xfffffff
+
+/*BAR offset */
+#define BAR0_OFFSET               0x10
+#define BAR_TYPE_0_MAX_OFFSET     0x24
+#define BAR_TYPE_1_MAX_OFFSET     0x14
+#define BAR_64_BIT                0x1
+#define BAR_32_BIT                0x0
+#define BAR_REG(bar_reg_value) ((bar_reg_value >> 2) & 0x1)
 
 #define TYPE0_MAX_BARS  6
 #define TYPE1_MAX_BARS  2
@@ -141,8 +151,10 @@
 #define SUBBN_SHIFT 16
 
 /* Bus Number reg masks */
+#define PRIBN_MASK  0xff
 #define SECBN_MASK  0xff
 #define SUBBN_MASK  0xff
+#define SECBN_EXTRACT 0xffff00ff
 
 /* Capability header reg shifts */
 #define PCIE_CIDR_SHIFT      0
@@ -171,6 +183,7 @@
 #define ECID_ARICS     0x000E
 #define ECID_ATS       0x000F
 #define ECID_PRI       0x0013
+#define ECID_PASID     0x001B
 
 /* PCI Express capability struct offsets */
 #define CIDR_OFFSET    0
@@ -178,8 +191,11 @@
 #define DCAPR_OFFSET   4
 #define ACSCR_OFFSET   4
 #define DCTLR_OFFSET   8
-#define DCAP2R_OFFSET  24
-#define DCTL2R_OFFSET  28
+#define LCAPR_OFFSET   0xC
+#define LCTRLR_OFFSET  0x10
+#define DCAP2R_OFFSET  0x24
+#define DCTL2R_OFFSET  0x28
+#define DCTL2R_MASK    0xFFFF
 
 /* ACS Capability Register */
 #define ACS_CTRL_SVE_SHIFT  16
@@ -190,6 +206,14 @@
 /* PCIe capabilities reg shifts and masks */
 #define PCIECR_DPT_SHIFT 4
 #define PCIECR_DPT_MASK  0xf
+
+/* Link Capabilities register shifts and masks */
+#define LCAPR_DLLLARC_SHIFT 20
+#define LCAPR_DLLLARC_MASK  0x100000
+
+/* Link Status register shifts and masks */
+#define LSTAT_DLLLA_SHIFT   13
+#define LSTAT_DLLLA_MASK    0x20000000
 
 /* Device Capabilities register */
 #define DCAPR_MPSS_SHIFT 0
@@ -263,6 +287,7 @@
 
 /* Device Control 2 reg mask */
 #define DCTL2R_AFE_MASK  0x1
+#define DCTL2R_AFE_NORMAL 0xFFDF
 
 /* Device bitmask definitions */
 #define RCiEP    (1 << 0b1001)
@@ -287,4 +312,13 @@
 #define MSI_X_TABLE_BIR_MASK        0x7
 #define MSI_X_ENTRY_SIZE            16 /* Size of Single MSI Entry in MSI Table */
 
+/* PASID Capabilities */
+#define PASID_CAPABILITY_OFFSET     0x4
+#define MAX_PASID_MASK              0x1F00
+#define MAX_PASID_SHIFT             0x8
+
+/* ATS Capabilities */
+#define ATS_CTRL                    0x4
+#define ATS_CACHING_EN              (1 << 31)
+#define ATS_CACHING_DIS             0x7FFFFFFF
 #endif

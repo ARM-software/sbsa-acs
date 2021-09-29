@@ -1,5 +1,6 @@
 /** @file
- * Copyright (c) 2016, ARM Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2021, Arm Limited or its affiliates. All rights reserved.
+ * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,15 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  **/
+#ifndef __GIC_V2_H__
+#define __GIC_V2_H__
 
-#ifndef __SBSA_HELPERS_H__
-#define __SBSA_HELPERS_H__
+void v2_Init(void);
+void v2_EnableInterruptSource(uint32_t);
+void v2_DisableInterruptSource(uint32_t);
+uint32_t v2_AcknowledgeInterrupt(void);
+void v2_EndofInterrupt(uint32_t int_id);
 
-#include "arch_helpers.h"
-
-/**
-  @brief  System register access prototypes
- **/
-DEFINE_SYSREG_RW_FUNCS(mdcr_el3)
-
-#endif /* __SBSA_HELPERS_H__ */
+#endif /*__GIC_V2_H__ */

@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2020, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2021, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -34,8 +34,7 @@
 #define AVS_PER_TEST_NUM_BASE        600
 #define AVS_SMMU_TEST_NUM_BASE       700
 #define AVS_EXERCISER_TEST_NUM_BASE  800
-#define AVS_SECURE_TEST_NUM_BASE     900
-#define AVS_NIST_TEST_NUM_BASE       1000
+#define AVS_NIST_TEST_NUM_BASE       900
 
 #define STATE_BIT   28
 #define STATE_MASK 0xF
@@ -122,5 +121,19 @@ val_run_test_payload(uint32_t test_num, uint32_t num_pe, void (*payload)(void), 
 
 void
 val_data_cache_ops_by_va(addr_t addr, uint32_t type);
+
+/* Module specific print APIs */
+
+typedef enum {
+    PE_MODULE,
+    GIC_MODULE,
+    TIMER_MODULE,
+    WD_MODULE,
+    PCIE_MODULE,
+    WAKEUP_MODULE,
+    PERIPHERAL_MODULE,
+    SMMU_MODULE,
+    EXERCISER_MODULE
+} MODULE_ID_e;
 
 #endif

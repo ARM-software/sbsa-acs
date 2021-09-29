@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2020 Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2020, 2021 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -39,7 +39,7 @@ esr(uint64_t interrupt_type, void *context)
   /* Update the ELR to return to test specified address */
   val_pe_update_elr(context, (uint64_t)branch_to_test);
 
-  val_print(AVS_PRINT_INFO, "\n       Received exception of type: %d", interrupt_type);
+  val_print(AVS_PRINT_ERR, "\n       Received exception of type: %d", interrupt_type);
   val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
 }
 
@@ -52,10 +52,11 @@ payload(void)
   uint32_t dp_type;
   uint32_t pe_index;
   uint32_t tbl_index;
-  uint32_t read_value;
+  uint32_t read_value, old_value, value;
   uint32_t test_skip = 1;
   uint64_t mem_base;
-  uint64_t mem_lim;
+  uint64_t mem_lim, new_mem_lim;
+  uint32_t status;
   pcie_device_bdf_table *bdf_tbl_ptr;
 
   tbl_index = 0;
@@ -63,9 +64,15 @@ payload(void)
   pe_index = val_pe_get_index_mpid(val_pe_get_mpid());
 
   /* Install sync and async handlers to handle exceptions.*/
-  val_pe_install_esr(EXCEPT_AARCH64_SYNCHRONOUS_EXCEPTIONS, esr);
-  val_pe_install_esr(EXCEPT_AARCH64_SERROR, esr);
+  status = val_pe_install_esr(EXCEPT_AARCH64_SYNCHRONOUS_EXCEPTIONS, esr);
+  status |= val_pe_install_esr(EXCEPT_AARCH64_SERROR, esr);
   branch_to_test = &&exception_return;
+  if (status)
+  {
+      val_print(AVS_PRINT_ERR, "\n      Failed in installing the exception handler", 0);
+      val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
+      return;
+  }
 
   /* Since this is a memory space access test.
    * Enable BME & MSE for all the BDFs.
@@ -85,7 +92,8 @@ payload(void)
       bdf = bdf_tbl_ptr->device[tbl_index++].bdf;
       dp_type = val_pcie_device_port_type(bdf);
 
-      if ((dp_type == RP) || (dp_type == iEP_RP)) {
+      if ((dp_type == RP) || (dp_type == iEP_RP))
+      {
         /* Part 1:
          * Check When Address is within the Range of Non-Prefetchable
          * Memory Range.
@@ -112,20 +120,43 @@ payload(void)
          * Base + 0x10 will always be in the range.
          * Read the same
         */
+        old_value = (*(volatile uint32_t *)(mem_base + MEM_OFFSET_10));
         *(volatile uint32_t *)(mem_base + MEM_OFFSET_10) = KNOWN_DATA;
         read_value = (*(volatile uint32_t *)(mem_base + MEM_OFFSET_10));
+
+        /*Accessing out of range of limit should return 0xFFFFFFFF*/
+        if ((mem_lim >> MEM_SHIFT) > (mem_base >> MEM_SHIFT))
+        {
+           new_mem_lim = mem_base + MEM_OFF_100000;
+           mem_base = mem_base | (mem_base  >> 16);
+           val_pcie_write_cfg(bdf, TYPE1_NP_MEM, mem_base);
+           val_pcie_read_cfg(bdf, TYPE1_NP_MEM, &read_value);
+
+           value = (*(volatile uint32_t *)(new_mem_lim + MEM_OFFSET_10));
+
+           /*Write back original value */
+           val_pcie_write_cfg(bdf, TYPE1_NP_MEM, ((mem_lim & MEM_LIM_MASK) | (mem_base  >> 16)));
+
+           if (value != PCIE_UNKNOWN_RESPONSE)
+           {
+               val_print(AVS_PRINT_ERR, "\n Memory range for bdf 0x%x", bdf);
+               val_print(AVS_PRINT_ERR, " is 0x%x", read_value);
+               val_print(AVS_PRINT_ERR, "\n Out of range addr %x", (new_mem_lim + MEM_OFFSET_10));
+               val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
+           }
+        }
 
 exception_return:
         /* Memory Space might have constraint on RW/RO behaviour
          * So not checking for Read-Write Data mismatch.
         */
         if (IS_TEST_FAIL(val_get_status(pe_index))) {
-          val_print(AVS_PRINT_ERR, "\n       Failed. Exception on Memory Access For Bdf : 0x%x", bdf);
+          val_print(AVS_PRINT_ERR, "\n       Failed. Exception on Memory Access For Bdf 0x%x", bdf);
           val_pcie_clear_urd(bdf);
           return;
         }
 
-        if ((read_value == PCIE_UNKNOWN_RESPONSE) || val_pcie_is_urd(bdf)) {
+        if ((old_value != read_value && read_value == PCIE_UNKNOWN_RESPONSE) || val_pcie_is_urd(bdf)) {
           val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
           val_pcie_clear_urd(bdf);
           return;

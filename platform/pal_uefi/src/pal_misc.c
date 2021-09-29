@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2020, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2021, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -27,59 +27,116 @@
 
 UINT8   *gSharedMemory;
 
+/**
+ @brief This API provides a single point of abstraction to write 8-bit
+        data to all memory-mapped I/O addresses.
+
+ @param addr 64-bit address
+ @param data 8-bit data write to address
+
+ @return None
+**/
 VOID
 pal_mmio_write8(UINT64 addr, UINT8 data)
 {
   *(volatile UINT8 *)addr = data;
-  sbsa_print(AVS_PRINT_INFO, L" pal_mmio_write8 Address = %lx  Data = %lx \n", addr, data);
+  if (g_print_mmio || (g_curr_module & g_enable_module))
+      sbsa_print(AVS_PRINT_INFO, L" pal_mmio_write8 Address = %llx  Data = %lx \n", addr, data);
 
 }
 
+/**
+  @brief This API provides a single point of abstraction to write 16-bit
+         data to all memory-mapped I/O addresses.
+
+  @param addr 64-bit address
+  @param data 16-bit data write to address
+
+  @return None
+**/
 VOID
 pal_mmio_write16(UINT64 addr, UINT16 data)
 {
   *(volatile UINT16 *)addr = data;
-  sbsa_print(AVS_PRINT_INFO, L" pal_mmio_write16 Address = %lx  Data = %lx \n", addr, data);
+  if (g_print_mmio || (g_curr_module & g_enable_module))
+      sbsa_print(AVS_PRINT_INFO, L" pal_mmio_write16 Address = %llx  Data = %lx \n", addr, data);
 
 }
 
+/**
+   @brief This API provides a single point of abstraction to write 64-bit
+          data to all memory-mapped I/O addresses.
+
+   @param addr 64-bit address
+   @param data 64-bit data write to address
+
+   @return None
+**/
 VOID
 pal_mmio_write64(UINT64 addr, UINT64 data)
 {
   *(volatile UINT64 *)addr = data;
-  sbsa_print(AVS_PRINT_INFO, L" pal_mmio_write64 Address = %lx  Data = %lx \n", addr, data);
+  if (g_print_mmio || (g_curr_module & g_enable_module))
+      sbsa_print(AVS_PRINT_INFO, L" pal_mmio_write64 Address = %llx  Data = %lx \n", addr, data);
 
 }
 
+/**
+  @brief This API provides a single point of abstraction to read 8-bit data
+         from all memory-mapped I/O addresses.
+
+  @param addr 64-bit input address
+
+  @return 8-bit data read from the input address
+**/
 UINT8
 pal_mmio_read8(UINT64 addr)
 {
   UINT8 data;
 
   data = (*(volatile UINT8 *)addr);
-  sbsa_print(AVS_PRINT_INFO, L" pal_mmio_read8 Address = %lx  Data = %lx \n", addr, data);
+  if (g_print_mmio || (g_curr_module & g_enable_module))
+      sbsa_print(AVS_PRINT_INFO, L" pal_mmio_read8 Address = %llx  Data = %lx \n", addr, data);
 
   return data;
 }
 
+/**
+  @brief This API provides a single point of abstraction to read 16-bit data
+         from all memory-mapped I/O addresses.
+
+  @param addr 64-bit input address
+
+  @return 16-bit data read from the input address
+**/
 UINT16
 pal_mmio_read16(UINT64 addr)
 {
   UINT16 data;
 
   data = (*(volatile UINT16 *)addr);
-  sbsa_print(AVS_PRINT_INFO, L" pal_mmio_read16 Address = %lx  Data = %lx \n", addr, data);
+  if (g_print_mmio || (g_curr_module & g_enable_module))
+      sbsa_print(AVS_PRINT_INFO, L" pal_mmio_read16 Address = %llx  Data = %lx \n", addr, data);
 
   return data;
 }
 
+/**
+  @brief This API provides a single point of abstraction to read 64-bit data
+         from all memory-mapped I/O addresses.
+
+  @param addr 64-bit input address
+
+  @return 64-bit data read from the input address
+**/
 UINT64
 pal_mmio_read64(UINT64 addr)
 {
   UINT64 data;
 
   data = (*(volatile UINT64 *)addr);
-  sbsa_print(AVS_PRINT_INFO, L" pal_mmio_read64 Address = %lx  Data = %lx \n", addr, data);
+  if (g_print_mmio || (g_curr_module & g_enable_module))
+      sbsa_print(AVS_PRINT_INFO, L" pal_mmio_read64 Address = %llx  Data = %lx \n", addr, data);
 
   return data;
 }
@@ -103,7 +160,8 @@ pal_mmio_read(UINT64 addr)
   }
   data = (*(volatile UINT32 *)addr);
 
-  sbsa_print(AVS_PRINT_INFO, L" pal_mmio_read Address = %lx  Data = %x \n", addr, data);
+  if (g_print_mmio || (g_curr_module & g_enable_module))
+      sbsa_print(AVS_PRINT_INFO, L" pal_mmio_read Address = %llx  Data = %x \n", addr, data);
 
   return data;
 }
@@ -120,8 +178,9 @@ pal_mmio_read(UINT64 addr)
 VOID
 pal_mmio_write(UINT64 addr, UINT32 data)
 {
-  sbsa_print(AVS_PRINT_INFO, L" pal_mmio_write Address = %lx  Data = %x \n", addr, data);
   *(volatile UINT32 *)addr = data;
+  if (g_print_mmio || (g_curr_module & g_enable_module))
+    sbsa_print(AVS_PRINT_INFO, L" pal_mmio_write Address = %llx  Data = %x \n", addr, data);
 }
 
 /**
@@ -144,7 +203,7 @@ pal_print(CHAR8 *string, UINT64 data)
     AsciiPrint(Buffer);
     Status = ShellWriteFile(g_sbsa_log_file_handle, &BufferSize, (VOID*)Buffer);
     if(EFI_ERROR(Status))
-      sbsa_print(AVS_PRINT_ERR, L"Error in writing to log file\n");
+      sbsa_print(AVS_PRINT_ERR, L" Error in writing to log file\n");
   } else
       AsciiPrint(string, data);
 }
@@ -259,10 +318,10 @@ pal_mem_allocate_shared(UINT32 num_pe, UINT32 sizeofentry)
                                (num_pe * sizeofentry),
                                (VOID **) &gSharedMemory );
 
-  sbsa_print(AVS_PRINT_INFO, L"Shared memory is %llx \n", gSharedMemory);
+  sbsa_print(AVS_PRINT_INFO, L" Shared memory is %llx \n", gSharedMemory);
 
   if (EFI_ERROR(Status)) {
-    sbsa_print(AVS_PRINT_ERR, L"Allocate Pool shared memory failed %x \n", Status);
+    sbsa_print(AVS_PRINT_ERR, L" Allocate Pool shared memory failed %x \n", Status);
   }
   pal_pe_data_cache_ops_by_va((UINT64)&gSharedMemory, CLEAN_AND_INVALIDATE);
 
@@ -321,7 +380,7 @@ pal_mem_alloc (
                               (VOID **) &Buffer);
   if (EFI_ERROR(Status))
   {
-    sbsa_print(AVS_PRINT_ERR, L"Allocate Pool failed %x \n", Status);
+    sbsa_print(AVS_PRINT_ERR, L" Allocate Pool failed %x \n", Status);
     return NULL;
   }
 
@@ -354,14 +413,14 @@ pal_mem_alloc_cacheable (
                                EFI_SIZE_TO_PAGES(Size),
                                &Address);
   if (EFI_ERROR(Status)) {
-    sbsa_print(AVS_PRINT_ERR, L"Allocate Pool failed %x \n", Status);
+    sbsa_print(AVS_PRINT_ERR, L" Allocate Pool failed %x \n", Status);
     return NULL;
   }
 
   /* Check Whether Cpu architectural protocol is installed */
-  Status = gBS->LocateProtocol ( &gEfiCpuArchProtocolGuid, NULL, (VOID **)&Cpu);
+  Status = gBS->LocateProtocol (&gEfiCpuArchProtocolGuid, NULL, (VOID **)&Cpu);
   if (EFI_ERROR(Status)) {
-    sbsa_print(AVS_PRINT_ERR, L"Could not get Cpu Arch Protocol %x \n", Status);
+    sbsa_print(AVS_PRINT_ERR, L" Could not get Cpu Arch Protocol %x \n", Status);
     return NULL;
   }
 
@@ -371,7 +430,7 @@ pal_mem_alloc_cacheable (
                                      Size,
                                      EFI_MEMORY_WB);
   if (EFI_ERROR (Status)) {
-    sbsa_print(AVS_PRINT_ERR, L"Could not Set Memory Attribute %x \n", Status);
+    sbsa_print(AVS_PRINT_ERR, L" Could not Set Memory Attribute %x \n", Status);
     return NULL;
   }
 
@@ -461,7 +520,7 @@ pal_memcpy (
 
   @param  MicroSeconds  The minimum number of microseconds to delay.
 
-  @return The value of MicroSeconds inputted.
+  @return 1 - Success, 0 -Failure
 
 **/
 UINT64
@@ -469,15 +528,30 @@ pal_time_delay_ms (
   UINT64 MicroSeconds
   )
 {
-  return gBS->Stall(MicroSeconds);
+  gBS->Stall(MicroSeconds);
+  return 1;
 }
 
+/**
+ @brief Returns the memory page size (in bytes) used by the platform.
+
+ @param None
+
+ @return Size of memory page
+**/
 UINT32
 pal_mem_page_size()
 {
     return EFI_PAGE_SIZE;
 }
 
+/**
+  @brief Allocates the requested number of memory pages
+
+  @param NumPages Number of memory pages needed
+
+  @return Address of the allocated space
+**/
 VOID *
 pal_mem_alloc_pages (
   UINT32 NumPages
@@ -492,13 +566,21 @@ pal_mem_alloc_pages (
                                &PageBase);
   if (EFI_ERROR(Status))
   {
-    sbsa_print(AVS_PRINT_ERR, L"Allocate Pages failed %x \n", Status);
+    sbsa_print(AVS_PRINT_ERR, L" Allocate Pages failed %x \n", Status);
     return NULL;
   }
 
   return (VOID*)(UINTN)PageBase;
 }
 
+/**
+  @brief Free number of pages in the memory as requested.
+
+  @param PageBase Address from where we need to free
+  @param NumPages Number of memory pages needed
+
+  @return None
+**/
 VOID
 pal_mem_free_pages(
   VOID *PageBase,
@@ -507,3 +589,4 @@ pal_mem_free_pages(
 {
   gBS->FreePages((EFI_PHYSICAL_ADDRESS)(UINTN)PageBase, NumPages);
 }
+

@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018, 2021 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,6 +18,7 @@
 #include "val/include/val_interface.h"
 
 #include "val/include/sbsa_avs_pcie.h"
+#include "val/include/sbsa_avs_memory.h"
 
 #define TEST_NUM   (AVS_PCIE_TEST_NUM_BASE + 12)
 #define TEST_DESC  "PCI legacy interrupt SPI ID unique"
@@ -41,19 +42,21 @@ payload (void)
   uint64_t dev_bdf;
   uint32_t ccnt;
   uint32_t ncnt;
+  uint32_t test_skip;
 
   current_irq_pin = 0;
   status = 0;
+  test_skip = 1;
   next_irq_pin = current_irq_pin + 1;
   index = val_pe_get_index_mpid (val_pe_get_mpid());
   count = val_peripheral_get_info (NUM_ALL, 0);
 
   if(!count) {
-     val_set_status (index, RESULT_SKIP (g_sbsa_level, TEST_NUM, 3));
+     val_set_status (index, RESULT_SKIP (g_sbsa_level, TEST_NUM, 01));
      return;
   }
 
-  irq_map = kzalloc(sizeof(PERIPHERAL_IRQ_MAP), GFP_KERNEL);
+  irq_map = val_memory_alloc(sizeof(PERIPHERAL_IRQ_MAP));
   if (!irq_map) {
     val_print (AVS_PRINT_ERR, "\n       Memory allocation error", 0);
     val_set_status (index, RESULT_FAIL (g_sbsa_level, TEST_NUM, 01));
@@ -107,6 +110,7 @@ payload (void)
 
           for (ccnt = 0; (ccnt < irq_map->legacy_irq_map[current_irq_pin].irq_count) && (status == 0); ccnt++) {
             for (ncnt = 0; (ncnt < irq_map->legacy_irq_map[next_irq_pin].irq_count) && (status == 0); ncnt++) {
+              test_skip = 0;
               if (irq_map->legacy_irq_map[current_irq_pin].irq_list[ccnt] ==
                   irq_map->legacy_irq_map[next_irq_pin].irq_list[ncnt]) {
                 status = 7;
@@ -124,8 +128,12 @@ payload (void)
     }
   }
 
-  kfree (irq_map);
+  val_memory_free (irq_map);
 
+  if (test_skip) {
+    val_set_status (index, RESULT_SKIP (g_sbsa_level, TEST_NUM, 02));
+    return;
+  }
   if (!status) {
     val_set_status (index, RESULT_PASS (g_sbsa_level, TEST_NUM, 01));
   } else {

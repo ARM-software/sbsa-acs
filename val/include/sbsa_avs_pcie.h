@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2020, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2021, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -37,11 +37,13 @@
 #define PCIE_MAX_DEV    32
 #define PCIE_MAX_FUNC    8
 
+#define PCIE_BUS_SHIFT 8
 #define PCIE_CFG_SIZE  4096
 
 #define PCIE_INTERRUPT_LINE  0x3c
 #define PCIE_INTERRUPT_PIN   0x3d
-
+#define PCIE_INTERRUPT_PIN_SHIFT 0x8
+#define PCIE_INTERRUPT_PIN_MASK  0xFF
 #define PCIE_TYPE_ROOT_PORT  0x04 /* Root Port */
 #define PCIE_TYPE_DOWNSTREAM 0x06 /* Downstream Port */
 #define PCIE_TYPE_ENDPOINT   0x0  /* Express Endpoint */
@@ -54,6 +56,10 @@
 #define WORD_ALIGN_MASK 0x3
 #define BITS_IN_BYTE 0x8
 
+#define PCIE_DLL_LINK_STATUS_NOT_ACTIVE       0x0
+#define PCIE_DLL_LINK_STATUS_ACTIVE           0x1
+#define PCIE_DLL_LINK_ACTIVE_NOT_SUPPORTED    0x2
+
 #define REG_MASK(end, start) (((~(uint32_t)0 << (start)) & \
                              (((uint32_t)1 << ((end)+1)) - 1)) >> (start))
 #define REG_SHIFT(alignment_byte_cnt, start) (((alignment_byte_cnt)*BITS_IN_BYTE) + start)
@@ -62,6 +68,10 @@
 #define ERR_STRING_SIZE 64
 
 #define MEM_OFFSET_10   0x10
+#define MEM_OFF_100000  0x100000
+#define MEM_SHIFT       20
+#define MEM_BASE_SHIFT  16
+#define BAR_MASK        0xFFFFFFF0
 
 /* Allows storage of 2048 valid BDFs */
 #define PCIE_DEVICE_BDF_TABLE_SZ 8192
@@ -196,6 +206,18 @@ uint32_t
 val_pcie_is_cache_present(uint32_t bdf);
 
 uint32_t
+val_pcie_data_link_layer_status(uint32_t bdf);
+
+uint32_t
+val_pcie_check_interrupt_status(uint32_t bdf);
+
+uint32_t
+val_pcie_get_max_pasid_width(uint32_t bdf, uint32_t *max_pasid_width);
+
+uint32_t
+val_pcie_get_ecam_index(uint32_t bdf, uint32_t *ecam_index);
+
+uint32_t
 p001_entry(uint32_t num_pe);
 
 uint32_t
@@ -203,9 +225,6 @@ p002_entry(uint32_t num_pe);
 
 uint32_t
 p003_entry(uint32_t num_pe);
-
-uint32_t
-p004_entry(uint32_t num_pe);
 
 uint32_t
 p005_entry(uint32_t num_pe);

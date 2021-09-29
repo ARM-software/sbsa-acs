@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2018-2020, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2018-2021, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -93,6 +93,26 @@ pal_exerciser_get_pcie_config_offset(UINT32 Bdf)
   return cfg_addr;
 }
 
+
+/**
+  @brief  This API returns if the device is a exerciser
+  @param  bdf - Bus/Device/Function
+  @return 1 - true 0 - false
+**/
+UINT32
+pal_is_bdf_exerciser(UINT32 bdf)
+{
+  UINT64 Ecam;
+  UINT32 vendor_dev_id;
+  Ecam = pal_pcie_get_mcfg_ecam();
+
+  vendor_dev_id = pal_mmio_read(Ecam + pal_exerciser_get_pcie_config_offset(bdf));
+  if (vendor_dev_id == EXERCISER_ID)
+     return 1;
+  else
+     return 0;
+}
+
 /**
   @brief This function triggers the DMA operation
 **/
@@ -137,7 +157,7 @@ pal_exerciser_find_pcie_capability (
   UINT64 NxtPtr;
   UINT32 Data;
   UINT32 TempId;
-  UINT32 Ecam;
+  UINT64 Ecam;
   UINT32 IdMask;
   UINT32 PtrMask;
   UINT32 PtrOffset;
@@ -185,7 +205,6 @@ UINT32 pal_exerciser_set_param (
   UINT32 Bdf
   )
 {
-  UINT32 Status;
   UINT32 Data;
   UINT64 Base;
 
@@ -201,9 +220,7 @@ UINT32 pal_exerciser_set_param (
       case DMA_ATTRIBUTES:
           pal_mmio_write(Base + DMA_BUS_ADDR,Value1);// wrting into the DMA Control Register 2
           pal_mmio_write(Base + DMA_LEN,Value2);// writing into the DMA Control Register 3
-          Data = pal_mmio_read(Base + DMASTATUS);// Reading the DMA status register
-          Status = Data & ((MASK_BIT << 1) | MASK_BIT);
-          return Status;
+          return 0;
 
       case P2P_ATTRIBUTES:
           return 0;
@@ -223,9 +240,38 @@ UINT32 pal_exerciser_set_param (
 
             case TXN_REQ_ID:
                 /* Change Requester ID for DMA Transaction.*/
+                Data = (Value2 & RID_VALUE_MASK) | RID_VALID_MASK;
+                pal_mmio_write(Base + RID_CTL_REG, Data);
                 return 0;
+            case TXN_REQ_ID_VALID:
+                switch (Value2)
+                {
+                    case RID_VALID:
+                        Data = pal_mmio_read(Base + RID_CTL_REG);
+                        Data |= RID_VALID_MASK;
+                        pal_mmio_write(Base + RID_CTL_REG, Data);
+                        return 0;
+                    case RID_NOT_VALID:
+                        pal_mmio_write(Base + RID_CTL_REG, 0);
+                        return 0;
+                }
             case TXN_ADDR_TYPE:
                 /* Change Address Type for DMA Transaction.*/
+                switch (Value2)
+                {
+                    case AT_UNTRANSLATED:
+                        Data = 0x1;
+                        pal_mmio_write(Base + DMACTL1, pal_mmio_read(Base + DMACTL1) | (Data << 10));
+                        break;
+                    case AT_TRANSLATED:
+                        Data = 0x2;
+                        pal_mmio_write(Base + DMACTL1, pal_mmio_read(Base + DMACTL1) | (Data << 10));
+                        break;
+                    case AT_RESERVED:
+                        Data = 0x3;
+                        pal_mmio_write(Base + DMACTL1, pal_mmio_read(Base + DMACTL1) | (Data << 10));
+                        break;
+                }
                 return 0;
             default:
                 return 1;
@@ -278,6 +324,9 @@ pal_exerciser_get_param (
       case MSIX_ATTRIBUTES:
           *Value1 = pal_mmio_read(Base + MSICTL);
           return pal_mmio_read(Base + MSICTL) | MASK_BIT;
+      case ATS_RES_ATTRIBUTES:
+          *Value1 = pal_mmio_read(Base + ATS_ADDR);
+          return 0;
       default:
           return 1;
   }
@@ -331,10 +380,9 @@ pal_exerciser_ops (
   )
 {
   UINT64 Base;
-  UINT32 Ecam;
+  UINT64 Ecam;
   UINT32 CapabilityOffset;
   UINT32 data;
-
   Base = pal_exerciser_get_ecsr_base(Bdf,0);
   Ecam = pal_pcie_get_mcfg_ecam(); // Getting the ECAM address
   switch(Ops){
@@ -377,9 +425,10 @@ pal_exerciser_ops (
 
     case PASID_TLP_START:
         data = pal_mmio_read(Base + DMACTL1);
-        data &= ~(PASID_VAL_MASK << PASID_VAL_SHIFT);
-        data |= (MASK_BIT << 6) | ((Param & PASID_VAL_MASK) << PASID_VAL_SHIFT);
+        data |= (MASK_BIT << PASID_EN_SHIFT);
         pal_mmio_write(Base + DMACTL1, data);
+        data = ((Param & PASID_VAL_MASK));
+        pal_mmio_write(Base + PASID_VAL, data);
 
         if (!pal_exerciser_find_pcie_capability(PASID, Bdf, PCIE, &CapabilityOffset)) {
             pal_mmio_write(Ecam + pal_exerciser_get_pcie_config_offset(Bdf) + CapabilityOffset + PCIE_CAP_CTRL_OFFSET,
@@ -406,8 +455,13 @@ pal_exerciser_ops (
         pal_mmio_write(Base + DMACTL1, (pal_mmio_read(Base + DMACTL1)) & NO_SNOOP_STOP_MASK);//disabling the NO SNOOP
         return 0;
 
+    case ATS_TXN_REQ:
+        pal_mmio_write(Base + DMA_BUS_ADDR, Param);
+        pal_mmio_write(Base + ATSCTL, ATS_TRIGGER);
+        return !(pal_mmio_read(Base + ATSCTL) & ATS_STATUS);
+
     default:
-        return 1;
+        return PCIE_CAP_NOT_FOUND;
   }
 }
 
@@ -428,6 +482,7 @@ pal_exerciser_get_data (
 {
   UINT32 Index;
   UINT64 EcamBase;
+  UINT64 EcamBAR0;
 
   EcamBase = (Ecam + pal_exerciser_get_pcie_config_offset(Bdf));
 
@@ -441,11 +496,12 @@ pal_exerciser_get_data (
           for (Index = 0; Index < TEST_REG_COUNT; Index++) {
               Data->cfg_space.reg[Index].offset = (offset_table[Index] + pal_exerciser_get_pcie_config_offset (Bdf));
               Data->cfg_space.reg[Index].attribute = attr_table[Index];
-              Data->cfg_space.reg[Index].value = pal_mmio_read(EcamBase +  offset_table[Index]);
+              Data->cfg_space.reg[Index].value = pal_mmio_read(EcamBase + offset_table[Index]);
           }
           return 0;
       case EXERCISER_DATA_BAR0_SPACE:
-          Data->bar_space.base_addr = &EcamBase;
+          EcamBAR0 = pal_exerciser_get_ecsr_base(Bdf, 0);
+          Data->bar_space.base_addr = (void *)EcamBAR0;
           if (((pal_exerciser_get_ecsr_base(Bdf,0) >> PREFETCHABLE_BIT_SHIFT) & MASK_BIT) == 0x1)
               Data->bar_space.type = MMIO_PREFETCHABLE;
           else

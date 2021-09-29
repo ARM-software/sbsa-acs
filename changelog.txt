@@ -1,3 +1,16 @@
+v21.09_REL3.1
+
+*SBSA: Memory test for “unpopulated address space access” waived off and implemented for bare-metal
+*SBSA: Fixes in test (PE and GIC)
+*SBSA: Enabling mmio prints dumps on demand.
+*SBSA: Enabled new ARI test in exerciser
+*SBSA: Enabled bare-metal driver for GIC 
+*SBSA: PCIe Enumeration enhancements - Programming BAR registers and configuring the base and limit register
+*SBSA: Enabled ATS for exerciser
+*SBSA: Bug fix and enhancements related to P2P, SMMU, and PCIe
+*SBSA: Updated interrupt related test cases
+*SBSA: Additional support provided for running ACS on bare-metal
+
 v20.10_REL3.0
 
 * SBSA: Added SBSA Level 6 PE, SMMU Tests.

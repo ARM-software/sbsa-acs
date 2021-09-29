@@ -60,13 +60,11 @@ payload()
   }
 
   intid = val_timer_get_info(TIMER_INFO_VIR_EL2_INTID, 0);
-  /* For SBSA level 2 and above, the PPI has to be a specific value.*/
-  if (g_sbsa_level > 1) {
-      if (intid != 28) {
-          val_print(AVS_PRINT_ERR, "\n       Incorrect PPI value %d     ", intid);
-          val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
-          return;
-      }
+
+  if (intid != 28) {
+      val_print(AVS_PRINT_ERR, "\n       Incorrect PPI value %d     ", intid);
+      val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
+      return;
   }
 
   val_gic_install_isr(intid, isr);

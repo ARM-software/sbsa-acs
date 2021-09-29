@@ -52,10 +52,11 @@ payload(void)
   uint32_t dp_type;
   uint32_t pe_index;
   uint32_t tbl_index;
-  uint32_t read_value;
+  uint32_t read_value, old_value;
+  uint32_t status;
   uint32_t test_skip = 1;
   uint64_t mem_base = 0, mem_base_upper = 0;
-  uint64_t mem_lim = 0, mem_lim_upper = 0;
+  uint64_t mem_lim = 0, mem_lim_upper = 0, new_mem_lim;
   pcie_device_bdf_table *bdf_tbl_ptr;
 
   tbl_index = 0;
@@ -63,8 +64,15 @@ payload(void)
   pe_index = val_pe_get_index_mpid(val_pe_get_mpid());
 
   /* Install sync and async handlers to handle exceptions.*/
-  val_pe_install_esr(EXCEPT_AARCH64_SYNCHRONOUS_EXCEPTIONS, esr);
-  val_pe_install_esr(EXCEPT_AARCH64_SERROR, esr);
+  status = val_pe_install_esr(EXCEPT_AARCH64_SYNCHRONOUS_EXCEPTIONS, esr);
+  status |= val_pe_install_esr(EXCEPT_AARCH64_SERROR, esr);
+  if (status)
+  {
+      val_print(AVS_PRINT_ERR, "\n      Failed in installing the exception handler", 0);
+      val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
+      return;
+  }
+
   branch_to_test = &&exception_return;
 
   /* Since this is a memory space access test.
@@ -123,8 +131,30 @@ payload(void)
          * Base + 0x10 will always be in the range.
          * Read the same
         */
+        old_value = (*(volatile addr_t *)(mem_base + MEM_OFFSET_10));
         *(volatile addr_t *)(mem_base + MEM_OFFSET_10) = KNOWN_DATA;
         read_value = (*(volatile addr_t *)(mem_base + MEM_OFFSET_10));
+
+        /*Accessing out of range of limit should return 0xFFFFFFFF*/
+        if ((mem_lim >> MEM_SHIFT) > (mem_base >> MEM_SHIFT))
+        {
+           new_mem_lim  = mem_base + MEM_OFF_100000;
+           mem_base = mem_base | (mem_base  >> MEM_BASE_SHIFT);
+           val_pcie_write_cfg(bdf, TYPE1_P_MEM, mem_base);
+           val_pcie_read_cfg(bdf, TYPE1_P_MEM, &read_value);
+
+           uint32_t value = (*(volatile uint32_t *)(new_mem_lim + MEM_OFFSET_10));
+           /*Write back original value */
+           val_pcie_write_cfg(bdf, TYPE1_P_MEM, ((mem_lim & MEM_LIM_MASK) | (mem_base  >> 16)));
+
+           if (value != PCIE_UNKNOWN_RESPONSE)
+           {
+               val_print(AVS_PRINT_ERR, "\n Memory range for bdf 0x%x", bdf);
+               val_print(AVS_PRINT_ERR, " is 0x%x", read_value);
+               val_print(AVS_PRINT_ERR, "\n Out of range addr %x ", (new_mem_lim + MEM_OFFSET_10));
+               val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
+           }
+        }
 
 exception_return:
         /* Memory Space might have constraint on RW/RO behaviour
@@ -136,7 +166,7 @@ exception_return:
           return;
         }
 
-        if ((read_value == PCIE_UNKNOWN_RESPONSE) || val_pcie_is_urd(bdf)) {
+        if ((old_value != read_value && read_value == PCIE_UNKNOWN_RESPONSE) || val_pcie_is_urd(bdf)) {
           val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
           val_pcie_clear_urd(bdf);
           return;

@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018, 2021 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,6 +19,7 @@
 #include "include/sbsa_avs_gic.h"
 #include "include/sbsa_avs_gic_support.h"
 #include "include/sbsa_avs_common.h"
+#include "sys_arch_src/gic/gic.h"
 
 GIC_INFO_TABLE  *g_gic_info_table;
 
@@ -43,14 +44,11 @@ val_gic_execute_tests(uint32_t level, uint32_t num_pe)
       }
   }
 
+  g_curr_module = 1 << GIC_MODULE;
   status = g001_entry(num_pe);
-  if (level > 1) {
-    status |= g002_entry(num_pe);
-    if (level > 2) {
-      status |= g003_entry(num_pe);
-    }
-    status |= g004_entry(num_pe);
-  }
+  status |= g002_entry(num_pe);
+  status |= g003_entry(num_pe);
+  status |= g004_entry(num_pe);
 
   if (status != AVS_STATUS_PASS)
     val_print(AVS_PRINT_ERR, "\n      One or more GIC tests failed. Check Log \n", 0);
@@ -90,9 +88,19 @@ val_gic_create_info_table(uint64_t *gic_info_table)
       val_print(AVS_PRINT_ERR,"\n ** CRITICAL ERROR: GIC Distributor count is 0 **\n", 0);
       return AVS_STATUS_ERR;
   }
+
+  if (pal_target_is_bm())
+      val_sbsa_gic_init();
   return AVS_STATUS_PASS;
 }
 
+/**
+  @brief   This API frees the memory assigned for gic info table
+           1. Caller       -  Application Layer
+           2. Prerequisite -  val_gic_create_info_table
+  @param   None
+  @return  None
+**/
 void
 val_gic_free_info_table()
 {
@@ -131,6 +139,100 @@ val_get_gicd_base(void)
 }
 
 /**
+  @brief   This API returns the base address of the GIC Redistributor for the current PE
+           1. Caller       -  Test Suite
+           2. Prerequisite -  val_gic_create_info_table
+  @param   rdbase_len - To Store the Lenght of the Redistributor
+  @return  Address of GIC Redistributor
+**/
+addr_t
+val_get_gicr_base(uint32_t *rdbase_len)
+{
+  GIC_INFO_ENTRY  *gic_entry;
+
+  if (g_gic_info_table == NULL) {
+      val_print(AVS_PRINT_ERR, "GIC INFO table not available \n", 0);
+      return 0;
+  }
+
+  gic_entry = g_gic_info_table->gic_info;
+
+  while (gic_entry->type != 0xFF) {
+      if (gic_entry->type == ENTRY_TYPE_GICR_GICRD) {
+              *rdbase_len = gic_entry->length;
+              return gic_entry->base;
+      }
+      if (gic_entry->type == ENTRY_TYPE_GICC_GICRD) {
+              *rdbase_len = 0;
+              return gic_entry->base;
+      }
+      gic_entry++;
+  }
+
+  *rdbase_len = 0;
+  return 0;
+}
+
+/**
+  @brief   This API returns the base address of the GICH.
+           1. Caller       -  VAL
+           2. Prerequisite -  val_gic_create_info_table
+  @param   None
+  @return  Address of GICH
+**/
+addr_t
+val_get_gich_base(void)
+{
+
+  GIC_INFO_ENTRY  *gic_entry;
+
+  if (g_gic_info_table == NULL) {
+      val_print(AVS_PRINT_ERR, "GIC INFO table not available \n", 0);
+      return 0;
+  }
+
+  gic_entry = g_gic_info_table->gic_info;
+
+  while (gic_entry->type != 0xFF) {
+    if (gic_entry->type == ENTRY_TYPE_GICH) {
+        return gic_entry->base;
+    }
+    gic_entry++;
+  }
+
+  return 0;
+}
+/**
+  @brief   This API returns the base address of the CPU IF for the current PE
+           1. Caller       -  Test Suite
+           2. Prerequisite -  val_gic_create_info_table
+  @param   None
+  @return  Address of GIC Redistributor
+**/
+addr_t
+val_get_cpuif_base(void)
+{
+  GIC_INFO_ENTRY  *gic_entry;
+
+  if (g_gic_info_table == NULL) {
+      val_print(AVS_PRINT_ERR, "GIC INFO table not available \n", 0);
+      return 0;
+  }
+
+  gic_entry = g_gic_info_table->gic_info;
+
+  if (gic_entry) {
+      while (gic_entry->type != 0xFF) {
+          if (gic_entry->type == ENTRY_TYPE_CPUIF)
+              return gic_entry->base;
+          gic_entry++;
+      }
+  }
+
+  return 0;
+}
+
+/**
   @brief   This function is a single point of entry to retrieve
            all GIC related information.
            1. Caller       -  Test Suite
@@ -141,6 +243,8 @@ val_get_gicd_base(void)
 uint32_t
 val_gic_get_info(uint32_t type)
 {
+  uint32_t rdbase_len;
+
   if (g_gic_info_table == NULL) {
       val_print(AVS_PRINT_ERR, "\n   Get GIC info called before gic info table is filled ",        0);
       return 0;
@@ -153,14 +257,34 @@ val_gic_get_info(uint32_t type)
              val_print(AVS_PRINT_INFO, "\n       gic version from ACPI table = %d ", g_gic_info_table->header.gic_version);
                 return g_gic_info_table->header.gic_version;
           }
-
-          return ((val_mmio_read(val_get_gicd_base() + 0xFE8) >> 4) & 0xF);
+          /* Read Version from GICD_PIDR2 bit [7:4] */
+          return VAL_EXTRACT_BITS(val_mmio_read(val_get_gicd_base() + GICD_PIDR2), 4, 7);
 
       case GIC_INFO_SEC_STATES:
-          return ((val_mmio_read(val_get_gicd_base() + 0x0) >> 6) & 0x1);
+          /* Read DS Bit from GICD_CTLR bit[6] */
+          return VAL_EXTRACT_BITS(val_mmio_read(val_get_gicd_base() + GICD_CTLR), 6, 6);
+
+      case GIC_INFO_AFFINITY_NS:
+          /* Read ARE_NS Bit from GICD_CTLR bit[5] */
+          return VAL_EXTRACT_BITS(val_mmio_read(val_get_gicd_base() + GICD_CTLR), 4, 4);
+
+      case GIC_INFO_ENABLE_GROUP1NS:
+          /* Read EnableGrp1NS Bit from GICD_CTLR bit[2] */
+          return VAL_EXTRACT_BITS(val_mmio_read(val_get_gicd_base() + GICD_CTLR), 0, 1);
+
+      case GIC_INFO_SGI_NON_SECURE:
+          /* The non-RAZ/WI bits from GICR_ISENABLER0 correspond to non-secure SGIs */
+          return val_mmio_read(val_get_gicr_base(&rdbase_len) + RD_FRAME_SIZE + GICR_ISENABLER);
+
+      case GIC_INFO_SGI_NON_SECURE_LEGACY:
+          /* The non-RAZ/WI bits from GICD_ISENABLER<n> correspond to non-secure SGIs */
+          return val_mmio_read(val_get_gicd_base() + GICD_ISENABLER);
 
       case GIC_INFO_NUM_ITS:
           return g_gic_info_table->header.num_its;
+
+      case GIC_INFO_NUM_MSI_FRAME:
+          return g_gic_info_table->header.num_msi_frame;
 
       default:
           val_print(AVS_PRINT_ERR, "\n    GIC Info - TYPE not recognized %d  ", type);
@@ -179,7 +303,7 @@ val_gic_get_info(uint32_t type)
 uint32_t
 val_get_max_intid(void)
 {
-  return 32 * ((val_mmio_read(val_get_gicd_base() + 0x004) & 0x1F) + 1);
+  return (32 * ((val_mmio_read(val_get_gicd_base() + GICD_TYPER) & 0x1F) + 1));
 }
 
 /**
@@ -192,9 +316,11 @@ val_get_max_intid(void)
 **/
 uint32_t val_gic_route_interrupt_to_pe(uint32_t int_id, uint64_t mpidr)
 {
+  uint64_t cpuaffinity;
+
   if (int_id > 31) {
-      mpidr &= 0xF80FFFFFF;
-      val_mmio_write(val_get_gicd_base() + GICD_IROUTER + (8 * int_id), mpidr);
+      cpuaffinity = mpidr & (PE_AFF0 | PE_AFF1 | PE_AFF2 | PE_AFF3);
+      val_mmio_write64(val_get_gicd_base() + GICD_IROUTER + (8 * int_id), cpuaffinity);
   }
   else{
       val_print(AVS_PRINT_ERR, "\n    Only SPIs can be routed, interrupt with INTID = %d cannot be routed", int_id);
@@ -235,7 +361,9 @@ void val_gic_clear_interrupt(uint32_t int_id)
     uint32_t reg_offset = int_id / 32;
     uint32_t reg_shift  = int_id % 32;
 
-    if ((int_id > 31) && (int_id < 1020)) {
+    if (val_gic_is_valid_espi(int_id))
+      val_sbsa_gic_clear_espi_interrupt(int_id);
+    else if ((int_id > 31) && (int_id < 1020)) {
         val_mmio_write(val_get_gicd_base() + GICD_ICPENDR0 + (4 * reg_offset), (1 << reg_shift));
         val_mmio_write(val_get_gicd_base() + GICD_ICACTIVER0 + (4 * reg_offset), (1 << reg_shift));
     }
@@ -253,9 +381,9 @@ void val_gic_clear_interrupt(uint32_t int_id)
 **/
 void val_gic_cpuif_init(void)
 {
-  val_gic_reg_write(ICC_IGRPEN1_EL1, 0x1);
   val_gic_reg_write(ICC_BPR1_EL1, 0x7);
   val_gic_reg_write(ICC_PMR_EL1, 0xff);
+  val_gic_reg_write(ICC_IGRPEN1_EL1, 0x1);
 }
 
 /**
@@ -263,6 +391,7 @@ void val_gic_cpuif_init(void)
            1. Caller       -  Test Suite
            2. Prerequisite -  val_gic_create_info_table
   @param   int_id Interrupt ID
+  @param   trigger_type to Store the Interrupt Trigger type
   @return  Status
 **/
 uint32_t val_gic_get_intr_trigger_type(uint32_t int_id, INTR_TRIGGER_INFO_TYPE_e *trigger_type)
@@ -290,6 +419,40 @@ uint32_t val_gic_get_intr_trigger_type(uint32_t int_id, INTR_TRIGGER_INFO_TYPE_e
 }
 
 /**
+  @brief   This function will Get the trigger type Edge/Level for extended SPI int
+           1. Caller       -  Test Suite
+           2. Prerequisite -  val_gic_create_info_table
+  @param   int_id Interrupt ID
+  @param   trigger_type to Store the Interrupt Trigger type
+  @return  Status
+**/
+uint32_t val_gic_get_espi_intr_trigger_type(uint32_t int_id,
+                                                           INTR_TRIGGER_INFO_TYPE_e *trigger_type)
+{
+  uint32_t reg_value;
+  uint32_t reg_offset;
+  uint32_t config_bit_shift;
+
+  if (!(int_id >= 4096 && int_id <= val_gic_max_espi_val())) {
+    val_print(AVS_PRINT_ERR, "\n       Invalid Extended Int ID number 0x%x ", int_id);
+    return AVS_STATUS_ERR;
+  }
+
+  /* 4096 is starting value of extended SPI int */
+  reg_offset = (int_id - 4096) / GICD_ICFGR_INTR_STRIDE;
+  config_bit_shift  = GICD_ICFGR_INTR_CONFIG1(int_id - 4096);
+
+  reg_value = val_mmio_read(val_get_gicd_base() + GICD_ICFGRE + (4 * reg_offset));
+
+  if ((reg_value & (1 << config_bit_shift)) == 0)
+    *trigger_type = INTR_TRIGGER_INFO_LEVEL_HIGH;
+  else
+    *trigger_type = INTR_TRIGGER_INFO_EDGE_RISING;
+
+  return 0;
+}
+
+/**
   @brief   This function will Set the trigger type Edge/Level based on the GTDT table
            1. Caller       -  Test Suite
            2. Prerequisite -  val_gic_create_info_table
@@ -301,9 +464,80 @@ void val_gic_set_intr_trigger(uint32_t int_id, INTR_TRIGGER_INFO_TYPE_e trigger_
 {
   uint32_t status;
 
-  val_print(AVS_PRINT_DEBUG, "\n    Setting Trigger type as %d  ", trigger_type);
+  val_print(AVS_PRINT_DEBUG, "\n       Setting Trigger type as %d  ", trigger_type);
   status = pal_gic_set_intr_trigger(int_id, trigger_type);
 
   if (status)
-    val_print(AVS_PRINT_ERR, "\n    Error Could Not Configure Trigger Type", 0);
+    val_print(AVS_PRINT_ERR, "\n       Error Could Not Configure Trigger Type",
+                                                                            0);
+}
+
+/**
+  @brief   This API returns if extended SPI supported in system
+  @param   None
+  @return  0 not supported, 1 supported
+**/
+uint32_t
+val_gic_espi_supported(void)
+{
+  uint32_t espi_support;
+
+  espi_support = val_sbsa_gic_espi_support();
+
+  val_print(AVS_PRINT_INFO, "\n    ESPI supported %d  ", espi_support);
+  return espi_support;
+}
+
+/**
+  @brief   This API returns max extended SPI interrupt value
+  @param   None
+  @return  max extended spi int value
+**/
+uint32_t
+val_gic_max_espi_val(void)
+{
+  uint32_t max_espi_val;
+
+  max_espi_val = val_sbsa_gic_max_espi_val();
+
+  val_print(AVS_PRINT_INFO, "\n    max ESPI value %d  ", max_espi_val);
+  return max_espi_val;
+}
+
+/**
+  @brief   This API returns max extended PPI interrupt value
+  @param   None
+  @return  max extended PPI int value
+**/
+uint32_t
+val_gic_max_eppi_val(void)
+{
+  uint32_t max_eppi_val;
+
+  max_eppi_val = val_sbsa_gic_max_eppi_val();
+
+  val_print(AVS_PRINT_INFO, "\n    max EPPI value %d  ", max_eppi_val);
+  return max_eppi_val;
+}
+
+/**
+  @brief  API used to check whether int_id is a espi interrupt
+  @param  interrupt
+  @return 1: espi interrupt, 0: non-espi interrupt
+**/
+uint32_t
+val_gic_is_valid_espi(uint32_t int_id)
+{
+  return val_sbsa_gic_check_espi_interrupt(int_id);
+}
+
+/**
+  @brief  API used to check whether int_id is a Extended PPI
+  @param  interrupt
+  @return 1: eppi interrupt, 0: non-eppi interrupt
+**/
+uint32_t
+val_gic_is_valid_eppi(uint32_t int_id)
+{
+  return val_sbsa_gic_check_eppi_interrupt(int_id);
 }

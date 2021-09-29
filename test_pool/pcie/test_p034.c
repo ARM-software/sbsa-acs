@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2019, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2019, 2021 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -54,15 +54,13 @@ payload(void)
       bdf = bdf_tbl_ptr->device[tbl_index++].bdf;
       dp_type = val_pcie_device_port_type(bdf);
 
-      /* Check for RCiEP and iEP */
-      if (dp_type == RCiEP || dp_type == iEP_EP)
+      /* Check for RCiEP, iEP, RCEC, RP */
+      if (dp_type == RCiEP || dp_type == iEP_EP || dp_type == iEP_RP
+                           || dp_type == RCEC || dp_type == RP)
       {
-          /* Read 32-bits from CacheLine Size regsiter offset */
-          val_pcie_read_cfg(bdf, TYPE01_CLSR, &reg_value);
-
           /* Extract Hdr Type */
-          hdr_type = (reg_value >> TYPE01_HTR_SHIFT) & TYPE01_HTR_MASK;
-          val_print(AVS_PRINT_INFO, "\n        HDR TYPE 0x%x ", hdr_type);
+          hdr_type = val_pcie_function_header_type(bdf);
+          val_print(AVS_PRINT_INFO, "\n       HDR TYPE 0x%x ", hdr_type);
 
           max_bar = 0;
           /* For Type0 header max bars 6, type1 header max bars 2 */
@@ -70,7 +68,7 @@ payload(void)
              max_bar = TYPE0_MAX_BARS;
           else if (hdr_type == TYPE1_HEADER)
              max_bar = TYPE1_MAX_BARS;
-          val_print(AVS_PRINT_INFO, "\n        MAX BARS 0x%x ", max_bar);
+          val_print(AVS_PRINT_INFO, "\n       MAX BARS 0x%x ", max_bar);
 
           for (bar_index = 0; bar_index < max_bar; bar_index++)
           {
@@ -88,7 +86,7 @@ payload(void)
               addr_type = (reg_value >> BAR_MDT_SHIFT) & BAR_MDT_MASK;
               if ((addr_type != BITS_32) && (addr_type != BITS_64))
               {
-                  val_print(AVS_PRINT_ERR, "\n        BDF 0x%x ", bdf);
+                  val_print(AVS_PRINT_ERR, "\n       BDF 0x%x ", bdf);
                   val_print(AVS_PRINT_ERR, " Addr Type: 0x%x", addr_type);
                   test_fails++;
                   continue;
@@ -101,7 +99,7 @@ payload(void)
               /* Check BAR should be MMIO */
               if (reg_value & BAR_MIT_MASK)
               {
-                 val_print(AVS_PRINT_ERR, "\n        BDF 0x%x Not MMIO", 0);
+                 val_print(AVS_PRINT_ERR, "\n       BDF 0x%x Not MMIO", 0);
                  test_fails++;
               }
            }

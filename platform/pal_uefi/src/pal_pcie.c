@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2020, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2021, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -53,7 +53,7 @@ pal_pcie_get_mcfg_ecam()
   gMcfgHdr = (EFI_ACPI_MEMORY_MAPPED_CONFIGURATION_BASE_ADDRESS_TABLE_HEADER *) pal_get_mcfg_ptr();
 
   if (gMcfgHdr == NULL) {
-      sbsa_print(AVS_PRINT_WARN, L"ACPI - MCFG Table not found. Setting ECAM Base to 0. \n");
+      sbsa_print(AVS_PRINT_WARN, L" ACPI - MCFG Table not found. Setting ECAM Base to 0. \n");
       return 0x0;
   }
 
@@ -79,7 +79,7 @@ pal_pcie_create_info_table(PCIE_INFO_TABLE *PcieTable)
   UINT32 i = 0;
 
   if (PcieTable == NULL) {
-    sbsa_print(AVS_PRINT_ERR, L"Input PCIe Table Pointer is NULL. Cannot create PCIe INFO \n");
+    sbsa_print(AVS_PRINT_ERR, L" Input PCIe Table Pointer is NULL. Cannot create PCIe INFO \n");
     return;
   }
 
@@ -88,7 +88,7 @@ pal_pcie_create_info_table(PCIE_INFO_TABLE *PcieTable)
   gMcfgHdr = (EFI_ACPI_MEMORY_MAPPED_CONFIGURATION_BASE_ADDRESS_TABLE_HEADER *) pal_get_mcfg_ptr();
 
   if (gMcfgHdr == NULL) {
-      sbsa_print(AVS_PRINT_DEBUG, L"ACPI - MCFG Table not found. \n");
+      sbsa_print(AVS_PRINT_DEBUG, L" ACPI - MCFG Table not found. \n");
       return;
   }
 
@@ -142,7 +142,7 @@ pal_pcie_io_read_cfg(UINT32 Bdf, UINT32 offset, UINT32 *data)
 
   Status = gBS->LocateHandleBuffer (ByProtocol, &gEfiPciIoProtocolGuid, NULL, &HandleCount, &HandleBuffer);
   if (EFI_ERROR (Status)) {
-    sbsa_print(AVS_PRINT_INFO,L"No PCI devices found in the system\n");
+    sbsa_print(AVS_PRINT_INFO, L" No PCI devices found in the system\n");
     return PCIE_NO_MAPPING;
   }
 
@@ -191,7 +191,7 @@ pal_pcie_io_write_cfg(UINT32 Bdf, UINT32 offset, UINT32 data)
 
   Status = gBS->LocateHandleBuffer (ByProtocol, &gEfiPciIoProtocolGuid, NULL, &HandleCount, &HandleBuffer);
   if (EFI_ERROR (Status)) {
-    sbsa_print(AVS_PRINT_INFO,L"No PCI devices found in the system\n");
+    sbsa_print(AVS_PRINT_INFO, L" No PCI devices found in the system\n");
     return;
   }
 
@@ -225,7 +225,7 @@ pal_pcie_p2p_support()
    * transactions is platform implementation specific
    */
 
-  return 1;
+  return 0;
 }
 
 /**
@@ -250,9 +250,17 @@ pal_pcie_dev_p2p_support (
   return 1;
 }
 
-/* Place holder function. Need to be
- * implemented if needed in later releases
- */
+/**
+    @brief   Create a list of MSI(X) vectors for a device
+
+    @param   bus        PCI bus address
+    @param   dev        PCI device address
+    @param   fn         PCI function number
+    @param   mvector    pointer to a MSI(X) list address
+
+    @return  mvector    list of MSI(X) vectors
+    @return  number of MSI(X) vectors
+**/
 UINT32
 pal_get_msi_vectors (
   UINT32 Seg,
@@ -265,9 +273,17 @@ pal_get_msi_vectors (
   return 0;
 }
 
-/* Place holder function. Need to be
- * implemented if needed in later releases
- */
+/**
+    @brief   Get legacy IRQ routing for a PCI device
+
+    @param   bus        PCI bus address
+    @param   dev        PCI device address
+    @param   fn         PCI function number
+    @param   irq_map    pointer to IRQ map structure
+
+    @return  irq_map    IRQ routing map
+    @return  status code
+**/
 UINT32
 pal_pcie_get_legacy_irq_map (
   UINT32 Seg,
@@ -277,7 +293,7 @@ pal_pcie_get_legacy_irq_map (
   PERIPHERAL_IRQ_MAP *IrqMap
   )
 {
-  return 0;
+  return 1;
 }
 
 /* Place holder function. Need to be
@@ -307,6 +323,47 @@ pal_pcie_is_cache_present (
   UINT32 Dev,
   UINT32 Fn
   )
+{
+  return 1;
+}
+
+/**
+    @brief   Gets RP support of transaction forwarding.
+
+    @param   bus        PCI bus address
+    @param   dev        PCI device address
+    @param   fn         PCI function number
+    @param   seg        PCI segment number
+
+    @return  0 if rp not involved in transaction forwarding
+             1 if rp is involved in transaction forwarding
+**/
+UINT32
+pal_pcie_get_rp_transaction_frwd_support(UINT32 seg, UINT32 bus, UINT32 dev, UINT32 fn)
+{
+  return 1;
+}
+
+/**
+  @brief  Returns whether a PCIe Function is an on-chip peripheral or not
+
+  @param  bdf        - Segment/Bus/Dev/Func in the format of PCIE_CREATE_BDF
+  @return Returns TRUE if the Function is on-chip peripheral, FALSE if it is
+          not an on-chip peripheral
+**/
+UINT32
+pal_pcie_is_onchip_peripheral(UINT32 bdf)
+{
+  return 0;
+}
+
+/**
+  @brief  Checks the discovered PCIe hierarchy is matching with the
+          topology described in info table.
+  @return Returns 0 if device entries matches , 1 if there is mismatch.
+**/
+UINT32
+pal_pcie_check_device_list(void)
 {
   return 0;
 }

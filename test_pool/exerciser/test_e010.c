@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2019-2020, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2019-2021, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -29,7 +29,7 @@
 #define TEST_DESC  "Check RP Sub Bus transactions are TYPE1"
 
 #define MAX_BUS   255
-#define BUS_SHIFT 8
+#define BUS_SHIFT 16
 #define BUS_MASK  0xff
 
 uint8_t
@@ -133,8 +133,9 @@ payload(void)
       /* Increase Subordinate bus register of exerciser rootport by one */
       val_pcie_read_cfg(erp_bdf, TYPE1_PBN, &erp_reg_value);
       erp_sub_bus = (erp_reg_value >> SUBBN_SHIFT) & SUBBN_MASK;
-      reg_value = reg_value & (~(SUBBN_MASK << SUBBN_SHIFT));
+      reg_value = erp_reg_value & (~(SUBBN_MASK << SUBBN_SHIFT));
       reg_value = reg_value | ((erp_sub_bus + 1) << SUBBN_SHIFT);
+      val_pcie_write_cfg(erp_bdf, TYPE1_PBN, reg_value);
 
       /* Increment bus number in e_bdf variable */
       e_bus = (e_bdf >> BUS_SHIFT) & BUS_MASK;

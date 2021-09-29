@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2020, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2021, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -117,14 +117,9 @@ typedef struct {
   uint32_t num_gicd;
   uint32_t num_gicrd;
   uint32_t num_its;
+  uint32_t num_msi_frame;
+  uint32_t num_gich;
 }GIC_INFO_HDR;
-
-typedef enum {
-  ENTRY_TYPE_CPUIF = 0x1000,
-  ENTRY_TYPE_GICD,
-  ENTRY_TYPE_GICRD,
-  ENTRY_TYPE_GICITS
-}GIC_INFO_TYPE_e;
 
 /* Interrupt Trigger Type */
 typedef enum {
@@ -140,7 +135,11 @@ typedef enum {
 typedef struct {
   uint32_t type;
   uint64_t base;
-  uint32_t its_id;  /* This its_id is only used in case of ITS Type entry */
+  uint32_t entry_id;  /* This entry_id is used to tell component ID */
+  uint64_t length;  /* This length is only used in case of Re-Distributor Range Address length */
+  uint32_t flags;
+  uint32_t spi_count;
+  uint32_t spi_base;
 }GIC_INFO_ENTRY;
 
 /**
@@ -151,16 +150,38 @@ typedef struct {
   GIC_INFO_ENTRY gic_info[];  ///< Array of Information blocks - instantiated for each GIC type
 }GIC_INFO_TABLE;
 
+typedef struct {
+ uint32_t     ID;
+ uint64_t     Base;
+ uint64_t     CommandQBase;
+ uint32_t     IDBits;
+ uint64_t     ITTBase;
+} GIC_ITS_BLOCK;
+
+typedef struct {
+ uint64_t         GicDBase;
+ uint64_t         GicRdBase;
+ uint32_t         GicNumIts;
+ GIC_ITS_BLOCK    GicIts[];
+} GIC_ITS_INFO;
+
+typedef enum {
+  ENTRY_TYPE_CPUIF = 0x1000,
+  ENTRY_TYPE_GICD,
+  ENTRY_TYPE_GICC_GICRD,
+  ENTRY_TYPE_GICR_GICRD,
+  ENTRY_TYPE_GICITS,
+  ENTRY_TYPE_GIC_MSI_FRAME,
+  ENTRY_TYPE_GICH
+} GIC_INFO_TYPE_e;
+
 void     pal_gic_create_info_table(GIC_INFO_TABLE *gic_info_table);
 uint32_t pal_gic_install_isr(uint32_t int_id, void (*isr)(void));
 void pal_gic_end_of_interrupt(uint32_t int_id);
 uint32_t pal_gic_request_irq(unsigned int irq_num, unsigned int mapped_irq_num, void *isr);
 void pal_gic_free_irq(unsigned int irq_num, unsigned int mapped_irq_num);
 uint32_t pal_gic_set_intr_trigger(uint32_t int_id, INTR_TRIGGER_INFO_TYPE_e trigger_type);
-uint32_t pal_gic_its_configure(void);
-uint32_t pal_gic_request_msi(uint32_t its_id, uint32_t DevID, uint32_t IntID, uint32_t msi_index, uint32_t *msi_addr, uint32_t *msi_data);
-void pal_gic_free_msi(uint32_t its_id, uint32_t DevID, uint32_t IntID, uint32_t msi_index);
-uint32_t pal_gic_get_max_lpi_id(void);
+uint32_t pal_target_is_bm(void);
 
 /** Timer tests related definitions **/
 
@@ -273,10 +294,10 @@ void pal_pcie_read_ext_cap_word(uint32_t seg, uint32_t bus, uint32_t dev, uint32
 uint32_t pal_pcie_get_pcie_type(uint32_t seg, uint32_t bus, uint32_t dev, uint32_t fn);
 uint32_t pal_pcie_p2p_support(void);
 uint32_t pal_pcie_dev_p2p_support(uint32_t seg, uint32_t bus, uint32_t dev, uint32_t fn);
-uint32_t pal_pcie_multifunction_support(uint32_t seg, uint32_t bus, uint32_t dev, uint32_t fn);
 uint32_t pal_pcie_is_cache_present(uint32_t seg, uint32_t bus, uint32_t dev, uint32_t fn);
-
+uint32_t pal_pcie_is_onchip_peripheral(uint32_t bdf);
 void pal_pcie_io_write_cfg(uint32_t bdf, uint32_t offset, uint32_t data);
+uint32_t pal_pcie_check_device_list(void);
 /**
   @brief  Instance of SMMU INFO block
 **/
@@ -359,7 +380,7 @@ typedef struct {
 void pal_iovirt_create_info_table(IOVIRT_INFO_TABLE *iovirt);
 uint32_t pal_iovirt_check_unique_ctx_intid(uint64_t smmu_block);
 uint32_t pal_iovirt_unique_rid_strid_map(uint64_t rc_block);
-uint64_t pal_iovirt_get_rc_smmu_base(IOVIRT_INFO_TABLE *iovirt, uint32_t rc_seg_num);
+uint64_t pal_iovirt_get_rc_smmu_base(IOVIRT_INFO_TABLE *iovirt, uint32_t rc_seg_num, uint32_t rid);
 
 /**
   @brief SMMU Info Table
@@ -495,6 +516,7 @@ uint32_t pal_pcie_get_dma_coherent(uint32_t seg, uint32_t bus, uint32_t dev, uin
 uint32_t pal_pcie_is_devicedma_64bit(uint32_t seg, uint32_t bus, uint32_t dev, uint32_t fn);
 uint32_t pal_pcie_scan_bridge_devices_and_check_memtype(uint32_t seg, uint32_t bus,
                                                             uint32_t dev, uint32_t fn);
+uint32_t pal_pcie_get_rp_transaction_frwd_support(uint32_t seg, uint32_t bus, uint32_t dev, uint32_t fn);
 /**
   @brief DMA controllers info structure
 **/
@@ -594,6 +616,8 @@ void     pal_mmio_write16(uint64_t addr, uint16_t data);
 void     pal_mmio_write(uint64_t addr, uint32_t data);
 void     pal_mmio_write64(uint64_t addr, uint64_t data);
 
+void     pal_mem_set(void *Buf, uint32_t Size, uint8_t Value);
+
 void     pal_pe_update_elr(void *context, uint64_t offset);
 uint64_t pal_pe_get_esr(void *context);
 uint64_t pal_pe_get_far(void *context);
@@ -607,6 +631,8 @@ void     pal_pe_data_cache_ops_by_va(uint64_t addr, uint32_t type);
 #define MAX_ARRAY_SIZE 32
 #define TEST_REG_COUNT 10
 #define TEST_DDR_REGION_CNT 16
+#define RID_VALID      1
+#define RID_NOT_VALID  0
 
 #define EXERCISER_ID   0xED0113B5 //device id + vendor id
 
@@ -644,6 +670,7 @@ typedef enum {
 typedef enum {
     TXN_REQ_ID     = 0x0,
     TXN_ADDR_TYPE  = 0x1,
+    TXN_REQ_ID_VALID    = 0x2,
 } EXERCISER_TXN_ATTR;
 
 typedef enum {
@@ -730,6 +757,7 @@ uint32_t pal_exerciser_set_state(EXERCISER_STATE state, uint64_t *value, uint32_
 uint32_t pal_exerciser_get_state(EXERCISER_STATE *state, uint32_t bdf);
 uint32_t pal_exerciser_ops(EXERCISER_OPS ops, uint64_t param, uint32_t instance);
 uint32_t pal_exerciser_get_data(EXERCISER_DATA_TYPE type, exerciser_data_t *data, uint32_t bdf, uint64_t ecam);
+uint32_t pal_is_bdf_exerciser(uint32_t bdf);
 
 uint32_t pal_nist_generate_rng(uint32_t *rng_buffer);
 #endif

@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018,2021 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -34,6 +34,7 @@ payload()
   uint32_t data;
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
   uint64_t timer_num = val_timer_get_info(TIMER_INFO_NUM_PLATFORM_TIMERS, 0);
+  uint64_t data1;
 
   if (!timer_num) {
       val_print(AVS_PRINT_WARN, "\n       No System timers are defined      ", 0);
@@ -77,16 +78,21 @@ payload()
       }
 
       if (cnt_base_n == 0) {
-          val_print(AVS_PRINT_WARN, "\n      CNT_BASE_N is zero                 ", 0);
+          val_print(AVS_PRINT_WARN, "\n       CNT_BASE_N is zero                 ", 0);
           val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 0x3));
           return;
       }
 
-      data = val_mmio_read(cnt_base_n + 0x0);
-      val_mmio_write(cnt_base_n + 0x0, data - ARBIT_VALUE);  // Writes to Read-Only registers should be ignored
-      if(val_mmio_read(cnt_base_n + 0x0) < data) {
+      // Read CNTPCT register
+      data1 = val_mmio_read64(cnt_base_n + 0x0);
+      val_print(AVS_PRINT_DEBUG, "\n       CNTPCT Read value = 0x%llx       ", data1);
+
+      // Writes to Read-Only registers should be ignore
+      val_mmio_write64(cnt_base_n + 0x0, (data1 - ARBIT_VALUE));
+
+      if (val_mmio_read64(cnt_base_n + 0x0) < data1) {
           val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 0x4));
-          val_print(AVS_PRINT_ERR, "\n      CNTBaseN offset 0 should be read-only ", 0);
+          val_print(AVS_PRINT_ERR, "\n       CNTBaseN: CNTPCT reg should be read-only ", 0);
           return;
       }
 
@@ -119,7 +125,7 @@ payload()
 
       data = val_mmio_read(cnt_base_n + 0xFD0);
       if ((data == 0x0) || ((data & 0xFFFF) == 0xFFFF)) {
-          val_print(AVS_PRINT_ERR, "\n      Unexpected value for CNTBaseN.CounterID %x  ", data);
+          val_print(AVS_PRINT_ERR, "\n       Unexpected value for CNTBaseN.CounterID %x  ", data);
           val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 0x8));
           return;
       }

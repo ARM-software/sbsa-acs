@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018, 2021 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -45,10 +45,10 @@ val_peripheral_execute_tests(uint32_t level, uint32_t num_pe)
       }
   }
 
+   g_curr_module = 1 << PERIPHERAL_MODULE;
   status = d001_entry(num_pe);
   status |= d002_entry(num_pe);
   status |= d003_entry(num_pe);
-  status |= m001_entry(num_pe);
 
   if (status == AVS_STATUS_FAIL) {
       val_print(AVS_PRINT_ERR, "\n    One or more Peripheral tests have failed...\n", status);

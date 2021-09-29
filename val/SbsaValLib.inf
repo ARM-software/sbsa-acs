@@ -1,5 +1,5 @@
 ## @file
-#  Copyright (c) 2016-2020, Arm Limited or its affiliates. All rights reserved.
+#  Copyright (c) 2016-2021, Arm Limited or its affiliates. All rights reserved.
 #  SPDX-License-Identifier : Apache-2.0
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
@@ -42,11 +42,19 @@
   src/avs_wd.c
   src/avs_wakeup.c
   src/avs_peripherals.c
-  src/avs_secure.c
   src/avs_memory.c
   src/avs_exerciser.c
   src/avs_pgt.c
   sys_arch_src/smmu_v3/smmu_v3.c
+  sys_arch_src/gic/gic.c
+  sys_arch_src/gic/sbsa_exception.c
+  sys_arch_src/gic/AArch64/sbsa_exception_asm.S
+  sys_arch_src/gic/v3/gic_v3.c
+  sys_arch_src/gic/v3/gic_v3_extended.c
+  sys_arch_src/gic/v3/AArch64/v3_asm.S
+  sys_arch_src/gic/v2/gic_v2.c
+  sys_arch_src/gic/its/sbsa_gic_its.c
+  sys_arch_src/gic/its/sbsa_gic_redistributor.c
 
 [Packages]
   MdePkg/MdePkg.dec

@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018, 2021 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -25,24 +25,26 @@ static
 void payload()
 {
   uint64_t data = 0;
+  int32_t  breakpointcount;
+  uint32_t context_aware_breakpoints = 0;
   uint32_t pe_index = val_pe_get_index_mpid(val_pe_get_mpid());
 
   data = val_pe_reg_read(ID_AA64DFR0_EL1);
 
-  if ((g_sbsa_level == 0) && ((data >> 12) & 0xF) < 3) { //bits 15:12 for Number of breakpoints - 1
-      val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
+  /* bits 15:12 for Number of breakpoints - 1 */
+  breakpointcount = VAL_EXTRACT_BITS(data, 12, 15) + 1;
+
+  if (breakpointcount < 6) {
+      val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 1));
       return;
   }
 
-  if ((g_sbsa_level > 0) && ((data >> 12) & 0xF) < 5) { //bits 15:12 for Number of breakpoints - 1
-      val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
-      return;
-  }
-
-  if (((data >> 28) > 0))  //bits 31:28 for Number of context aware breakpoints - 1
-      val_set_status(pe_index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
+  /*bits [31:28] Number of breakpoints that are context-aware, minus 1*/
+  context_aware_breakpoints = VAL_EXTRACT_BITS(data, 28, 31) + 1;
+  if (context_aware_breakpoints > 1)
+      val_set_status(pe_index, RESULT_PASS(g_sbsa_level, TEST_NUM, 1));
   else
-      val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
+      val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 2));
 
 
   return;
@@ -55,7 +57,6 @@ void payload()
 uint32_t
 c014_entry(uint32_t num_pe)
 {
-
   uint32_t status = AVS_STATUS_FAIL;
 
   status = val_initialize_test(TEST_NUM, TEST_DESC, num_pe, g_sbsa_level);

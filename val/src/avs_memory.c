@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2020, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2021, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -228,6 +228,17 @@ val_memory_phys_to_virt(uint64_t pa)
   return pal_mem_phys_to_virt(pa);
 }
 
+/**
+  @brief  Return the address of unpopulated memory of requested
+          instance from the GCD memory map.
+
+  @param  addr      - Address of the unpopulated memory
+          instance  - Instance of memory
+
+  @return 0 - SUCCESS
+          1 - No unpopulated memory present
+          2 - FAILURE
+**/
 uint64_t
 val_memory_get_unpopulated_addr(addr_t *addr, uint32_t instance)
 {
@@ -249,4 +260,33 @@ void
 val_memory_free_pages(void *addr, uint32_t num_pages)
 {
     pal_mem_free_pages(addr, num_pages);
+}
+
+/**
+  @brief  Allocates memory with the given alignement.
+
+  @param  Alignment   Specifies the alignment.
+  @param  Size        Requested memory allocation size.
+
+  @return Pointer to the allocated memory with requested alignment.
+**/
+void
+*val_aligned_alloc( uint32_t alignment, uint32_t size )
+{
+  void *Mem = NULL;
+  void *Aligned_Ptr = NULL;
+
+  /* Generate mask for the Alignment parameter*/
+  uint64_t Mask = ~(uint64_t)(alignment - 1);
+
+  /* Allocate memory with extra bytes, so we can return an aligned address*/
+  Mem = (void *)pal_mem_alloc(size + alignment);
+
+  if( Mem == NULL)
+    return 0;
+
+  /* Add the alignment to allocated memory address and align it to target alignment*/
+  Aligned_Ptr = (void *)(((uint64_t) Mem + alignment-1) & Mask);
+
+  return Aligned_Ptr;
 }

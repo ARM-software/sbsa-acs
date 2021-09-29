@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2018-2020, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2018-2021, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -25,25 +25,26 @@
 static void payload(void)
 {
     uint32_t index;
-    uint32_t count;
     uint32_t valid_cnt;
     uint8_t data;
     uint16_t acs_data;
     uint32_t pcie_type;
     uint64_t dev_bdf;
+    pcie_device_bdf_table *bdf_tbl_ptr;
+    uint32_t tbl_index = 0;
 
     index = val_pe_get_index_mpid(val_pe_get_mpid());
+    bdf_tbl_ptr = val_pcie_bdf_table_ptr();
 
     valid_cnt = 0;
-    count = val_peripheral_get_info(NUM_ALL, 0);
-    if (!count) {
+    if (!bdf_tbl_ptr->num_entries) {
         val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 3));
         return;
     }
 
-    while (count > 0) {
-        count--;
-        dev_bdf = val_peripheral_get_info(ANY_BDF, count);
+    while (tbl_index < bdf_tbl_ptr->num_entries)
+    {
+        dev_bdf = bdf_tbl_ptr->device[tbl_index++].bdf;
 
         /* get the PCIe device/port type */
         pcie_type = val_pcie_get_pcie_type(dev_bdf);

@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018, 2021 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,6 +18,7 @@
 #include "val/include/val_interface.h"
 
 #include "val/include/sbsa_avs_pcie.h"
+#include "val/include/sbsa_avs_memory.h"
 
 #define TEST_NUM   (AVS_PCIE_TEST_NUM_BASE + 8)
 #define TEST_DESC  "Check MSI(X) vectors uniqueness   "
@@ -104,7 +105,7 @@ clean_msi_list (PERIPHERAL_VECTOR_LIST *list)
   current_node = list;
   while (current_node != NULL) {
     next_node = current_node->next;
-    kfree (current_node);
+    val_memory_free (current_node);
     current_node = next_node;
   }
 }
@@ -122,6 +123,7 @@ payload (void)
   uint64_t current_dev_bdf;
   uint64_t next_dev_bdf;
   uint32_t count_next;
+  uint32_t test_skip = 1;
 
   if(!count) {
      val_set_status (index, RESULT_SKIP (g_sbsa_level, TEST_NUM, 3));
@@ -154,6 +156,7 @@ payload (void)
               next_dev_bdf = val_peripheral_get_info (ANY_BDF, count_next - 1);
               /* Read MSI(X) vectors */
               if (val_get_msi_vectors (next_dev_bdf, &next_dev_mvec)) {
+                test_skip = 0;
                 /* Compare two lists of MSI(X) vectors */
                 if(check_list_duplicates (current_dev_mvec, next_dev_mvec)) {
                   val_print (AVS_STATUS_ERR, "\n       Allocated MSIs are not unique", 0);
@@ -177,8 +180,11 @@ payload (void)
     count--;
   }
 
-  if (!status) {
-    val_set_status (index, RESULT_PASS (g_sbsa_level, TEST_NUM, 01));
+  if (test_skip) {
+    val_print(AVS_PRINT_ERR, "\n       No MSI vectors found ", 0);;
+    val_set_status (index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
+  } else  if (!status) {
+    val_set_status (index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
   }
 }
 
