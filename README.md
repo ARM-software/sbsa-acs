@@ -178,6 +178,7 @@ The details of the hardware or Verification IP which enable these exerciser test
    - Initiating transacions from and to the exerciser.
    - Ability to check on BDF and register address seen for each configuration address along with access type.
 
+ - SBSA Test 403 (Check ECAM Memory accessibility) execution time depends on the system PCIe hierarchy. For systems with multiple ECAMs the time taken to complete can be long which is normal. Please wait until the test completes.
 
 ## License
 SBSA ACS is distributed under Apache v2.0 License.
