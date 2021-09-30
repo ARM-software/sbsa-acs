@@ -111,9 +111,10 @@ w002_entry(uint32_t num_pe)
 
   num_pe = 1;  //This Timer test is run on single processor
 
-  val_initialize_test(TEST_NUM, TEST_DESC, num_pe, g_sbsa_level);
-
-  val_run_test_payload(TEST_NUM, num_pe, payload, 0);
+  status = val_initialize_test(TEST_NUM, TEST_DESC, num_pe, g_sbsa_level);
+  /* This check is when user is forcing us to skip this test */
+  if (status != AVS_STATUS_SKIP)
+      val_run_test_payload(TEST_NUM, num_pe, payload, 0);
 
   /* get the result from all PE and check for failure */
   error_flag = val_check_for_error(TEST_NUM, num_pe);
