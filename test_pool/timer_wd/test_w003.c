@@ -54,7 +54,7 @@ payload()
 
       ns_wdg++;
       ctrl_base    = val_wd_get_info(wd_num, WD_INFO_CTRL_BASE);
-      val_print(AVS_PRINT_INFO, "\n      Watchdog CTRL base is  %x      ", ctrl_base);
+      val_print(AVS_PRINT_INFO, "\n      Watchdog CTRL base is  %llx      ", ctrl_base);
 
       /* W_IIDR.Architecture Revision [19:16] = 0x1 for Watchdog Rev 1 */
       data = VAL_EXTRACT_BITS(val_mmio_read(ctrl_base + WD_IIDR_OFFSET), 16, 19);
