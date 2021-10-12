@@ -39,10 +39,11 @@ UINT8   *gSharedMemory;
 VOID
 pal_mmio_write8(UINT64 addr, UINT8 data)
 {
-  *(volatile UINT8 *)addr = data;
+
   if (g_print_mmio || (g_curr_module & g_enable_module))
       sbsa_print(AVS_PRINT_INFO, L" pal_mmio_write8 Address = %llx  Data = %lx \n", addr, data);
 
+  *(volatile UINT8 *)addr = data;
 }
 
 /**
@@ -57,10 +58,11 @@ pal_mmio_write8(UINT64 addr, UINT8 data)
 VOID
 pal_mmio_write16(UINT64 addr, UINT16 data)
 {
-  *(volatile UINT16 *)addr = data;
+
   if (g_print_mmio || (g_curr_module & g_enable_module))
       sbsa_print(AVS_PRINT_INFO, L" pal_mmio_write16 Address = %llx  Data = %lx \n", addr, data);
 
+  *(volatile UINT16 *)addr = data;
 }
 
 /**
@@ -75,10 +77,11 @@ pal_mmio_write16(UINT64 addr, UINT16 data)
 VOID
 pal_mmio_write64(UINT64 addr, UINT64 data)
 {
-  *(volatile UINT64 *)addr = data;
+
   if (g_print_mmio || (g_curr_module & g_enable_module))
       sbsa_print(AVS_PRINT_INFO, L" pal_mmio_write64 Address = %llx  Data = %lx \n", addr, data);
 
+  *(volatile UINT64 *)addr = data;
 }
 
 /**
@@ -178,9 +181,10 @@ pal_mmio_read(UINT64 addr)
 VOID
 pal_mmio_write(UINT64 addr, UINT32 data)
 {
-  *(volatile UINT32 *)addr = data;
   if (g_print_mmio || (g_curr_module & g_enable_module))
     sbsa_print(AVS_PRINT_INFO, L" pal_mmio_write Address = %llx  Data = %x \n", addr, data);
+
+  *(volatile UINT32 *)addr = data;
 }
 
 /**

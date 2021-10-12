@@ -79,7 +79,7 @@ payload()
 
       status = val_wd_set_ws0(wd_num, timer_expire_ticks);
       if (status) {
-          val_print(AVS_PRINT_ERR, "\n       Setting watchdof timeout failed", 0);
+          val_print(AVS_PRINT_ERR, "\n       Setting watchdog timeout failed", 0);
           val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
           return;
       }

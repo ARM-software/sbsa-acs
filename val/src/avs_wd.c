@@ -160,7 +160,7 @@ val_wd_set_ws0(uint32_t index, uint32_t timeout)
   uint64_t counter_freq;
   uint32_t wor_l;
   uint32_t wor_h = 0;
-  uint32_t ctrl_base;
+  uint64_t ctrl_base;
   uint32_t data;
 
   if (timeout == 0) {
