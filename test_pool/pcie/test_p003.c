@@ -120,7 +120,8 @@ payload(void)
                /* Access the entire config space, if device ID and vendor ID are valid */
                if (data != PCIE_UNKNOWN_RESPONSE)
                {
-                  val_pcie_read_cfg(bdf, TYPE01_CLSR, &data);
+                  if (val_pcie_find_capability(bdf, PCIE_CAP, CID_PCIECS,  &data) != PCIE_SUCCESS)
+                      continue;
 
                   /* Read till the last capability in Extended Capability Structure */
                   next_offset = PCIE_ECAP_START;
@@ -128,7 +129,12 @@ payload(void)
                   {
                      val_pcie_read_cfg(bdf, next_offset, &data);
                      curr_offset = next_offset;
-                     next_offset = ((data >> PCIE_NCPR_SHIFT) & PCIE_NCPR_MASK);
+
+                     /* If value returned from offset is all 1's then capability is absent */
+                     if (data == PCIE_UNKNOWN_RESPONSE)
+                         break;
+
+                     next_offset = ((data >> PCIE_ECAP_NCPR_SHIFT) & PCIE_ECAP_NCPR_MASK);
                   }
 
                   while (curr_offset <= PCIE_ECAP_END)
@@ -139,7 +145,7 @@ payload(void)
                }
                /* Access the entire config space for PCIe devices whose
                   device ID and vendor ID are all FF's */
-               else{
+               else {
                   next_offset = TYPE01_VIDR;
 
                   while (next_offset <= PCIE_ECAP_END)
