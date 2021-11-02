@@ -25,7 +25,7 @@
 /*one space character is removed from TEST_DESC, to nullify a space written as part of the test */
 #define TEST_DESC  "Check SBSA UART register offsets "
 #define TEST_NUM2  (AVS_PER_TEST_NUM_BASE + 4)
-#define TEST_DESC1 "Check GENERIC UART Interrupt      "
+#define TEST_DESC1 "Check Generic UART Interrupt      "
 
 uint64_t l_uart_base;
 static uint32_t int_id;
