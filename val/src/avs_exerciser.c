@@ -219,11 +219,6 @@ val_exerciser_execute_tests(uint32_t level)
   uint32_t status, i;
   uint32_t num_instances;
 
-  if (level == 3) {
-    val_print(AVS_PRINT_WARN, "Exerciser Sbsa compliance is only from Level %d \n", 4);
-    return AVS_STATUS_SKIP;
-  }
-
   for (i = 0; i < MAX_TEST_SKIP_NUM; i++){
       if (g_skip_test_num[i] == AVS_EXERCISER_TEST_NUM_BASE) {
           val_print(AVS_PRINT_TEST, "\n USER Override - Skipping three Exerciser tests \n", 0);
