@@ -207,7 +207,7 @@ val_peripheral_create_info_table(uint64_t *peripheral_info_table)
 
   pal_peripheral_create_info_table(g_peripheral_info_table);
 
-  val_print(AVS_PRINT_TEST, " Peripheral: Num of USB controllers   :    %d \n",
+  val_print(AVS_PRINT_TEST, "\n Peripheral: Num of USB controllers   :    %d \n",
     val_peripheral_get_info(NUM_USB, 0));
   val_print(AVS_PRINT_TEST, " Peripheral: Num of SATA controllers  :    %d \n",
     val_peripheral_get_info(NUM_SATA, 0));
