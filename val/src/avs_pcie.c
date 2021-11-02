@@ -349,9 +349,7 @@ val_pcie_execute_tests(uint32_t enable_pcie, uint32_t level, uint32_t num_pe)
   }
 #endif
 
-  if (status != AVS_STATUS_PASS) {
-      val_print(AVS_PRINT_ERR, "\n     One or more PCIe tests have failed.... \n", status);
-  }
+  val_print_test_end(status, "PCIe");
 
   return status;
 }

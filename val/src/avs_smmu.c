@@ -99,9 +99,7 @@ val_smmu_execute_tests(uint32_t level, uint32_t num_pe)
       }
   }
 
-  if (status != AVS_STATUS_PASS) {
-      val_print(AVS_PRINT_ERR, "\n      One or more SMMU tests have failed...  \n", status);
-  }
+  val_print_test_end(status, "SMMU");
 
   return status;
 }
