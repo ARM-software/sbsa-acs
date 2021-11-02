@@ -453,10 +453,10 @@ ShellAppMainsbsa (
   val_pe_initialize_default_exception_handler(val_pe_default_esr);
   FlushImage();
 
-  Print(L"\n      ***  Starting PE tests ***  \n");
+  Print(L"\n      *** Starting PE tests ***  \n");
   Status = val_pe_execute_tests(g_sbsa_level, val_pe_get_num());
 
-  Print(L"\n      ***  Starting GIC tests ***  \n");
+  Print(L"\n      *** Starting GIC tests ***  \n");
   Status |= val_gic_execute_tests(g_sbsa_level, val_pe_get_num());
 
   Print(L"\n      *** Starting Timer tests ***  \n");
@@ -488,7 +488,7 @@ ShellAppMainsbsa (
 
   #ifdef ENABLE_NIST
   if (g_execute_nist == TRUE) {
-    Print(L"\n      ***  Starting NIST statistical tests***  \n");
+    Print(L"\n      *** Starting NIST statistical tests ***  \n");
     Status |= val_nist_execute_tests(g_sbsa_level, val_pe_get_num());
   }
   #endif
