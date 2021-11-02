@@ -34,7 +34,7 @@ payload()
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
   uint32_t data, ns_wdg = 0;
 
-  val_print(AVS_PRINT_DEBUG, "\n       Found %d watchdogs in ACPI table ", wd_num);
+  val_print(AVS_PRINT_DEBUG, "\n       Found %d watchdogs in ACPI table   ", wd_num);
 
   if (wd_num == 0) {
       val_print(AVS_PRINT_WARN, "\n       No Watchdogs reported          %d  ", wd_num);
