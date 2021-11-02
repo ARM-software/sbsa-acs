@@ -426,7 +426,7 @@ val_pcie_create_info_table(uint64_t *pcie_info_table)
 
   /* Create the list of valid Pcie Device Functions */
   if (val_pcie_create_device_bdf_table()) {
-      val_print(AVS_PRINT_ERR, "Create Bdf table failed.\n", 0);
+      val_print(AVS_PRINT_ERR, "\n       Create Bdf table failed.\n", 0);
       return;
   }
 
