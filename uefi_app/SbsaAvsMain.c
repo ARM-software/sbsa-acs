@@ -262,6 +262,7 @@ HelpMsg (
          "              module numbers along with global verbosity level 1\n"
          "              Module numbers are PE 0, GIC 1,  ...\n"
          "              E.g., To enable mmio prints for PE and TIMER pass -v 102 \n"
+         "-mmio   Pass this flag to enable pal_mmio_read/write prints, use with -v 1\n"
          "-l      Level of compliance to be tested for\n"
          "        As per SBSA spec, 3 to 6\n"
          "-f      Name of the log file to record the test results in\n"
@@ -270,7 +271,6 @@ HelpMsg (
          "        To skip a module, use Model_ID as mentioned in user guide\n"
          "        To skip a particular test within a module, use the exact testcase number\n"
          "-nist   Enable the NIST Statistical test suite\n"
-         "-mmio Pass this flag to enable pal_mmio_read/write prints, use with -v 1\n"
          "-p      Enable/disable PCIe SBSA 6.0 (RCiEP) compliance tests\n"
          "        1 - enables PCIe tests, 0 - disables PCIe tests\n"
   );
@@ -285,7 +285,7 @@ STATIC CONST SHELL_PARAM_ITEM ParamList[] = {
   {L"-h"    , TypeFlag},     // -h    # help : info about commands
   {L"-nist" , TypeFlag},     // -nist # Binary Flag to enable the execution of NIST STS
   {L"-p"    , TypeValue},    // -p    # Enable/disable PCIe SBSA 6.0 (RCiEP) compliance tests.
-  {L"-mmio", TypeFlag},      // -mmio # Enable pal_mmio prints
+  {L"-mmio" , TypeFlag},     // -mmio # Enable pal_mmio prints
   {NULL     , TypeMax}
   };
 
