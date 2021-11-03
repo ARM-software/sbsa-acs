@@ -59,10 +59,20 @@ payload()
       /* W_IIDR.Architecture Revision [19:16] = 0x1 for Watchdog Rev 1 */
       data = VAL_EXTRACT_BITS(val_mmio_read(ctrl_base + WD_IIDR_OFFSET), 16, 19);
 
-      if(data != 1) {
-          val_print(AVS_PRINT_WARN, "\n       Recommended Watchdog Rev 1 Not Found", 0);
-          val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 02));
-          return;
+      if (g_sbsa_level == 5) {
+          if (data != 1) {
+              val_print(AVS_PRINT_WARN, "\n       Recommended Watchdog Rev 1 Not Found", 0);
+              val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 02));
+              return;
+          }
+      }
+
+      if (g_sbsa_level == 6) {
+          if (data != 1) {
+              val_print(AVS_PRINT_ERR, "\n       Recommended Watchdog Rev 1 Not Found", 0);
+              val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
+              return;
+          }
       }
 
   } while(wd_num);
