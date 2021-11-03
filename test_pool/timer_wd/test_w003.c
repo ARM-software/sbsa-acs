@@ -67,9 +67,9 @@ payload()
           }
       }
 
-      if (g_sbsa_level == 6) {
+      if (g_sbsa_level > 5) {
           if (data != 1) {
-              val_print(AVS_PRINT_ERR, "\n       Recommended Watchdog Rev 1 Not Found", 0);
+              val_print(AVS_PRINT_ERR, "\n       Watchdog Rev 1 Not Found", 0);
               val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
               return;
           }
