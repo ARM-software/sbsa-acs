@@ -270,8 +270,8 @@ HelpMsg (
          "        To skip a module, use Model_ID as mentioned in user guide\n"
          "        To skip a particular test within a module, use the exact testcase number\n"
          "-nist   Enable the NIST Statistical test suite\n"
-         "-p      Enable/disable PCIe SBSA 6.0 (RCiEP) compliance tests\n"
          "-mmio Pass this flag to enable pal_mmio_read/write prints, use with -v 1\n"
+         "-p      Enable/disable PCIe SBSA 6.0 (RCiEP) compliance tests\n"
          "        1 - enables PCIe tests, 0 - disables PCIe tests\n"
   );
 }
