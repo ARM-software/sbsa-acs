@@ -1532,6 +1532,8 @@ uint32_t val_pcie_bitfield_check(uint32_t bdf, uint64_t *bitfield_entry)
   {
       val_print(AVS_PRINT_ERR, "\n       BDF 0x%x : ", bdf);
       val_print(AVS_PRINT_ERR, bf_entry->err_str1, 0);
+      val_print(AVS_PRINT_ERR, ": 0x%x", bf_value);
+      val_print(AVS_PRINT_ERR, " instead of 0x%x", bf_entry->cfg_value);
       if (!val_strncmp(bf_entry->err_str1, "WARNING", WARN_STR_LEN))
           return 0;
       return 1;
@@ -1586,6 +1588,8 @@ uint32_t val_pcie_bitfield_check(uint32_t bdf, uint64_t *bitfield_entry)
   {
       val_print(AVS_PRINT_ERR, "\n       BDF 0x%x : ", bdf);
       val_print(AVS_PRINT_ERR, bf_entry->err_str2, 0);
+      val_print(AVS_PRINT_ERR, ": 0x%x", reg_overwrite_value);
+      val_print(AVS_PRINT_ERR, " instead of 0x%x", reg_value);
       if (!val_strncmp(bf_entry->err_str2, "WARNING", WARN_STR_LEN))
           return 0;
       return 1;
