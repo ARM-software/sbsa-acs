@@ -186,11 +186,11 @@
 #define ECID_PASID     0x001B
 
 /* PCI Express capability struct offsets */
-#define CIDR_OFFSET    0
-#define PCIECR_OFFSET  2
-#define DCAPR_OFFSET   4
-#define ACSCR_OFFSET   4
-#define DCTLR_OFFSET   8
+#define CIDR_OFFSET    0x0
+#define PCIECR_OFFSET  0x2
+#define DCAPR_OFFSET   0x4
+#define ACSCR_OFFSET   0x4
+#define DCTLR_OFFSET   0x8
 #define LCAPR_OFFSET   0xC
 #define LCTRLR_OFFSET  0x10
 #define DCAP2R_OFFSET  0x24
