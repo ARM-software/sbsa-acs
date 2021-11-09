@@ -108,12 +108,12 @@ extern uint32_t g_enable_module;
 #define ECID_PASID           0x001b
 
 /* PCI Express capability struct offsets */
-#define CIDR_OFFSET    0
-#define PCIECR_OFFSET  2
-#define DCAPR_OFFSET   4
-#define DCTLR_OFFSET   8
-#define DCAP2R_OFFSET  24
-#define DCTL2R_OFFSET  28
+#define CIDR_OFFSET    0x0
+#define PCIECR_OFFSET  0x2
+#define DCAPR_OFFSET   0x4
+#define DCTLR_OFFSET   0x8
+#define DCAP2R_OFFSET  0x24
+#define DCTL2R_OFFSET  0x28
 
 /* PCIe capabilities reg shifts and masks */
 #define PCIECR_DPT_SHIFT 4
