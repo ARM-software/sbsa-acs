@@ -169,9 +169,13 @@ The details of the hardware or Verification IP which enable these exerciser test
 
  - Some PCIe and Exerciser test are dependent on PCIe features supported by the test system.
    Please fill the required API's with test system information.
-   - pal_pcie_p2p_support : If the test system PCIe supports peer to peer transaction.
-   - pal_pcie_is_cache_present : If the test system supports PCIe address translation cache.
-   - pal_pcie_get_legacy_ir_map : Fill system legacy irq map.
+
+|APIs                         |Description                                                                   |Affected tests          |
+|-----------------------------|------------------------------------------------------------------------------|------------------------|
+|pal_pcie_p2p_support         |Return 0 if the test system PCIe supports peer to peer transaction, else 1    |453, 454, 456, 812, 813 |
+|pal_pcie_is_cache_present    |Return 1 if the test system supports PCIe address translation cache, else 0   |452                     |
+|pal_pcie_get_legacy_irq_map  |Return 0 if system legacy irq map is filled, else 1                           |412, 450, 806           |
+
    Below exerciser capabilities are required by exerciser test.
    - MSI-X interrupt generation.
    - Incoming Transaction Monitoring(order, type).
