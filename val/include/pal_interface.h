@@ -25,7 +25,7 @@
 #ifdef TARGET_LINUX
   typedef char          char8_t;
   typedef long long int addr_t;
-#else
+#elif TARGET_UEFI
   typedef INT8   int8_t;
   typedef INT32  int32_t;
   typedef CHAR8  char8_t;
@@ -35,7 +35,13 @@
   typedef UINT32 uint32_t;
   typedef UINT64 uint64_t;
   typedef UINT64 addr_t;
-
+  typedef UINT64 dma_addr_t;
+#else
+#include <stdlib.h>
+#include <stdint.h>
+  typedef uint64_t addr_t;
+  typedef char     char8_t;
+  typedef uint64_t dma_addr_t;
 #endif
 
 #define TIMEOUT_LARGE    0x1000000

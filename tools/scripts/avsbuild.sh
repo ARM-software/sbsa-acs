@@ -38,7 +38,7 @@ function build_with_NIST()
     fi
     cd -
 
-    build -a AARCH64 -t GCC49 -p ShellPkg/ShellPkg.dsc -m ShellPkg/Application/sbsa-acs/uefi_app/SbsaAvsNist.inf -D ENABLE_NIST
+    build -a AARCH64 -t GCC49 -p ShellPkg/ShellPkg.dsc -m ShellPkg/Application/sbsa-acs/uefi_app/SbsaAvsNist.inf -D ENABLE_NIST -D TARGET_UEFI
     status=$?
     if [ $status -ne 0 ]; then
         echo "Build failed for NIST. Building sbsa without NIST"
@@ -55,12 +55,12 @@ if [ "$1" == "NIST" ]; then
 fi
 
 if [ "$1" == "ENABLE_OOB" ]; then
-    build -a AARCH64 -t GCC49 -p ShellPkg/ShellPkg.dsc -m ShellPkg/Application/sbsa-acs/uefi_app/SbsaAvs.inf -D ENABLE_OOB
+    build -a AARCH64 -t GCC49 -p ShellPkg/ShellPkg.dsc -m ShellPkg/Application/sbsa-acs/baremetal_app/SbsaAvs.inf -D ENABLE_OOB -D TARGET_UEFI
     echo "Build successful"
     return 0;
 fi
 
 if [ $NISTStatus -ne 0 ]; then
-    build -a AARCH64 -t GCC49 -p ShellPkg/ShellPkg.dsc -m ShellPkg/Application/sbsa-acs/uefi_app/SbsaAvs.inf
+    build -a AARCH64 -t GCC49 -p ShellPkg/ShellPkg.dsc -m ShellPkg/Application/sbsa-acs/uefi_app/SbsaAvs.inf -D TARGET_UEFI
 fi
 

@@ -34,8 +34,6 @@
 
 #endif
 
-extern VOID* g_sbsa_log_file_handle;
-
 uint8_t   *gSharedMemory;
 /**
   @brief  Provides a single point of abstraction to read from all
@@ -217,19 +215,7 @@ pal_print(char *string, uint64_t data)
  /* Below code is not applicable for Bare-metal
   * Only for FVP OOB experience
  */
-
- if(g_sbsa_log_file_handle)
-  {
-    CHAR8 Buffer[1024];
-    UINTN BufferSize = 1;
-    EFI_STATUS Status = 0;
-    BufferSize = AsciiSPrint(Buffer, 1024, string, data);
-    AsciiPrint(Buffer);
-    Status = ShellWriteFile(g_sbsa_log_file_handle, &BufferSize, (VOID*)Buffer);
-    if(EFI_ERROR(Status))
-      print(AVS_PRINT_ERR, "Error in writing to log file\n", 0);
-  } else
-      AsciiPrint(string, data);
+    AsciiPrint(string, data);
 #endif
 
 }
@@ -608,7 +594,7 @@ pal_mem_free_pages(void *PageBase, uint32_t NumPages)
 
   @return True/False
 */
-UINT32
+uint32_t
 pal_target_is_bm()
 {
   return 1;

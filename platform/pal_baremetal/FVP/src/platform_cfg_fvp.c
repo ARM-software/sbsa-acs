@@ -16,7 +16,7 @@
 **/
 
 #include "../include/pal_common_support.h"
-#include "include/platform_override_fvp.h"
+#include "include/platform_override_struct.h"
 
 PE_INFO_TABLE platform_pe_cfg = {
 

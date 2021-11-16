@@ -16,7 +16,7 @@
 **/
 
 #include "include/pal_common_support.h"
-#include "FVP/include/platform_override_fvp.h"
+#include "FVP/include/platform_override_struct.h"
 
 extern PLATFORM_OVERRIDE_IOVIRT_INFO_TABLE platform_iovirt_cfg;
 extern PLATFORM_OVERRIDE_NODE_DATA platform_node_type;

@@ -18,6 +18,8 @@
 #ifndef __SBSA_AVS_DMA_H__
 #define __SBSA_AVS_DMA_H__
 
+#include "pal_interface.h"
+
 #define WIDTH_BIT8     0x1
 #define WIDTH_BIT16    0x2
 #define WIDTH_BIT32    0x4
@@ -33,8 +35,6 @@
 #define PCI_EP      0x100
 #define PCI_EP_MASK 0xF00
 
-
-typedef uint64_t dma_addr_t;
 addr_t val_dma_mem_alloc(void **buffer, uint32_t size, uint32_t dev_index, uint32_t flags);
 
 void val_dma_mem_free(void *buffer, dma_addr_t mem_dma, uint32_t size, uint32_t dev_index, uint32_t flags);

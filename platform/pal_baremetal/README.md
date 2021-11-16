@@ -10,6 +10,16 @@ Description of each directory are as follows:
 3. FVP: Contains Platform specific code. The details in this folder need to be modified w.r.t the platform.
 4. Juno: Contains Platform specific code.
 
+## Build Steps
+
+Reference Makefile is present at [Makefile](../../Makefile). To compile SBSA, perform following steps.
+1. cd sbsa-acs
+2. export SBSA_PATH=pointing to SBSA directory
+3. export GCC49_AARCH64_PREFIX=GCC toolchain path pointing to /bin/aarch64-linux-gnu-
+4. make
+
+The output library files will be generated at <sbsa_path>/build/lib/
+
 For more details on how to port the reference code to a specific platform and for further customisation please refer to the [User Guide](docs/Arm_SBSA_ACS_Bare-metal_User_Guide.pdf)
 
 -----------------

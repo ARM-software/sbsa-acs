@@ -17,7 +17,7 @@
 
 #include "include/pal_pcie_enum.h"
 #include "include/pal_common_support.h"
-#include "FVP/include/platform_override_fvp.h"
+#include "FVP/include/platform_override_struct.h"
 
 extern pcie_device_bdf_table *g_pcie_bdf_table;
 extern PCIE_INFO_TABLE platform_pcie_cfg;
