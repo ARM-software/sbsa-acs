@@ -65,10 +65,10 @@ To start the ACS build, perform the following steps:
    - SbsaValLib|ShellPkg/Application/sbsa-acs/val/SbsaValLib.inf
    - SbsaPalBaremetalLib|ShellPkg/Application/sbsa-acs/platform/pal_baremetal/SbsaPalBaremetalLib.inf
    - SbsaPalFVPLib|ShellPkg/Application/sbsa-acs/platform/pal_baremetal/FVP/SbsaPalFVPLib.inf
-7.  Add ShellPkg/Application/sbsa-acs/uefi_app/SbsaAvs.inf in the [components] section of ShellPkg/ShellPkg.dsc
+7.  Add ShellPkg/Application/sbsa-acs/baremetal_app/SbsaAvs.inf in the [components] section of ShellPkg/ShellPkg.dsc
 8.  Modify CC Flags in the [BuildOptions] section of ShellPkg/ShellPkg.dsc
 ```
-      *_*_*_CC_FLAGS =
+      *_*_*_CC_FLAGS = -DENABLE_OOB -DTARGET_UEFI
 
       !include StdLib/StdLib.inc
 ```
@@ -94,14 +94,13 @@ To start the ACS build, perform the following steps:
           +#endif
 ```
 
-
 ### Linux build environment
 If the build environment is Linux, perform the following steps:
 1.  export GCC49_AARCH64_PREFIX= GCC5.3 toolchain path pointing to /bin/aarch64-linux-gnu- in case of x86 machine. For AArch64 build it should point to /usr/bin/
 2.  export PACKAGES_PATH= path pointing to edk2-libc
 3.  source edksetup.sh
 4.  make -C BaseTools/Source/C
-5.  source ShellPkg/Application/sbsa-acs/tools/scripts/avsbuild.sh
+5.  source ShellPkg/Application/sbsa-acs/tools/scripts/avsbuild.sh ENABLE_OOB
 
 
 

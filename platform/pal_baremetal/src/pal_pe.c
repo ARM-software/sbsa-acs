@@ -17,7 +17,7 @@
 
 #include "include/pal_common_support.h"
 #include "include/pal_pcie_enum.h"
-#include "FVP/include/platform_override_fvp.h"
+#include "FVP/include/platform_override_struct.h"
 
 #ifdef ENABLE_OOB
 /* Below code is not applicable for Bare-metal
@@ -42,7 +42,7 @@ pal_get_madt_ptr();
 
 void
 ArmCallSmc (
-  IN OUT ARM_SMC_ARGS *Args
+  ARM_SMC_ARGS *Args
   );
 
 
@@ -159,7 +159,7 @@ pal_pe_create_info_table(PE_INFO_TABLE *PeTable)
   @return status of the API
 **/
 uint32_t
-pal_pe_install_esr(uint32_t ExceptionType,  void (*esr)(uint64_t, VOID *))
+pal_pe_install_esr(uint32_t ExceptionType,  void (*esr)(uint64_t, void *))
 {
 
 #ifdef ENABLE_OOB

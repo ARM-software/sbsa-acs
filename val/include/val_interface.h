@@ -38,6 +38,17 @@
 
 #define VAL_EXTRACT_BITS(data, start, end) ((data >> start) & ((1ul << (end-start+1))-1))
 
+#ifndef TARGET_UEFI
+#define TRUE 1
+#define FALSE 0
+#define BIT0 (1)
+#define BIT1 (1 << 1)
+#define BIT4 (1 << 4)
+#define BIT6 (1 << 6)
+#define BIT14 (1 << 14)
+#define BIT29 (1 << 29)
+#endif
+
 /* GENERIC VAL APIs */
 void val_allocate_shared_mem(void);
 void val_free_shared_mem(void);

@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2021, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2021, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,21 +13,22 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- **/
+**/
 
-#include "gcc_types.h"
-#define ICC_IAR1_EL1    S3_0_C12_C12_0
-#define ICC_EOIR1_EL1   S3_0_C12_C12_1
-
-
-GCC_ASM_EXPORT(sbsa_gic_ack_intr)
-GCC_ASM_EXPORT(sbsa_gic_end_intr)
+#ifndef __SBSA_AVS_LEVEL_H__
+#define __SBSA_AVS_LEVEL_H__
 
 
-ASM_PFX(sbsa_gic_ack_intr):
-   mrs x0, ICC_IAR1_EL1
-   ret
 
-ASM_PFX(sbsa_gic_end_intr):
-   msr ICC_EOIR1_EL1, x0
-   ret
+  #define SBSA_ACS_MAJOR_VER  3
+  #define SBSA_ACS_MINOR_VER  1
+
+  #define SBSA_MIN_LEVEL_SUPPORTED 3
+  #define SBSA_MAX_LEVEL_SUPPORTED 6
+
+  #ifdef _AARCH64_BUILD_
+  unsigned long __stack_chk_guard = 0xBAAAAAAD;
+  unsigned long __stack_chk_fail =  0xBAAFAAAD;
+  #endif
+
+#endif

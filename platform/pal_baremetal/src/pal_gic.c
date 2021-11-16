@@ -16,7 +16,7 @@
 **/
 
 #include "include/pal_common_support.h"
-#include "FVP/include/platform_override_fvp.h"
+#include "FVP/include/platform_override_struct.h"
 
 #ifdef ENABLE_OOB
 /* Below code is not applicable for Bare-metal

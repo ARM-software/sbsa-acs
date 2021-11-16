@@ -16,6 +16,8 @@
 #
 #**/
 
+#include "gcc_types.h"
+
 .text
 .align 3
 

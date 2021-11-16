@@ -92,7 +92,7 @@ ArmWriteCntpTval (
   uint64_t   Val
   );
 
-UINTN
+uint64_t
 ArmReadCntpCtl (
   void
   );
@@ -102,7 +102,7 @@ ArmWriteCntpCtl (
   uint64_t   Val
   );
 
-UINTN
+uint64_t
 ArmReadCntvTval (
   void
   );
@@ -112,7 +112,7 @@ ArmWriteCntvTval (
   uint64_t   Val
   );
 
-UINTN
+uint64_t
 ArmReadCntvCtl (
   void
   );

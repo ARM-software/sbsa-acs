@@ -16,6 +16,8 @@
 #
 #**/
 
+#include "gcc_types.h"
+
 .text
 .align 2
 
@@ -189,5 +191,3 @@ ASM_PFX(ArmWriteCnthvTval):
   isb
   ret
 
-
-ASM_FUNCTION_REMOVE_IF_UNREFERENCED
