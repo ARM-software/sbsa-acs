@@ -103,8 +103,8 @@ payload(void)
       }
 
       /* Accessing the BDF PCIe config range */
-      for(bus_index = bus; bus_index <= end_bus; bus_index++) {
-        for(dev_index = 0; dev_index < PCIE_MAX_DEV; dev_index++) {
+      for (bus_index = bus; bus_index <= end_bus; bus_index++) {
+        for (dev_index = 0; dev_index < PCIE_MAX_DEV; dev_index++) {
           for (func_index = 0; func_index < PCIE_MAX_FUNC; func_index++) {
 
                bdf = PCIE_CREATE_BDF(segment, bus_index, dev_index, func_index);
@@ -117,7 +117,8 @@ payload(void)
                                   (bus_index << PCIE_BUS_SHIFT)|dev_index));
                   return;
                }
-               /* Access the entire config space, if device ID and vendor ID are valid */
+
+               /* Access the config space, if device ID and vendor ID are valid */
                if (data != PCIE_UNKNOWN_RESPONSE)
                {
                   if (val_pcie_find_capability(bdf, PCIE_CAP, CID_PCIECS,  &data) != PCIE_SUCCESS)
@@ -129,38 +130,37 @@ payload(void)
                   {
                      val_pcie_read_cfg(bdf, next_offset, &data);
                      curr_offset = next_offset;
-
-                     /* If value returned from offset is all 1's then capability is absent */
-                     if (data == PCIE_UNKNOWN_RESPONSE)
-                         break;
-
                      next_offset = ((data >> PCIE_ECAP_NCPR_SHIFT) & PCIE_ECAP_NCPR_MASK);
                   }
 
-                  while (curr_offset <= PCIE_ECAP_END)
-                  {
-                     val_pcie_read_cfg(bdf, curr_offset, &data);
-                     curr_offset = curr_offset + 0x04;
-                  }
+                  /* Read the start and end from the end of last valid capability register */
+                  val_pcie_read_cfg(bdf, curr_offset, &data);
+                  val_pcie_read_cfg(bdf, PCIE_ECAP_END, &data);
                }
-               /* Access the entire config space for PCIe devices whose
+
+               /* Access the start and end of the config space for PCIe devices whose
                   device ID and vendor ID are all FF's */
-               else {
-                  next_offset = TYPE01_VIDR;
+               else{
+                  val_pcie_read_cfg(bdf, PCIE_ECAP_START, &data);
 
-                  while (next_offset <= PCIE_ECAP_END)
-                  {
-                     val_pcie_read_cfg(bdf, next_offset, &data);
-                     /* Returned data should be FF's, otherwise the test should fail */
-                     if (data != PCIE_UNKNOWN_RESPONSE) {
-                        val_print(AVS_PRINT_ERR, "\n      Incorrect data for Bdf 0x%x    ", bdf);
-                        val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM,
-                                        (bus_index << PCIE_BUS_SHIFT)|dev_index));
-                        return;
-                     }
-
-                     next_offset = next_offset + 0x04;
+                  /* Returned data should be FF's, otherwise the test should fail */
+                  if (data != PCIE_UNKNOWN_RESPONSE) {
+                     val_print(AVS_PRINT_ERR, "\n      Incorrect data for Bdf 0x%x    ", bdf);
+                     val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM,
+                                     (bus_index << PCIE_BUS_SHIFT)|dev_index));
+                     return;
                   }
+
+                  val_pcie_read_cfg(bdf, PCIE_ECAP_END, &data);
+
+                  /* Returned data should be FF's, otherwise the test should fail */
+                  if (data != PCIE_UNKNOWN_RESPONSE) {
+                     val_print(AVS_PRINT_ERR, "\n      Incorrect data for Bdf 0x%x    ", bdf);
+                     val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM,
+                                     (bus_index << PCIE_BUS_SHIFT)|dev_index));
+                     return;
+                  }
+
                }
           }
         }
