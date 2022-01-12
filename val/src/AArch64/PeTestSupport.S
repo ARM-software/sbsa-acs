@@ -1,5 +1,5 @@
 #/** @file
-# Copyright (c) 2016-2019, Arm Limited or its affiliates. All rights reserved.
+# Copyright (c) 2016-2019, 2022 Arm Limited or its affiliates. All rights reserved.
 # SPDX-License-Identifier : Apache-2.0
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,6 +23,7 @@
 GCC_ASM_EXPORT (ArmCallWFI)
 GCC_ASM_EXPORT (SpeProgramUnderProfiling)
 GCC_ASM_EXPORT (DisableSpe)
+GCC_ASM_EXPORT (ArmExecuteMemoryBarrier)
 
 ASM_PFX(ArmCallWFI):
   wfi
@@ -63,4 +64,8 @@ ASM_PFX(DisableSpe):
   //msr   pmblimitr_el1,x0
   isb
 
+  ret
+
+ASM_PFX(ArmExecuteMemoryBarrier):
+  dmb sy
   ret

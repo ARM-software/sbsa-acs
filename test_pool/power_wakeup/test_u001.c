@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2019, 2021 Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2019, 2021-2022 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -36,6 +36,8 @@
 
 static uint32_t intid;
 uint64_t timer_num;
+static uint32_t g_wd_int_received;
+static uint32_t g_failsafe_int_received;
 
 static
 void
@@ -44,6 +46,7 @@ isr_failsafe()
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
   val_timer_set_phy_el1(0);
   val_print(AVS_PRINT_ERR, "\n       Received Failsafe interrupt      ", 0);
+  g_failsafe_int_received = 1;
   val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
   intid = val_timer_get_info(TIMER_INFO_PHY_EL1_INTID, 0);
   val_gic_end_of_interrupt(intid);
@@ -95,6 +98,7 @@ isr4()
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
   val_wd_set_ws0(timer_num, 0);
   val_print(AVS_PRINT_INFO, "\n       Received WS0 interrupt           ", 0);
+  g_wd_int_received = 1;
   val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM4, 01));
   intid = val_wd_get_info(timer_num, WD_INFO_GSIV);
   val_gic_end_of_interrupt(intid);
@@ -211,9 +215,21 @@ payload4()
               val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM4, 02));
               return;
           }
+          g_wd_int_received = 0;
+          g_failsafe_int_received = 0;
 
           val_power_enter_semantic(SBSA_POWER_SEM_B);
           wakeup_clear_failsafe();
+          /* If PE wakeup is due to some interrupt other than WD
+             or failsafe, test will be consider as PASS(as BSA WAK_10 rule
+             Semantic B is satisfied)
+             Test will be consider as failure in case WD interrupt
+             failed to fire.
+          */
+          if (! (g_wd_int_received || g_failsafe_int_received)) {
+            val_gic_clear_interrupt(intid);
+            val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM4, 1));
+          }
       } else {
           val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM4, 01));
       }
