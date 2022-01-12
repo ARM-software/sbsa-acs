@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2020-2021, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2022, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -99,6 +99,7 @@ static int smmu_cmdq_write_cmd(smmu_dev_t *smmu, uint64_t *cmd)
     for (i = 0; i < CMDQ_DWORDS_PER_ENT; ++i)
         cmd_dst[i] = cmd[i];
     queue.prod = smmu_cmdq_inc_prod(&queue);
+    ArmExecuteMemoryBarrier();
     val_mmio_write((uint64_t)cmdq->prod_reg, queue.prod);
 
     return ret;
@@ -130,6 +131,7 @@ static void smmu_cmdq_poll_until_consumed(smmu_dev_t *smmu)
         if (smmu_queue_empty(&queue))
             break;
         queue.cons = val_mmio_read((uint64_t)cmdq->cons_reg);
+        timeout--;
     }
 
     if (!timeout) {
