@@ -17,6 +17,7 @@
 
 #include "val/include/sbsa_avs_val.h"
 #include "val/include/val_interface.h"
+#include "val/include/sbsa_avs_pe.h"
 
 #include "val/include/sbsa_avs_peripherals.h"
 #include "val/include/sbsa_avs_gic.h"
@@ -24,11 +25,26 @@
 #define TEST_NUM   (AVS_PER_TEST_NUM_BASE + 3)
 /*one space character is removed from TEST_DESC, to nullify a space written as part of the test */
 #define TEST_DESC  "Check SBSA UART register offsets "
-#define TEST_NUM2  (AVS_PER_TEST_NUM_BASE + 4)
+#define TEST_NUM1  (AVS_PER_TEST_NUM_BASE + 4)
 #define TEST_DESC1 "Check Generic UART Interrupt      "
 
-uint64_t l_uart_base;
+static uint64_t l_uart_base;
 static uint32_t int_id;
+static void *branch_to_test;
+static uint32_t test_fail;
+
+static
+void
+esr(uint64_t interrupt_type, void *context)
+{
+  uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
+
+  /* Update the ELR to point to next instrcution */
+  val_pe_update_elr(context, (uint64_t)branch_to_test);
+
+  val_print(AVS_PRINT_ERR, "\n       Error : Received Sync Exception ", 0);
+  val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
+}
 
 uint32_t
 uart_reg_read(uint32_t offset, uint32_t width_mask)
@@ -99,7 +115,7 @@ isr()
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
   uart_disable_txintr();
   val_print(AVS_PRINT_DEBUG, "\n       Received interrupt      ", 0);
-  val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 0x01));
+  val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM1, 01));
   val_gic_end_of_interrupt(int_id);
 }
 
@@ -150,9 +166,14 @@ payload()
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
   uint32_t data1, data2;
 
+  val_pe_install_esr(EXCEPT_AARCH64_SYNCHRONOUS_EXCEPTIONS, esr);
+  val_pe_install_esr(EXCEPT_AARCH64_SERROR, esr);
+
+  branch_to_test = &&exception_taken;
+
   if (count == 0) {
       val_print(AVS_PRINT_WARN, "\n       No UART defined by Platform      ", 0);
-      val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
+      val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
       return;
   }
 
@@ -192,6 +213,7 @@ payload()
 
       count--;
   }
+exception_taken:
   return;
 }
 
@@ -201,40 +223,49 @@ payload1()
 {
   uint32_t count = val_peripheral_get_info(NUM_UART, 0);
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
-  uint32_t timeout = TIMEOUT_MEDIUM;
+  uint32_t timeout;
 
   if (count == 0) {
-      val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM2, 01));
+      val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM1, 01));
       return;
   }
 
   while (count != 0) {
-
+      timeout = TIMEOUT_MEDIUM;
       int_id    = val_peripheral_get_info(UART_GSIV, count - 1);
+      l_uart_base = val_peripheral_get_info(UART_BASE0, count - 1);
 
       /* If Interrupt ID is available, check for interrupt generation */
       if (int_id != 0x0) {
           /* PASS will be set from ISR */
-          val_set_status(index, RESULT_PENDING(g_sbsa_level, TEST_NUM2));
-          val_gic_install_isr(int_id, isr);
+          val_set_status(index, RESULT_PENDING(g_sbsa_level, TEST_NUM1));
+          if (val_gic_install_isr(int_id, isr)) {
+              val_print(AVS_PRINT_ERR, "\n       GIC Install Handler Fail", 0);
+              val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM1, 01));
+              return;
+          }
           uart_enable_txintr();
-          val_print_raw(g_print_level, "\n       Test Message                      ", 0);
+          val_print_raw(l_uart_base, g_print_level,
+                        "\n       Test Message                      ", 0);
 
-          while ((--timeout > 0) && (IS_RESULT_PENDING(val_get_status(index))));
+          while ((--timeout > 0) && (IS_RESULT_PENDING(val_get_status(index)))){
+          };
 
           if (timeout == 0) {
               val_print(AVS_PRINT_ERR,
-                        "\n       Did not receive UART interrupt on %d  ", int_id);
-              val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM2, 02));
-              return;
+                        "\n       Did not receive UART interrupt %d  ", int_id);
+              test_fail++;
           }
       } else {
-          val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM2, 01));
+          val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM1, 02));
       }
 
       count--;
   }
-  return;
+  if (test_fail)
+    val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM1, 02));
+  else
+    val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM1, 02));
 }
 
 
@@ -259,13 +290,13 @@ d003_entry(uint32_t num_pe)
   val_report_status(0, SBSA_AVS_END(g_sbsa_level, TEST_NUM));
 
   if (!status) {
-      status = val_initialize_test(TEST_NUM2, TEST_DESC1, val_pe_get_num(), g_sbsa_level);
+      status = val_initialize_test(TEST_NUM1, TEST_DESC1, val_pe_get_num(), g_sbsa_level);
       if (status != AVS_STATUS_SKIP)
-          val_run_test_payload(TEST_NUM2, num_pe, payload1, 0);
+          val_run_test_payload(TEST_NUM1, num_pe, payload1, 0);
 
       /* get the result from all PE and check for failure */
-      status = val_check_for_error(TEST_NUM2, num_pe);
-      val_report_status(0, SBSA_AVS_END(g_sbsa_level, TEST_NUM2));
+      status = val_check_for_error(TEST_NUM1, num_pe);
+      val_report_status(0, SBSA_AVS_END(g_sbsa_level, TEST_NUM1));
   }
 
 
