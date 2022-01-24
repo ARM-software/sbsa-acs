@@ -65,6 +65,7 @@ val_print_test_end(uint32_t status, char8_t *string)
           1. Caller       - Application layer
           2. Prerequisite - None.
 
+  @param uart_address address of uart to be used
   @param level   the print verbosity (1 to 5)
   @param string  formatted ASCII string
   @param data    64-bit data. set to 0 if no data is to sent to console.
@@ -72,11 +73,11 @@ val_print_test_end(uint32_t status, char8_t *string)
   @return        None
  **/
 void
-val_print_raw(uint32_t level, char8_t *string, uint64_t data)
+val_print_raw(uint64_t uart_address, uint32_t level, char8_t *string,
+                                                                uint64_t data)
 {
 
   if (level >= g_print_level){
-      uint64_t uart_address = val_peripheral_get_info(UART_BASE0, 0);
       pal_print_raw(uart_address, string, data);
   }
 
