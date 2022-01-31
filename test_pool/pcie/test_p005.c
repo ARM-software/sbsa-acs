@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, 2020-2021 Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018, 2020-2022 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -50,6 +50,7 @@ payload(void)
   uint32_t old_data;
   uint32_t bdf;
   uint32_t bar_reg_value;
+  uint32_t bar_reg_lower_value;
   uint64_t bar_upper_bits;
   uint32_t bar_value;
   uint32_t bar_value_1;
@@ -125,8 +126,8 @@ next_bdf:
                */
               val_pcie_write_cfg(bdf, offset, 0xFFFFFFF0);
               val_pcie_write_cfg(bdf, offset + 4, 0xFFFFFFFF);
-              val_pcie_read_cfg(bdf, offset, &bar_reg_value);
-              bar_size = bar_reg_value & 0xFFFFFFF0;
+              val_pcie_read_cfg(bdf, offset, &bar_reg_lower_value);
+              bar_size = bar_reg_lower_value & 0xFFFFFFF0;
               val_pcie_read_cfg(bdf, offset + 4, &bar_reg_value);
               bar_upper_bits = bar_reg_value;
               bar_size = bar_size | (bar_upper_bits << 32 );
@@ -145,8 +146,8 @@ next_bdf:
                * to BARn and identify the size requested
                */
               val_pcie_write_cfg(bdf, offset, 0xFFFFFFF0);
-              val_pcie_read_cfg(bdf, offset, &bar_reg_value);
-              bar_reg_value = bar_reg_value & 0xFFFFFFF0;
+              val_pcie_read_cfg(bdf, offset, &bar_reg_lower_value);
+              bar_reg_value = bar_reg_lower_value & 0xFFFFFFF0;
               bar_size = ~bar_reg_value + 1;
 
               /* Restore the original BAR value */
@@ -220,11 +221,11 @@ exception_return_device:
           }
 
 next_bar:
-          if (BAR_REG(bar_reg_value) == BAR_32_BIT)
-              offset=offset+4;
+          if (BAR_REG(bar_reg_lower_value) == BAR_32_BIT)
+              offset = offset + 4;
 
-          if (BAR_REG(bar_reg_value) == BAR_64_BIT)
-              offset=offset+8;
+          if (BAR_REG(bar_reg_lower_value) == BAR_64_BIT)
+              offset = offset + 8;
 
           if (msa_en)
               val_pcie_disable_msa(bdf);
