@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2021, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2022, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -185,6 +185,12 @@ void *
 val_memory_alloc(uint32_t size)
 {
   return pal_mem_alloc(size);
+}
+
+void *
+val_memory_calloc(uint32_t num, uint32_t size)
+{
+  return pal_mem_calloc(num, size);
 }
 
 void *

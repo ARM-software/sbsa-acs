@@ -591,6 +591,7 @@ void     pal_print_raw(uint64_t addr, char8_t *string, uint64_t data);
 uint32_t pal_strncmp(char8_t *str1, char8_t *str2, uint32_t len);
 void    *pal_memcpy(void *dest_buffer, void *src_buffer, uint32_t len);
 void    *pal_mem_alloc(uint32_t size);
+void    *pal_mem_calloc(uint32_t num, uint32_t size);
 void    *pal_mem_alloc_cacheable(uint32_t bdf, uint32_t size, void **pa);
 void     pal_mem_free(void *buffer);
 int      pal_mem_compare(void *src, void *dest, uint32_t len);

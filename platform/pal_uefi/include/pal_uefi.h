@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2021, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2022, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -402,6 +402,7 @@ typedef struct {
 VOID  pal_memory_create_info_table(MEMORY_INFO_TABLE *memoryInfoTable);
 
 VOID    *pal_mem_alloc(UINT32 size);
+VOID    *pal_mem_calloc(UINT32 num, UINT32 size);
 VOID    *pal_mem_alloc_cacheable(UINT32 bdf, UINT32 size, VOID **pa);
 VOID    pal_mem_free_cacheable(UINT32 bdf, UINT32 size, VOID *va, VOID *pa);
 VOID    *pal_mem_virt_to_phys(VOID *va);

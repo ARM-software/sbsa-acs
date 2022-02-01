@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2020-2021, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2022, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -68,6 +68,7 @@ void     pal_mmio_write16(uint64_t addr, uint16_t data);
 void     pal_mmio_write(uint64_t addr, uint32_t data);
 void     pal_mmio_write64(uint64_t addr, uint64_t data);
 void     *pal_mem_alloc(uint32_t size);
+void     *pal_mem_calloc(uint32_t num, uint32_t size);
 
 uint32_t pal_increment_bus_dev(uint32_t StartBdf);
 
