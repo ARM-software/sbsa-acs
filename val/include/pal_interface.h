@@ -300,6 +300,7 @@ uint32_t pal_pcie_is_onchip_peripheral(uint32_t bdf);
 void pal_pcie_io_write_cfg(uint32_t bdf, uint32_t offset, uint32_t data);
 uint32_t pal_pcie_check_device_list(void);
 uint32_t pal_pcie_check_device_valid(uint32_t bdf);
+uint32_t pal_pcie_mem_get_offset(void);
 
 /**
   @brief  Instance of SMMU INFO block

@@ -623,3 +623,21 @@ pal_pci_bdf_to_dev(uint32_t bdf)
   return (void *)device_id;
 
 }
+
+/**
+  @brief  This API is used as placeholder to check if the bdf
+          obtained is valid or not
+
+  @param  bdf
+  @return 0 if bdf is valid else 1
+**/
+uint32_t
+pal_pcie_check_device_valid(uint32_t bdf)
+{
+
+  /*Add BDFs to this function if PCIe tests
+    need to be ignored for a BDF for any reason
+  */
+
+  return 0;
+}

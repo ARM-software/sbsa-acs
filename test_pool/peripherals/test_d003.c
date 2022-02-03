@@ -79,7 +79,7 @@ uart_reg_write(uint32_t offset, uint32_t width_mask, uint32_t data)
 
 static
 void
-uart_setup()
+uart_setup(void)
 {
 
 
@@ -88,7 +88,7 @@ uart_setup()
 
 static
 void
-uart_enable_txintr()
+uart_enable_txintr(void)
 {
   uint32_t data;
 
@@ -100,7 +100,7 @@ uart_enable_txintr()
 
 static
 void
-uart_disable_txintr()
+uart_disable_txintr(void)
 {
   uint32_t data;
 
@@ -113,7 +113,7 @@ uart_disable_txintr()
 
 static
 void
-isr()
+isr(void)
 {
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
   uart_disable_txintr();

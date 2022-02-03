@@ -1701,7 +1701,7 @@ val_pcie_function_header_type(uint32_t bdf)
 
   @param  bdf   - Segment/Bus/Dev/Func in the format of PCIE_CREATE_BDF
   @param  base  - Base Address Register address in 64-bit format
-  @return BAR address in 64-bit format, if found. Else NULL pointer.
+  @return Success BAR address in 64-bit format, if found. Else NULL pointer.
 **/
 void
 val_pcie_get_mmio_bar(uint32_t bdf, void *base)
@@ -2114,3 +2114,17 @@ uint32_t val_pcie_get_ecam_index(uint32_t bdf, uint32_t *ecam_index)
   return 1;
 }
 
+/**
+  @brief  Returns the memory offset that can be
+          accessed from the BAR base and is within
+          BAR limit value
+
+  @param  None
+  @return memory offset
+
+**/
+uint32_t val_pcie_mem_get_offset(void)
+{
+
+  return pal_pcie_mem_get_offset();
+}

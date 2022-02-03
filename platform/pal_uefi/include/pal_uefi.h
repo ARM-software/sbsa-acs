@@ -36,6 +36,7 @@ extern UINT32 g_enable_module;
 #define PCIE_UNKNOWN_RESPONSE   0xFFFFFFFF  /* Function not found or UR response from completer */
 
 #define NOT_IMPLEMENTED         0x4B1D  /* Feature or API by default unimplemented */
+#define MEM_OFFSET              0x10    /* Memory Offset from BAR base value that can be accesed*/
 
 #define TYPE0_MAX_BARS  6
 #define TYPE1_MAX_BARS  2

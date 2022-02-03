@@ -156,6 +156,10 @@
 /* PCIE platform config parameters */
 #define PLATFORM_OVERRIDE_NUM_ECAM                1
 
+/* Offset from the memory range to be accesed
+ * Modify this macro w.r.t to the requirement */
+#define MEM_OFFSET   0x10
+
 /* Platform config parameters for ECAM_0 */
 #define PLATFORM_OVERRIDE_PCIE_ECAM_BASE_ADDR_0   0x60000000
 #define PLATFORM_OVERRIDE_PCIE_SEGMENT_GRP_NUM_0  0x0

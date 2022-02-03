@@ -38,7 +38,7 @@ esr(uint64_t interrupt_type, void *context)
   /* Update the ELR to point to next instrcution */
   val_pe_update_elr(context, (uint64_t)branch_to_test);
 
-  val_print(AVS_PRINT_INFO, "\n       Received DAbort Exception ", 0);
+  val_print(AVS_PRINT_INFO, "\n       Received DAbort Exception %d", interrupt_type);
   val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
 }
 

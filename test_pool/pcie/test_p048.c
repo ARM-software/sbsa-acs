@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2020, 2021 Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2022 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -54,8 +54,9 @@ payload(void)
   uint32_t tbl_index;
   uint32_t read_value, old_value, value;
   uint32_t test_skip = 1;
-  uint64_t mem_base;
-  uint64_t mem_lim, new_mem_lim;
+  uint32_t mem_offset = 0;
+  uint64_t mem_base = 0;
+  uint64_t mem_lim = 0, new_mem_lim = 0;
   uint32_t status;
   pcie_device_bdf_table *bdf_tbl_ptr;
 
@@ -116,15 +117,39 @@ payload(void)
         /* If test runs for atleast an endpoint */
         test_skip = 0;
 
-        /* Write known value to an address which is in range
-         * Base + 0x10 will always be in the range.
+        /* Check_1: Accessing address in range of P memory
+         * should not cause any exception or data abort
+         *
+         * Write known value to an address which is in range
+         * Base + offset should always be in the range.
          * Read the same
-        */
-        old_value = (*(volatile uint32_t *)(mem_base + MEM_OFFSET_10));
-        *(volatile uint32_t *)(mem_base + MEM_OFFSET_10) = KNOWN_DATA;
-        read_value = (*(volatile uint32_t *)(mem_base + MEM_OFFSET_10));
+        **/
+        mem_offset = val_pcie_mem_get_offset();
 
-        /*Accessing out of range of limit should return 0xFFFFFFFF*/
+        if ((mem_base + mem_offset) > mem_lim)
+        {
+            val_print(AVS_PRINT_ERR, "\n Memory offset + base 0x%x ", mem_base + mem_offset);
+            val_print(AVS_PRINT_ERR, "exceeds the memory limit 0x%x", mem_lim);
+            val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
+            return;
+        }
+
+        old_value = (*(volatile uint32_t *)(mem_base + mem_offset));
+        *(volatile uint32_t *)(mem_base + mem_offset) = KNOWN_DATA;
+        read_value = (*(volatile uint32_t *)(mem_base + mem_offset));
+
+        if ((old_value != read_value && read_value == PCIE_UNKNOWN_RESPONSE) ||
+             val_pcie_is_urd(bdf)) {
+          val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
+          val_pcie_clear_urd(bdf);
+          return;
+        }
+
+        /**Check_2: Accessing out of NP memory limit range should return 0xFFFFFFFF
+         *
+         * If the limit exceeds 1MB then modify the range to be 1MB
+         * and access out of the limit set
+         **/
         if ((mem_lim >> MEM_SHIFT) > (mem_base >> MEM_SHIFT))
         {
            new_mem_lim = mem_base + MEM_OFF_100000;
@@ -133,20 +158,19 @@ payload(void)
            val_pcie_read_cfg(bdf, TYPE1_NP_MEM, &read_value);
 
            value = (*(volatile uint32_t *)(new_mem_lim + MEM_OFFSET_10));
-
-           /*Write back original value */
-           val_pcie_write_cfg(bdf, TYPE1_NP_MEM, ((mem_lim & MEM_LIM_MASK) | (mem_base  >> 16)));
-
            if (value != PCIE_UNKNOWN_RESPONSE)
            {
                val_print(AVS_PRINT_ERR, "\n Memory range for bdf 0x%x", bdf);
                val_print(AVS_PRINT_ERR, " is 0x%x", read_value);
                val_print(AVS_PRINT_ERR, "\n Out of range addr %x", (new_mem_lim + MEM_OFFSET_10));
-               val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
+               val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 03));
            }
         }
 
 exception_return:
+        /*Write back original value */
+        val_pcie_write_cfg(bdf, TYPE1_NP_MEM, ((mem_lim & MEM_LIM_MASK) | (mem_base  >> 16)));
+
         /* Memory Space might have constraint on RW/RO behaviour
          * So not checking for Read-Write Data mismatch.
         */
@@ -156,11 +180,6 @@ exception_return:
           return;
         }
 
-        if ((old_value != read_value && read_value == PCIE_UNKNOWN_RESPONSE) || val_pcie_is_urd(bdf)) {
-          val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
-          val_pcie_clear_urd(bdf);
-          return;
-        }
       }
   }
 
