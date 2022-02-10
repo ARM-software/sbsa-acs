@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2019, 2021 Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2019, 2021-2022 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -86,6 +86,7 @@ val_timer_get_info(TIMER_INFO_e info_type, uint64_t instance)
 {
 
   uint32_t block_num, block_index;
+
   if (g_timer_info_table == NULL)
       return 0;
 

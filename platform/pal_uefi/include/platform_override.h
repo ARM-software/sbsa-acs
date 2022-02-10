@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018, 2022 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -45,6 +45,7 @@
 #define PLATFORM_OVERRIDE_WD_CTRL_BASE     0x2A440000
 #define PLATFORM_OVERRIDE_WD_GSIV          93
 
+#define PLATFORM_OVERRIDE_TIMER_CNTFRQ         0x0
 
 /* To use a different value from the MCFG Table, change this to Non-Zero */
 #define PLATFORM_OVERRIDE_PCIE_ECAM_BASE       0x0 //0x40000000

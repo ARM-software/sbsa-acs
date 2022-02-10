@@ -227,6 +227,7 @@ typedef struct {
 }TIMER_INFO_TABLE;
 
 void pal_timer_create_info_table(TIMER_INFO_TABLE *timer_info_table);
+uint64_t pal_timer_get_counter_frequency(void);
 
 /** Watchdog tests related definitions **/
 

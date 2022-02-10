@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2020-2021, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2022, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -131,6 +131,7 @@
 #define PLATFORM_OVERRIDE_TIMER_FLAGS_1         ((PLATFORM_OVERRIDE_TIMER_CMN_FLAGS_1 << 16) | \
                                                  (PLATFORM_OVERRIDE_TIMER_VIRT_FLAGS_1 << 8) | \
                                                  (PLATFORM_OVERRIDE_TIMER_PHY_FLAGS_1))
+#define PLATFORM_OVERRIDE_TIMER_CNTFRQ         0x0
 
 /* Watchdog platform config parameters */
 #define WD_MODE     INTERRUPT_IS_LEVEL_TRIGGERED

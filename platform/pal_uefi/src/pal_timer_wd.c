@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2018-2019, 2021 Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2018-2019, 2021-2022 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -136,6 +136,20 @@ pal_timer_create_info_table(TIMER_INFO_TABLE *TimerTable)
 
   pal_timer_platform_override(TimerTable);
 
+}
+
+/**
+  @brief  This API gets the counter frequency value from user
+
+  @param  None
+
+  @return Counter frequency value
+**/
+
+UINT64
+pal_timer_get_counter_frequency(VOID)
+{
+  return PLATFORM_OVERRIDE_TIMER_CNTFRQ;
 }
 
 /* Only one watchdog information can be assigned as an override */
