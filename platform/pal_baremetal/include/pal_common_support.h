@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2020-2021, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2021,2022 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -60,6 +60,8 @@ extern uint32_t g_enable_module;
 #define TYPE01_CPR_MASK      0xff
 #define COMMAND_REG_OFFSET   0x04
 #define REG_ACC_DATA         0x7
+
+#define BAR_MASK        0xFFFFFFF0
 
 /* Class Code Masks */
 #define CC_SUB_MASK     0xFF   /* Sub Class */
