@@ -213,6 +213,8 @@ pal_pcie_io_write_cfg(UINT32 Bdf, UINT32 offset, UINT32 data)
 
 /**
   @brief   This API checks the PCIe Hierarchy Supports P2P
+           This is platform dependent API.If the system supports peer 2 peer
+           traffic, return 0 else return 1
            1. Caller       -  Test Suite
   @return  1 - P2P feature not supported 0 - P2P feature supported
 **/
@@ -225,7 +227,7 @@ pal_pcie_p2p_support()
    * transactions is platform implementation specific
    */
 
-  return 0;
+  return NOT_IMPLEMENTED;
 }
 
 /**
@@ -275,14 +277,16 @@ pal_get_msi_vectors (
 
 /**
     @brief   Get legacy IRQ routing for a PCI device
-
+             This is Platform dependent API and needs to be filled
+             with legacy IRQ map for a pcie devices.
     @param   bus        PCI bus address
     @param   dev        PCI device address
     @param   fn         PCI function number
     @param   irq_map    pointer to IRQ map structure
 
     @return  irq_map    IRQ routing map
-    @return  status code
+    @return  status code If the device legacy irq map information is filled
+                         return 0, else returns NOT_IMPLEMENTED
 **/
 UINT32
 pal_pcie_get_legacy_irq_map (
@@ -293,7 +297,7 @@ pal_pcie_get_legacy_irq_map (
   PERIPHERAL_IRQ_MAP *IrqMap
   )
 {
-  return 1;
+  return NOT_IMPLEMENTED;
 }
 
 /* Place holder function. Need to be
@@ -311,8 +315,9 @@ pal_pcie_get_root_port_bdf (
 }
 
 /**
-  @brief   Platform dependent API checks the Address Translation
-           Cache Support for BDF
+  @brief   Checks the Address Translation Cache Support for BDF
+           Platform dependent API. Fill this with system ATC support
+           information for bdf's
            1. Caller       -  Test Suite
   @return  0 - ATC not supported 1 - ATC supported
 **/
@@ -324,7 +329,7 @@ pal_pcie_is_cache_present (
   UINT32 Fn
   )
 {
-  return 1;
+  return NOT_IMPLEMENTED;
 }
 
 /**

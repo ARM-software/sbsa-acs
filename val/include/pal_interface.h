@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2021, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2022, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -298,6 +298,8 @@ uint32_t pal_pcie_is_cache_present(uint32_t seg, uint32_t bus, uint32_t dev, uin
 uint32_t pal_pcie_is_onchip_peripheral(uint32_t bdf);
 void pal_pcie_io_write_cfg(uint32_t bdf, uint32_t offset, uint32_t data);
 uint32_t pal_pcie_check_device_list(void);
+uint32_t pal_pcie_check_device_valid(uint32_t bdf);
+
 /**
   @brief  Instance of SMMU INFO block
 **/
@@ -750,14 +752,14 @@ typedef enum {
     EXERCISER_DATA_BAR0_SPACE = 0x2,
 } EXERCISER_DATA_TYPE;
 
-
+uint32_t pal_is_bdf_exerciser(uint32_t bdf);
 uint32_t pal_exerciser_set_param(EXERCISER_PARAM_TYPE type, uint64_t value1, uint64_t value2, uint32_t bdf);
 uint32_t pal_exerciser_get_param(EXERCISER_PARAM_TYPE type, uint64_t *value1, uint64_t *value2, uint32_t bdf);
 uint32_t pal_exerciser_set_state(EXERCISER_STATE state, uint64_t *value, uint32_t bdf);
 uint32_t pal_exerciser_get_state(EXERCISER_STATE *state, uint32_t bdf);
 uint32_t pal_exerciser_ops(EXERCISER_OPS ops, uint64_t param, uint32_t instance);
 uint32_t pal_exerciser_get_data(EXERCISER_DATA_TYPE type, exerciser_data_t *data, uint32_t bdf, uint64_t ecam);
-uint32_t pal_is_bdf_exerciser(uint32_t bdf);
+
 
 uint32_t pal_nist_generate_rng(uint32_t *rng_buffer);
 #endif

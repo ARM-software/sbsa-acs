@@ -35,6 +35,7 @@ extern UINT32 g_enable_module;
 #define PCIE_CAP_NOT_FOUND      0x10000010  /* The specified capability was not found */
 #define PCIE_UNKNOWN_RESPONSE   0xFFFFFFFF  /* Function not found or UR response from completer */
 
+#define NOT_IMPLEMENTED         0x4B1D  /* Feature or API by default unimplemented */
 
 typedef struct {
   UINT64   Arg0;

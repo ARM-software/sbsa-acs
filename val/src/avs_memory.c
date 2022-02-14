@@ -124,8 +124,10 @@ val_memory_get_addr(MEMORY_INFO_e mem_type, uint32_t instance, uint64_t *attr)
   switch(mem_type) {
       case MEM_TYPE_DEVICE:
           i = val_memory_get_entry_index(MEMORY_TYPE_DEVICE, instance);
+          break;
       case MEM_TYPE_NORMAL:
           i = val_memory_get_entry_index(MEMORY_TYPE_NORMAL, instance);
+          break;
       default:
           i = 0xFF;
           break;

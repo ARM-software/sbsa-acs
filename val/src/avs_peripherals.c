@@ -116,66 +116,82 @@ val_peripheral_get_info(PERIPHERAL_INFO_e info_type, uint32_t instance)
           i = val_peripheral_get_entry_index(PERIPHERAL_TYPE_USB, instance);
           if (i != 0xFFFF)
               return g_peripheral_info_table->info[i].base0;
+          break;
       case USB_FLAGS:
           i = val_peripheral_get_entry_index(PERIPHERAL_TYPE_USB, instance);
           if (i != 0xFFFF)
               return g_peripheral_info_table->info[i].flags;
+          break;
       case USB_GSIV:
           i = val_peripheral_get_entry_index(PERIPHERAL_TYPE_USB, instance);
           if (i != 0xFFFF)
               return g_peripheral_info_table->info[i].irq;
+          break;
       case USB_BDF:
           i = val_peripheral_get_entry_index(PERIPHERAL_TYPE_USB, instance);
           if (i != 0xFFFF)
               return g_peripheral_info_table->info[i].bdf;
+          break;
       case SATA_BASE0:
           i = val_peripheral_get_entry_index(PERIPHERAL_TYPE_SATA, instance);
           if (i != 0xFFFF)
               return g_peripheral_info_table->info[i].base0;
+          break;
       case SATA_BASE1:
           i = val_peripheral_get_entry_index(PERIPHERAL_TYPE_SATA, instance);
           if (i != 0xFFFF)
               return g_peripheral_info_table->info[i].base1;
+          break;
       case SATA_FLAGS:
           i = val_peripheral_get_entry_index(PERIPHERAL_TYPE_SATA, instance);
           if (i != 0xFFFF)
               return g_peripheral_info_table->info[i].flags;
+          break;
       case SATA_BDF:
           i = val_peripheral_get_entry_index(PERIPHERAL_TYPE_SATA, instance);
           if (i != 0xFFFF)
               return g_peripheral_info_table->info[i].bdf;
+          break;
       case SATA_GSIV:
           i = val_peripheral_get_entry_index(PERIPHERAL_TYPE_SATA, instance);
           if (i != 0xFFFF)
               return g_peripheral_info_table->info[i].irq;
+          break;
       case UART_BASE0:
           i = val_peripheral_get_entry_index(PERIPHERAL_TYPE_UART, instance);
           if (i != 0xFFFF)
               return g_peripheral_info_table->info[i].base0;
+          break;
       case UART_GSIV:
           i = val_peripheral_get_entry_index(PERIPHERAL_TYPE_UART, instance);
           if (i != 0xFFFF)
               return g_peripheral_info_table->info[i].irq;
+          break;
       case UART_FLAGS:
           i = val_peripheral_get_entry_index(PERIPHERAL_TYPE_UART, instance);
           if (i != 0xFFFF)
               return g_peripheral_info_table->info[i].flags;
+          break;
       case ANY_FLAGS:
           i = val_peripheral_get_entry_index (PERIPHERAL_TYPE_NONE, instance);
           if (i != 0xFFFF)
               return g_peripheral_info_table->info[i].flags;
+          break;
       case ANY_GSIV:
           i = val_peripheral_get_entry_index (PERIPHERAL_TYPE_NONE, instance);
           if (i != 0xFFFF)
             return g_peripheral_info_table->info[i].irq;
+          break;
       case ANY_BDF:
           i = val_peripheral_get_entry_index (PERIPHERAL_TYPE_NONE, instance);
           if (i != 0xFFFF)
               return g_peripheral_info_table->info[i].bdf;
+          break;
       case MAX_PASIDS:
           i = val_peripheral_get_entry_index (PERIPHERAL_TYPE_NONE, instance);
           if (i != 0xFFFF)
               return g_peripheral_info_table->info[i].max_pasids;
+          break;
       default:
           break;
   }

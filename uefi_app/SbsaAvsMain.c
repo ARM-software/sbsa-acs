@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2021, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2022 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -453,10 +453,10 @@ ShellAppMainsbsa (
   val_pe_initialize_default_exception_handler(val_pe_default_esr);
   FlushImage();
 
-  Print(L"\n      *** Starting PE tests ***  \n");
+  Print(L"\n      ***  Starting PE tests ***  \n");
   Status = val_pe_execute_tests(g_sbsa_level, val_pe_get_num());
 
-  Print(L"\n      *** Starting GIC tests ***  \n");
+  Print(L"\n      ***  Starting GIC tests ***  \n");
   Status |= val_gic_execute_tests(g_sbsa_level, val_pe_get_num());
 
   Print(L"\n      *** Starting Timer tests ***  \n");
@@ -464,9 +464,6 @@ ShellAppMainsbsa (
 
   Print(L"\n      *** Starting Watchdog tests ***  \n");
   Status |= val_wd_execute_tests(g_sbsa_level, val_pe_get_num());
-
-  Print(L"\n      *** Starting PCIe tests ***  \n");
-  Status |= val_pcie_execute_tests(g_enable_pcie_tests, g_sbsa_level, val_pe_get_num());
 
   Print(L"\n      *** Starting Power and Wakeup semantic tests ***  \n");
   Status |= val_wakeup_execute_tests(g_sbsa_level, val_pe_get_num());
@@ -477,13 +474,16 @@ ShellAppMainsbsa (
   Print(L"\n      *** Starting IO Virtualization tests ***  \n");
   Status |= val_smmu_execute_tests(g_sbsa_level, val_pe_get_num());
 
+  Print(L"\n      *** Starting PCIe tests ***  \n");
+  Status |= val_pcie_execute_tests(g_enable_pcie_tests, g_sbsa_level, val_pe_get_num());
+
   /*
    * Configure Gic Redistributor and ITS to support
    * Generation of LPIs.
    */
   configureGicIts();
 
-  if (g_sbsa_level > 3) { 
+  if (g_sbsa_level > 3) {
     Print(L"\n      *** Starting PCIe Exerciser tests ***  \n");
     Status |= val_exerciser_execute_tests(g_sbsa_level);
   }
