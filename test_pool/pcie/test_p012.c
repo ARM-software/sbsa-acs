@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, 2021 Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -98,7 +98,10 @@ payload (void)
         val_print (AVS_PRINT_ERR, "\n       Maximum number of interrupts has been reached", 0);
         break;
       default:
-        val_print (AVS_PRINT_ERR, "\n       Unknown error", 0);
+        if (status == NOT_IMPLEMENTED)
+            val_print (AVS_PRINT_ERR, "\n       API not implemented", 0);
+        else
+            val_print (AVS_PRINT_ERR, "\n       Unknown error", 0);
         break;
       }
     }

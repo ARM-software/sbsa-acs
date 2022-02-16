@@ -72,6 +72,7 @@
 #define MEM_SHIFT       20
 #define MEM_BASE_SHIFT  16
 #define BAR_MASK        0xFFFFFFF0
+#define MSI_BIR_MASK    0xFFFFFFF8
 
 /* Allows storage of 2048 valid BDFs */
 #define PCIE_DEVICE_BDF_TABLE_SZ 8192

@@ -156,8 +156,16 @@ payload (void)
             val_gic_free_irq(e_intr_line, 0);
         }
    } else {
-        val_print (AVS_PRINT_ERR, "\n       Legacy interrupt mapping Read error for bdf: 0x%x", e_bdf);
-        test_fail++;
+        if (status == NOT_IMPLEMENTED) {
+           val_print(AVS_PRINT_DEBUG,
+           "\n       pal_pcie_get_legacy_irq_map unimplemented for bdf: 0x%x", e_bdf);
+            continue;
+        }
+        else {
+           val_print(AVS_PRINT_ERR, "\n       Legacy interrupt mapping Read error for bdf: 0x%x",
+                     e_bdf);
+           test_fail++;
+        }
    }
  }
 

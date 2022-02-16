@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2021, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2022, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,7 +20,7 @@
 
 #include "pal_interface.h"
 
-/* set G_PRINT_LEVEL to one of the below values in your application entry 
+/* set G_PRINT_LEVEL to one of the below values in your application entry
   to control the verbosity of the prints */
 #define AVS_PRINT_ERR   5      /* Only Errors. use this to de-clutter the terminal and focus only on specifics */
 #define AVS_PRINT_WARN  4      /* Only warnings & errors. use this to de-clutter the terminal and focus only on specifics */
@@ -35,6 +35,8 @@
 #define AVS_STATUS_PASS      0x0
 #define AVS_STATUS_NIST_PASS 0x1
 #define AVS_INVALID_INDEX    0xFFFFFFFF
+
+#define NOT_IMPLEMENTED         0x4B1D  /* Feature or API not imeplemented */
 
 #define VAL_EXTRACT_BITS(data, start, end) ((data >> start) & ((1ul << (end-start+1))-1))
 
@@ -235,6 +237,7 @@ void     val_iovirt_free_info_table(void);
 uint32_t val_iovirt_get_rc_smmu_index(uint32_t rc_seg_num, uint32_t rid);
 uint32_t val_smmu_execute_tests(uint32_t level, uint32_t num_pe);
 uint64_t val_smmu_get_info(SMMU_INFO_e, uint32_t index);
+uint64_t val_iovirt_get_smmu_info(SMMU_INFO_e type, uint32_t index);
 
 typedef enum {
     DMA_NUM_CTRL = 1,

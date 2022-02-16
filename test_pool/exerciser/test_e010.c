@@ -93,9 +93,12 @@ payload(void)
   uint32_t erp_rs_reg_value;
   uint32_t instance;
   uint32_t fail_cnt;
+  uint32_t test_skip;
+  uint32_t status;
   uint64_t header_type;
 
   fail_cnt = 0;
+  test_skip = 1;
   pe_index = val_pe_get_index_mpid(val_pe_get_mpid());
   instance = val_exerciser_get_info(EXERCISER_NUM_CARDS, 0);
 
@@ -147,9 +150,20 @@ payload(void)
        * of the exerciser. Exerciser should see this request as a
        * Type 1 Request.
        */
-      val_exerciser_ops(START_TXN_MONITOR, CFG_READ, instance);
+      status = val_exerciser_ops(START_TXN_MONITOR, CFG_READ, instance);
+      if (status == PCIE_CAP_NOT_FOUND)
+      {
+          goto restore;
+      }
+
       val_pcie_read_cfg(e_bdf, TYPE01_VIDR, &reg_value);
-      val_exerciser_ops(STOP_TXN_MONITOR, CFG_READ, instance);
+      status = val_exerciser_ops(STOP_TXN_MONITOR, CFG_READ, instance);
+      if (status == PCIE_CAP_NOT_FOUND)
+      {
+          goto restore;
+      }
+
+      test_skip = 0;
       val_exerciser_get_param(CFG_TXN_ATTRIBUTES, (uint64_t *)&header_type, 0, instance);
       if (header_type != TYPE1)
       {
@@ -157,13 +171,16 @@ payload(void)
           fail_cnt++;
       }
 
+restore:
       /* Restore Exerciser rootport and it's right sibling subordinate bus registers */
       val_pcie_write_cfg(erp_bdf, TYPE1_PBN, erp_reg_value);
       if (rs_flag)
           val_pcie_write_cfg(erp_rs_bdf, TYPE1_PBN, erp_rs_reg_value);
   }
 
-  if (fail_cnt)
+  if (test_skip)
+      val_set_status(pe_index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 02));
+  else if (fail_cnt)
       val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, fail_cnt));
   else
       val_set_status(pe_index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));

@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2021, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2022, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -426,7 +426,7 @@ val_pcie_create_info_table(uint64_t *pcie_info_table)
 
   /* Create the list of valid Pcie Device Functions */
   if (val_pcie_create_device_bdf_table()) {
-      val_print(AVS_PRINT_ERR, "\n       Create Bdf table failed.\n", 0);
+      val_print(AVS_PRINT_ERR, "Create Bdf table failed.\n", 0);
       return;
   }
 
@@ -460,7 +460,7 @@ static uint32_t val_pcie_populate_device_rootport(void)
   for (tbl_index = 0; tbl_index < bdf_tbl_ptr->num_entries; tbl_index++)
   {
       bdf = bdf_tbl_ptr->device[tbl_index].bdf;
-      val_print(AVS_PRINT_DEBUG, " Dev bdf 0x%x", bdf);
+      val_print(AVS_PRINT_DEBUG, "   Dev bdf 0x%x", bdf);
 
       /* Fn returns rp_bdf = 0 and status = 1, if RP not found */
       status = val_pcie_get_rootport(bdf, &rp_bdf);
@@ -488,6 +488,7 @@ val_pcie_create_device_bdf_table()
   uint32_t bdf;
   uint32_t reg_value;
   uint32_t cid_offset;
+  uint32_t status;
 
   /* if table is already present, return success */
   if (g_pcie_bdf_table)
@@ -544,6 +545,10 @@ val_pcie_create_device_bdf_table()
 
                       /* Skip if the device is a PCI legacy device */
                       if (val_pcie_find_capability(bdf, PCIE_CAP, CID_PCIECS,  &cid_offset) != PCIE_SUCCESS)
+                          continue;
+
+                      status = pal_pcie_check_device_valid(bdf);
+                      if (status)
                           continue;
 
                       g_pcie_bdf_table->device[g_pcie_bdf_table->num_entries++].bdf = bdf;
@@ -1855,7 +1860,7 @@ val_pcie_get_rootport(uint32_t bdf, uint32_t *rp_bdf)
 
   dp_type = val_pcie_device_port_type(bdf);
 
-  val_print(AVS_PRINT_DEBUG, " DP type  0x%x", dp_type);
+  val_print(AVS_PRINT_DEBUG, " DP type 0x%x ", dp_type);
 
   /* If the device is RP, set its rootport value to same */
   if (dp_type == RP)

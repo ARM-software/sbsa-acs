@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2019, 2021 Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2019, 2021-2022 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -221,3 +221,22 @@ VOID pal_pcie_enumerate(VOID)
    * For uefi, enumeration is done during bootup
    * Hence, not implemented for uefi.*/
 }
+
+/**
+  @brief  This API is used as placeholder to check if the bdf
+          obtained is valid or not
+
+  @param  bdf
+  @return 0 if bdf is valid else 1
+**/
+UINT32
+pal_pcie_check_device_valid(UINT32 bdf)
+{
+
+  /*Add BDFs to this function if PCIe tests
+    need to be ignored for a BDF for any reason
+  */
+
+  return 0;
+}
+

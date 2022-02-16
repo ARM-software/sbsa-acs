@@ -93,26 +93,6 @@ pal_exerciser_get_pcie_config_offset(UINT32 Bdf)
   return cfg_addr;
 }
 
-
-/**
-  @brief  This API returns if the device is a exerciser
-  @param  bdf - Bus/Device/Function
-  @return 1 - true 0 - false
-**/
-UINT32
-pal_is_bdf_exerciser(UINT32 bdf)
-{
-  UINT64 Ecam;
-  UINT32 vendor_dev_id;
-  Ecam = pal_pcie_get_mcfg_ecam();
-
-  vendor_dev_id = pal_mmio_read(Ecam + pal_exerciser_get_pcie_config_offset(bdf));
-  if (vendor_dev_id == EXERCISER_ID)
-     return 1;
-  else
-     return 0;
-}
-
 /**
   @brief This function triggers the DMA operation
 **/
@@ -510,4 +490,24 @@ pal_exerciser_get_data (
       default:
           return 1;
     }
+}
+
+/**
+  @brief   This API checks if the given Bdf is an exerciser
+  @param   Bdf         - Bdf of the device
+  @return  status      - 1 if bdf is exerciser
+                         0 if bdf is not exerciser
+**/
+UINT32
+pal_is_bdf_exerciser(UINT32 bdf)
+{
+  UINT64 Ecam;
+  UINT32 vendor_dev_id;
+  Ecam = pal_pcie_get_mcfg_ecam();
+
+  vendor_dev_id = pal_mmio_read(Ecam + pal_exerciser_get_pcie_config_offset(bdf));
+  if (vendor_dev_id == EXERCISER_ID)
+     return 1;
+  else
+     return 0;
 }

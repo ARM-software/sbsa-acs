@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2020, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2021, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -46,9 +46,15 @@ payload(void)
   pe_index = val_pe_get_index_mpid(val_pe_get_mpid());
 
   /* Check If PCIe Hierarchy supports P2P */
+  if (val_pcie_p2p_support() == NOT_IMPLEMENTED) {
+    val_print(AVS_PRINT_DEBUG, "\n       pal_pcie_p2p_support API is unimplemented ", 0);
+    val_set_status(pe_index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
+    return;
+  }
+
   if (val_pcie_p2p_support())
   {
-      val_set_status(pe_index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
+      val_set_status(pe_index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 02));
       return;
   }
 
@@ -136,7 +142,7 @@ payload(void)
   }
 
   if (test_skip == 1)
-      val_set_status(pe_index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 02));
+      val_set_status(pe_index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 03));
   else if (test_fails)
       val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, test_fails));
   else

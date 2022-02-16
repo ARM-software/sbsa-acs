@@ -44,8 +44,6 @@ call_drv_get_status(unsigned long int *arg0, unsigned long int *arg1, unsigned l
 
     fd = fopen("/proc/sbsa", "r");
 
-    fseek(fd, 0, SEEK_SET);
-
     if (NULL == fd)
     {
         printf("fopen failed \n");
@@ -199,8 +197,6 @@ int read_from_proc_sbsa_msg() {
   sbsa_msg_parms_t msg_params;
 
   fd = fopen("/proc/sbsa_msg", "r");
-
-  fseek(fd, 0, SEEK_SET);
 
   if (NULL == fd) {
     printf("fopen failed \n");

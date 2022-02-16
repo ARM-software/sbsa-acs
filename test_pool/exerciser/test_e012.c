@@ -221,9 +221,15 @@ payload(void)
   instance = val_exerciser_get_info(EXERCISER_NUM_CARDS, 0);
 
   /* Check If PCIe Hierarchy supports P2P. */
+  if (val_pcie_p2p_support() == NOT_IMPLEMENTED) {
+    val_print(AVS_PRINT_DEBUG, "\n       pal_pcie_p2p_support API is unimplemented ", 0);
+    val_set_status(pe_index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
+    return;
+  }
+
   if (val_pcie_p2p_support())
   {
-    val_set_status(pe_index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
+    val_set_status(pe_index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 02));
     return;
   }
 
@@ -289,7 +295,7 @@ payload(void)
   }
 
   if (test_skip == 1)
-      val_set_status(pe_index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
+      val_set_status(pe_index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 03));
   else if (fail_cnt)
       val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, fail_cnt));
   else
