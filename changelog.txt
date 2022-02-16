@@ -1,3 +1,9 @@
+v22.02_SR_REL1.0
+
+* PCIe: Implementation of skip for unsupported PAL API.
+* PCIe: Supporting 64 bit BAR for MSI table.
+* Bug fixes for PCIe test 410.
+
 v21.09_REL3.1
 
 *SBSA: Memory test for “unpopulated address space access” waived off and implemented for bare-metal
