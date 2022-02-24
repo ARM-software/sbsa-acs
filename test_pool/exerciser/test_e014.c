@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2018-2021, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2018-2022, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -40,8 +40,7 @@
 #define NEW_DATA 0xAD
 #define NEWEST_DATA 0xBC
 
-static uint32_t test_sequence2(void *dram_buf1_virt, void *dram_buf1_phys, uint32_t e_bdf,
-                               uint32_t instance)
+static uint32_t test_sequence2(void *dram_buf1_virt, void *dram_buf1_phys, uint32_t instance)
 {
 
   uint32_t dma_len;
@@ -85,8 +84,7 @@ static uint32_t test_sequence2(void *dram_buf1_virt, void *dram_buf1_phys, uint3
   return 0;
 }
 
-static uint32_t test_sequence1(void *dram_buf1_virt, void *dram_buf1_phys, uint32_t e_bdf,
-                               uint32_t instance)
+static uint32_t test_sequence1(void *dram_buf1_virt, void *dram_buf1_phys, uint32_t instance)
 {
 
   uint32_t dma_len;
@@ -197,8 +195,8 @@ payload (void)
        goto test_fail;
     }
 
-    if (test_sequence1(dram_buf1_virt, dram_buf1_phys, e_bdf, instance) ||
-            test_sequence2(dram_buf1_virt, dram_buf1_phys, e_bdf, instance))
+    if (test_sequence1(dram_buf1_virt, dram_buf1_phys, instance) ||
+            test_sequence2(dram_buf1_virt, dram_buf1_phys, instance))
         goto test_fail;
 
     /* Return this exerciser dma memory back to the heap manager */

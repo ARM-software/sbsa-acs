@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, 2021 Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018, 2021-2022 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -91,6 +91,7 @@ reg_details reg_list[] = {
     {LORID_EL1,        0x0,            "LORID_EL1"       , LOR }
 };
 
+static
 uint64_t
 return_reg_value(uint32_t reg, uint8_t dependency)
 {
@@ -144,6 +145,7 @@ return_reg_value(uint32_t reg, uint8_t dependency)
 
 }
 
+static
 void
 id_regs_check(void)
 {

@@ -25,7 +25,7 @@
 
 static
 void
-payload()
+payload(void)
 {
   uint32_t num_smmu;
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());

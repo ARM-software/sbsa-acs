@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2020-2021, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2022, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -25,6 +25,7 @@
 #define TEST_NUM   (AVS_PCIE_TEST_NUM_BASE + 51)
 #define TEST_DESC  "Check Sec Bus Reset For iEP_RP    "
 
+static
 uint32_t
 get_iep_bdf_under_rp (uint32_t rp_bdf)
 {
@@ -59,6 +60,7 @@ get_iep_bdf_under_rp (uint32_t rp_bdf)
   return 0x0;
 }
 
+static
 uint32_t
 is_sbr_failed (uint32_t bdf)
 {

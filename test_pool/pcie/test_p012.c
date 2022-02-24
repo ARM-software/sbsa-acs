@@ -36,7 +36,7 @@ payload (void)
   uint32_t index;
   uint32_t count;
   PERIPHERAL_IRQ_MAP *irq_map;
-  uint8_t status;
+  uint32_t status;
   uint32_t current_irq_pin;
   uint32_t next_irq_pin;
   uint64_t dev_bdf;

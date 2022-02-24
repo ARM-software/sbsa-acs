@@ -41,7 +41,7 @@ static uint32_t g_failsafe_int_received;
 
 static
 void
-isr_failsafe()
+isr_failsafe(void)
 {
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
   val_timer_set_phy_el1(0);
@@ -54,7 +54,7 @@ isr_failsafe()
 
 static
 void
-isr1()
+isr1(void)
 {
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
   val_timer_set_phy_el1(0);
@@ -67,7 +67,7 @@ isr1()
 
 static
 void
-isr2()
+isr2(void)
 {
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
   /* We received our interrupt, so disable timer from generating further interrupts */
@@ -80,7 +80,7 @@ isr2()
 
 static
 void
-isr3()
+isr3(void)
 {
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
   /* We received our interrupt, so disable timer from generating further interrupts */
@@ -93,7 +93,7 @@ isr3()
 
 static
 void
-isr4()
+isr4(void)
 {
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
   val_wd_set_ws0(timer_num, 0);
@@ -106,7 +106,7 @@ isr4()
 
 static
 void
-isr5()
+isr5(void)
 {
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
   uint64_t cnt_base_n = val_timer_get_info(TIMER_INFO_SYS_CNT_BASE_N, timer_num);
@@ -117,9 +117,9 @@ isr5()
   val_gic_end_of_interrupt(intid);
 }
 
-
+static
 void
-wakeup_set_failsafe()
+wakeup_set_failsafe(void)
 {
   uint64_t timer_expire_val = TIMEOUT_LARGE * 10;
 
@@ -128,8 +128,9 @@ wakeup_set_failsafe()
   val_timer_set_phy_el1(timer_expire_val);
 }
 
+static
 void
-wakeup_clear_failsafe()
+wakeup_clear_failsafe(void)
 {
   val_timer_set_phy_el1(0);
 
@@ -137,7 +138,7 @@ wakeup_clear_failsafe()
 
 static
 void
-payload1()
+payload1(void)
 {
   uint64_t timer_expire_val = TIMEOUT_SMALL;
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
@@ -153,7 +154,7 @@ payload1()
 
 static
 void
-payload2()
+payload2(void)
 {
   uint64_t timer_expire_val = TIMEOUT_SMALL;
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
@@ -170,7 +171,7 @@ payload2()
 
 static
 void
-payload3()
+payload3(void)
 {
   uint64_t timer_expire_val = TIMEOUT_SMALL;
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
@@ -187,7 +188,7 @@ payload3()
 
 static
 void
-payload4()
+payload4(void)
 {
   uint32_t status, ns_wdg = 0;
   uint64_t timer_expire_val = 1;
@@ -245,7 +246,7 @@ payload4()
 
 static
 void
-payload5()
+payload5(void)
 {
   uint64_t cnt_base_n;
   uint64_t timer_expire_val = TIMEOUT_SMALL;

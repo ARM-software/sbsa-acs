@@ -33,7 +33,7 @@ static uint64_t timer_num, wd_num;
 
 static
 void
-isr()
+isr(void)
 {
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
   uint32_t status;
@@ -51,8 +51,9 @@ isr()
   val_gic_end_of_interrupt(intid);
 }
 
+static
 uint32_t
-wakeup_event_for_semantic_f()
+wakeup_event_for_semantic_f(void)
 {
   uint32_t ns_timer = 0, ns_wdg = 0;
   wd_num = val_wd_get_info(0, WD_INFO_COUNT);
@@ -95,7 +96,7 @@ wakeup_event_for_semantic_f()
 
 static
 void
-payload_target_pe()
+payload_target_pe(void)
 {
   uint64_t data1, data2;
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
@@ -118,7 +119,7 @@ payload_dummy(void)
 
 static
 void
-payload()
+payload(void)
 {
   uint64_t timeout = TIMEOUT_SMALL;
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());

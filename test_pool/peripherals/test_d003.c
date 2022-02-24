@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, 2021 Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018, 2021-2022 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -42,10 +42,11 @@ esr(uint64_t interrupt_type, void *context)
   /* Update the ELR to point to next instrcution */
   val_pe_update_elr(context, (uint64_t)branch_to_test);
 
-  val_print(AVS_PRINT_ERR, "\n       Error : Received Sync Exception ", 0);
+  val_print(AVS_PRINT_ERR, "\n       Error : Received Sync Exception type %d", interrupt_type);
   val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
 }
 
+static
 uint32_t
 uart_reg_read(uint32_t offset, uint32_t width_mask)
 {
@@ -61,6 +62,7 @@ uart_reg_read(uint32_t offset, uint32_t width_mask)
   return 0;
 }
 
+static
 void
 uart_reg_write(uint32_t offset, uint32_t width_mask, uint32_t data)
 {
@@ -75,6 +77,7 @@ uart_reg_write(uint32_t offset, uint32_t width_mask, uint32_t data)
 
 }
 
+static
 void
 uart_setup()
 {
@@ -83,6 +86,7 @@ uart_setup()
 
 }
 
+static
 void
 uart_enable_txintr()
 {
@@ -94,6 +98,7 @@ uart_enable_txintr()
   uart_reg_write(SBSA_UARTIMSC, WIDTH_BIT32, data);
 }
 
+static
 void
 uart_disable_txintr()
 {
@@ -106,8 +111,6 @@ uart_disable_txintr()
 
 }
 
-
-
 static
 void
 isr()
@@ -119,8 +122,7 @@ isr()
   val_gic_end_of_interrupt(int_id);
 }
 
-
-
+static
 uint32_t
 validate_register_readonly(uint32_t offset, uint32_t width)
 {
@@ -159,7 +161,7 @@ validate_register_readonly(uint32_t offset, uint32_t width)
 
 static
 void
-payload()
+payload(void)
 {
 
   uint32_t count = val_peripheral_get_info(NUM_UART, 0);
@@ -219,7 +221,7 @@ exception_taken:
 
 static
 void
-payload1()
+payload1(void)
 {
   uint32_t count = val_peripheral_get_info(NUM_UART, 0);
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());

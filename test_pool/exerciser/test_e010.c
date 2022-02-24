@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2019-2021, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2019-2022, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -32,6 +32,7 @@
 #define BUS_SHIFT 16
 #define BUS_MASK  0xff
 
+static
 uint8_t
 get_rp_right_sibling(uint32_t rp_bdf, uint32_t *rs_bdf)
 {

@@ -19,6 +19,7 @@
 #include "val/include/val_interface.h"
 
 #include "val/include/sbsa_avs_smmu.h"
+#include "val/include/sbsa_avs_pcie.h"
 
 #define TEST_NUM   (AVS_PCIE_TEST_NUM_BASE + 10)
 #define TEST_DESC  "PASID support atleast 16 bits     "

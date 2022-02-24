@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2020 Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2020, 2022 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -25,7 +25,7 @@
 #define TEST_DESC  "Check device under RP in same ECAM"
 
 
-uint8_t func_ecam_is_rp_ecam(uint32_t dsf_bdf)
+static uint8_t func_ecam_is_rp_ecam(uint32_t dsf_bdf)
 {
 
   uint8_t dsf_bus;
