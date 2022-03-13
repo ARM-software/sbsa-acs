@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2020-2021,2022 Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2022 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -140,6 +140,7 @@ extern uint32_t g_enable_module;
 #define CLEAN                 0x2
 #define INVALIDATE            0x3
 
+#define NOT_IMPLEMENTED       0x4B1D
 
 typedef struct {
   uint64_t   Arg0;

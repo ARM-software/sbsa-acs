@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2020, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2020, 2022 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -267,6 +267,7 @@ barspace_transactions_order_check(void)
   uint32_t instance;
   exerciser_data_t e_data;
   char *baseptr;
+  uint32_t status;
 
   /* Read the number of excerciser cards */
   instance = val_exerciser_get_info(EXERCISER_NUM_CARDS, 0);
@@ -278,7 +279,11 @@ barspace_transactions_order_check(void)
         continue;
 
     /* Get BAR 0 details for this instance */
-    if (val_exerciser_get_data(EXERCISER_DATA_BAR0_SPACE, &e_data, instance)) {
+    status = val_exerciser_get_data(EXERCISER_DATA_MMIO_SPACE, &e_data, instance);
+    if (status == NOT_IMPLEMENTED) {
+        val_print(AVS_PRINT_ERR, "\n      pal_exerciser_get_data() for MMIO not implemented", 0);
+        continue;
+    } else if (status) {
         val_print(AVS_PRINT_ERR, "\n       Exerciser %d data read error     ", instance);
         continue;
     }
@@ -292,7 +297,7 @@ barspace_transactions_order_check(void)
 
     if (!baseptr) {
         val_print(AVS_PRINT_ERR, "\n       Failed in BAR ioremap for instance %x", instance);
-        continue;;
+        continue;
     }
 
     /* Test Scenario 1 : Transactions on incremental aligned address */

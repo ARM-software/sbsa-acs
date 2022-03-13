@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2018,2021 Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2018,2021-2022 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -83,7 +83,11 @@ payload(void)
 
     bdf = val_exerciser_get_bdf(instance);
     /* Get BAR 0 details for this instance */
-    if (val_exerciser_get_data(EXERCISER_DATA_BAR0_SPACE, &e_data, instance)) {
+    status = val_exerciser_get_data(EXERCISER_DATA_MMIO_SPACE, &e_data, instance);
+    if (status == NOT_IMPLEMENTED) {
+        val_print(AVS_PRINT_ERR, "\n      pal_exerciser_get_data() for MMIO not implemented", 0);
+        goto test_fail;
+    } else if (status) {
         val_print(AVS_PRINT_ERR, "\n      Exerciser %d data read error     ", instance);
         goto test_fail;
     }

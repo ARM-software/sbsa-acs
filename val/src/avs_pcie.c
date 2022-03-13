@@ -1711,6 +1711,22 @@ val_pcie_get_mmio_bar(uint32_t bdf, void *base)
   uint32_t *base_ptr;
   uint32_t bar_low32bits;
   uint32_t bar_high32bits;
+  uint64_t ecam;
+  uint32_t status;
+  exerciser_data_t data;
+
+  if (pal_is_bdf_exerciser(bdf))
+  {
+      ecam = val_pcie_get_ecam_base(bdf);
+      status = pal_exerciser_get_data(EXERCISER_DATA_MMIO_SPACE, &data, bdf, ecam);
+      if (status == NOT_IMPLEMENTED)
+      {
+          val_print(AVS_PRINT_ERR, "\n       pal_exerciser_get_data() not implemented", 0);
+      }
+
+      *(uint64_t *)base = (uint64_t)data.bar_space.base_addr;
+      return;
+  }
 
   index = 0;
   base_ptr = (uint32_t *) base;

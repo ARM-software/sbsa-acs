@@ -752,6 +752,7 @@ typedef union exerciser_data {
 typedef enum {
     EXERCISER_DATA_CFG_SPACE = 0x1,
     EXERCISER_DATA_BAR0_SPACE = 0x2,
+    EXERCISER_DATA_MMIO_SPACE = 0x3,
 } EXERCISER_DATA_TYPE;
 
 uint32_t pal_is_bdf_exerciser(uint32_t bdf);

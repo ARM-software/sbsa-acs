@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2020, 2021 Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2022, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,7 +17,7 @@
 
 #include "include/pal_common_support.h"
 #include "include/pal_pcie_enum.h"
-#include "include/platform_override_fvp.h"
+#include "include/platform_override_struct.h"
 
 uint64_t
 pal_pcie_get_mcfg_ecam();
@@ -144,5 +144,5 @@ uint32_t pal_exerciser_set_state (EXERCISER_STATE State, uint64_t *Value, uint32
 **/
 uint32_t pal_exerciser_get_data(EXERCISER_DATA_TYPE Type, exerciser_data_t *Data, uint32_t Bdf, uint64_t Ecam)
 {
-  return 1;
+  return NOT_IMPLEMENTED;
 }

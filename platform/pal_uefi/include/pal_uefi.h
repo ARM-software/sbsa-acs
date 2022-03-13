@@ -37,6 +37,31 @@ extern UINT32 g_enable_module;
 
 #define NOT_IMPLEMENTED         0x4B1D  /* Feature or API by default unimplemented */
 
+#define TYPE0_MAX_BARS  6
+#define TYPE1_MAX_BARS  2
+
+/* BAR registrer masks */
+#define BAR_MIT_MASK    0x1
+#define BAR_MDT_MASK    0x3
+#define BAR_MT_MASK     0x1
+#define BAR_BASE_MASK   0xfffffff
+
+/* BAR register shifts */
+#define BAR_MIT_SHIFT   0
+#define BAR_MDT_SHIFT   1
+#define BAR_MT_SHIFT    3
+#define BAR_BASE_SHIFT  4
+
+typedef enum {
+  MMIO = 0,
+  IO = 1
+} BAR_MEM_INDICATOR_TYPE;
+
+typedef enum {
+  BITS_32 = 0,
+  BITS_64 = 2
+} BAR_MEM_DECODE_TYPE;
+
 typedef struct {
   UINT64   Arg0;
   UINT64   Arg1;

@@ -166,6 +166,7 @@ palPcieGetBase(UINT32 bdf, UINT32 bar_index)
   PCI_TYPE_GENERIC              PciHeader;
   PCI_DEVICE_HEADER_TYPE_REGION *Device;
   UINT32                        InputSeg, InputBus, InputDev, InputFunc;
+  UINT64                        bar_value;
 
   Status = gBS->LocateHandleBuffer (ByProtocol, &gEfiPciIoProtocolGuid, NULL, &HandleCount, &HandleBuffer);
   if (EFI_ERROR (Status)) {
@@ -187,8 +188,16 @@ palPcieGetBase(UINT32 bdf, UINT32 bar_index)
           Status = Pci->Pci.Read (Pci, EfiPciIoWidthUint32, 0, sizeof (PciHeader)/sizeof (UINT32), &PciHeader);
           if (!EFI_ERROR (Status)) {
             Device = &PciHeader.Device.Device;
-            return (Device->Bar[bar_index]);
-          }
+            if ((((Device->Bar[bar_index]) >> BAR_MDT_SHIFT) & BAR_MDT_MASK) == BITS_64)
+            {
+                bar_value = Device->Bar[bar_index + 1];
+                bar_value = (bar_value << 32) | (Device->Bar[bar_index]);
+                return bar_value;
+            }
+
+            else
+                return (Device->Bar[bar_index]);
+        }
       }
 
     }

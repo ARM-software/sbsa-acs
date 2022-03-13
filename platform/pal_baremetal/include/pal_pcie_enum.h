@@ -59,6 +59,21 @@
 #define BAR_MEM(bar_reg_value) ((bar_reg_value & 0xF) >> 3)
 #define REG_MASK_SHIFT(bar_value) ((bar_value & MEM_BASE32_LIM_MASK) >> 16)
 
+#define TYPE0_MAX_BARS  6
+#define TYPE1_MAX_BARS  2
+
+/* BAR register masks */
+#define BAR_MIT_MASK    0x1
+#define BAR_MDT_MASK    0x3
+#define BAR_MT_MASK     0x1
+#define BAR_BASE_MASK   0xfffffff
+
+/* BAR register shifts */
+#define BAR_MIT_SHIFT   0
+#define BAR_MDT_SHIFT   1
+#define BAR_MT_SHIFT    3
+#define BAR_BASE_SHIFT  4
+
 uint8_t  pal_mmio_read8(uint64_t addr);
 uint16_t pal_mmio_read16(uint64_t addr);
 uint32_t pal_mmio_read(uint64_t addr);
