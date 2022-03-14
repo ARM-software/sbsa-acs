@@ -126,8 +126,10 @@ payload(void)
        * Function. Based on platform configuration, this may
        * even cause an sync/async exception.
        */
-      bar_data = (*(volatile addr_t *)bar_base);
-
+      if ((val_pcie_function_header_type(bdf) == TYPE1_HEADER) && dsf_bdf)
+        val_pcie_mmio_read(dsf_bdf, bar_base, &bar_data);
+      else
+        val_pcie_mmio_read(bdf, bar_base, &bar_data);
 exception_return:
       /*
        * Check if unsupported request detected bit isn't set

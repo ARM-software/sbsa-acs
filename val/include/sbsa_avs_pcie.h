@@ -159,7 +159,8 @@ void     val_pcie_io_write_cfg(uint32_t bdf, uint32_t offset, uint32_t data);
 uint32_t val_pcie_read_cfg(uint32_t bdf, uint32_t offset, uint32_t *data);
 uint32_t val_get_msi_vectors (uint32_t bdf, PERIPHERAL_VECTOR_LIST **mvector);
 uint64_t val_pcie_get_bdf_config_addr(uint32_t bdf);
-
+uint32_t val_pcie_mmio_read(uint32_t bdf, uint64_t offset, uint32_t *data);
+uint32_t val_pcie_mmio_write(uint32_t bdf, uint64_t offset, uint32_t *data);
 
 typedef enum {
   PCIE_INFO_NUM_ECAM = 1,

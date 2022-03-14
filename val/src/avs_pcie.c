@@ -179,6 +179,34 @@ val_pcie_io_write_cfg(uint32_t bdf, uint32_t offset, uint32_t data)
 }
 
 /**
+    @brief   Reads 32-bit data from PCIe MMIO space pointed by Bus,
+             Device, Function, Bar index and memory offset, using UEFI PciIoProtocol bypass bar index
+
+    @param   Bdf    - BDF value for the device
+    @param   offset - Register offset within a device PCIe config space
+    @param   *data  - 32 bit value at offset
+    @return  success/failure
+**/
+uint32_t val_pcie_mmio_read(uint32_t bdf, uint64_t offset, uint32_t *data)
+{
+  return pal_pcie_mmio_read(bdf, offset, data);
+}
+
+/**
+    @brief   Writes 32-bit data to PCIe MMIO space pointed by Bus,
+             Device, Function, Bar index and memory offset, using UEFI PciIoProtocol bypass bar index
+
+    @param   Bdf    - BDF value for the device
+    @param   offset - Register offset within a device PCIe config space
+    @param   *data  - 32 bit value at offset
+    @return  success/failure
+**/
+uint32_t val_pcie_mmio_write(uint32_t bdf, uint64_t offset, uint32_t *data)
+{
+  return pal_pcie_mmio_write(bdf, offset, data);
+}
+
+/**
   @brief   This API  returns function config space addr.
            1. Caller       -  Test Suite
            2. Prerequisite -  val_pcie_create_info_table

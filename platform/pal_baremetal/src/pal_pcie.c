@@ -808,3 +808,31 @@ uint32_t pal_pcie_check_device_list(void)
     }
     return 0;
 }
+
+/**
+    @brief   Reads 32-bit data from PCIe MMIO space pointed by Bus,
+           Device, Function, Bar index and memory offset, using UEFI PciIoProtocol bypass bar index
+
+    @param   Bdf    - BDF value for the device
+    @param   offset - Register offset within a device PCIe config space
+    @param   *data  - 32 bit value at offset
+    @return  success/failure
+**/
+UINT32 pal_pcie_mmio_read(UINT32 Bdf, UINT64 offset, UINT32 *data)
+{
+  return PCIE_NO_MAPPING;
+}
+
+/**
+    @brief   Writes 32-bit data to PCIe MMIO space pointed by Bus,
+           Device, Function, Bar index and memory offset, using UEFI PciIoProtocol bypass bar index
+
+    @param   Bdf    - BDF value for the device
+    @param   offset - Register offset within a device PCIe config space
+    @param   *data  - 32 bit value at offset
+    @return  success/failure
+**/
+UINT32 pal_pcie_mmio_write(UINT32 Bdf, UINT64 offset, UINT32 *data)
+{
+  return PCIE_NO_MAPPING;
+}

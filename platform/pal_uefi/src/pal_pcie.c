@@ -212,6 +212,100 @@ pal_pcie_io_write_cfg(UINT32 Bdf, UINT32 offset, UINT32 data)
 }
 
 /**
+    @brief   Reads 32-bit data from PCIe MMIO space pointed by Bus,
+           Device, Function, Bar index and memory offset, using UEFI PciIoProtocol bypass bar index
+
+    @param   Bdf    - BDF value for the device
+    @param   offset - Register offset within a device PCIe config space
+    @param   *data  - 32 bit value at offset
+    @return  success/failure
+**/
+UINT32 pal_pcie_mmio_read(UINT32 Bdf, UINT64 offset, UINT32 *data)
+{
+  EFI_STATUS                    Status;
+  EFI_PCI_IO_PROTOCOL           *Pci;
+  UINTN                         HandleCount;
+  EFI_HANDLE                    *HandleBuffer;
+  UINTN                         Seg, Bus, Dev, Func;
+  UINT32                        Index;
+  UINT32                        InputSeg, InputBus, InputDev, InputFunc;
+
+
+  Status = gBS->LocateHandleBuffer (ByProtocol, &gEfiPciIoProtocolGuid, NULL, &HandleCount, &HandleBuffer);
+  if (EFI_ERROR (Status)) {
+    sbsa_print(AVS_PRINT_INFO, L" No PCI devices found in the system\n");
+    return PCIE_NO_MAPPING;
+  }
+
+  InputSeg = PCIE_EXTRACT_BDF_SEG(Bdf);
+  InputBus = PCIE_EXTRACT_BDF_BUS(Bdf);
+  InputDev = PCIE_EXTRACT_BDF_DEV(Bdf);
+  InputFunc = PCIE_EXTRACT_BDF_FUNC(Bdf);
+
+  for (Index = 0; Index < HandleCount; Index++) {
+    Status = gBS->HandleProtocol (HandleBuffer[Index], &gEfiPciIoProtocolGuid, (VOID **)&Pci);
+    if (!EFI_ERROR (Status)) {
+      Pci->GetLocation (Pci, &Seg, &Bus, &Dev, &Func);
+      if (InputSeg == Seg && InputBus == Bus && InputDev == Dev && InputFunc == Func) {
+          Status = Pci->Mem.Read (Pci, EfiPciIoWidthUint32, 0xff, offset, 1, data);
+          if (!EFI_ERROR (Status))
+            return 0;
+          else
+            return PCIE_NO_MAPPING;
+      }
+    }
+  }
+  return PCIE_NO_MAPPING;
+}
+
+/**
+    @brief   Writes 32-bit data to PCIe MMIO space pointed by Bus,
+           Device, Function, Bar index and memory offset, using UEFI PciIoProtocol bypass bar index
+
+    @param   Bdf    - BDF value for the device
+    @param   offset - Register offset within a device PCIe config space
+    @param   *data  - 32 bit value at offset
+    @return  success/failure
+**/
+UINT32 pal_pcie_mmio_write(UINT32 Bdf, UINT64 offset, UINT32 *data)
+{
+  EFI_STATUS                    Status;
+  EFI_PCI_IO_PROTOCOL           *Pci;
+  UINTN                         HandleCount;
+  EFI_HANDLE                    *HandleBuffer;
+  UINTN                         Seg, Bus, Dev, Func;
+  UINT32                        Index;
+  UINT32                        InputSeg, InputBus, InputDev, InputFunc;
+
+
+  Status = gBS->LocateHandleBuffer (ByProtocol, &gEfiPciIoProtocolGuid, NULL, &HandleCount, &HandleBuffer);
+  if (EFI_ERROR (Status)) {
+    sbsa_print(AVS_PRINT_INFO, L" No PCI devices found in the system\n");
+    return PCIE_NO_MAPPING;
+  }
+
+  InputSeg = PCIE_EXTRACT_BDF_SEG(Bdf);
+  InputBus = PCIE_EXTRACT_BDF_BUS(Bdf);
+  InputDev = PCIE_EXTRACT_BDF_DEV(Bdf);
+  InputFunc = PCIE_EXTRACT_BDF_FUNC(Bdf);
+
+  for (Index = 0; Index < HandleCount; Index++) {
+    Status = gBS->HandleProtocol (HandleBuffer[Index], &gEfiPciIoProtocolGuid, (VOID **)&Pci);
+    if (!EFI_ERROR (Status)) {
+      Pci->GetLocation (Pci, &Seg, &Bus, &Dev, &Func);
+      if (InputSeg == Seg && InputBus == Bus && InputDev == Dev && InputFunc == Func) {
+          Status = Pci->Mem.Write (Pci, EfiPciIoWidthUint32, 0xff, offset, 1, data);
+          if (!EFI_ERROR (Status))
+            return 0;
+          else
+            return PCIE_NO_MAPPING;
+      }
+    }
+  }
+  return PCIE_NO_MAPPING;
+}
+
+/**
   @brief   This API checks the PCIe Hierarchy Supports P2P
            This is platform dependent API.If the system supports peer 2 peer
            traffic, return 0 else return 1
