@@ -46,7 +46,6 @@ static
 void
 payload(void)
 {
-  uint32_t data;
   uint32_t old_data;
   uint32_t bdf;
   uint32_t bar_reg_value;
@@ -180,7 +179,6 @@ next_bdf:
            */
           old_data = *(uint32_t *)(baseptr);
           *(uint32_t *)(baseptr) = DATA;
-          data = *(char *)(baseptr+3);
           *(uint32_t *)(baseptr) = old_data;
 
 exception_return_normal:
@@ -205,7 +203,6 @@ exception_return_normal:
           /* Access check. Not performing data comparison check. */
           old_data = *(uint32_t *)(baseptr);
           *(uint32_t *)(baseptr) = DATA;
-          data = *(uint32_t *)(baseptr);
           *(uint32_t *)(baseptr) = old_data;
 
           val_memory_unmap(baseptr);

@@ -20,6 +20,17 @@
 
 #include "pal_interface.h"
 
+#ifdef TARGET_EMULATION
+#define TRUE 1
+#define FALSE 0
+#define BIT0 (1)
+#define BIT1 (1 << 1)
+#define BIT4 (1 << 4)
+#define BIT6 (1 << 6)
+#define BIT14 (1 << 14)
+#define BIT29 (1 << 29)
+#endif
+
 /* set G_PRINT_LEVEL to one of the below values in your application entry
   to control the verbosity of the prints */
 #define AVS_PRINT_ERR   5      /* Only Errors. use this to de-clutter the terminal and focus only on specifics */

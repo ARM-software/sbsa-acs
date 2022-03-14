@@ -25,6 +25,13 @@
 #ifdef TARGET_LINUX
   typedef char          char8_t;
   typedef long long int addr_t;
+#elif TARGET_EMULATION
+#include <stdlib.h>
+#include <stdint.h>
+#include <stddef.h>
+  typedef uint64_t addr_t;
+  typedef char     char8_t;
+  typedef uint64_t dma_addr_t;
 #else
   typedef INT8   int8_t;
   typedef INT32  int32_t;

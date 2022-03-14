@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2021, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2021-2022, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -94,7 +94,7 @@ ArmGicSetItsPendingTableBase(
     return 1;
   }
 
-  val_memory_set((VOID *)Address, PAGES_TO_SIZE(Pages), 0);
+  val_memory_set((void *)Address, PAGES_TO_SIZE(Pages), 0);
 
   write_value = val_mmio_read64(GicRedistributorBase + ARM_GICR_PENDBASER);
   write_value = write_value & (~ARM_GICR_PENDBASER_PA_MASK);

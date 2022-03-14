@@ -18,6 +18,8 @@
 #ifndef __SBSA_AVS_PE_H__
 #define __SBSA_AVS_PE_H__
 
+#include "pal_interface.h"
+
 #define MAX_NUM_PE               (2 << 27)
 
 #define MPIDR_AFF_MASK           (0xFF00FFFFFF)

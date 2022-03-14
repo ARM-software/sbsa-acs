@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, 2020 Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018, 2020, 2022 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,6 +19,7 @@
 #include "val/include/val_interface.h"
 
 #include "val/include/sbsa_avs_iovirt.h"
+#include "val/include/sbsa_avs_smmu.h"
 
 #define TEST_NUM   (AVS_SMMU_TEST_NUM_BASE + 5)
 #define TEST_DESC  "SMMUv2 unique intr per ctxt bank  "

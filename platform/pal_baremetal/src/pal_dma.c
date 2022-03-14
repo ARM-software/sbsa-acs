@@ -144,7 +144,7 @@ pal_dma_scsi_get_dma_addr(void *port, void *dma_addr, unsigned int *dma_len)
   @return  0 on SUCCESS or 1 for FAIL
 **/
 int
-pal_dma_mem_get_attrs(VOID *buf, UINT32 *attr, UINT32 *sh)
+pal_dma_mem_get_attrs(void *buf, uint32_t *attr, uint32_t *sh)
 {
 
   /* Pointer to return: the attributes (attr)

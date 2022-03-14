@@ -196,13 +196,13 @@ typedef enum {
   @brief  structure instance for GIC entry
 **/
 typedef struct {
-  UINT32 type;
-  UINT64 base;
-  UINT32 entry_id;  /* This entry_id is used to tell component ID */
-  UINT64 length;  /* This length is only used in case of Re-Distributor Range Address length */
-  UINT32 flags;
-  UINT32 spi_count;
-  UINT32 spi_base;
+  uint32_t type;
+  uint64_t base;
+  uint32_t entry_id;  /* This entry_id is used to tell component ID */
+  uint64_t length;  /* This length is only used in case of Re-Distributor Range Address length */
+  uint32_t flags;
+  uint32_t spi_count;
+  uint32_t spi_base;
 }GIC_INFO_ENTRY;
 
 /**

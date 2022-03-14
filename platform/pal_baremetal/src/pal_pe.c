@@ -33,7 +33,7 @@ pal_get_madt_ptr();
 
 void
 ArmCallSmc (
-  IN OUT ARM_SMC_ARGS *Args
+   ARM_SMC_ARGS *Args
   );
 
 
@@ -150,7 +150,7 @@ pal_pe_create_info_table(PE_INFO_TABLE *PeTable)
   @return status of the API
 **/
 uint32_t
-pal_pe_install_esr(uint32_t ExceptionType,  void (*esr)(uint64_t, VOID *))
+pal_pe_install_esr(uint32_t ExceptionType,  void (*esr)(uint64_t, void *))
 {
 
   /* TO DO - Baremetal

@@ -19,7 +19,7 @@
 #include "include/pal_pcie_enum.h"
 #include "include/pal_common_support.h"
 
-extern VOID* g_sbsa_log_file_handle;
+extern void* g_sbsa_log_file_handle;
 
 uint8_t   *gSharedMemory;
 /**
@@ -502,7 +502,7 @@ pal_mem_free_pages(void *PageBase, uint32_t NumPages)
 
   @return True/False
 */
-UINT32
+uint32_t
 pal_target_is_bm()
 {
   return 1;
