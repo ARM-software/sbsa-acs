@@ -60,26 +60,33 @@ payload(void)
       /* Check entry is Downstream port or RP */
       if ((dp_type == DP) || (dp_type == iEP_RP) || (dp_type == RP))
       {
+          /* Read the secondary and subordinate bus number */
+          val_pcie_read_cfg(bdf, TYPE1_PBN, &reg_value);
+          sec_bus = ((reg_value >> SECBN_SHIFT) & SECBN_MASK);
+          sub_bus = ((reg_value >> SUBBN_SHIFT) & SUBBN_MASK);
+
+          /* Skip the port, if switch is present below it or no device present */
+          if ((sec_bus != sub_bus) || (sec_bus == 0))
+              continue;
+
+          /*
+           * Some BIOSes do not clear sec_bus and sub_bus during enumuration so make sure
+           * we skip the switch with no device present.
+           */
+          seg_num = PCIE_EXTRACT_BDF_SEG(bdf);
+          dev_bdf = PCIE_CREATE_BDF(seg_num, sec_bus, 0, 0);
+          status = val_pcie_read_cfg(dev_bdf, TYPE01_VIDR, &reg_value);
+          if (status || (reg_value == PCIE_UNKNOWN_RESPONSE))
+              continue;
+
           /* Disable the ARI forwarding enable bit */
           val_pcie_find_capability(bdf, PCIE_CAP, CID_PCIECS, &cap_base);
           val_pcie_read_cfg(bdf, cap_base + DCTL2R_OFFSET, &reg_value);
           reg_value &= DCTL2R_AFE_NORMAL;
           val_pcie_write_cfg(bdf, cap_base + DCTL2R_OFFSET, reg_value);
 
-          /* Read the secondary and subordinate bus number */
-          val_pcie_read_cfg(bdf, TYPE1_PBN, &reg_value);
-          sec_bus = ((reg_value >> SECBN_SHIFT) & SECBN_MASK);
-          sub_bus = ((reg_value >> SUBBN_SHIFT) & SUBBN_MASK);
-
-          /* Skip the port, if switch is present below it or no device present*/
-          if ((sec_bus != sub_bus) || (sec_bus == 0))
-              continue;
-
           /* If test runs for atleast an endpoint */
           test_skip = 0;
-
-          seg_num = PCIE_EXTRACT_BDF_SEG(bdf);
-          dev_bdf = PCIE_CREATE_BDF(seg_num, sec_bus, 0, 0);
           status = val_pcie_read_cfg(dev_bdf, TYPE01_VIDR, &reg_value);
           if (status || (reg_value == PCIE_UNKNOWN_RESPONSE))
           {
