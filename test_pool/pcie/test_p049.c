@@ -52,7 +52,7 @@ payload(void)
   uint32_t dp_type;
   uint32_t pe_index;
   uint32_t tbl_index;
-  uint32_t read_value, old_value;
+  uint32_t read_value, old_value, value;
   uint32_t status;
   uint32_t test_skip = 1;
   uint64_t mem_base = 0, mem_base_upper = 0;
@@ -130,29 +130,29 @@ payload(void)
         /* Write known value to an address which is in range
          * Base + 0x10 will always be in the range.
          * Read the same
-        */
-        old_value = (*(volatile addr_t *)(mem_base + MEM_OFFSET_10));
-        *(volatile addr_t *)(mem_base + MEM_OFFSET_10) = KNOWN_DATA;
-        read_value = (*(volatile addr_t *)(mem_base + MEM_OFFSET_10));
+         * Use PCI IO protocol to read memory bypass bar index
+         */
+        val_pcie_mmio_read(bdf, mem_base + MEM_OFFSET_10, &old_value);
+        value = KNOWN_DATA;
+        val_pcie_mmio_write(bdf, mem_base + MEM_OFFSET_10, &value);
+        val_pcie_mmio_read(bdf, mem_base + MEM_OFFSET_10, &read_value);
 
         /*Accessing out of range of limit should return 0xFFFFFFFF*/
         if ((mem_lim >> MEM_SHIFT) > (mem_base >> MEM_SHIFT))
         {
-           new_mem_lim  = mem_base + MEM_OFF_100000;
-           mem_base = mem_base | (mem_base  >> MEM_BASE_SHIFT);
-           val_pcie_write_cfg(bdf, TYPE1_P_MEM, mem_base);
-           val_pcie_read_cfg(bdf, TYPE1_P_MEM, &read_value);
+          new_mem_lim = mem_base + MEM_OFF_100000 - 1;
+          val_pcie_write_cfg(bdf, TYPE1_P_MEM, (new_mem_lim & MEM_LIM_MASK) | (mem_base  >> MEM_BASE_SHIFT));
+          val_pcie_mmio_read(bdf, new_mem_lim + 1 + MEM_OFFSET_10, &value);
 
-           uint32_t value = (*(volatile uint32_t *)(new_mem_lim + MEM_OFFSET_10));
-           /*Write back original value */
-           val_pcie_write_cfg(bdf, TYPE1_P_MEM, ((mem_lim & MEM_LIM_MASK) | (mem_base  >> 16)));
+          /*Write back original value */
+          val_pcie_write_cfg(bdf, TYPE1_P_MEM, (mem_lim & MEM_LIM_MASK) | ( mem_base >> MEM_BASE_SHIFT));
 
-           if (value != PCIE_UNKNOWN_RESPONSE)
-           {
-               val_print(AVS_PRINT_ERR, "\n Memory range for bdf 0x%x", bdf);
-               val_print(AVS_PRINT_ERR, " is 0x%x", read_value);
-               val_print(AVS_PRINT_ERR, "\n Out of range addr %x ", (new_mem_lim + MEM_OFFSET_10));
-               val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
+          if (value != PCIE_UNKNOWN_RESPONSE)
+          {
+              val_print(AVS_PRINT_ERR, "\n Memory range for bdf 0x%x", bdf);
+              val_print(AVS_PRINT_ERR, " is 0x%x", value);
+              val_print(AVS_PRINT_ERR, "\n Out of range addr %x ", (new_mem_lim + 1 + MEM_OFFSET_10));
+              val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
            }
         }
 
