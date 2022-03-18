@@ -207,6 +207,17 @@ uint32_t val_pcie_mmio_write(uint32_t bdf, uint64_t offset, uint32_t *data)
 }
 
 /**
+  @brief  Get bus address base from bar index
+  @param  bdf      - BDF value for the device
+  @param  bar        - Bar index
+  @return Returns 0 if no bus address, otherwise bus address base.
+**/
+uint64_t val_pcie_bar_to_bus_address(uint32_t bdf, uint32_t bar)
+{
+  return pal_pcie_bar_to_bus_address(bdf, bar);
+}
+
+/**
   @brief   This API  returns function config space addr.
            1. Caller       -  Test Suite
            2. Prerequisite -  val_pcie_create_info_table

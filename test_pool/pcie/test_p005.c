@@ -67,6 +67,7 @@ payload(void)
   uint32_t dev_type;
   uint32_t max_bar_offset;
   uint32_t msa_en = 0;
+  uint32_t bar_index;
 
   val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 0));
 
@@ -96,11 +97,11 @@ next_bdf:
 
       offset = BAR0_OFFSET;
 
+      bar_index = 0;
       while(offset <= max_bar_offset) {
           val_pcie_read_cfg(bdf, offset, &bar_value);
           val_print(AVS_PRINT_DEBUG, "\n The BAR value of bdf %x", bdf);
           val_print(AVS_PRINT_DEBUG, " is %x ", bar_value);
-          base = 0;
 
           if (bar_value == 0)
           {
@@ -119,7 +120,6 @@ next_bdf:
           {
               val_print(AVS_PRINT_INFO, "The BAR supports 64-bit address decoding capability \n", 0);
               val_pcie_read_cfg(bdf, offset+4, &bar_value_1);
-              base = bar_value_1;
 
               /* BAR supports 64-bit address therefore, write all 1's
                * to BARn and BARn+1 and identify the size requested
@@ -136,7 +136,6 @@ next_bdf:
               /* Restore the original BAR value */
               val_pcie_write_cfg(bdf, offset + 4, bar_value_1);
               val_pcie_write_cfg(bdf, offset, bar_value);
-              base = (base << 32) | bar_value;
           }
 
           else {
@@ -152,7 +151,6 @@ next_bdf:
 
               /* Restore the original BAR value */
               val_pcie_write_cfg(bdf, offset, bar_value);
-              base = bar_value;
           }
 
           val_print(AVS_PRINT_DEBUG, "\n BAR size is %x", bar_size);
@@ -173,6 +171,11 @@ next_bdf:
           branch_to_test = &&exception_return_normal;
 
           /* Map the BARs to a NORMAL memory attribute. check unaligned access */
+          base = val_pcie_bar_to_bus_address(bdf, bar_index);
+          if (base == 0) {
+              val_print(AVS_PRINT_ERR, "\n       Map memory failed for Bdf: 0x%x", bdf);
+              goto next_bar;
+          }
           baseptr = (char *)val_memory_ioremap((void *)base, 1024, NORMAL_NC);
 
           /* Check for unaligned access. Normal memory can be read-only.
@@ -229,6 +232,7 @@ next_bar:
 
           if (msa_en)
               val_pcie_disable_msa(bdf);
+          bar_index++;
       }
   }
 

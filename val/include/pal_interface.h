@@ -283,6 +283,7 @@ void     pal_pci_cfg_write(uint32_t bus, uint32_t dev, uint32_t func, int offset
 uint32_t pal_pci_cfg_read(uint32_t bus, uint32_t dev, uint32_t func, int offset, uint32_t *value);
 
 uint64_t pal_pcie_get_mcfg_ecam(void);
+uint64_t pal_pcie_bar_to_bus_address(uint32_t bdf, uint32_t bar);
 void     pal_pcie_create_info_table(PCIE_INFO_TABLE *PcieTable);
 uint32_t pal_pcie_io_read_cfg(uint32_t bdf, uint32_t offset, uint32_t *data);
 uint32_t pal_pcie_mmio_read(uint32_t bdf, uint64_t offset, uint32_t *data);
