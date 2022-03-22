@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2021, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2021-2022, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,25 +15,32 @@
  * limitations under the License.
  **/
 
+#ifndef TARGET_EMULATION
 #include "include/sbsa_avs_pe.h"
 #include "sys_arch_src/gic/sbsa_exception.h"
+#else
+#define EXCEPT_AARCH64_SYNCHRONOUS_EXCEPTIONS    0
+#define EXCEPT_AARCH64_IRQ                       1
+#define EXCEPT_AARCH64_FIQ                       2
+#define EXCEPT_AARCH64_SERROR                    3
+#endif
 
-//
-// Private worker functions for ASM_PFX()
-//
+/* Private worker functions for ASM_PFX() */
 #define _CONCATENATE(a, b)  __CONCATENATE(a, b)
 #define __CONCATENATE(a, b) a ## b
 
+/* The __USER_LABEL_PREFIX__ macro predefined by GNUC represents
+   the prefix on symbols in assembly language.*/
 #define __USER_LABEL_PREFIX__
-//
-// The __USER_LABEL_PREFIX__ macro predefined by GNUC represents the prefix
-// on symbols in assembly language.
-//
+
 #define ASM_PFX(name) _CONCATENATE (__USER_LABEL_PREFIX__, name)
 
 #define GCC_ASM_EXPORT(func__)  \
        .global  _CONCATENATE (__USER_LABEL_PREFIX__, func__)    ;\
        .type ASM_PFX(func__), %function
+
+#define GCC_ASM_IMPORT(func__)  \
+       .extern  _CONCATENATE (__USER_LABEL_PREFIX__, func__)
 
 GCC_ASM_IMPORT(common_exception_handler)
 GCC_ASM_EXPORT(sbsa_gic_set_el2_vector_table)

@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2020-2021, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2022, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -88,6 +88,7 @@ get_target_exer_bdf(uint32_t req_rp_bdf, uint32_t *tgt_e_bdf,
   return AVS_STATUS_FAIL;
 }
 
+static
 uint32_t
 create_va_pa_mapping (uint64_t txn_va, uint64_t txn_pa,
                       smmu_master_attributes_t *smmu_master,
@@ -173,10 +174,9 @@ create_va_pa_mapping (uint64_t txn_va, uint64_t txn_pa,
   return AVS_STATUS_FAIL;
 }
 
+static
 uint32_t
-check_redirected_req_validation (uint32_t req_instance, uint32_t req_e_bdf,
-                                 uint32_t req_rp_bdf, uint32_t tgt_e_bdf,
-                                 uint64_t bar_base)
+check_redirected_req_validation (uint32_t req_instance, uint32_t req_rp_bdf, uint64_t bar_base)
 {
   uint64_t txn_va;
   uint32_t instance;
@@ -386,7 +386,7 @@ payload(void)
       test_skip = 0;
 
       /* Check For Redirected Request Validation Functionality */
-      status = check_redirected_req_validation(instance, req_e_bdf, req_rp_bdf, tgt_e_bdf, bar_base);
+      status = check_redirected_req_validation(instance, req_rp_bdf, bar_base);
       if (status == AVS_STATUS_SKIP)
           val_print(AVS_PRINT_ERR, "\n       ACS Validation Check Skipped for 0x%x", req_rp_bdf);
       else if (status) {
@@ -430,8 +430,7 @@ payload(void)
               val_pcie_enable_msa(tgt_e_bdf);
 
               /* Check For Redirected Request Validation Functionality */
-              status = check_redirected_req_validation(instance, req_e_bdf, req_rp_bdf,
-                                                                   tgt_e_bdf, bar_base);
+              status = check_redirected_req_validation(instance, req_rp_bdf, bar_base);
               if (status == AVS_STATUS_SKIP)
                   val_print(AVS_PRINT_ERR, "\n       ACS Validation Check Skipped for 0x%x",
                                                                                 req_rp_bdf);

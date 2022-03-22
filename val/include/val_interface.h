@@ -20,6 +20,17 @@
 
 #include "pal_interface.h"
 
+#ifdef TARGET_EMULATION
+#define TRUE 1
+#define FALSE 0
+#define BIT0 (1)
+#define BIT1 (1 << 1)
+#define BIT4 (1 << 4)
+#define BIT6 (1 << 6)
+#define BIT14 (1 << 14)
+#define BIT29 (1 << 29)
+#endif
+
 /* set G_PRINT_LEVEL to one of the below values in your application entry
   to control the verbosity of the prints */
 #define AVS_PRINT_ERR   5      /* Only Errors. use this to de-clutter the terminal and focus only on specifics */
@@ -199,6 +210,7 @@ void val_pcie_clear_device_status_error(uint32_t bdf);
 uint32_t val_pcie_is_device_status_error(uint32_t bdf);
 uint32_t val_pcie_is_sig_target_abort(uint32_t bdf);
 void val_pcie_clear_sig_target_abort(uint32_t bdf);
+uint32_t val_pcie_mem_get_offset(void);
 
 /* IO-VIRT APIs */
 typedef enum {

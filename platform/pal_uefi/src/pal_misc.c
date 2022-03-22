@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2021, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2022, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -390,6 +390,38 @@ pal_mem_alloc (
 
   return Buffer;
 
+}
+
+/**
+ * @brief  Allocates requested buffer size in bytes with zeros in a contiguous memory
+ *         and returns the base address of the range.
+ *
+ * @param  Size         allocation size in bytes
+ * @retval if SUCCESS   pointer to allocated memory
+ * @retval if FAILURE   NULL
+ */
+VOID *
+pal_mem_calloc (
+  UINT32 num,
+  UINT32 Size
+  )
+{
+  EFI_STATUS            Status;
+  VOID                  *Buffer;
+
+  Buffer = NULL;
+  Status = gBS->AllocatePool (EfiBootServicesData,
+                              num * Size,
+                              (VOID **) &Buffer);
+  if (EFI_ERROR(Status))
+  {
+    sbsa_print(AVS_PRINT_ERR, L" Allocate Pool failed %x \n", Status);
+    return NULL;
+  }
+
+  gBS->SetMem (Buffer, num * Size, 0);
+
+  return Buffer;
 }
 
 /**

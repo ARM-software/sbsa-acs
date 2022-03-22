@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, 2021 Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018, 2021-2022 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -24,8 +24,9 @@
 
 static uint32_t int_id;
 
+static
 void
-set_pmu_overflow()
+set_pmu_overflow(void)
 {
   uint64_t pmcr;
 
@@ -45,7 +46,7 @@ set_pmu_overflow()
 
 static
 void
-isr()
+isr(void)
 {
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
   /* We received our interrupt, so disable PMUIRQ from generating further interrupts */
@@ -60,7 +61,7 @@ isr()
 
 static
 void
-payload()
+payload(void)
 {
   uint32_t timeout = 0x100000;
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());

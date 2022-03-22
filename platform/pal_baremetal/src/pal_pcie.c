@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2020-2021, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2022, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,7 +17,7 @@
 
 #include "include/pal_pcie_enum.h"
 #include "include/pal_common_support.h"
-#include "include/platform_override_fvp.h"
+#include "include/platform_override_struct.h"
 
 extern pcie_device_bdf_table *g_pcie_bdf_table;
 extern PCIE_INFO_TABLE platform_pcie_cfg;
@@ -807,4 +807,19 @@ uint32_t pal_pcie_check_device_list(void)
       }
     }
     return 0;
+}
+
+/**
+  @brief  Returns the memory offset that can be accesed.
+          This offset is platform-specific. It needs to
+          be modified according to the requirement.
+
+  @param  None
+  @return memory offset
+**/
+uint32_t
+pal_pcie_mem_get_offset(void)
+{
+
+  return MEM_OFFSET;
 }

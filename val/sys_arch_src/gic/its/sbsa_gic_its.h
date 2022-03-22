@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2021, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2021-2022, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -60,6 +60,8 @@
 // GIC Redistributor
 #define ARM_GICR_CTLR_FRAME_SIZE    SIZE_64KB
 #define ARM_GICR_SGI_PPI_FRAME_SIZE SIZE_64KB
+#define ARM_GICR_VLPI_FRAME_SIZE    SIZE_64KB
+#define ARM_GICR_RESERVED_PAGE_SIZE SIZE_64KB
 
 /* GICR_TYPER Bits */
 #define NEXT_DW_OFFSET          0x4         /* Used to read Upper 4 Bytes of GICR_TYPER */

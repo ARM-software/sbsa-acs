@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, 2020 Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018, 2020, 2022 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -26,7 +26,7 @@
 
 static
 void
-payload()
+payload(void)
 {
 
   uint64_t data;
@@ -51,7 +51,7 @@ payload()
 
   while (num_smmu--) {
       if (val_smmu_get_info(SMMU_CTRL_ARCH_MAJOR_REV, num_smmu) == 2) {
-          val_print(AVS_PRINT_WARN, "\n       Not valid for SMMU v2             ", 0);
+          val_print(AVS_PRINT_WARN, "\n       Not valid for SMMU v2           ", 0);
           val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
           return;
       }

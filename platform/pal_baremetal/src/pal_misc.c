@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2020-2021, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2022, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,7 +19,7 @@
 #include "include/pal_pcie_enum.h"
 #include "include/pal_common_support.h"
 
-extern VOID* g_sbsa_log_file_handle;
+extern void* g_sbsa_log_file_handle;
 
 uint8_t   *gSharedMemory;
 /**
@@ -334,6 +334,23 @@ pal_mem_alloc(uint32_t Size)
   return malloc(Size);
 }
 
+
+/**
+  @brief  Allocates requested buffer size in bytes with zeros in a contiguous memory
+          and returns the base address of the range.
+
+  @param  Size         allocation size in bytes
+  @retval if SUCCESS   pointer to allocated memory
+  @retval if FAILURE   NULL
+**/
+void *
+pal_mem_calloc(uint32_t num, uint32_t Size)
+{
+
+  return calloc(num, Size);
+}
+
+
 /**
   @brief  Allocate memory which is to be used to share data across PEs
 
@@ -485,7 +502,7 @@ pal_mem_free_pages(void *PageBase, uint32_t NumPages)
 
   @return True/False
 */
-UINT32
+uint32_t
 pal_target_is_bm()
 {
   return 1;

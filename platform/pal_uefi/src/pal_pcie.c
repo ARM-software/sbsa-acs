@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2021, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2022, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -371,4 +371,19 @@ UINT32
 pal_pcie_check_device_list(void)
 {
   return 0;
+}
+
+/**
+  @brief  Returns the memory offset that can be
+          accessed from the BAR base and is within
+          BAR limit value
+
+  @param  None
+  @return memory offset
+**/
+UINT32
+pal_pcie_mem_get_offset(void)
+{
+
+  return MEM_OFFSET;
 }

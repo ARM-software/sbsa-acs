@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2021, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2021-2022, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -31,6 +31,7 @@ uint64_t val_its_get_curr_rdbase(uint64_t rd_base, uint32_t length)
   uint32_t     Affinity, CpuAffinity;
   uint32_t     rd_granularity;
   uint64_t     curr_rd_base; /* RD Base for Current CPU */
+  uint32_t     typer;
 
   Mpidr = ArmReadMpidr();
 
@@ -39,6 +40,12 @@ uint64_t val_its_get_curr_rdbase(uint64_t rd_base, uint32_t length)
 
   rd_granularity = ARM_GICR_CTLR_FRAME_SIZE
                    + ARM_GICR_SGI_PPI_FRAME_SIZE;
+
+  typer = val_mmio_read(rd_base + ARM_GICR_TYPER);
+
+  /* Skip VLPI_base + reserved page */
+  if (typer & ARM_GICR_TYPER_VLPIS)
+      rd_granularity += ARM_GICR_VLPI_FRAME_SIZE + ARM_GICR_RESERVED_PAGE_SIZE;
 
   curr_rd_base = rd_base;
 

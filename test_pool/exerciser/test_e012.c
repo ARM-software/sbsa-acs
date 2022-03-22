@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2020-2021, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2022, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -108,10 +108,9 @@ clean_fail:
   return AVS_STATUS_FAIL;
 }
 
+static
 uint32_t
-check_source_validation (uint32_t req_instance, uint32_t req_e_bdf,
-                         uint32_t req_rp_bdf, uint32_t tgt_e_bdf,
-                         uint64_t bar_base)
+check_source_validation (uint32_t req_instance, uint32_t req_rp_bdf, uint64_t bar_base)
 {
   /* Check 1 : ACS Source Validation */
 
@@ -161,10 +160,9 @@ check_source_validation (uint32_t req_instance, uint32_t req_e_bdf,
   return AVS_STATUS_PASS;
 }
 
+static
 uint32_t
-check_transaction_blocking (uint32_t req_instance, uint32_t req_e_bdf,
-                            uint32_t req_rp_bdf, uint32_t tgt_e_bdf,
-                            uint64_t bar_base)
+check_transaction_blocking (uint32_t req_instance, uint32_t req_rp_bdf, uint64_t bar_base)
 {
   /* Check 2 : ACS Transaction Blocking */
 
@@ -270,7 +268,7 @@ payload(void)
       test_skip = 0;
 
       /* Check For ACS Functionality */
-      status = check_source_validation(instance, req_e_bdf, req_rp_bdf, tgt_e_bdf, bar_base);
+      status = check_source_validation(instance, req_rp_bdf, bar_base);
       if (status == AVS_STATUS_SKIP)
           val_print(AVS_PRINT_DEBUG, "\n       ACS Source Validation Skipped for 0x%x", req_rp_bdf);
       else if (status)
@@ -278,7 +276,7 @@ payload(void)
 
       val_exerciser_set_param(CFG_TXN_ATTRIBUTES, TXN_REQ_ID, RID_NOT_VALID, instance);
 
-      status = check_transaction_blocking(instance, req_e_bdf, req_rp_bdf, tgt_e_bdf, bar_base);
+      status = check_transaction_blocking(instance, req_rp_bdf, bar_base);
       if (status == AVS_STATUS_SKIP)
           val_print(AVS_PRINT_DEBUG, "\n       ACS Transaction Blocking Skipped for 0x%x", req_rp_bdf);
       else if (status)
