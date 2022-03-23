@@ -58,22 +58,11 @@ payload(void)
       }
 
       data = val_mmio_read(cnt_ctl_base + 0x8);
-      if (data == 0x0) {
-          val_print(AVS_PRINT_ERR, "\n       Unexpected value for CNTCTLBase.CNTTIDR %x ", data);
-          val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 0x1));
-          return;
-      }
       val_mmio_write(cnt_ctl_base + 0x8, 0xFFFFFFFF);
       if(data != val_mmio_read(cnt_ctl_base + 0x8)) {
-          val_print(AVS_PRINT_ERR, "\n       Read-write check failed for CNTCTLBase.CNTTIDR, expected value %x ", data);
-          val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 0x2));
-          return;
-      }
-
-      data = val_mmio_read(cnt_ctl_base + 0xFD0);
-      if ((data == 0x0) || ((data & 0xFFFF) == 0xFFFF)) {
-          val_print(AVS_PRINT_ERR, "\n       Unexpected value for CNTCTLBase.CounterID %x ", data);
-          val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 0x3));
+          val_print(AVS_PRINT_ERR, "\n       Read-write check failed for CNTCTLBase.CNTTIDR", 0);
+          val_print(AVS_PRINT_ERR, ", expected value %x ", data);
+          val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 1));
           return;
       }
 
@@ -91,15 +80,43 @@ payload(void)
       val_mmio_write64(cnt_base_n + 0x0, (data1 - ARBIT_VALUE));
 
       if (val_mmio_read64(cnt_base_n + 0x0) < data1) {
-          val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 0x4));
+          val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 2));
           val_print(AVS_PRINT_ERR, "\n       CNTBaseN: CNTPCT reg should be read-only ", 0);
+          return;
+      }
+
+      // Read CNTVCT register
+      data1 = val_mmio_read64(cnt_base_n + 0x8);
+      val_print(AVS_PRINT_DEBUG, "\n       CNTVCT Read value = 0x%llx       ", data1);
+
+      // Writes to Read-Only registers should be ignore
+      val_mmio_write64(cnt_base_n + 0x8, (data1 - ARBIT_VALUE));
+
+      if (val_mmio_read64(cnt_base_n + 0x8) < data1) {
+          val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 3));
+          val_print(AVS_PRINT_ERR, "\n       CNTBaseN: CNTVCT reg should be read-only ", 0);
+          return;
+      }
+
+      // Read CNTFRQ register
+      data = val_mmio_read(cnt_base_n + 0x10);
+      val_print(AVS_PRINT_DEBUG, "\n       CNTFRQ Read value = 0x%x         ",
+                data);
+
+      // Writes to Read-Only registers should be ignore
+      val_mmio_write(cnt_base_n + 0x10, (data - ARBIT_VALUE));
+
+      if (val_mmio_read(cnt_base_n + 0x10) != data) {
+          val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 4));
+          val_print(AVS_PRINT_ERR, "\n       CNTBaseN: CNTFRQ reg should be read-only ", 0);
           return;
       }
 
       data = 0x3;
       val_mmio_write(cnt_base_n + 0x2C, data);
       if(data != (val_mmio_read(cnt_base_n + 0x2C) & 0x3)) {
-          val_print(AVS_PRINT_ERR, "\n       Read-write check failed for CNTBaseN.CNTP_CTL, expected value %x ", data);
+          val_print(AVS_PRINT_ERR, "\n       Read-write check failed for CNTBaseN.CNTP_CTL", 0);
+          val_print(AVS_PRINT_ERR, ", expected value %x ", data);
           val_print(AVS_PRINT_ERR, "\n       Read value %x ", val_mmio_read(cnt_base_n + 0x2C));
           val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 0x5));
           val_mmio_write(cnt_base_n + 0x2C, 0x0); // Disable the timer before return
@@ -107,26 +124,15 @@ payload(void)
       }
       val_mmio_write(cnt_base_n + 0x2C, 0x0); // Disable timer
 
-      data = 0xFF00FF00;
-      val_mmio_write(cnt_base_n + 0x20, data);
-      if(data != val_mmio_read(cnt_base_n + 0x20)) {
-          val_print(AVS_PRINT_ERR, "\n       Read-write check failed for CNTBaseN.CNTP_CVAL[31:0], expected value %x ", data);
-          val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 0x6));
-          return;
-      }
+      data1 = 0xFF00FF00FF00FF00;
+      /* Write a random value to CNTP_CVAL*/
+      val_mmio_write64(cnt_base_n + 0x20, data1);
 
-      data = 0x00FF00FF;
-      val_mmio_write(cnt_base_n + 0x24, data);
-      if(data != val_mmio_read(cnt_base_n + 0x24)) {
-          val_print(AVS_PRINT_ERR, "\n       Read-write check failed for CNTBaseN.CNTP_CVAL[63:32], expected value %x ", data);
-          val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 0x7));
-          return;
-      }
-
-      data = val_mmio_read(cnt_base_n + 0xFD0);
-      if ((data == 0x0) || ((data & 0xFFFF) == 0xFFFF)) {
-          val_print(AVS_PRINT_ERR, "\n       Unexpected value for CNTBaseN.CounterID %x  ", data);
-          val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 0x8));
+      if (data1 != val_mmio_read64(cnt_base_n + 0x20)) {
+          val_print(AVS_PRINT_ERR, "\n       Read-write check failed for "
+              "CNTBaseN.CNTP_CVAL, read value %llx ",
+              val_mmio_read64(cnt_base_n + 0x20));
+          val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 6));
           return;
       }
 
