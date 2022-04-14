@@ -121,7 +121,7 @@ static
 void
 wakeup_set_failsafe(void)
 {
-  uint64_t timer_expire_val = TIMEOUT_LARGE * 10;
+  uint64_t timer_expire_val = val_get_counter_frequency() * 2;
 
   intid = val_timer_get_info(TIMER_INFO_PHY_EL1_INTID, 0);
   val_gic_install_isr(intid, isr_failsafe);
