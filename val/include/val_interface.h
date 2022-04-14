@@ -169,6 +169,7 @@ void     val_wd_free_info_table(void);
 uint32_t val_wd_execute_tests(uint32_t level, uint32_t num_pe);
 uint64_t val_wd_get_info(uint32_t index, uint32_t info_type);
 uint32_t val_wd_set_ws0(uint32_t index, uint32_t timeout);
+uint64_t val_get_counter_frequency(void);
 
 
 /* PCIE VAL APIs */

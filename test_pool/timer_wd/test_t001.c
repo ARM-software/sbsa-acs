@@ -33,7 +33,7 @@ payload(void)
 
   counter_freq = val_timer_get_info(TIMER_INFO_CNTFREQ, 0);
 
-  if ((counter_freq > 10*1000*1000) && (counter_freq < 400*1000*1000)) {
+  if (counter_freq > 10*1000*1000) {
       val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
       return;
   }

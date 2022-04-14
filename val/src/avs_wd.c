@@ -201,3 +201,20 @@ val_wd_set_ws0(uint32_t index, uint32_t timeout)
 
 }
 
+/**
+  @brief   This API is to get counter frequency
+  @param   None
+  @return  counter frequency
+ **/
+uint64_t
+val_get_counter_frequency(void)
+{
+  uint64_t counter_freq;
+
+  /* Option to override system counter frequency value */
+  counter_freq = pal_timer_get_counter_frequency();
+  if (counter_freq == 0)
+      counter_freq = val_timer_get_info(TIMER_INFO_CNTFREQ, 0);
+
+  return counter_freq;
+}
