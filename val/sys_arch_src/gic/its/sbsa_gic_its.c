@@ -154,7 +154,7 @@ uint32_t ArmGicSetItsTables(uint32_t its_index)
 
     Pages = SIZE_TO_PAGES (TableSize);
 
-  Address = (uint64_t)val_aligned_alloc(SIZE_64KB, TableSize);
+  Address = (uint64_t)val_aligned_alloc(SIZE_64KB, PAGES_TO_SIZE(Pages));
 
   if (!Address) {
       val_print(AVS_PRINT_ERR,  "ITS : Could Not Allocate Memory DT/CT. Test may not pass.\n", 0);
