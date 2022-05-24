@@ -1867,6 +1867,7 @@ val_pcie_get_rootport(uint32_t bdf, uint32_t *rp_bdf)
 {
 
   uint32_t index;
+  uint32_t seg_num;
   uint32_t sec_bus;
   uint32_t sub_bus;
   uint32_t reg_value;
@@ -1902,13 +1903,15 @@ val_pcie_get_rootport(uint32_t bdf, uint32_t *rp_bdf)
        * bus number falls within that range.
        */
       val_pcie_read_cfg(*rp_bdf, TYPE1_PBN, &reg_value);
+      seg_num = PCIE_EXTRACT_BDF_SEG(*rp_bdf);
       sec_bus = ((reg_value >> SECBN_SHIFT) & SECBN_MASK);
       sub_bus = ((reg_value >> SUBBN_SHIFT) & SUBBN_MASK);
       dp_type = val_pcie_device_port_type(*rp_bdf);
 
       if (((dp_type == RP) || (dp_type == iEP_RP)) &&
           (sec_bus <= PCIE_EXTRACT_BDF_BUS(bdf)) &&
-          (sub_bus >= PCIE_EXTRACT_BDF_BUS(bdf)))
+          (sub_bus >= PCIE_EXTRACT_BDF_BUS(bdf)) &&
+          (seg_num == PCIE_EXTRACT_BDF_SEG(bdf)))
           return 0;
   }
 

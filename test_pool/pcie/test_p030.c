@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2019-2021, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2019-2022, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -122,33 +122,26 @@ payload(void)
 
       /*
        * Read memory mapped BAR to cause unsupported request
-       * detected bit set in Device Status Register of the pcie
-       * Function. Based on platform configuration, this may
+       * response. Based on platform configuration, this may
        * even cause an sync/async exception.
        */
       bar_data = (*(volatile addr_t *)bar_base);
 
 exception_return:
       /*
-       * Check if unsupported request detected bit isn't set
-       * and if either of UR response or abort isn't received.
+       * Check if either of UR response or abort isn't received.
        */
-      if ((val_pcie_is_urd(bdf)) &&
-          (IS_TEST_PASS(val_get_status(pe_index)) || (bar_data == PCIE_UNKNOWN_RESPONSE)))
+      if (!(IS_TEST_PASS(val_get_status(pe_index)) || (bar_data == PCIE_UNKNOWN_RESPONSE)))
       {
-          /* Clear urd bit in Device Status Register */
-          val_pcie_clear_urd(bdf);
-       } else
-       {
-           val_print(AVS_PRINT_ERR, "\n      BDF %x MSE functionality failure", bdf);
-           test_fails++;
-       }
+          val_print(AVS_PRINT_ERR, "\n      BDF %x MSE functionality failure", bdf);
+          test_fails++;
+      }
 
-       /* Enable memory space access to decode BAR addresses */
-       val_pcie_enable_msa(bdf);
+      /* Enable memory space access to decode BAR addresses */
+      val_pcie_enable_msa(bdf);
 
-       /* Reset the loop variables */
-       bar_data = 0;
+      /* Reset the loop variables */
+      bar_data = 0;
   }
 
   if (test_skip == 1)
