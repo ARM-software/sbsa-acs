@@ -70,7 +70,7 @@ To start the ACS build, perform the following steps:
 5.  Add the following to the [LibraryClasses.common] section in ShellPkg/ShellPkg.dsc
    - Add  SbsaValLib|ShellPkg/Application/sbsa-acs/val/SbsaValLib.inf
    - Add  SbsaPalLib|ShellPkg/Application/sbsa-acs/platform/pal_uefi/SbsaPalLib.inf
-6.  Add ShellPkg/Application/sbsa-acs/uefi_app/SbsaAvs.inf in the [components] section of ShellPkg/ShellPkg.dsc
+6.  Add ShellPkg/Application/sbsa-acs/uefi_app/SbsaAvs.inf in the [Components] section of ShellPkg/ShellPkg.dsc
 
 ### Linux build environment
 If the build environment is Linux, perform the following steps:
