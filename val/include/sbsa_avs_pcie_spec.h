@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2019-2021, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2019-2022, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -212,7 +212,7 @@
 #define LCAPR_DLLLARC_MASK  0x100000
 
 /* Link Status register shifts and masks */
-#define LSTAT_DLLLA_SHIFT   13
+#define LSTAT_DLLLA_SHIFT   29
 #define LSTAT_DLLLA_MASK    0x20000000
 
 /* Device Capabilities register */
