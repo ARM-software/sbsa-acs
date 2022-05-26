@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2021, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2022, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -24,6 +24,9 @@
 
 /* PCIe Config space Offset */
 #define COMMAND_REG_OFFSET 0x04
+
+#define MASTER_ABORT_MASK  0x20000000
+#define MASTER_ABORT_SHIFT 29
 
 typedef struct {
     uint32_t bdf;

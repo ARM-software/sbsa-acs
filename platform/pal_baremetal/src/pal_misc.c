@@ -494,6 +494,20 @@ pal_mem_free_pages(void *PageBase, uint32_t NumPages)
 }
 
 /**
+  @brief  Allocates memory with the given alignement.
+
+  @param  Alignment   Specifies the alignment.
+  @param  Size        Requested memory allocation size.
+
+  @return Pointer to the allocated memory with requested alignment.
+**/
+void
+*pal_aligned_alloc( uint32_t alignment, uint32_t size )
+{
+  return (void *)memalign(alignment, size);
+}
+
+/**
   @brief   Checks if System information is passed using Baremetal (BM)
            This api is also used to check if GIC/Interrupt Init ACS Code
            is used or not. In case of BM, ACS Code is used for INIT

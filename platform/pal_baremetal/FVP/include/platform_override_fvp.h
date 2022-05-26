@@ -158,7 +158,8 @@
 
 /* Offset from the memory range to be accesed
  * Modify this macro w.r.t to the requirement */
-#define MEM_OFFSET   0x10
+#define MEM_OFFSET_SMALL   0x10
+#define MEM_OFFSET_MEDIUM  0x1000
 
 /* Platform config parameters for ECAM_0 */
 #define PLATFORM_OVERRIDE_PCIE_ECAM_BASE_ADDR_0   0x60000000
