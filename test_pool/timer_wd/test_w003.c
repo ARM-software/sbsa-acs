@@ -21,7 +21,7 @@
 #include "val/include/sbsa_avs_wd.h"
 
 #define TEST_NUM   (AVS_WD_TEST_NUM_BASE + 3)
-#define TEST_DESC  "Check NS Watchdog Revision        "
+#define TEST_DESC  "Check NS Watchdog Architecture Version"
 
 static
 void
@@ -61,7 +61,7 @@ payload(void)
 
       if (g_sbsa_level == 5) {
           if (data != 1) {
-              val_print(AVS_PRINT_WARN, "\n       Recommended Watchdog Rev 1 Not Found", 0);
+              val_print(AVS_PRINT_WARN, "\n       Watchdog Architecture version is %x", data);
               val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 02));
               return;
           }
@@ -69,7 +69,7 @@ payload(void)
 
       if (g_sbsa_level > 5) {
           if (data != 1) {
-              val_print(AVS_PRINT_ERR, "\n       Watchdog Rev 1 Not Found", 0);
+              val_print(AVS_PRINT_ERR, "\n       Watchdog Architecture version is %x", data);
               val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
               return;
           }
