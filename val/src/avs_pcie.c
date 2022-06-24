@@ -756,6 +756,24 @@ val_pcie_is_devicedma_64bit(uint32_t bdf)
 }
 
 /**
+  @brief   This API checks if device driver present for a pcie device
+           1. Caller       -  Test Suite
+  @param   bdf      - PCIe BUS/Device/Function
+  @return  0 -> not Present, 1 -> Present
+**/
+uint32_t
+val_pcie_driver_present(uint32_t bdf)
+{
+
+  uint32_t seg  = PCIE_EXTRACT_BDF_SEG (bdf);
+  uint32_t bus  = PCIE_EXTRACT_BDF_BUS (bdf);
+  uint32_t dev  = PCIE_EXTRACT_BDF_DEV (bdf);
+  uint32_t func = PCIE_EXTRACT_BDF_FUNC (bdf);
+
+  return (pal_pcie_driver_present(seg, bus, dev, func));
+}
+
+/**
   @brief   This API scans bridge devices and checks memory type
            1. Caller       -  Test Suite
   @param   bdf      - PCIe BUS/Device/Function

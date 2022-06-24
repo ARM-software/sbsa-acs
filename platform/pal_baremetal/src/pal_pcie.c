@@ -551,6 +551,23 @@ pal_pcie_is_devicedma_64bit(uint32_t seg, uint32_t bus, uint32_t dev, uint32_t f
 }
 
 /**
+    @brief   Return if driver present for pcie device
+
+    @param   bus        PCI bus address
+    @param   dev        PCI device address
+    @param   fn         PCI function number
+
+    @return  Driver present : 0 or 1
+**/
+uint32_t
+pal_pcie_driver_present(uint32_t seg, uint32_t bus, uint32_t dev, uint32_t fn)
+{
+
+  return 1;
+
+}
+
+/**
   @brief  This API checks if a PCIe device has an Address
           Translation Cache or not.
   @param   bdf      - PCIe BUS/Device/Function
