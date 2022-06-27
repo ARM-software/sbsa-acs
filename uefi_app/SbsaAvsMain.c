@@ -45,6 +45,7 @@ UINT32  g_sbsa_tests_fail;
 UINT64  g_stack_pointer;
 UINT64  g_exception_ret_addr;
 UINT64  g_ret_addr;
+UINT32  g_wakeup_timeout;
 SHELL_FILE_HANDLE g_sbsa_log_file_handle;
 
 STATIC VOID FlushImage (VOID)
@@ -273,6 +274,8 @@ HelpMsg (
          "-nist   Enable the NIST Statistical test suite\n"
          "-p      Enable/disable PCIe SBSA 6.0 (RCiEP) compliance tests\n"
          "        1 - enables PCIe tests, 0 - disables PCIe tests\n"
+         "-timeout  Set timeout multiple for wakeup tests\n"
+         "        1 - min value  5 - max value\n"
   );
 }
 
@@ -286,6 +289,7 @@ STATIC CONST SHELL_PARAM_ITEM ParamList[] = {
   {L"-nist" , TypeFlag},     // -nist # Binary Flag to enable the execution of NIST STS
   {L"-p"    , TypeValue},    // -p    # Enable/disable PCIe SBSA 6.0 (RCiEP) compliance tests.
   {L"-mmio" , TypeFlag},     // -mmio # Enable pal_mmio prints
+  {L"-timeout" , TypeValue}, // -timeout # Set timeout multiple for wakeup tests
   {NULL     , TypeMax}
   };
 
@@ -369,6 +373,17 @@ ShellAppMainsbsa (
       g_print_level = G_PRINT_LEVEL;
     }
   }
+
+  // Options with Values
+  CmdLineArg  = ShellCommandLineGetValue (ParamPackage, L"-timeout");
+  if (CmdLineArg == NULL) {
+    g_wakeup_timeout = 1;
+  } else {
+    g_wakeup_timeout = StrDecimalToUintn(CmdLineArg);
+    Print(L"Wakeup timeout multiple %d.\n", g_wakeup_timeout);
+    if (g_wakeup_timeout > 5)
+        g_wakeup_timeout = 5;
+    }
 
     // Options with Values
   CmdLineArg  = ShellCommandLineGetValue (ParamPackage, L"-f");

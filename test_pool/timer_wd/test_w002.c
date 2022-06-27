@@ -63,7 +63,7 @@ payload(void)
           continue;    //Skip Secure watchdog
 
       ns_wdg++;
-      timeout = val_timer_get_info(TIMER_INFO_CNTFREQ, 0) * 2;
+      timeout = val_get_counter_frequency() * 2;
       val_set_status(index, RESULT_PENDING(g_sbsa_level, TEST_NUM));     // Set the initial result to pending
 
       int_id       = val_wd_get_info(wd_num, WD_INFO_GSIV);

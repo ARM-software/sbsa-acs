@@ -172,9 +172,7 @@ val_wd_set_ws0(uint32_t index, uint32_t timeout)
   data = VAL_EXTRACT_BITS(val_mmio_read(ctrl_base + WD_IIDR_OFFSET), 16, 19);
 
   /* Option to override system counter frequency value */
-  counter_freq = pal_timer_get_counter_frequency();
-  if (counter_freq == 0)
-      counter_freq = val_timer_get_info(TIMER_INFO_CNTFREQ, 0);
+  counter_freq = val_get_counter_frequency();
 
   /* Check if the timeout value exceeds */
   if (data == 0)
