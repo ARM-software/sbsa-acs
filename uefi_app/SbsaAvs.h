@@ -29,7 +29,7 @@
   #define G_PRINT_LEVEL AVS_PRINT_TEST
 
   #define PE_INFO_TBL_SZ         8192 /*Supports maximum 400 PEs*/
-  #define GIC_INFO_TBL_SZ        8192 /*Supports maximum 256 redistributors, 256 ITS blocks & 4 distributors*/
+  #define GIC_INFO_TBL_SZ        239616 /*Supports maximum 832 gic info (GICH, CPUIF, RD, ITS, MSI, D)*/
   #define TIMER_INFO_TBL_SZ      1024 /*Supports maximum 2 system timers*/
   #define WD_INFO_TBL_SZ         512  /*Supports maximum 20 Watchdogs*/
   #define MEM_INFO_TBL_SZ        32768/*Supports maximum 800 memory regions*/
