@@ -226,8 +226,10 @@ pal_pcie_p2p_support()
    * PCIe support for peer to peer
    * transactions is platform implementation specific
    */
-
-  return NOT_IMPLEMENTED;
+  if (g_pcie_p2p)
+      return 0;
+  else
+      return NOT_IMPLEMENTED;
 }
 
 /**
@@ -329,7 +331,10 @@ pal_pcie_is_cache_present (
   UINT32 Fn
   )
 {
-  return NOT_IMPLEMENTED;
+  if (g_pcie_cache_present)
+      return 1;
+  else
+      return NOT_IMPLEMENTED;
 }
 
 /**
@@ -378,12 +383,12 @@ pal_pcie_check_device_list(void)
           accessed from the BAR base and is within
           BAR limit value
 
-  @param  None
+  @param  memory offset
   @return memory offset
 **/
 UINT32
-pal_pcie_mem_get_offset(void)
+pal_pcie_mem_get_offset(UINT32 type)
 {
 
-  return MEM_OFFSET;
+  return MEM_OFFSET_SMALL;
 }

@@ -216,22 +216,23 @@ void pal_pcie_program_bar_reg(uint32_t bus, uint32_t dev, uint32_t func)
             **/
             if ((p_bar64_size == 0) && ((g_64_bus == bus)))
             {
-                if (g_np_bar_size < bar_size)
-                    g_bar32_np_start = g_bar32_np_start + bar_size;
+                if (g_bar64_size < bar_size)
+                    g_bar64_p_start = g_bar64_p_start + bar_size;
                 else
-                    g_bar32_np_start = g_bar32_np_start + g_np_bar_size;
+                    g_bar64_p_start = g_bar64_p_start + g_bar64_size;
             }
-
-            else if ((g_np_bar_size < bar_size) && (p_bar64_size != 0))
-                g_bar32_np_start = g_bar32_np_start + bar_size;
+            else if ((g_bar64_size < bar_size) && (p_bar64_size != 0))
+                g_bar64_p_start = g_bar64_p_start + bar_size;
 
             else
-                g_bar32_np_start = g_bar32_np_start + p_bar64_size;
+                g_bar64_p_start = g_bar64_p_start + p_bar64_size;
 
             pal_pci_cfg_write(bus, dev, func, offset, g_bar64_p_start);
-            print(AVS_PRINT_INFO, "Value written to BAR register is %x\n", g_bar64_p_start);
+            pal_pci_cfg_write(bus, dev, func, offset + 4, g_bar64_p_start >> 32);
+
+            print(AVS_PRINT_INFO, "Value written to BAR register is %llx\n", g_bar64_p_start);
             p_bar64_size = bar_size;
-            g_np_bar_size = bar_size;
+            g_bar64_size = bar_size;
             g_64_bus = bus;
             offset = offset + 8;
 
@@ -575,7 +576,7 @@ pal_pcie_get_base(uint32_t bdf, uint32_t bar_index)
      bar_value = bar_value | (bar_upper_bits << 32 );
   }
 
-  print(AVS_PRINT_INFO, "value read from BAR %x\n", bar_value);
+  print(AVS_PRINT_INFO, "value read from BAR 0x%llx\n", bar_value);
 
   return bar_value;
 

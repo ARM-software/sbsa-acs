@@ -2122,12 +2122,11 @@ uint32_t val_pcie_get_ecam_index(uint32_t bdf, uint32_t *ecam_index)
           accessed from the BAR base and is within
           BAR limit value
 
-  @param  None
+  @param  type
   @return memory offset
 
 **/
-uint32_t val_pcie_mem_get_offset(void)
+uint32_t val_pcie_mem_get_offset(uint32_t type)
 {
-
-  return pal_pcie_mem_get_offset();
+  return pal_pcie_mem_get_offset(type);
 }

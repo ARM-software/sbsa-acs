@@ -23,6 +23,8 @@ extern UINT32 g_print_level;
 extern UINT32 g_print_mmio;
 extern UINT32 g_curr_module;
 extern UINT32 g_enable_module;
+extern UINT32 g_pcie_p2p;
+extern UINT32 g_pcie_cache_present;
 
 #define AVS_PRINT_ERR   5      /* Only Errors. use this to de-clutter the terminal and focus only on specifics */
 #define AVS_PRINT_WARN  4      /* Only warnings & errors. use this to de-clutter the terminal and focus only on specifics */
@@ -36,7 +38,7 @@ extern UINT32 g_enable_module;
 #define PCIE_UNKNOWN_RESPONSE   0xFFFFFFFF  /* Function not found or UR response from completer */
 
 #define NOT_IMPLEMENTED         0x4B1D  /* Feature or API by default unimplemented */
-#define MEM_OFFSET              0x10    /* Memory Offset from BAR base value that can be accesed*/
+#define MEM_OFFSET_SMALL        0x10    /* Memory Offset from BAR base value that can be accesed*/
 
 #define TYPE0_MAX_BARS  6
 #define TYPE1_MAX_BARS  2

@@ -307,7 +307,7 @@ uint32_t pal_pcie_is_onchip_peripheral(uint32_t bdf);
 void pal_pcie_io_write_cfg(uint32_t bdf, uint32_t offset, uint32_t data);
 uint32_t pal_pcie_check_device_list(void);
 uint32_t pal_pcie_check_device_valid(uint32_t bdf);
-uint32_t pal_pcie_mem_get_offset(void);
+uint32_t pal_pcie_mem_get_offset(uint32_t type);
 
 /**
   @brief  Instance of SMMU INFO block
@@ -620,6 +620,7 @@ uint16_t pal_mmio_read16(uint64_t addr);
 uint32_t pal_mem_page_size(void);
 void    *pal_mem_alloc_pages(uint32_t num_pages);
 void     pal_mem_free_pages(void *page_base, uint32_t num_pages);
+void *pal_aligned_alloc(uint32_t alignment, uint32_t size);
 
 uint32_t pal_mmio_read(uint64_t addr);
 uint64_t pal_mmio_read64(uint64_t addr);
