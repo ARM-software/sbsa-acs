@@ -29,6 +29,8 @@
 
 #include "SbsaAvs.h"
 
+UINT32 g_pcie_p2p;
+UINT32 g_pcie_cache_present;
 
 UINT32  g_sbsa_level;
 UINT32  g_enable_pcie_tests;
@@ -274,6 +276,8 @@ HelpMsg (
          "-nist   Enable the NIST Statistical test suite\n"
          "-p      Enable/disable PCIe SBSA 6.0 (RCiEP) compliance tests\n"
          "        1 - enables PCIe tests, 0 - disables PCIe tests\n"
+         "-p2p    Pass this flag to indicate that PCIe Hierarchy Supports Peer-to-Peer\n"
+         "-cache  Pass this flag to indicate that if the test system supports PCIe address translation cache\n"
          "-timeout  Set timeout multiple for wakeup tests\n"
          "        1 - min value  5 - max value\n"
   );
@@ -289,6 +293,8 @@ STATIC CONST SHELL_PARAM_ITEM ParamList[] = {
   {L"-nist" , TypeFlag},     // -nist # Binary Flag to enable the execution of NIST STS
   {L"-p"    , TypeValue},    // -p    # Enable/disable PCIe SBSA 6.0 (RCiEP) compliance tests.
   {L"-mmio" , TypeFlag},     // -mmio # Enable pal_mmio prints
+  {L"-p2p", TypeFlag},       // -p2p  # Peer-to-Peer is supported
+  {L"-cache", TypeFlag},     // -cache# PCIe address translation cache is supported
   {L"-timeout" , TypeValue}, // -timeout # Set timeout multiple for wakeup tests
   {NULL     , TypeMax}
   };
@@ -416,6 +422,18 @@ ShellAppMainsbsa (
     g_print_mmio = TRUE;
   } else {
     g_print_mmio = FALSE;
+  }
+
+  if (ShellCommandLineGetFlag (ParamPackage, L"-p2p")) {
+    g_pcie_p2p = TRUE;
+  } else {
+    g_pcie_p2p = FALSE;
+  }
+
+  if (ShellCommandLineGetFlag (ParamPackage, L"-cache")) {
+    g_pcie_cache_present = TRUE;
+  } else {
+    g_pcie_cache_present = FALSE;
   }
 
   // Options with Values

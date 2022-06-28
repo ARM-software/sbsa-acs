@@ -55,3 +55,5 @@
 #define PLATFORM_OVERRIDE_SMMU_BASE        0x0 //0x2B400000
 #define PLATFORM_OVERRIDE_SMMU_ARCH_MAJOR  3
 
+extern UINT32 g_pcie_p2p;
+extern UINT32 g_pcie_cache_present;
