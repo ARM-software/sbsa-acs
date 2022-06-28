@@ -48,6 +48,7 @@ UINT32  g_sbsa_tests_fail;
 UINT64  g_stack_pointer;
 UINT64  g_exception_ret_addr;
 UINT64  g_ret_addr;
+UINT32  g_wakeup_timeout;
 SHELL_FILE_HANDLE g_sbsa_log_file_handle;
 
 STATIC VOID FlushImage (VOID)
@@ -278,6 +279,8 @@ HelpMsg (
          "        1 - enables PCIe tests, 0 - disables PCIe tests\n"
          "-p2p    Pass this flag to indicate that Peer-to-Peer is supported\n"
          "-cache  Pass this flag to indicate that if the test system supports PCIe address translation cache\n"
+         "-timeout  Set timeout multiple for wakeup tests\n"
+         "        1 - min value  5 - max value\n"
   );
 }
 
@@ -293,6 +296,7 @@ STATIC CONST SHELL_PARAM_ITEM ParamList[] = {
   {L"-mmio" , TypeFlag},     // -mmio # Enable pal_mmio prints
   {L"-p2p", TypeFlag},       // -p2p  # Peer-to-Peer is supported
   {L"-cache", TypeFlag},     // -cache# PCIe address translation cache is supported
+  {L"-timeout" , TypeValue}, // -timeout # Set timeout multiple for wakeup tests
   {NULL     , TypeMax}
   };
 
@@ -376,6 +380,17 @@ ShellAppMainsbsa (
       g_print_level = G_PRINT_LEVEL;
     }
   }
+
+  // Options with Values
+  CmdLineArg  = ShellCommandLineGetValue (ParamPackage, L"-timeout");
+  if (CmdLineArg == NULL) {
+    g_wakeup_timeout = 1;
+  } else {
+    g_wakeup_timeout = StrDecimalToUintn(CmdLineArg);
+    Print(L"Wakeup timeout multiple %d.\n", g_wakeup_timeout);
+    if (g_wakeup_timeout > 5)
+        g_wakeup_timeout = 5;
+    }
 
     // Options with Values
   CmdLineArg  = ShellCommandLineGetValue (ParamPackage, L"-f");
