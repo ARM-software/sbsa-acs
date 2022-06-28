@@ -610,6 +610,35 @@ pal_mem_alloc_pages (
 }
 
 /**
+  @brief  Allocates memory with the given alignement.
+
+  @param  Alignment   Specifies the alignment.
+  @param  Size        Requested memory allocation size.
+
+  @return Pointer to the allocated memory with requested alignment.
+**/
+VOID *
+pal_aligned_alloc( UINT32 alignment, UINT32 size)
+{
+  VOID *Mem = NULL;
+  VOID *Aligned_Ptr = NULL;
+
+  /* Generate mask for the Alignment parameter*/
+  UINT64 Mask = ~(UINT64)(alignment - 1);
+
+  /* Allocate memory with extra bytes, so we can return an aligned address*/
+  Mem = (VOID *)pal_mem_alloc(size + alignment);
+
+  if( Mem == NULL)
+    return 0;
+
+  /* Add the alignment to allocated memory address and align it to target alignment*/
+  Aligned_Ptr = (VOID *)(((UINT64) Mem + alignment-1) & Mask);
+
+  return Aligned_Ptr;
+}
+
+/**
   @brief Free number of pages in the memory as requested.
 
   @param PageBase Address from where we need to free

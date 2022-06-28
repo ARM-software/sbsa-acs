@@ -134,7 +134,7 @@ createPeripheralInfoTable(
                                         (1 * sizeof(PERIPHERAL_INFO_BLOCK)));
   val_peripheral_create_info_table(PeripheralInfoTable);
 
-  MemoryInfoTable = val_memory_alloc(sizeof(MEMORY_INFO_TABLE) + (4 * sizeof(MEM_INFO_BLOCK)));
+  MemoryInfoTable = val_memory_alloc(sizeof(MEMORY_INFO_TABLE) + (PLATFORM_OVERRIDE_MEMORY_ENTRY_COUNT * sizeof(MEM_INFO_BLOCK)));
   val_memory_create_info_table(MemoryInfoTable);
 }
 

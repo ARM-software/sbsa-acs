@@ -136,7 +136,7 @@ payload(void)
          * Base + offset should always be in the range.
          * Read the same
         */
-        mem_offset = val_pcie_mem_get_offset();
+        mem_offset = val_pcie_mem_get_offset(MEM_OFFSET_MEDIUM);
 
         if ((mem_base + mem_offset) > mem_lim)
         {
@@ -164,22 +164,22 @@ payload(void)
          **/
         if ((mem_lim >> MEM_SHIFT) > (mem_base >> MEM_SHIFT))
         {
-           new_mem_lim  = mem_base + MEM_OFF_100000;
+           new_mem_lim  = mem_base + MEM_OFFSET_LARGE;
            val_pcie_read_cfg(bdf, TYPE1_P_MEM, &new_value);
 
           if ((new_value & P_MEM_PAC_MASK) == 0x1)
                val_pcie_write_cfg(bdf, TYPE1_P_MEM_LU, (mem_base >> 32));
 
            mem_base = ((uint32_t)mem_base) | ((uint32_t)mem_base >> 16);
-           val_print(AVS_PRINT_INFO, " mem_base new is 0x%lx", mem_base);
+           val_print(AVS_PRINT_INFO, " mem_base new is 0x%llx", mem_base);
            val_pcie_write_cfg(bdf, TYPE1_P_MEM, mem_base);
 
-           value = (*(volatile uint32_t *)(new_mem_lim + MEM_OFFSET_10));
+           value = (*(volatile uint32_t *)(new_mem_lim + MEM_OFFSET_SMALL));
            if (value != PCIE_UNKNOWN_RESPONSE)
            {
                val_print(AVS_PRINT_ERR, "\n Memory range for bdf 0x%x", bdf);
                val_print(AVS_PRINT_ERR, " is 0x%x", new_value);
-               val_print(AVS_PRINT_ERR, "\n Out of range addr %x ", (new_mem_lim + MEM_OFFSET_10));
+               val_print(AVS_PRINT_ERR, "\n Out of range addr %llx ", (new_mem_lim + MEM_OFFSET_SMALL));
                val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 03));
            }
         }

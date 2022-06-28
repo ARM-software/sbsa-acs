@@ -814,12 +814,19 @@ uint32_t pal_pcie_check_device_list(void)
           This offset is platform-specific. It needs to
           be modified according to the requirement.
 
-  @param  None
+  @param  memory offset
   @return memory offset
 **/
 uint32_t
-pal_pcie_mem_get_offset(void)
+pal_pcie_mem_get_offset(uint32_t type)
 {
 
-  return MEM_OFFSET;
+  switch (type) {
+      case MEM_OFFSET_SMALL:
+         return MEM_OFFSET_SMALL;
+      case MEM_OFFSET_MEDIUM:
+         return MEM_OFFSET_MEDIUM;
+      default:
+         return MEM_OFFSET_SMALL;
+  }
 }
