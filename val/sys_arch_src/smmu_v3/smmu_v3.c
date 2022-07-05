@@ -17,7 +17,7 @@
 #include "smmu_v3.h"
 
 smmu_dev_t *g_smmu;
-uint32_t g_num_smmus = 0;
+extern uint32_t g_num_smmus;
 
 struct smmu_master_node {
     smmu_master_t *master;

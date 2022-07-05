@@ -22,6 +22,7 @@
 
 EXERCISER_INFO_TABLE g_exercier_info_table;
 extern uint32_t pcie_bdf_table_list_flag;
+
 /**
   @brief   This API popultaes information from all the PCIe stimulus generation IP available
            in the system into exerciser_info_table structure
@@ -218,6 +219,8 @@ val_exerciser_execute_tests(uint32_t level)
 {
   uint32_t status, i;
   uint32_t num_instances;
+  uint32_t instance;
+  uint32_t num_smmu;
 
   if (level == 3) {
     val_print(AVS_PRINT_WARN, "Exerciser Sbsa compliance is only from Level %d \n", 4);
@@ -251,6 +254,15 @@ val_exerciser_execute_tests(uint32_t level)
       return AVS_STATUS_SKIP;
   }
 
+
+  num_smmu = val_iovirt_get_smmu_info(SMMU_NUM_CTRL, 0);
+  val_smmu_init();
+
+  /* Disable All SMMU's */
+  for (instance = 0; instance < num_smmu; ++instance)
+      val_smmu_disable(instance);
+
+
   g_curr_module = 1 << EXERCISER_MODULE;
   status = e001_entry();
   status |= e002_entry();
@@ -270,6 +282,8 @@ val_exerciser_execute_tests(uint32_t level)
   status |= e016_entry();
 
   val_print_test_end(status, "Exerciser");
+
+  val_smmu_stop();
 
   return status;
 }

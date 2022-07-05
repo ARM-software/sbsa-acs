@@ -21,6 +21,7 @@
 #include "include/sbsa_avs_smmu.h"
 
 IOVIRT_INFO_TABLE *g_iovirt_info_table;
+uint32_t g_num_smmus;
 
 /**
   @brief   This API is a single point of entry to retrieve
@@ -263,7 +264,6 @@ val_iovirt_get_device_info(uint32_t rid, uint32_t segment, uint32_t *device_id,
 void
 val_iovirt_create_info_table(uint64_t *iovirt_info_table)
 {
-  uint32_t num_smmu;
 
   if (iovirt_info_table == NULL)
   {
@@ -275,20 +275,9 @@ val_iovirt_create_info_table(uint64_t *iovirt_info_table)
 
   pal_iovirt_create_info_table(g_iovirt_info_table);
 
-  num_smmu = val_iovirt_get_smmu_info(SMMU_NUM_CTRL, 0);
+  g_num_smmus = val_iovirt_get_smmu_info(SMMU_NUM_CTRL, 0);
   val_print(AVS_PRINT_TEST,
-            " SMMU_INFO: Number of SMMU CTRL       :    %x \n", num_smmu);
-
-#ifndef TARGET_LINUX
-  uint32_t instance;
-
-  val_smmu_init();
-
-  /* Disable All SMMU's */
-  for (instance = 0; instance < num_smmu; ++instance)
-      val_smmu_disable(instance);
-#endif
-
+            " SMMU_INFO: Number of SMMU CTRL       :    %x \n", g_num_smmus);
 }
 
 uint32_t
@@ -301,7 +290,6 @@ val_iovirt_check_unique_ctx_intid(uint32_t smmu_index)
 void
 val_iovirt_free_info_table()
 {
-  val_smmu_stop();
   pal_mem_free((void *)g_iovirt_info_table);
 }
 
