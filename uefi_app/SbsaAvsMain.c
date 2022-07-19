@@ -256,7 +256,7 @@ HelpMsg (
   VOID
   )
 {
-	Print (L"\nUsage: Sbsa.efi [-v <n>] | [-l <n>] | [-f <filename>] | [-skip <n>] | [-nist] | [-p <n>] | [-t <n>] | [-m <n>]\n"
+  Print (L"\nUsage: Sbsa.efi [-v <n>] | [-l <n>] | [-f <filename>] | [-skip <n>] | [-nist] | [-p <n>] | [-t <n>] | [-m <n>]\n"
          "[-skip <n>] | [-nist] | [-p <n>]\n"
          "Options:\n"
          "-v      Verbosity of the Prints\n"
@@ -276,7 +276,7 @@ HelpMsg (
          "-nist   Enable the NIST Statistical test suite\n"
          "-p      Enable/disable PCIe SBSA 6.0 (RCiEP) compliance tests\n"
          "        1 - enables PCIe tests, 0 - disables PCIe tests\n"
-				 "-t      If set, will only run the specified test, all others will be skipped.\n"
+         "-t      If set, will only run the specified test, all others will be skipped.\n"
          "-m      If set, will only run the specified module, all others will be skipped.\n"
          "-p2p    Pass this flag to indicate that PCIe Hierarchy Supports Peer-to-Peer\n"
          "-cache  Pass this flag to indicate that if the test system supports PCIe address translation cache\n"
@@ -455,7 +455,7 @@ ShellAppMainsbsa (
       }
   }
 
-	// Options with Values
+  // Options with Values
   CmdLineArg  = ShellCommandLineGetValue (ParamPackage, L"-t");
   if (CmdLineArg != NULL) {
     g_single_test = StrDecimalToUintn(CmdLineArg);
