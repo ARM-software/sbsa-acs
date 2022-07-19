@@ -42,6 +42,10 @@ val_wakeup_execute_tests(uint32_t level, uint32_t num_pe)
       }
   }
 
+  if (g_single_module != SINGLE_MODULE_SENTINEL && g_single_module != AVS_WAKEUP_TEST_NUM_BASE) {
+    return AVS_STATUS_SKIP;
+  }
+
   g_curr_module = 1 << WAKEUP_MODULE;
   status = u001_entry(num_pe);
   //status |= u002_entry(num_pe);

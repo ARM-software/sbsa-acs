@@ -260,6 +260,12 @@ val_initialize_test(uint32_t test_num, char8_t *desc, uint32_t num_pe, uint32_t 
       }
   }
 
+  if (g_single_test != SINGLE_TEST_SENTINEL && test_num != g_single_test) {
+    val_print(AVS_PRINT_TEST, "\n       USER OVERRIDE VIA SINGLE TEST - Skip Test        ", 0);
+    val_set_status(index, RESULT_SKIP(g_sbsa_level, test_num, 0));
+    return AVS_STATUS_SKIP;
+  }
+
   return AVS_STATUS_PASS;
 }
 

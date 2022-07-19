@@ -43,6 +43,10 @@ val_wd_execute_tests(uint32_t level, uint32_t num_pe)
       }
   }
 
+  if (g_single_module != SINGLE_MODULE_SENTINEL && g_single_module != AVS_WD_TEST_NUM_BASE) {
+    return AVS_STATUS_SKIP;
+  }
+
   g_curr_module = 1 << WD_MODULE;
   status = w001_entry(num_pe);
   status |= w002_entry(num_pe);

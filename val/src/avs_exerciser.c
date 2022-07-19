@@ -234,6 +234,10 @@ val_exerciser_execute_tests(uint32_t level)
       }
   }
 
+  if (g_single_module != SINGLE_MODULE_SENTINEL && g_single_module != AVS_EXERCISER_TEST_NUM_BASE) {
+    return AVS_STATUS_SKIP;
+  }
+
   /* Create the list of valid Pcie Device Functions */
   if (val_pcie_create_device_bdf_table()) {
       val_print(AVS_PRINT_WARN, "\n     Create BDF Table Failed, Skipping Exerciser tests...\n", 0);

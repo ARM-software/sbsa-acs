@@ -51,6 +51,9 @@
 
 #define VAL_EXTRACT_BITS(data, start, end) ((data >> start) & ((1ul << (end-start+1))-1))
 
+#define SINGLE_TEST_SENTINEL   10000
+#define SINGLE_MODULE_SENTINEL 10001
+
 /* GENERIC VAL APIs */
 void val_allocate_shared_mem(void);
 void val_free_shared_mem(void);
