@@ -339,6 +339,7 @@ void PollTillCommandQueueDone(uint32_t its_index)
 uint64_t GetRDBaseFormat(uint32_t its_index)
 {
   uint32_t    value;
+  uint64_t    pe_num;
   uint64_t    ItsBase;
 
   ItsBase = g_gic_its_info->GicIts[its_index].Base;
@@ -352,7 +353,10 @@ uint64_t GetRDBaseFormat(uint32_t its_index)
     return g_gic_its_info->GicRdBase;
   } else {
     value = val_mmio_read64(g_gic_its_info->GicRdBase + ARM_GICR_TYPER);
-    return (value & ARM_GICR_TYPER_PN_MASK);
+    pe_num = (value & ARM_GICR_TYPER_PN_MASK) >> ARM_GICR_TYPER_PN_SHIFT;
+
+    /* RDBase is made 64KB aligned */
+    return (pe_num << RD_BASE_SHIFT);
   }
 }
 
@@ -557,7 +561,7 @@ uint32_t val_its_init(void)
   {
       val_print(AVS_PRINT_INFO, "GIC ITS Index : %x\n", index);
       val_print(AVS_PRINT_INFO, "GIC ITS ID : %x\n", g_gic_its_info->GicIts[index].ID);
-      val_print(AVS_PRINT_INFO, "GIC ITS Base : %x\n\n", g_gic_its_info->GicIts[index].Base);
+      val_print(AVS_PRINT_INFO, "GIC ITS Base : %llx\n\n", g_gic_its_info->GicIts[index].Base);
   }
 
   return 0;

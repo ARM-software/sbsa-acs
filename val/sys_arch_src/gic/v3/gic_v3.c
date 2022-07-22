@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2021, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2021-2022, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -317,7 +317,7 @@ v3_Init(void)
   /* Get the max interrupt */
   max_num_interrupts = val_get_max_intid();
 
-  val_print(AVS_PRINT_DEBUG, "\n GIC_INIT: D base %x\n", gicd_base);
+  val_print(AVS_PRINT_DEBUG, "\n GIC_INIT: D base %llx\n", gicd_base);
   val_print(AVS_PRINT_DEBUG, "\n GIC_INIT: Interrupts %d\n", max_num_interrupts);
 
   /* Disable all interrupt */
