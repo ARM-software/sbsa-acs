@@ -33,12 +33,6 @@ payload(void)
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
   uint32_t data, ns_wdg = 0;
 
-  if (TEST_NUM != SINGLE_TEST_SENTINEL) {
-		val_print(AVS_PRINT_WARN, "\n       Skipping via single test override %d  ", wd_num);
-		val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
-		return;
-	}
-
   if (g_sbsa_level < 5) {
       val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
       return;
