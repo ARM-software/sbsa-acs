@@ -41,6 +41,8 @@ UINT32 g_curr_module;
 UINT32 g_enable_module;
 UINT32  g_skip_test_num[MAX_TEST_SKIP_NUM] = { 10000, 10000, 10000, 10000, 10000,
                                                10000, 10000, 10000, 10000 };
+UINT32  g_single_test = SINGLE_TEST_SENTINEL;
+UINT32  g_single_module = SINGLE_MODULE_SENTINEL;
 UINT32  g_sbsa_tests_total;
 UINT32  g_sbsa_tests_pass;
 UINT32  g_sbsa_tests_fail;
