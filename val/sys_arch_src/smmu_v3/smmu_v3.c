@@ -195,7 +195,7 @@ static void smmu_strtab_write_ste(smmu_master_t *master, uint64_t *ste)
              BITFIELD_SET(STRTAB_STE_1_S1CSH, SMMU_SH_ISH) |
              BITFIELD_SET(STRTAB_STE_1_EATS, 0x1);
 
-        val |= (stage1_cfg->cdcfg.cdtab_phys & STRTAB_STE_0_S1CONTEXTPTR_MASK) |
+        val |= (stage1_cfg->cdcfg.cdtab_phys & (STRTAB_STE_0_S1CONTEXTPTR_MASK << STRTAB_STE_0_S1CONTEXTPTR_SHIFT)) |
             BITFIELD_SET(STRTAB_STE_0_CONFIG, STRTAB_STE_0_CONFIG_S1_TRANS) |
             BITFIELD_SET(STRTAB_STE_0_S1CDMAX, stage1_cfg->s1cdmax) |
             BITFIELD_SET(STRTAB_STE_0_S1FMT, stage1_cfg->s1fmt);
@@ -248,7 +248,7 @@ static uint32_t smmu_cmd_queue_init(smmu_dev_t *smmu)
     cmdq->entry_size = CMDQ_DWORDS_PER_ENT << 3;
 
     cmdq->queue_base = QUEUE_BASE_RWA |
-                       (cmdq->base_phys & QUEUE_BASE_ADDR_MASK) |
+                       (cmdq->base_phys & (QUEUE_BASE_ADDR_MASK << QUEUE_BASE_ADDR_SHIFT)) |
                        BITFIELD_SET(QUEUE_BASE_LOG2SIZE, cmdq->queue.log2nent);
 
     cmdq->queue.prod = cmdq->queue.cons = 0;
@@ -282,7 +282,7 @@ smmu_strtab_write_level1_desc(uint64_t *dst, smmu_strtab_l1_desc_t *desc)
     uint64_t val = 0;
 
     val |= BITFIELD_SET(STRTAB_L1_DESC_SPAN, desc->span);
-    val |= desc->l2desc_phys & STRTAB_L1_DESC_L2PTR_MASK;
+    val |= desc->l2desc_phys & (STRTAB_L1_DESC_L2PTR_MASK << STRTAB_L1_DESC_L2PTR_SHIFT);
     *dst = val;
 }
 
@@ -377,7 +377,7 @@ static uint32_t smmu_strtab_init(smmu_dev_t *smmu)
     }
 
     /* Set the strtab base address */
-    data = smmu->strtab_cfg.strtab_phys & STRTAB_BASE_ADDR_MASK;
+    data = smmu->strtab_cfg.strtab_phys & (STRTAB_BASE_ADDR_MASK << STRTAB_BASE_ADDR_SHIFT);
     data |= STRTAB_BASE_RA;
     smmu->strtab_cfg.strtab_base = data;
 
@@ -636,7 +636,7 @@ static void dump_cdtab(uint64_t *ctx_desc)
 static void smmu_cdtab_write_l1_desc(uint64_t *dst,
                       smmu_cdtab_l1_ctx_desc_t *l1_desc)
 {
-    uint64_t val = (l1_desc->l2desc_phys & CDTAB_L1_DESC_L2PTR_MASK) |
+    uint64_t val = (l1_desc->l2desc_phys & (CDTAB_L1_DESC_L2PTR_MASK << CDTAB_L1_DESC_L2PTR_SHIFT)) |
           CDTAB_L1_DESC_V;
 
     *dst = val;

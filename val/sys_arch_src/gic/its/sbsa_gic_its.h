@@ -68,6 +68,7 @@
 #define ARM_GICR_TYPER_PLPIS    (1 << 0)
 #define ARM_GICR_TYPER_VLPIS    (1 << 1)
 #define ARM_GICR_TYPER_PN_MASK  (0xFFFF00)
+#define ARM_GICR_TYPER_PN_SHIFT 8
 
 /* GICR_PROPBASER Bits */
 #define ARM_GICR_PROPBASER_IDbits(Propbaser) (Propbaser & 0x1F) /* IDBits implemented */
@@ -161,6 +162,7 @@
 #define ARM_ITS_CMD_DISCARD 0xF
 #define ARM_ITS_CMD_SYNC    0x5
 
+#define RD_BASE_SHIFT       16
 #define NUM_PAGES_8         8
 
 #define ITS_CMD_SHIFT_DEVID 32

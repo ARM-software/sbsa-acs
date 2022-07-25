@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2021, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2022, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -338,7 +338,8 @@ void clear_msi_x_table(uint32_t bdf, uint32_t msi_index)
   table_address = table_address + (table_offset_reg & MSI_BIR_MASK);
 
   /* Clear MSI Table */
-  val_mmio_write(table_address + msi_index*MSI_X_ENTRY_SIZE + MSI_X_MSG_TBL_ADDR_OFFSET, 0);
+  val_mmio_write(table_address + msi_index*MSI_X_ENTRY_SIZE + MSI_X_MSG_TBL_LOWER_ADDR_OFFSET, 0);
+  val_mmio_write(table_address + msi_index*MSI_X_ENTRY_SIZE + MSI_X_MSG_TBL_HIGHER_ADDR_OFFSET, 0);
   val_mmio_write(table_address + msi_index*MSI_X_ENTRY_SIZE + MSI_X_MSG_TBL_DATA_OFFSET, 0);
   val_mmio_write(table_address + msi_index*MSI_X_ENTRY_SIZE + MSI_X_MSG_TBL_MVC_OFFSET, 0x1);
 }
@@ -353,7 +354,7 @@ void clear_msi_x_table(uint32_t bdf, uint32_t msi_index)
   @param   msi_data MSI Data to be programmed
   @return  Status
 **/
-uint32_t fill_msi_x_table(uint32_t bdf, uint32_t msi_index, uint32_t msi_addr, uint32_t msi_data)
+uint32_t fill_msi_x_table(uint32_t bdf, uint32_t msi_index, uint64_t msi_addr, uint32_t msi_data)
 {
 
   uint32_t msi_cap_offset, msi_table_bar_index;
@@ -389,7 +390,10 @@ uint32_t fill_msi_x_table(uint32_t bdf, uint32_t msi_index, uint32_t msi_addr, u
   table_address = table_address + (table_offset_reg & MSI_BIR_MASK);
 
   /* Fill MSI Table with msi_addr, msi_data */
-  val_mmio_write(table_address + msi_index*MSI_X_ENTRY_SIZE + MSI_X_MSG_TBL_ADDR_OFFSET, msi_addr);
+  val_mmio_write(table_address + msi_index*MSI_X_ENTRY_SIZE + MSI_X_MSG_TBL_LOWER_ADDR_OFFSET,
+                                                                                      msi_addr);
+  val_mmio_write(table_address + msi_index*MSI_X_ENTRY_SIZE + MSI_X_MSG_TBL_HIGHER_ADDR_OFFSET,
+                                                                  msi_addr >> MSI_X_ADDR_SHIFT);
   val_mmio_write(table_address + msi_index*MSI_X_ENTRY_SIZE + MSI_X_MSG_TBL_DATA_OFFSET, msi_data);
   val_mmio_write(table_address + msi_index*MSI_X_ENTRY_SIZE + MSI_X_MSG_TBL_MVC_OFFSET, 0x0);
 
@@ -439,7 +443,8 @@ uint32_t val_gic_request_msi(uint32_t bdf, uint32_t device_id, uint32_t its_id,
                              uint32_t int_id, uint32_t msi_index)
 {
   uint32_t status;
-  uint32_t msi_addr, msi_data;
+  uint64_t msi_addr;
+  uint32_t msi_data;
   uint32_t its_index;
 
    if ((g_gic_its_info == NULL) || (g_gic_its_info->GicNumIts == 0))

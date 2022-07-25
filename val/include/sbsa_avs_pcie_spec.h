@@ -305,12 +305,14 @@
 
 #define MSI_X_TOR_OFFSET            0x4
 
-#define MSI_X_MSG_TBL_ADDR_OFFSET   0x0
-#define MSI_X_MSG_TBL_DATA_OFFSET   0x8
-#define MSI_X_MSG_TBL_MVC_OFFSET    0xC
+#define MSI_X_MSG_TBL_LOWER_ADDR_OFFSET   0x0
+#define MSI_X_MSG_TBL_HIGHER_ADDR_OFFSET  0x4
+#define MSI_X_MSG_TBL_DATA_OFFSET         0x8
+#define MSI_X_MSG_TBL_MVC_OFFSET          0xC
 
 #define MSI_X_TABLE_BIR_MASK        0x7
 #define MSI_X_ENTRY_SIZE            16 /* Size of Single MSI Entry in MSI Table */
+#define MSI_X_ADDR_SHIFT            32
 
 /* PASID Capabilities */
 #define PASID_CAPABILITY_OFFSET     0x4
