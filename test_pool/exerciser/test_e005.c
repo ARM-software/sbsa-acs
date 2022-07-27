@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2018-2021, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2018-2022, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -90,8 +90,8 @@ payload(void)
   void *dram_buf_pasid2_out_virt;
   uint64_t dram_buf_pasid1_base_phys;
   uint64_t dram_buf_pasid2_base_phys;
-  uint64_t dram_buf_in_iova;
-  uint64_t dram_buf_out_iova;
+  uint64_t dram_buf_in_iova = 0;
+  uint64_t dram_buf_out_iova = 0;
   uint32_t device_id, its_id;
   uint32_t page_size = val_memory_page_size();
   uint32_t test_data_blk_size = page_size * TEST_DATA_NUM_PAGES;

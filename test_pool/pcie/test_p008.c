@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, 2021 Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018, 2021-2022 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -172,9 +172,7 @@ payload (void)
           clean_msi_list (current_dev_mvec);
         }
       } else {
-        val_print (AVS_STATUS_ERR, "\n       Failed to get address of PCI device", 0);
-        val_set_status (index, RESULT_FAIL (g_sbsa_level, TEST_NUM, 01));
-        status = 1;
+        val_print (AVS_PRINT_DEBUG, "\n       Invalid BDF 0x%x", current_dev_bdf);
       }
     }
     count--;

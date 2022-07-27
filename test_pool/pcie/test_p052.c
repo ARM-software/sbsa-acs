@@ -59,8 +59,9 @@ payload(void)
       if ((dp_type == iEP_EP) || (dp_type == RCiEP))
       {
          /* Check if Address Translation Cache is Present in this device. */
-         /* If ATC Not present, skip the test.*/
-         if (!val_pcie_is_cache_present(bdf))
+         /* If ATC Not present or capabilty not filled, skip the test.*/
+         if ((val_pcie_is_cache_present(bdf) == NOT_IMPLEMENTED) ||
+             (val_pcie_is_cache_present(bdf) == 0))
              continue;
 
          test_skip = 0;

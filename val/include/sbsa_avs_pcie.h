@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2021, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2022, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -33,10 +33,6 @@
 
 #define GET_DEVICE_ID(bus, dev, func) ((bus << 8) | (dev << 3) | func)
 
-#define PCIE_MAX_BUS   256
-#define PCIE_MAX_DEV    32
-#define PCIE_MAX_FUNC    8
-
 #define PCIE_BUS_SHIFT 8
 #define PCIE_CFG_SIZE  4096
 
@@ -67,11 +63,13 @@
 #define MAX_BITFIELD_ENTRIES 100
 #define ERR_STRING_SIZE 64
 
-#define MEM_OFFSET_10   0x10
-#define MEM_OFF_100000  0x100000
-#define MEM_SHIFT       20
-#define MEM_BASE_SHIFT  16
-#define BAR_MASK        0xFFFFFFF0
+#define MEM_OFFSET_SMALL   0x10
+#define MEM_OFFSET_MEDIUM  0x1000
+#define MEM_OFFSET_LARGE   0x100000
+#define MEM_SHIFT          20
+#define MEM_BASE_SHIFT     16
+#define BAR_MASK           0xFFFFFFF0
+#define MSI_BIR_MASK       0xFFFFFFF8
 
 /* Allows storage of 2048 valid BDFs */
 #define PCIE_DEVICE_BDF_TABLE_SZ 8192

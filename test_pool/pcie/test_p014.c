@@ -19,6 +19,7 @@
 
 #include "val/include/sbsa_avs_dma.h"
 #include "val/include/sbsa_avs_smmu.h"
+#include "val/include/sbsa_avs_pcie.h"
 
 #define TEST_NUM   (AVS_PCIE_TEST_NUM_BASE + 14)
 #define TEST_DESC  "Memory attributes of DMA traffic  "
@@ -91,7 +92,6 @@ payload(void)
   if(!status)
       val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 0));
 }
-
 
 uint32_t
 p014_entry(uint32_t num_pe)

@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2019, 2021 Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2019, 2021-2022 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -36,14 +36,18 @@
 
 static uint32_t intid;
 uint64_t timer_num;
+static uint32_t g_wd_int_received;
+static uint32_t g_failsafe_int_received;
+extern uint32_t g_wakeup_timeout;
 
 static
 void
-isr_failsafe()
+isr_failsafe(void)
 {
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
   val_timer_set_phy_el1(0);
   val_print(AVS_PRINT_ERR, "\n       Received Failsafe interrupt      ", 0);
+  g_failsafe_int_received = 1;
   val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
   intid = val_timer_get_info(TIMER_INFO_PHY_EL1_INTID, 0);
   val_gic_end_of_interrupt(intid);
@@ -51,7 +55,7 @@ isr_failsafe()
 
 static
 void
-isr1()
+isr1(void)
 {
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
   val_timer_set_phy_el1(0);
@@ -64,7 +68,7 @@ isr1()
 
 static
 void
-isr2()
+isr2(void)
 {
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
   /* We received our interrupt, so disable timer from generating further interrupts */
@@ -77,7 +81,7 @@ isr2()
 
 static
 void
-isr3()
+isr3(void)
 {
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
   /* We received our interrupt, so disable timer from generating further interrupts */
@@ -90,11 +94,12 @@ isr3()
 
 static
 void
-isr4()
+isr4(void)
 {
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
   val_wd_set_ws0(timer_num, 0);
   val_print(AVS_PRINT_INFO, "\n       Received WS0 interrupt           ", 0);
+  g_wd_int_received = 1;
   val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM4, 01));
   intid = val_wd_get_info(timer_num, WD_INFO_GSIV);
   val_gic_end_of_interrupt(intid);
@@ -102,7 +107,7 @@ isr4()
 
 static
 void
-isr5()
+isr5(void)
 {
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
   uint64_t cnt_base_n = val_timer_get_info(TIMER_INFO_SYS_CNT_BASE_N, timer_num);
@@ -113,19 +118,20 @@ isr5()
   val_gic_end_of_interrupt(intid);
 }
 
-
+static
 void
-wakeup_set_failsafe()
+wakeup_set_failsafe(void)
 {
-  uint64_t timer_expire_val = TIMEOUT_LARGE * 10;
+  uint64_t timer_expire_val = val_get_counter_frequency() * (g_wakeup_timeout + 1);
 
   intid = val_timer_get_info(TIMER_INFO_PHY_EL1_INTID, 0);
   val_gic_install_isr(intid, isr_failsafe);
   val_timer_set_phy_el1(timer_expire_val);
 }
 
+static
 void
-wakeup_clear_failsafe()
+wakeup_clear_failsafe(void)
 {
   val_timer_set_phy_el1(0);
 
@@ -133,9 +139,9 @@ wakeup_clear_failsafe()
 
 static
 void
-payload1()
+payload1(void)
 {
-  uint64_t timer_expire_val = TIMEOUT_SMALL;
+  uint64_t timer_expire_val = val_get_counter_frequency() * g_wakeup_timeout;
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
 
   val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
@@ -149,9 +155,9 @@ payload1()
 
 static
 void
-payload2()
+payload2(void)
 {
-  uint64_t timer_expire_val = TIMEOUT_SMALL;
+  uint64_t timer_expire_val = val_get_counter_frequency() * g_wakeup_timeout;
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
 
   val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM2, 01));
@@ -166,9 +172,9 @@ payload2()
 
 static
 void
-payload3()
+payload3(void)
 {
-  uint64_t timer_expire_val = TIMEOUT_SMALL;
+  uint64_t timer_expire_val = val_get_counter_frequency() * g_wakeup_timeout;
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
 
   val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM3, 01));
@@ -183,10 +189,10 @@ payload3()
 
 static
 void
-payload4()
+payload4(void)
 {
   uint32_t status, ns_wdg = 0;
-  uint64_t timer_expire_val = 1;
+  uint64_t timer_expire_val = 1 * g_wakeup_timeout;
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
 
   timer_num = val_wd_get_info(0, WD_INFO_COUNT);
@@ -207,13 +213,25 @@ payload4()
           wakeup_set_failsafe();
           status = val_wd_set_ws0(timer_num, timer_expire_val);
           if (status) {
-              val_print(AVS_PRINT_ERR, "\n       Setting watchdof timeout failed", 0);
+              val_print(AVS_PRINT_ERR, "\n       Setting watchdog timeout failed", 0);
               val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM4, 02));
               return;
           }
+          g_wd_int_received = 0;
+          g_failsafe_int_received = 0;
 
           val_power_enter_semantic(SBSA_POWER_SEM_B);
           wakeup_clear_failsafe();
+          /* If PE wakeup is due to some interrupt other than WD
+             or failsafe, test will be consider as PASS(as BSA WAK_10 rule
+             Semantic B is satisfied)
+             Test will be consider as failure in case WD interrupt
+             failed to fire.
+          */
+          if (!(g_wd_int_received || g_failsafe_int_received)) {
+            val_gic_clear_interrupt(intid);
+            val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM4, 1));
+          }
       } else {
           val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM4, 01));
       }
@@ -229,10 +247,10 @@ payload4()
 
 static
 void
-payload5()
+payload5(void)
 {
   uint64_t cnt_base_n;
-  uint64_t timer_expire_val = TIMEOUT_SMALL;
+  uint64_t timer_expire_val = val_get_counter_frequency() * g_wakeup_timeout;
   uint32_t status, ns_timer = 0;
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
 

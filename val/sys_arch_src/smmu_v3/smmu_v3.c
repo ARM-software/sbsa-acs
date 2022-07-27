@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2020-2021, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2022, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,7 +17,7 @@
 #include "smmu_v3.h"
 
 smmu_dev_t *g_smmu;
-uint32_t g_num_smmus = 0;
+extern uint32_t g_num_smmus;
 
 struct smmu_master_node {
     smmu_master_t *master;
@@ -99,6 +99,9 @@ static int smmu_cmdq_write_cmd(smmu_dev_t *smmu, uint64_t *cmd)
     for (i = 0; i < CMDQ_DWORDS_PER_ENT; ++i)
         cmd_dst[i] = cmd[i];
     queue.prod = smmu_cmdq_inc_prod(&queue);
+#ifndef TARGET_LINUX
+    ArmExecuteMemoryBarrier();
+#endif
     val_mmio_write((uint64_t)cmdq->prod_reg, queue.prod);
 
     return ret;
@@ -130,6 +133,7 @@ static void smmu_cmdq_poll_until_consumed(smmu_dev_t *smmu)
         if (smmu_queue_empty(&queue))
             break;
         queue.cons = val_mmio_read((uint64_t)cmdq->cons_reg);
+        timeout--;
     }
 
     if (!timeout) {
@@ -190,7 +194,8 @@ static void smmu_strtab_write_ste(smmu_master_t *master, uint64_t *ste)
              BITFIELD_SET(STRTAB_STE_1_S1CSH, SMMU_SH_ISH) |
              BITFIELD_SET(STRTAB_STE_1_EATS, 0x1);
 
-        val |= (stage1_cfg->cdcfg.cdtab_phys & STRTAB_STE_0_S1CONTEXTPTR_MASK) |
+        val |= (stage1_cfg->cdcfg.cdtab_phys &
+               (STRTAB_STE_0_S1CONTEXTPTR_MASK << STRTAB_STE_0_S1CONTEXTPTR_SHIFT)) |
             BITFIELD_SET(STRTAB_STE_0_CONFIG, STRTAB_STE_0_CONFIG_S1_TRANS) |
             BITFIELD_SET(STRTAB_STE_0_S1CDMAX, stage1_cfg->s1cdmax) |
             BITFIELD_SET(STRTAB_STE_0_S1FMT, stage1_cfg->s1fmt);
@@ -206,12 +211,11 @@ static uint32_t smmu_strtab_init_linear(smmu_dev_t *smmu)
     smmu_strtab_config_t *cfg = &smmu->strtab_cfg;
 
     size = (1 << smmu->sid_bits) * (STRTAB_STE_DWORDS << 3);
-    cfg->strtab_ptr = val_memory_alloc(2*size);
+    cfg->strtab_ptr = val_memory_calloc(2, size);
     if (!cfg->strtab_ptr) {
         val_print(AVS_PRINT_ERR, "\n      Failed to allocate linear stream table.     ", 0);
         return 0;
     }
-    val_memory_set(cfg->strtab_ptr, 2*size, 0);
 
     cfg->strtab_phys = align_to_size((uint64_t)val_memory_virt_to_phys(cfg->strtab_ptr), size);
     cfg->strtab64 = (uint64_t*)align_to_size((uint64_t)cfg->strtab_ptr, size);
@@ -230,12 +234,11 @@ static uint32_t smmu_cmd_queue_init(smmu_dev_t *smmu)
     uint64_t cmdq_size = ((1 << cmdq->queue.log2nent) * CMDQ_DWORDS_PER_ENT) << 3;
 
     cmdq_size = (cmdq_size < 32)?32:cmdq_size;
-    cmdq->base_ptr = val_memory_alloc (2 * cmdq_size);
+    cmdq->base_ptr = val_memory_calloc (2, cmdq_size);
     if (!cmdq->base_ptr) {
         val_print(AVS_PRINT_ERR, "\n      Failed to allocate queue struct.     ", 0);
         return 0;
     }
-    val_memory_set(cmdq->base_ptr, 2*cmdq_size, 0);
 
     cmdq->base_phys = align_to_size((uint64_t)val_memory_virt_to_phys(cmdq->base_ptr), cmdq_size);
     cmdq->base = (uint8_t*)align_to_size((uint64_t)cmdq->base_ptr, cmdq_size);
@@ -245,7 +248,7 @@ static uint32_t smmu_cmd_queue_init(smmu_dev_t *smmu)
     cmdq->entry_size = CMDQ_DWORDS_PER_ENT << 3;
 
     cmdq->queue_base = QUEUE_BASE_RWA |
-                       (cmdq->base_phys & QUEUE_BASE_ADDR_MASK) |
+                       (cmdq->base_phys & (QUEUE_BASE_ADDR_MASK << QUEUE_BASE_ADDR_SHIFT)) |
                        BITFIELD_SET(QUEUE_BASE_LOG2SIZE, cmdq->queue.log2nent);
 
     cmdq->queue.prod = cmdq->queue.cons = 0;
@@ -279,7 +282,7 @@ smmu_strtab_write_level1_desc(uint64_t *dst, smmu_strtab_l1_desc_t *desc)
     uint64_t val = 0;
 
     val |= BITFIELD_SET(STRTAB_L1_DESC_SPAN, desc->span);
-    val |= desc->l2desc_phys & STRTAB_L1_DESC_L2PTR_MASK;
+    val |= desc->l2desc_phys & (STRTAB_L1_DESC_L2PTR_MASK << STRTAB_L1_DESC_L2PTR_SHIFT);
     *dst = val;
 }
 
@@ -298,15 +301,13 @@ static int smmu_strtab_init_level2(smmu_dev_t *smmu, uint32_t sid)
     strtab = &cfg->strtab64[(sid >> STRTAB_SPLIT) * STRTAB_L1_DESC_DWORDS];
 
     desc->span = STRTAB_SPLIT + 1;
-    desc->l2ptr = val_memory_alloc(size*2);
+    desc->l2ptr = val_memory_calloc(2, size);
     if (!desc->l2ptr) {
         val_print(AVS_PRINT_ERR, "\n      failed to allocate l2 stream table for SID %u     ",    sid);
         return 0;
     }
     desc->l2desc_phys = align_to_size((uint64_t)val_memory_virt_to_phys(desc->l2ptr), size);
     desc->l2desc64 = (uint64_t*)align_to_size((uint64_t)desc->l2ptr, size);
-
-    val_memory_set(desc->l2desc64, size, 0);
 
     for (ste = desc->l2desc64, i = 0; i < (1 << STRTAB_SPLIT); ++i, ste += STRTAB_STE_DWORDS)
         smmu_strtab_write_ste(NULL, ste);
@@ -316,22 +317,14 @@ static int smmu_strtab_init_level2(smmu_dev_t *smmu, uint32_t sid)
 
 static int smmu_strtab_init_level1(smmu_dev_t *smmu)
 {
-    int i;
-    void *strtab;
     smmu_strtab_config_t *cfg = &smmu->strtab_cfg;
-    uint64_t l1_desc_arr_size = sizeof(*cfg->l1_desc) * cfg->l1_ent_count;
 
-    cfg->l1_desc = val_memory_alloc(l1_desc_arr_size);
+    cfg->l1_desc = val_memory_calloc(cfg->l1_ent_count, sizeof(*cfg->l1_desc));
     if (!cfg->l1_desc) {
         val_print(AVS_PRINT_ERR, "\n      failed to allocate l1 stream table desc     ", 0);
         return 0;
     }
-    val_memory_set(cfg->l1_desc, l1_desc_arr_size, 0);
 
-    for (strtab = smmu->strtab_cfg.strtab64, i = 0;
-            i < cfg->l1_ent_count;
-            strtab += STRTAB_L1_DESC_SIZE, ++i)
-        smmu_strtab_write_level1_desc(strtab, &cfg->l1_desc[i]);
     return 1;
 }
 
@@ -383,7 +376,7 @@ static uint32_t smmu_strtab_init(smmu_dev_t *smmu)
     }
 
     /* Set the strtab base address */
-    data = smmu->strtab_cfg.strtab_phys & STRTAB_BASE_ADDR_MASK;
+    data = smmu->strtab_cfg.strtab_phys & (STRTAB_BASE_ADDR_MASK << STRTAB_BASE_ADDR_SHIFT);
     data |= STRTAB_BASE_RA;
     smmu->strtab_cfg.strtab_base = data;
 
@@ -642,8 +635,8 @@ static void dump_cdtab(uint64_t *ctx_desc)
 static void smmu_cdtab_write_l1_desc(uint64_t *dst,
                       smmu_cdtab_l1_ctx_desc_t *l1_desc)
 {
-    uint64_t val = (l1_desc->l2desc_phys & CDTAB_L1_DESC_L2PTR_MASK) |
-          CDTAB_L1_DESC_V;
+    uint64_t val = (l1_desc->l2desc_phys &
+          (CDTAB_L1_DESC_L2PTR_MASK << CDTAB_L1_DESC_L2PTR_SHIFT)) | CDTAB_L1_DESC_V;
 
     *dst = val;
 }
@@ -759,11 +752,10 @@ static int smmu_cdtab_alloc(smmu_master_t *master)
         cfg->s1fmt = STRTAB_STE_0_S1FMT_64K_L2;
         cdcfg->l1_ent_count = (cdmax + CDTAB_L2_ENTRY_COUNT - 1)/CDTAB_L2_ENTRY_COUNT;
 
-        cdcfg->l1_desc = val_memory_alloc(cdcfg->l1_ent_count * sizeof(*cdcfg->l1_desc));
+        cdcfg->l1_desc = val_memory_calloc(cdcfg->l1_ent_count, sizeof(*cdcfg->l1_desc));
         if (!cdcfg->l1_desc)
             return 0;
 
-        val_memory_set(cdcfg->l1_desc, cdcfg->l1_ent_count * sizeof(*cdcfg->l1_desc), 0);
         l1_tbl_size = cdcfg->l1_ent_count * (CDTAB_L1_DESC_DWORDS << 3);
     } else {
         cfg->s1fmt = STRTAB_STE_0_S1FMT_LINEAR;
@@ -771,7 +763,7 @@ static int smmu_cdtab_alloc(smmu_master_t *master)
         l1_tbl_size = cdmax * (CDTAB_CD_DWORDS << 3);
     }
 
-    cdcfg->cdtab_ptr = val_memory_alloc(l1_tbl_size * 2);
+    cdcfg->cdtab_ptr = val_memory_calloc(2, l1_tbl_size);
     if (!cdcfg->cdtab_ptr) {
         val_print(AVS_PRINT_ERR, "\n      smmu_cdtab_alloc: alloc failed     ", 0);
         return 0;
@@ -779,7 +771,6 @@ static int smmu_cdtab_alloc(smmu_master_t *master)
 
     cdcfg->cdtab_phys = align_to_size((uint64_t)val_memory_virt_to_phys(cdcfg->cdtab_ptr), l1_tbl_size);
     cdcfg->cdtab64 = (uint64_t*)align_to_size((uint64_t)cdcfg->cdtab_ptr, l1_tbl_size);
-    val_memory_set(cdcfg->cdtab64, l1_tbl_size, 0);
 
     return 1;
 }
@@ -797,13 +788,14 @@ smmu_master_t *smmu_master_at(uint32_t sid)
     node = val_memory_alloc(sizeof(struct smmu_master_node));
     if (node == NULL)
         return NULL;
-    node->master = val_memory_alloc(sizeof(smmu_master_t));
+
+    node->master = val_memory_calloc(1, sizeof(smmu_master_t));
     if (node->master == NULL)
     {
         val_memory_free(node);
         return NULL;
     }
-    val_memory_set(node->master, sizeof(smmu_master_t), 0);
+
     node->next = g_smmu_master_list_head;
     g_smmu_master_list_head = node;
 
@@ -1017,14 +1009,12 @@ uint32_t val_smmu_init(void)
     if (g_num_smmus == 0)
         return AVS_STATUS_ERR;
 
-    g_smmu = val_memory_alloc(sizeof(smmu_dev_t) * g_num_smmus);
+    g_smmu = val_memory_calloc(g_num_smmus, sizeof(smmu_dev_t));
     if (!g_smmu)
     {
         val_print(AVS_PRINT_ERR, "\n      val_smmu_init: memory allocation failure     ", 0);
         return AVS_STATUS_ERR;
     }
-
-    val_memory_set(g_smmu, sizeof(smmu_dev_t) * g_num_smmus, 0);
 
     for (i = 0; i < g_num_smmus; ++i) {
         if (val_iovirt_get_smmu_info(SMMU_CTRL_ARCH_MAJOR_REV, i) != 3) {

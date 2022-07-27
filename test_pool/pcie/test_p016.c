@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018,2021 Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018,2021-2022 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -79,6 +79,11 @@ static void payload(void)
                     break;
                 }
             }
+        }
+
+        else {
+            /* bar_data is zero, so considered as 32 bit BAR */
+            status = 1;
         }
     }
 

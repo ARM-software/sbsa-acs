@@ -27,7 +27,7 @@ static uint32_t intid;
 
 static
 void
-isr()
+isr(void)
 {
   val_timer_set_phy_el1(0);
   val_print(AVS_PRINT_INFO, "\n       Received interrupt   ", 0);
@@ -38,7 +38,7 @@ isr()
 
 static
 void
-payload()
+payload(void)
 {
 
   uint32_t timeout = TIMEOUT_LARGE;

@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2019-2020, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2019-2021, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -40,6 +40,7 @@ payload(void)
   uint32_t reg_value;
   uint32_t instance;
   uint32_t fail_cnt;
+  uint32_t status;
   uint64_t header_type;
 
   fail_cnt = 0;
@@ -63,9 +64,21 @@ payload(void)
        * of the exerciser's root port. Exerciser should see this
        * request as a Type 0 Request.
        */
-      val_exerciser_ops(START_TXN_MONITOR, CFG_READ, instance);
+      status = val_exerciser_ops(START_TXN_MONITOR, CFG_READ, instance);
+      if (status == PCIE_CAP_NOT_FOUND)
+      {
+          val_set_status(pe_index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
+          return;
+      }
+
       val_pcie_read_cfg(e_bdf, TYPE01_VIDR, &reg_value);
-      val_exerciser_ops(STOP_TXN_MONITOR, CFG_READ, instance);
+      status = val_exerciser_ops(STOP_TXN_MONITOR, CFG_READ, instance);
+      if (status == PCIE_CAP_NOT_FOUND)
+      {
+          val_set_status(pe_index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 02));
+          return;
+      }
+
       val_exerciser_get_param(CFG_TXN_ATTRIBUTES, (uint64_t *)&header_type, 0, instance);
       if (header_type != TYPE0)
       {

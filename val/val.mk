@@ -19,12 +19,15 @@ CFLAGS    += -I$(SBSA_ROOT)/val/sys_arch_src/gic/v3
 CFLAGS    += -I$(SBSA_ROOT)/val/sys_arch_src/gic/v2
 ASFLAGS   += -I$(SBSA_ROOT)/val/src/AArch64/
 
+DEPS = $(SBSA_ROOT)/val/include/val_interface.h
+
 OUT_DIR = $(SBSA_ROOT)/build/
 OBJ_DIR := $(SBSA_ROOT)/build/obj
 LIB_DIR := $(SBSA_ROOT)/build/lib
 
 CC = $(GCC49_AARCH64_PREFIX)gcc -march=armv8.2-a
 AR = $(GCC49_AARCH64_PREFIX)ar
+CC_FLAGS = -g -Os -fshort-wchar -fno-builtin -fno-strict-aliasing -Wall -Werror -Wextra -Wmissing-declarations -Wstrict-prototypes -Wconversion -Wsign-conversion -Wstrict-overflow
 
 FILES   := $(foreach files,$(SBSA_DIR),$(wildcard $(files)/*.c))
 FILES   += $(foreach files,$(SMMU_DIR),$(wildcard $(files)/*.c))
@@ -49,6 +52,9 @@ create_dirs:
 	@mkdir ${OBJ_DIR}
 	@mkdir ${LIB_DIR}
 
+$(OBJ_DIR)/%.o: $(DEPS)
+	$(CC)  -c -o $@ $< >> $(OUT_DIR)/compile.log 2>&1
+
 $(OBJ_DIR)/%.o: $(SBSA_A64_DIR)/%.S
 	$(CC) $(CFLAGS) $(ASFLAGS) -c -o $@ $< >> $(OUT_DIR)/compile.log 2>&1
 
@@ -59,22 +65,22 @@ $(OBJ_DIR)/%.o: $(SBSA_GIC_V3_DIR)/%.S
 	$(CC) $(CFLAGS) $(ASFLAGS) -c -o $@ $< >> $(OUT_DIR)/compile.log 2>&1
 
 $(OBJ_DIR)/%.o: $(SBSA_DIR)/%.c
-	$(CC)  $(CFLAGS) -c -o $@ $< >> $(OUT_DIR)/compile.log 2>&1
+	$(CC) $(CC_FLAGS) $(CFLAGS) -c -o $@ $< >> $(OUT_DIR)/compile.log 2>&1
 
 $(OBJ_DIR)/%.o: $(SMMU_DIR)/%.c
-	$(CC)  $(CFLAGS) -c -o $@ $< >> $(OUT_DIR)/compile.log 2>&1
+	$(CC) $(CC_FLAGS)  $(CFLAGS) -c -o $@ $< >> $(OUT_DIR)/compile.log 2>&1
 
 $(OBJ_DIR)/%.o: $(GIC_V3_DIR)/%.c
-	$(CC)  $(CFLAGS) -c -o $@ $< >> $(OUT_DIR)/compile.log 2>&1
+	$(CC) $(CC_FLAGS) $(CFLAGS) -c -o $@ $< >> $(OUT_DIR)/compile.log 2>&1
 
 $(OBJ_DIR)/%.o: $(GIC_V2_DIR)/%.c
-	$(CC)  $(CFLAGS) -c -o $@ $< >> $(OUT_DIR)/compile.log 2>&1
+	$(CC) $(CC_FLAGS) $(CFLAGS) -c -o $@ $< >> $(OUT_DIR)/compile.log 2>&1
 
 $(OBJ_DIR)/%.o: $(GIC_DIR)/%.c
-	$(CC)  $(CFLAGS) -c -o $@ $< >> $(OUT_DIR)/compile.log 2>&1
+	$(CC) $(CC_FLAGS) $(CFLAGS) -c -o $@ $< >> $(OUT_DIR)/compile.log 2>&1
 
 $(OBJ_DIR)/%.o: $(GIC_ITS_DIR)/%.c
-	$(CC)  $(CFLAGS) -c -o $@ $< >> $(OUT_DIR)/compile.log 2>&1
+	$(CC) $(CC_FLAGS) $(CFLAGS) -c -o $@ $< >> $(OUT_DIR)/compile.log 2>&1
 
 $(OBJ_DIR)/%.o: $(SBSA_DIR)/%.S
 	$(CC)   -c -o $@ $< >> $(OUT_DIR)/compile.log 2>&1
@@ -90,3 +96,4 @@ clean:
 	rm -rf ${OUT_DIR}
 
 .PHONY: all PAL_LIB
+

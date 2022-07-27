@@ -63,6 +63,7 @@ payload(void)
   uint32_t smmu_index;
   uint32_t dma_len;
   uint32_t status;
+  uint32_t reg_value;
   void *dram_buf_virt;
   void *dram_buf_phys;
   void *dram_buf_iova;
@@ -164,12 +165,9 @@ exception_return:
       /* Restore Rootport Bus Master Enable */
       val_pcie_enable_bme(erp_bdf);
 
-      /* Check if UR detected bit is set in the Exerciser */
-      if (val_pcie_is_urd(e_bdf))
-      {
-          /* Clear urd bit in Device Status Register */
-          val_pcie_clear_urd(e_bdf);
-      } else
+      /* Check if Received Master Abort bit is set in the Exerciser */
+      val_pcie_read_cfg(e_bdf, COMMAND_REG_OFFSET, &reg_value);
+      if (!((reg_value & MASTER_ABORT_MASK) >> MASTER_ABORT_SHIFT))
       {
           val_print(AVS_PRINT_ERR, "\n      Exerciser BDF 0x%x BME functionality failure", e_bdf);
           fail_cnt++;

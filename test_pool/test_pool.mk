@@ -1,3 +1,20 @@
+## @file
+ # Copyright (c) 2022, Arm Limited or its affiliates. All rights reserved.
+ # SPDX-License-Identifier : Apache-2.0
+ #
+ # Licensed under the Apache License, Version 2.0 (the "License");
+ # you may not use this file except in compliance with the License.
+ # You may obtain a copy of the License at
+ #
+ #  http://www.apache.org/licenses/LICENSE-2.0
+ #
+ # Unless required by applicable law or agreed to in writing, software
+ # distributed under the License is distributed on an "AS IS" BASIS,
+ # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ # See the License for the specific language governing permissions and
+ # limitations under the License.
+ ##
+
 SBSA_ROOT:= $(SBSA_PATH)
 SBSA_DIR := $(SBSA_ROOT)/test_pool
 SBSA_TEST_DIR := $(SBSA_ROOT)/test_pool/exerciser
@@ -10,10 +27,13 @@ SBSA_TEST_DIR += $(SBSA_ROOT)/test_pool/io_virt
 SBSA_TEST_DIR += $(SBSA_ROOT)/test_pool/power_wakeup
 
 CFLAGS    += -I$(SBSA_ROOT)/val/include
-CFLAGS    += -I$(SBSA_ROOT)/
+CFLAGS    += -I$(SBSA_ROOT)/ -DMAKE
 
 CC = $(GCC49_AARCH64_PREFIX)gcc -march=armv8.2-a
 AR = $(GCC49_AARCH64_PREFIX)ar
+CC_FLAGS = -g -O0 -fshort-wchar -fno-builtin -fno-strict-aliasing -Wall -Werror -Wextra -Wmissing-declarations -Wstrict-prototypes -Wno-error=conversion -Wno-error=sign-conversion -Wno-error=strict-overflow -Wno-type-limits
+
+DEPS = $(SBSA_ROOT)/platform/pal_baremetal/FVP/include/platform_override_fvp.h
 
 OBJ_DIR := $(SBSA_ROOT)/build/obj
 LIB_DIR := $(SBSA_ROOT)/build/lib
@@ -35,22 +55,25 @@ create_dirs:
 	@mkdir ${OBJ_DIR}
 	@mkdir ${LIB_DIR}
 
+
+$(OBJ_DIR)/%.o: $(DEPS)
+	$(CC)  -c -o $@ $< >> $(OUT_DIR)/compile.log 2>&1
 $(OBJ_DIR)/%.o: $(SBSA_DIR)/exerciser/%.c
-	$(CC) $(CFLAGS) -c -o $@ $< >> $(OUT_DIR)/compile.log 2>&1
+	$(CC) $(CC_FLAGS) $(CFLAGS) -c -o $@ $< >> $(OUT_DIR)/compile.log 2>&1
 $(OBJ_DIR)/%.o: $(SBSA_DIR)/io_virt/%.c
-	$(CC) $(CFLAGS) -c -o $@ $< >> $(OUT_DIR)/compile.log 2>&1
+	$(CC) $(CC_FLAGS) $(CFLAGS) -c -o $@ $< >> $(OUT_DIR)/compile.log 2>&1
 $(OBJ_DIR)/%.o: $(SBSA_DIR)/pe/%.c
-	$(CC) $(CFLAGS) -c -o $@ $< >> $(OUT_DIR)/compile.log 2>&1
+	$(CC) $(CC_FLAGS) $(CFLAGS) -c -o $@ $< >> $(OUT_DIR)/compile.log 2>&1
 $(OBJ_DIR)/%.o: $(SBSA_DIR)/pcie/%.c
-	$(CC) $(CFLAGS) -c -o $@ $< >> $(OUT_DIR)/compile.log 2>&1
+	$(CC) $(CC_FLAGS) $(CFLAGS) -c -o $@ $< >> $(OUT_DIR)/compile.log 2>&1
 $(OBJ_DIR)/%.o: $(SBSA_DIR)/gic/%.c
-	$(CC) $(CFLAGS) -c -o $@ $< >> $(OUT_DIR)/compile.log 2>&1
+	$(CC) $(CC_FLAGS) $(CFLAGS) -c -o $@ $< >> $(OUT_DIR)/compile.log 2>&1
 $(OBJ_DIR)/%.o: $(SBSA_DIR)/peripherals/%.c
-	$(CC) $(CFLAGS) -c -o $@ $< >> $(OUT_DIR)/compile.log 2>&1
+	$(CC) $(CC_FLAGS) $(CFLAGS) -c -o $@ $< >> $(OUT_DIR)/compile.log 2>&1
 $(OBJ_DIR)/%.o: $(SBSA_DIR)/timer_wd/%.c
-	$(CC) $(CFLAGS) -c -o $@ $< >> $(OUT_DIR)/compile.log 2>&1
+	$(CC) $(CC_FLAGS) $(CFLAGS) -c -o $@ $< >> $(OUT_DIR)/compile.log 2>&1
 $(OBJ_DIR)/%.o: $(SBSA_DIR)/power_wakeup/%.c
-	$(CC) $(CFLAGS) -c -o $@ $< >> $(OUT_DIR)/compile.log 2>&1
+	$(CC) $(CC_FLAGS) $(CFLAGS) -c -o $@ $< >> $(OUT_DIR)/compile.log 2>&1
 
 $(OBJ_DIR)/%.o: %.S$(SBSA_DIR)
 	$(CC) -c -o $@ $< >> $(OUT_DIR)/compile.log 2>&1

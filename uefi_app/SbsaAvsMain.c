@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2021, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2022 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -28,8 +28,11 @@
 #include "val/include/sbsa_avs_val.h"
 #include "val/include/sbsa_avs_memory.h"
 
+#include "platform/pal_uefi/include/platform_override.h"
 #include "SbsaAvs.h"
 
+UINT32 g_pcie_p2p;
+UINT32 g_pcie_cache_present;
 
 UINT32  g_sbsa_level;
 UINT32  g_enable_pcie_tests;
@@ -46,6 +49,7 @@ UINT32  g_sbsa_tests_fail;
 UINT64  g_stack_pointer;
 UINT64  g_exception_ret_addr;
 UINT64  g_ret_addr;
+UINT32  g_wakeup_timeout;
 SHELL_FILE_HANDLE g_sbsa_log_file_handle;
 
 STATIC VOID FlushImage (VOID)
@@ -200,20 +204,27 @@ HelpMsg (
          "-p      Enable/disable PCIe SBSA 6.0 (RCiEP) compliance tests\n"
          "-mmio Pass this flag to enable pal_mmio_read/write prints, use with -v 1\n"
          "        1 - enables PCIe tests, 0 - disables PCIe tests\n"
+         "-p2p    Pass this flag to indicate that PCIe Hierarchy Supports Peer-to-Peer\n"
+         "-cache  Pass this flag to indicate that if the test system supports PCIe address translation cache\n"
+         "-timeout  Set timeout multiple for wakeup tests\n"
+         "        1 - min value  5 - max value\n"
   );
 }
 
 STATIC CONST SHELL_PARAM_ITEM ParamList[] = {
-  {L"-v"    , TypeValue},    // -v    # Verbosity of the Prints. 1 shows all prints, 5 shows Errors
-  {L"-l"    , TypeValue},    // -l    # Level of compliance to be tested for.
-  {L"-f"    , TypeValue},    // -f    # Name of the log file to record the test results in.
-  {L"-skip" , TypeValue},    // -skip # test(s) to skip execution
-  {L"-help" , TypeFlag},     // -help # help : info about commands
-  {L"-h"    , TypeFlag},     // -h    # help : info about commands
-  {L"-nist" , TypeFlag},     // -nist # Binary Flag to enable the execution of NIST STS
-  {L"-p"    , TypeValue},    // -p    # Enable/disable PCIe SBSA 6.0 (RCiEP) compliance tests.
-  {L"-mmio", TypeFlag},      // -mmio # Enable pal_mmio prints
-  {NULL     , TypeMax}
+  {L"-v", TypeValue},    // -v    # Verbosity of the Prints. 1 shows all prints, 5 shows Errors
+  {L"-l", TypeValue},    // -l    # Level of compliance to be tested for.
+  {L"-f", TypeValue},    // -f    # Name of the log file to record the test results in.
+  {L"-skip", TypeValue}, // -skip # test(s) to skip execution
+  {L"-help", TypeFlag},  // -help # help : info about commands
+  {L"-h", TypeFlag},     // -h    # help : info about commands
+  {L"-nist", TypeFlag},  // -nist # Binary Flag to enable the execution of NIST STS
+  {L"-p", TypeValue},    // -p    # Enable/disable PCIe SBSA 6.0 (RCiEP) compliance tests.
+  {L"-mmio", TypeFlag},     // -mmio # Enable pal_mmio prints
+  {L"-p2p", TypeFlag},       // -p2p  # Peer-to-Peer is supported
+  {L"-cache", TypeFlag},     // -cache# PCIe address translation cache is supported
+  {L"-timeout", TypeValue}, // -timeout # Set timeout multiple for wakeup tests
+  {NULL, TypeMax}
   };
 
 /***
@@ -298,6 +309,17 @@ ShellAppMainsbsa (
     }
   }
 
+  // Options with Values
+  CmdLineArg  = ShellCommandLineGetValue (ParamPackage, L"-timeout");
+  if (CmdLineArg == NULL) {
+    g_wakeup_timeout = 1;
+  } else {
+    g_wakeup_timeout = StrDecimalToUintn(CmdLineArg);
+    Print(L"Wakeup timeout multiple %d.\n", g_wakeup_timeout);
+    if (g_wakeup_timeout > 5)
+        g_wakeup_timeout = 5;
+    }
+
     // Options with Values
   CmdLineArg  = ShellCommandLineGetValue (ParamPackage, L"-f");
   if (CmdLineArg == NULL) {
@@ -330,6 +352,19 @@ ShellAppMainsbsa (
   } else {
     g_print_mmio = FALSE;
   }
+
+  if (ShellCommandLineGetFlag (ParamPackage, L"-p2p")) {
+    g_pcie_p2p = TRUE;
+  } else {
+    g_pcie_p2p = FALSE;
+  }
+
+  if (ShellCommandLineGetFlag (ParamPackage, L"-cache")) {
+    g_pcie_cache_present = TRUE;
+  } else {
+    g_pcie_cache_present = FALSE;
+  }
+
 
   // Options with Values
   CmdLineArg  = ShellCommandLineGetValue (ParamPackage, L"-p");

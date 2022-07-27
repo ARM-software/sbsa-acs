@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018,2022 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -25,15 +25,16 @@
 
 static
 void
-payload()
+payload(void)
 {
 
   uint32_t counter_freq;
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
 
   counter_freq = val_timer_get_info(TIMER_INFO_CNTFREQ, 0);
+  val_print(AVS_PRINT_DEBUG, "\n      Counter frequency is %x      ", counter_freq);
 
-  if ((counter_freq > 10*1000*1000) && (counter_freq < 400*1000*1000)) {
+  if (counter_freq > 10*1000*1000) {
       val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
       return;
   }

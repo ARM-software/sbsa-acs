@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2018-2021, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2018-2022, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -76,6 +76,7 @@ payload(void)
   uint64_t dram_buf_out_phys;
   uint64_t dram_buf_in_iova;
   uint64_t dram_buf_out_iova;
+  uint64_t m_vir_addr;
   uint32_t num_exercisers, num_smmus;
   uint32_t device_id, its_id;
   uint32_t page_size = val_memory_page_size();
@@ -224,7 +225,8 @@ payload(void)
     }
 
     /* Get ATS Translation Response */
-    if (val_exerciser_get_param(ATS_RES_ATTRIBUTES, &translated_addr, NULL, instance)) {
+    m_vir_addr = (uint64_t)dram_buf_in_virt + instance * test_data_blk_size;
+    if (val_exerciser_get_param(ATS_RES_ATTRIBUTES, &translated_addr, &m_vir_addr, instance)) {
         val_print(AVS_PRINT_ERR, "\n       ATS Response failure %4x", instance);
         goto test_fail;
     }

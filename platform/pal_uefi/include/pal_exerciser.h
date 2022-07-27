@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2021, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2022, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -209,6 +209,7 @@ typedef union exerciser_data {
 typedef enum {
     EXERCISER_DATA_CFG_SPACE = 0x1,
     EXERCISER_DATA_BAR0_SPACE = 0x2,
+    EXERCISER_DATA_MMIO_SPACE = 0x3,
 } EXERCISER_DATA_TYPE;
 
 UINT32 pal_exerciser_set_param(EXERCISER_PARAM_TYPE Type, UINT64 Value1, UINT64 Value2, UINT32 Bdf);

@@ -15,7 +15,7 @@ This suite includes a set of examples of the invariant behaviors that are provid
 The tests are executed in a baremetal environment. The initialization of the baremetal environment is specific to the environment and is out of scope of this document.
 
 ## Release details
- - Code Quality: REL v3.1
+ - Code Quality: REL v3.2
  - The tests are written for version 6.0 of the SBSA specification.
  - The compliance suite is not a substitute for design verification.
  - To review the SBSA ACS logs, Arm licensees can contact Arm directly through their partner managers.
@@ -143,4 +143,4 @@ SBSA ACS is distributed under Apache v2.0 License.
 
 --------------
 
-*Copyright (c) 2018-2021, Arm Limited and Contributors. All rights reserved.*
+*Copyright (c) 2018-2022, Arm Limited and Contributors. All rights reserved.*

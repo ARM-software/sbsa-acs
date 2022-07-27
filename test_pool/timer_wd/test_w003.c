@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2020, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2020, 2022 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,11 +21,11 @@
 #include "val/include/sbsa_avs_wd.h"
 
 #define TEST_NUM   (AVS_WD_TEST_NUM_BASE + 3)
-#define TEST_DESC  "Check NS Watchdog Revision        "
+#define TEST_DESC  "Check NS Watchdog Architecture Version"
 
 static
 void
-payload()
+payload(void)
 {
 
   uint64_t ctrl_base;
@@ -54,15 +54,25 @@ payload()
 
       ns_wdg++;
       ctrl_base    = val_wd_get_info(wd_num, WD_INFO_CTRL_BASE);
-      val_print(AVS_PRINT_INFO, "\n      Watchdog CTRL base is  %x      ", ctrl_base);
+      val_print(AVS_PRINT_INFO, "\n      Watchdog CTRL base is  %llx      ", ctrl_base);
 
       /* W_IIDR.Architecture Revision [19:16] = 0x1 for Watchdog Rev 1 */
       data = VAL_EXTRACT_BITS(val_mmio_read(ctrl_base + WD_IIDR_OFFSET), 16, 19);
 
-      if(data != 1) {
-          val_print(AVS_PRINT_WARN, "\n       Recommended Watchdog Rev 1 Not Found", 0);
-          val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 02));
-          return;
+      if (g_sbsa_level == 5) {
+          if (data != 1) {
+              val_print(AVS_PRINT_WARN, "\n       Watchdog Architecture version is %x", data);
+              val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 02));
+              return;
+          }
+      }
+
+      if (g_sbsa_level > 5) {
+          if (data != 1) {
+              val_print(AVS_PRINT_ERR, "\n       Watchdog Architecture version is %x", data);
+              val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
+              return;
+          }
       }
 
   } while(wd_num);

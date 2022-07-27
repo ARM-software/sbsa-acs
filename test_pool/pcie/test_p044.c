@@ -25,7 +25,7 @@
 #define TEST_DESC  "Check device under RP in same ECAM"
 
 
-uint8_t func_ecam_is_rp_ecam(uint32_t dsf_bdf)
+static uint8_t func_ecam_is_rp_ecam(uint32_t dsf_bdf)
 {
 
   uint8_t dsf_bus;

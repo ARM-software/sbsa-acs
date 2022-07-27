@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2021, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2022, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -31,6 +31,7 @@ uint64_t val_its_get_curr_rdbase(uint64_t rd_base, uint32_t length)
   uint32_t     Affinity, CpuAffinity;
   uint32_t     rd_granularity;
   uint64_t     curr_rd_base; /* RD Base for Current CPU */
+  uint32_t     typer;
 
   Mpidr = ArmReadMpidr();
 
@@ -39,6 +40,12 @@ uint64_t val_its_get_curr_rdbase(uint64_t rd_base, uint32_t length)
 
   rd_granularity = ARM_GICR_CTLR_FRAME_SIZE
                    + ARM_GICR_SGI_PPI_FRAME_SIZE;
+
+  typer = val_mmio_read(rd_base + ARM_GICR_TYPER);
+
+  /* Skip VLPI_base + reserved page */
+  if (typer & ARM_GICR_TYPER_VLPIS)
+      rd_granularity += ARM_GICR_VLPI_FRAME_SIZE + ARM_GICR_RESERVED_PAGE_SIZE;
 
   curr_rd_base = rd_base;
 
@@ -147,7 +154,7 @@ uint32_t ArmGicSetItsTables(uint32_t its_index)
 
     Pages = SIZE_TO_PAGES (TableSize);
 
-  Address = (uint64_t)val_aligned_alloc(SIZE_64KB, TableSize);
+  Address = (uint64_t)val_aligned_alloc(SIZE_64KB, PAGES_TO_SIZE(Pages));
 
   if (!Address) {
       val_print(AVS_PRINT_ERR,  "ITS : Could Not Allocate Memory DT/CT. Test may not pass.\n", 0);
@@ -332,6 +339,7 @@ void PollTillCommandQueueDone(uint32_t its_index)
 uint64_t GetRDBaseFormat(uint32_t its_index)
 {
   uint32_t    value;
+  uint64_t    pe_num;
   uint64_t    ItsBase;
 
   ItsBase = g_gic_its_info->GicIts[its_index].Base;
@@ -345,7 +353,10 @@ uint64_t GetRDBaseFormat(uint32_t its_index)
     return g_gic_its_info->GicRdBase;
   } else {
     value = val_mmio_read64(g_gic_its_info->GicRdBase + ARM_GICR_TYPER);
-    return (value & ARM_GICR_TYPER_PN_MASK);
+    pe_num = (value & ARM_GICR_TYPER_PN_MASK) >> ARM_GICR_TYPER_PN_SHIFT;
+
+    /* RDBase is made 64KB aligned */
+    return (pe_num << RD_BASE_SHIFT);
   }
 }
 
@@ -550,7 +561,7 @@ uint32_t val_its_init(void)
   {
       val_print(AVS_PRINT_INFO, "GIC ITS Index : %x\n", index);
       val_print(AVS_PRINT_INFO, "GIC ITS ID : %x\n", g_gic_its_info->GicIts[index].ID);
-      val_print(AVS_PRINT_INFO, "GIC ITS Base : %x\n\n", g_gic_its_info->GicIts[index].Base);
+      val_print(AVS_PRINT_INFO, "GIC ITS Base : %llx\n\n", g_gic_its_info->GicIts[index].Base);
   }
 
   return 0;

@@ -52,11 +52,14 @@ payload(void)
   uint32_t dp_type;
   uint32_t pe_index;
   uint32_t tbl_index;
-  uint32_t read_value, old_value;
+  uint32_t read_value, value;
+  uint32_t old_value, new_value;
   uint32_t status;
   uint32_t test_skip = 1;
-  uint64_t mem_base = 0, mem_base_upper = 0;
+  uint32_t mem_offset = 0;
+  uint64_t mem_base = 0, mem_base_upper = 0, ori_mem_base = 0;
   uint64_t mem_lim = 0, mem_lim_upper = 0, new_mem_lim;
+  uint64_t updated_mem_base = 0, updated_mem_lim = 0;
   pcie_device_bdf_table *bdf_tbl_ptr;
 
   tbl_index = 0;
@@ -94,10 +97,7 @@ payload(void)
       dp_type = val_pcie_device_port_type(bdf);
 
       if ((dp_type == RP) || (dp_type == iEP_RP)) {
-        /* Part 1:
-         * Check When Address is within the Range of Prefetchable
-         * Memory Range.
-        */
+
         /* Clearing UR in Device Status Register */
         val_pcie_clear_urd(bdf);
 
@@ -127,50 +127,97 @@ payload(void)
         /* If test runs for atleast an endpoint */
         test_skip = 0;
 
-        /* Write known value to an address which is in range
-         * Base + 0x10 will always be in the range.
+        /* Check_1: Accessing address in range of P memory
+         * should not cause any exception or data abort
+         *
+         * Write known value to an address which is in range
+         * Base + offset should always be in the range.
          * Read the same
         */
-        old_value = (*(volatile addr_t *)(mem_base + MEM_OFFSET_10));
-        *(volatile addr_t *)(mem_base + MEM_OFFSET_10) = KNOWN_DATA;
-        read_value = (*(volatile addr_t *)(mem_base + MEM_OFFSET_10));
+        mem_offset = val_pcie_mem_get_offset(MEM_OFFSET_MEDIUM);
 
-        /*Accessing out of range of limit should return 0xFFFFFFFF*/
-        if ((mem_lim >> MEM_SHIFT) > (mem_base >> MEM_SHIFT))
+        if ((mem_base + mem_offset) > mem_lim)
         {
-           new_mem_lim  = mem_base + MEM_OFF_100000;
-           mem_base = mem_base | (mem_base  >> MEM_BASE_SHIFT);
-           val_pcie_write_cfg(bdf, TYPE1_P_MEM, mem_base);
-           val_pcie_read_cfg(bdf, TYPE1_P_MEM, &read_value);
-
-           uint32_t value = (*(volatile uint32_t *)(new_mem_lim + MEM_OFFSET_10));
-           /*Write back original value */
-           val_pcie_write_cfg(bdf, TYPE1_P_MEM, ((mem_lim & MEM_LIM_MASK) | (mem_base  >> 16)));
-
-           if (value != PCIE_UNKNOWN_RESPONSE)
-           {
-               val_print(AVS_PRINT_ERR, "\n Memory range for bdf 0x%x", bdf);
-               val_print(AVS_PRINT_ERR, " is 0x%x", read_value);
-               val_print(AVS_PRINT_ERR, "\n Out of range addr %x ", (new_mem_lim + MEM_OFFSET_10));
-               val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
-           }
+            val_print(AVS_PRINT_ERR, "\n Memory offset + base 0x%x ", mem_base + mem_offset);
+            val_print(AVS_PRINT_ERR, "exceeds the memory limit 0x%x", mem_lim);
+            val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
+            return;
         }
 
-exception_return:
-        /* Memory Space might have constraint on RW/RO behaviour
-         * So not checking for Read-Write Data mismatch.
-        */
-        if (IS_TEST_FAIL(val_get_status(pe_index))) {
-          val_print(AVS_PRINT_ERR, "\n       Failed. Exception on Memory Access For Bdf : 0x%x", bdf);
-          val_pcie_clear_urd(bdf);
-          return;
-        }
+        old_value = (*(volatile addr_t *)(mem_base + mem_offset));
+        *(volatile addr_t *)(mem_base + mem_offset) = KNOWN_DATA;
+        read_value = (*(volatile addr_t *)(mem_base + mem_offset));
 
-        if ((old_value != read_value && read_value == PCIE_UNKNOWN_RESPONSE) || val_pcie_is_urd(bdf)) {
+        if ((old_value != read_value && read_value == PCIE_UNKNOWN_RESPONSE) ||
+             val_pcie_is_urd(bdf)) {
           val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
           val_pcie_clear_urd(bdf);
           return;
         }
+
+        /**Check_2: Accessing out of P memory limit range should return 0xFFFFFFFF
+         *
+         * If the limit exceeds 1MB then modify the range to be 1MB
+         * and access out of the limit set
+         **/
+        ori_mem_base = mem_base;
+
+        if ((mem_lim >> MEM_SHIFT) > (mem_base >> MEM_SHIFT))
+        {
+           new_mem_lim  = mem_base + MEM_OFFSET_LARGE;
+           val_pcie_read_cfg(bdf, TYPE1_P_MEM, &new_value);
+
+          if ((new_value & P_MEM_PAC_MASK) == 0x1)
+               val_pcie_write_cfg(bdf, TYPE1_P_MEM_LU, (mem_base >> 32));
+
+           mem_base = ((uint32_t)mem_base) | ((uint32_t)mem_base >> 16);
+           val_print(AVS_PRINT_INFO, " mem_base new is 0x%llx", mem_base);
+           val_pcie_write_cfg(bdf, TYPE1_P_MEM, mem_base);
+
+           val_pcie_read_cfg(bdf, TYPE1_P_MEM, &read_value);
+           updated_mem_base = (read_value & MEM_BA_MASK) << MEM_BA_SHIFT;
+           updated_mem_lim = (read_value & MEM_LIM_MASK) | MEM_LIM_LOWER_BITS;
+
+           /* If 64 Bit Prefetchable Address */
+           if ((read_value & P_MEM_PAC_MASK) == 0x1) {
+             val_pcie_read_cfg(bdf, TYPE1_P_MEM_BU, &read_value);
+             mem_base_upper = read_value;
+             val_pcie_read_cfg(bdf, TYPE1_P_MEM_LU, &read_value);
+             mem_lim_upper = read_value;
+           }
+
+           updated_mem_base |= (mem_base_upper << P_MEM_BU_SHIFT);
+           updated_mem_lim |= (mem_lim_upper << P_MEM_LU_SHIFT);
+
+           value = (*(volatile uint32_t *)(new_mem_lim + MEM_OFFSET_SMALL));
+           if (value != PCIE_UNKNOWN_RESPONSE)
+           {
+               val_print(AVS_PRINT_ERR, "\n Memory range for bdf 0x%x", bdf);
+               val_print(AVS_PRINT_ERR, " is 0x%llx", updated_mem_base);
+               val_print(AVS_PRINT_ERR, " 0x%llx", updated_mem_lim);
+               val_print(AVS_PRINT_ERR, "\n Out of range 0x%llx", (new_mem_lim + MEM_OFFSET_SMALL));
+               val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 03));
+           }
+        }
+
+exception_return:
+        /*Write back original value */
+        if ((mem_lim >> MEM_SHIFT) > (ori_mem_base >> MEM_SHIFT))
+        {
+            val_pcie_write_cfg(bdf, TYPE1_P_MEM,
+                                              ((mem_lim & MEM_LIM_MASK) | (ori_mem_base  >> 16)));
+            val_pcie_write_cfg(bdf, TYPE1_P_MEM_LU, (mem_lim >> 32));
+        }
+
+        /* Memory Space might have constraint on RW/RO behaviour
+         * So not checking for Read-Write Data mismatch.
+        */
+        if (IS_TEST_FAIL(val_get_status(pe_index))) {
+          val_print(AVS_PRINT_ERR, "\n     Failed exception on Memory Access For Bdf : 0x%x", bdf);
+          val_pcie_clear_urd(bdf);
+          return;
+        }
+
       }
   }
 

@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2018-2021, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2018-2022, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -29,6 +29,7 @@ static uint32_t instance;
 static uint32_t e_intr_line;
 static uint32_t test_fail = 0;
 static volatile uint32_t e_intr_pending;
+uint32_t e_bdf;
 
 static void intr_handler(void)
 {
@@ -38,6 +39,21 @@ static void intr_handler(void)
         test_fail++;
         return;
     }
+
+    /* Check if interrupt status bit is set in Status register */
+
+    if (!val_pcie_check_interrupt_status(e_bdf))
+    {
+        val_print(AVS_PRINT_ERR, "\n       No outstanding interrupt for bdf 0x%x", e_bdf);
+        test_fail++;
+        return;
+    }
+
+    /* Deassert the interupt line */
+    val_exerciser_ops(CLEAR_INTR, e_intr_line, instance);
+
+    /* Return the interrupt */
+    val_gic_end_of_interrupt(e_intr_line);
 
     /* Clear the interrupt pending state */
     e_intr_pending = 0;
@@ -51,7 +67,6 @@ void
 payload (void)
 {
   uint32_t pe_index;
-  uint32_t e_bdf;
   uint32_t ret_val;
   uint32_t timeout;
   uint32_t e_intr_pin;
@@ -131,20 +146,6 @@ payload (void)
                 continue;
             }
 
-            /* Check if interrupt status bit is set in Status register */
-            if (!val_pcie_check_interrupt_status(e_bdf))
-            {
-                val_print(AVS_PRINT_ERR, "\n       No outstanding interrupt for bdf 0x%x", e_bdf);
-                test_fail++;
-                continue;
-            }
-
-            /* Deassert the interupt line */
-            val_exerciser_ops(CLEAR_INTR, e_intr_line, instance);
-
-            /* Return the interrupt */
-            val_gic_end_of_interrupt(e_intr_line);
-
             /* Check if interrupt status bit is cleared in Status register */
             if (val_pcie_check_interrupt_status(e_bdf))
             {
@@ -156,8 +157,16 @@ payload (void)
             val_gic_free_irq(e_intr_line, 0);
         }
    } else {
-        val_print (AVS_PRINT_ERR, "\n       Legacy interrupt mapping Read error for bdf: 0x%x", e_bdf);
-        test_fail++;
+        if (status == NOT_IMPLEMENTED) {
+           val_print(AVS_PRINT_DEBUG,
+           "\n       pal_pcie_get_legacy_irq_map unimplemented for bdf: 0x%x", e_bdf);
+            continue;
+        }
+        else {
+           val_print(AVS_PRINT_ERR, "\n       Legacy interrupt mapping Read error for bdf: 0x%x",
+                     e_bdf);
+           test_fail++;
+        }
    }
  }
 

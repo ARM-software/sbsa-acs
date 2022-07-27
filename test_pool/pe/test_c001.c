@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, 2021 Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018, 2021-2022 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -24,7 +24,7 @@
 
 static
 void
-payload()
+payload(void)
 {
   uint64_t num_of_pe = 0;
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());

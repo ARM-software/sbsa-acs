@@ -66,7 +66,14 @@ payload(void)
 
       status = val_pci_get_legacy_irq_map(bdf, intr_map);
       if (status) {
-        val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
+        if (status == NOT_IMPLEMENTED) {
+            val_print (AVS_PRINT_WARN,
+                        "\n pal_pcie_get_legacy_irq_map unimplemented", 0);
+            val_set_status(pe_index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 02));
+        }
+        else
+            val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
+
         return;
       }
 

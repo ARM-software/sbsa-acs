@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2021, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2021,2022 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -46,12 +46,10 @@ val_wd_execute_tests(uint32_t level, uint32_t num_pe)
   g_curr_module = 1 << WD_MODULE;
   status = w001_entry(num_pe);
   status |= w002_entry(num_pe);
-  status |= w003_entry(num_pe);
+  if (level > 4)
+        status |= w003_entry(num_pe);
 
-  if (status != 0)
-    val_print(AVS_PRINT_TEST, "\n      ***One or more tests have failed... *** \n", 0);
-  else
-    val_print(AVS_PRINT_TEST, "\n      All Watchdog tests passed!! \n", 0);
+  val_print_test_end(status, "Watchdog");
 
   return status;
 }
@@ -160,7 +158,7 @@ val_wd_set_ws0(uint32_t index, uint32_t timeout)
   uint64_t counter_freq;
   uint32_t wor_l;
   uint32_t wor_h = 0;
-  uint32_t ctrl_base;
+  uint64_t ctrl_base;
   uint32_t data;
 
   if (timeout == 0) {
@@ -172,7 +170,9 @@ val_wd_set_ws0(uint32_t index, uint32_t timeout)
 
   /* W_IIDR.Architecture Revision [19:16] = 0x1 for Watchdog Rev 1 */
   data = VAL_EXTRACT_BITS(val_mmio_read(ctrl_base + WD_IIDR_OFFSET), 16, 19);
-  counter_freq = val_timer_get_info(TIMER_INFO_CNTFREQ, 0);
+
+  /* Option to override system counter frequency value */
+  counter_freq = val_get_counter_frequency();
 
   /* Check if the timeout value exceeds */
   if (data == 0)
@@ -199,3 +199,20 @@ val_wd_set_ws0(uint32_t index, uint32_t timeout)
 
 }
 
+/**
+  @brief   This API is to get counter frequency
+  @param   None
+  @return  counter frequency
+ **/
+uint64_t
+val_get_counter_frequency(void)
+{
+  uint64_t counter_freq;
+
+  /* Option to override system counter frequency value */
+  counter_freq = pal_timer_get_counter_frequency();
+  if (counter_freq == 0)
+      counter_freq = val_timer_get_info(TIMER_INFO_CNTFREQ, 0);
+
+  return counter_freq;
+}
