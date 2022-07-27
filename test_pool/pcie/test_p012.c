@@ -104,29 +104,33 @@ payload (void)
             val_print (AVS_PRINT_ERR, "\n       Unknown error", 0);
         break;
       }
-    }
 
-    /* Compare IRQ routings */
-    if (!status) {
-      while (current_irq_pin < LEGACY_PCI_IRQ_CNT && status == 0) {
-        while (next_irq_pin < LEGACY_PCI_IRQ_CNT && status == 0) {
+      /* Compare IRQ routings */
+      if (!status) {
+        while (current_irq_pin < LEGACY_PCI_IRQ_CNT && status == 0) {
+          while (next_irq_pin < LEGACY_PCI_IRQ_CNT && status == 0) {
 
-          for (ccnt = 0; (ccnt < irq_map->legacy_irq_map[current_irq_pin].irq_count) && (status == 0); ccnt++) {
-            for (ncnt = 0; (ncnt < irq_map->legacy_irq_map[next_irq_pin].irq_count) && (status == 0); ncnt++) {
-              test_skip = 0;
-              if (irq_map->legacy_irq_map[current_irq_pin].irq_list[ccnt] ==
-                  irq_map->legacy_irq_map[next_irq_pin].irq_list[ncnt]) {
-                status = 7;
-                val_print (AVS_PRINT_ERR, "\n       Legacy interrupt %c routing", pin_name(current_irq_pin));
-                val_print (AVS_PRINT_ERR, "\n       is the same as %c routing", pin_name(next_irq_pin));
+            for (ccnt = 0; (ccnt < irq_map->legacy_irq_map[current_irq_pin].irq_count)
+                 && (status == 0); ccnt++) {
+              for (ncnt = 0; (ncnt < irq_map->legacy_irq_map[next_irq_pin].irq_count)
+                 && (status == 0); ncnt++) {
+                test_skip = 0;
+                if (irq_map->legacy_irq_map[current_irq_pin].irq_list[ccnt] ==
+                    irq_map->legacy_irq_map[next_irq_pin].irq_list[ncnt]) {
+                  status = 7;
+                  val_print (AVS_PRINT_ERR, "\n       Legacy interrupt %c routing",
+                                             pin_name(current_irq_pin));
+                  val_print (AVS_PRINT_ERR, "\n       is the same as %c routing",
+                                             pin_name(next_irq_pin));
+                }
               }
             }
-          }
 
-          next_irq_pin++;
+            next_irq_pin++;
+          }
+          current_irq_pin++;
+          next_irq_pin = current_irq_pin + 1;
         }
-        current_irq_pin++;
-        next_irq_pin = current_irq_pin + 1;
       }
     }
   }

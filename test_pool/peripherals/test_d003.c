@@ -214,7 +214,7 @@ payload1(void)
           val_print_raw(l_uart_base, g_print_level,
                         "\n       Test Message                      ", 0);
 
-          while ((--timeout > 0) && (IS_RESULT_PENDING(val_get_status(index)))){
+          while ((--timeout > 0) && (IS_RESULT_PENDING(val_get_status(index)))) {
           };
 
           if (timeout == 0) {

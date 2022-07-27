@@ -25,6 +25,14 @@
 #ifdef TARGET_LINUX
   typedef char          char8_t;
   typedef long long int addr_t;
+#define TIMEOUT_LARGE    0x1000000
+#define TIMEOUT_MEDIUM   0x100000
+#define TIMEOUT_SMALL    0x1000
+
+#define PCIE_MAX_BUS   256
+#define PCIE_MAX_DEV    32
+#define PCIE_MAX_FUNC    8
+
 #elif TARGET_EMULATION
 #include <stdlib.h>
 #include <stdint.h>
@@ -32,6 +40,15 @@
   typedef uint64_t addr_t;
   typedef char     char8_t;
   typedef uint64_t dma_addr_t;
+
+#define TIMEOUT_LARGE    PLATFORM_OVERRIDE_TIMEOUT_LARGE
+#define TIMEOUT_MEDIUM   PLATFORM_OVERRIDE_TIMEOUT_MEDIUM
+#define TIMEOUT_SMALL    PLATFORM_OVERRIDE_TIMEOUT_SMALL
+
+#define PCIE_MAX_BUS    PLATFORM_OVERRIDE_PCIE_MAX_BUS
+#define PCIE_MAX_DEV    PLATFORM_OVERRIDE_PCIE_MAX_DEV
+#define PCIE_MAX_FUNC   PLATFORM_OVERRIDE_PCIE_MAX_FUNC
+
 #else
   typedef INT8   int8_t;
   typedef INT32  int32_t;
@@ -43,11 +60,27 @@
   typedef UINT64 uint64_t;
   typedef UINT64 addr_t;
 
+#if PLATFORM_OVERRIDE_TIMEOUT
+    #define TIMEOUT_LARGE    PLATFORM_OVERRIDE_TIMEOUT_LARGE
+    #define TIMEOUT_MEDIUM   PLATFORM_OVERRIDE_TIMEOUT_MEDIUM
+    #define TIMEOUT_SMALL    PLATFORM_OVERRIDE_TIMEOUT_SMALL
+#else
+    #define TIMEOUT_LARGE    0x1000000
+    #define TIMEOUT_MEDIUM   0x100000
+    #define TIMEOUT_SMALL    0x1000
 #endif
 
-#define TIMEOUT_LARGE    0x1000000
-#define TIMEOUT_MEDIUM   0x100000
-#define TIMEOUT_SMALL    0x1000
+#if PLATFORM_OVERRIDE_MAX_BDF
+    #define PCIE_MAX_BUS    PLATFORM_OVERRIDE_PCIE_MAX_BUS
+    #define PCIE_MAX_DEV    PLATFORM_OVERRIDE_PCIE_MAX_DEV
+    #define PCIE_MAX_FUNC   PLATFORM_OVERRIDE_PCIE_MAX_FUNC
+#else
+    #define PCIE_MAX_BUS   256
+    #define PCIE_MAX_DEV    32
+    #define PCIE_MAX_FUNC    8
+#endif
+
+#endif
 
 #define ONE_MILLISECOND 1000
 
@@ -621,7 +654,7 @@ uint16_t pal_mmio_read16(uint64_t addr);
 uint32_t pal_mem_page_size(void);
 void    *pal_mem_alloc_pages(uint32_t num_pages);
 void     pal_mem_free_pages(void *page_base, uint32_t num_pages);
-void *pal_aligned_alloc(uint32_t alignment, uint32_t size);
+void    *pal_aligned_alloc(uint32_t alignment, uint32_t size);
 
 uint32_t pal_mmio_read(uint64_t addr);
 uint64_t pal_mmio_read64(uint64_t addr);

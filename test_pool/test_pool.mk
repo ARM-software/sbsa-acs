@@ -33,6 +33,8 @@ CC = $(GCC49_AARCH64_PREFIX)gcc -march=armv8.2-a -DTARGET_EMULATION
 AR = $(GCC49_AARCH64_PREFIX)ar
 CC_FLAGS = -g -O0 -fshort-wchar -fno-builtin -fno-strict-aliasing -Wall -Werror -Wextra -Wmissing-declarations -Wstrict-prototypes -Wno-error=conversion -Wno-error=sign-conversion -Wno-error=strict-overflow -Wno-type-limits
 
+DEPS = $(SBSA_ROOT)/platform/pal_baremetal/FVP/include/platform_override_fvp.h
+
 OBJ_DIR := $(SBSA_ROOT)/build/obj
 LIB_DIR := $(SBSA_ROOT)/build/lib
 OUT_DIR = $(SBSA_ROOT)/build
@@ -54,6 +56,8 @@ create_dirs:
 	@mkdir ${LIB_DIR}
 
 
+$(OBJ_DIR)/%.o: $(DEPS)
+	$(CC)  -c -o $@ $< >> $(OUT_DIR)/compile.log 2>&1
 $(OBJ_DIR)/%.o: $(SBSA_DIR)/exerciser/%.c
 	$(CC) $(CC_FLAGS) $(CFLAGS) -c -o $@ $< >> $(OUT_DIR)/compile.log 2>&1
 $(OBJ_DIR)/%.o: $(SBSA_DIR)/io_virt/%.c

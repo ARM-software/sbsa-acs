@@ -24,7 +24,7 @@
 #define TEST_NUM   (AVS_PCIE_TEST_NUM_BASE + 10)
 #define TEST_DESC  "PASID support atleast 16 bits     "
 
-#define MIN_PASID_SUPPORT (1 << 16)
+#define MIN_PASID_SUPPORT 16
 
 static void
 payload(void)

@@ -91,7 +91,8 @@ createTimerInfoTable(
 {
   uint64_t   *TimerInfoTable;
 
-  TimerInfoTable = val_memory_alloc(sizeof(TIMER_INFO_TABLE) + (2 * sizeof(TIMER_INFO_GTBLOCK)));
+  TimerInfoTable = val_memory_alloc(sizeof(TIMER_INFO_TABLE)
+                   + (PLATFORM_OVERRIDE_TIMER_COUNT * sizeof(TIMER_INFO_GTBLOCK)));
 
   val_timer_create_info_table(TimerInfoTable);
 }
@@ -102,7 +103,8 @@ createWatchdogInfoTable(
 {
   uint64_t *WdInfoTable;
 
-  WdInfoTable = val_memory_alloc(sizeof(WD_INFO_TABLE) + (2 * sizeof(WD_INFO_BLOCK)));
+  WdInfoTable = val_memory_alloc(sizeof(WD_INFO_TABLE)
+                + (PLATFORM_OVERRIDE_WD_TIMER_COUNT * sizeof(WD_INFO_BLOCK)));
 
   val_wd_create_info_table(WdInfoTable);
 }
@@ -115,11 +117,14 @@ createPcieVirtInfoTable(
   uint64_t   *PcieInfoTable;
   uint64_t   *IoVirtInfoTable;
 
-  PcieInfoTable = val_memory_alloc(sizeof(PCIE_INFO_TABLE) + (1 * sizeof(PCIE_INFO_BLOCK)));
+  PcieInfoTable = val_memory_alloc(sizeof(PCIE_INFO_TABLE)
+                  + (PLATFORM_OVERRIDE_NUM_ECAM * sizeof(PCIE_INFO_BLOCK)));
   val_pcie_create_info_table(PcieInfoTable);
 
-  IoVirtInfoTable = val_memory_alloc(sizeof(IOVIRT_INFO_TABLE) + (4 * sizeof(IOVIRT_BLOCK))
-                                                               + (16 * sizeof(ID_MAP)));
+  IoVirtInfoTable = val_memory_alloc(sizeof(IOVIRT_INFO_TABLE)
+                    + ((IOVIRT_ITS_COUNT + IOVIRT_SMMUV3_COUNT + IOVIRT_RC_COUNT
+                    + IOVIRT_SMMUV2_COUNT + IOVIRT_NAMED_COMPONENT_COUNT + IOVIRT_PMCG_COUNT)
+                    * sizeof(IOVIRT_BLOCK)) + (IOVIRT_MAX_NUM_MAP * sizeof(ID_MAP)));
   val_iovirt_create_info_table(IoVirtInfoTable);
 }
 
@@ -130,11 +135,12 @@ createPeripheralInfoTable(
   uint64_t   *PeripheralInfoTable;
   uint64_t   *MemoryInfoTable;
 
-  PeripheralInfoTable = val_memory_alloc(sizeof(PERIPHERAL_INFO_TABLE) +
-                                        (1 * sizeof(PERIPHERAL_INFO_BLOCK)));
+  PeripheralInfoTable = val_memory_alloc(sizeof(PERIPHERAL_INFO_TABLE)
+                        + (PLATFORM_OVERRIDE_PERIPHERAL_COUNT * sizeof(PERIPHERAL_INFO_BLOCK)));
   val_peripheral_create_info_table(PeripheralInfoTable);
 
-  MemoryInfoTable = val_memory_alloc(sizeof(MEMORY_INFO_TABLE) + (PLATFORM_OVERRIDE_MEMORY_ENTRY_COUNT * sizeof(MEM_INFO_BLOCK)));
+  MemoryInfoTable = val_memory_alloc(sizeof(MEMORY_INFO_TABLE)
+                    + (PLATFORM_OVERRIDE_MEMORY_ENTRY_COUNT * sizeof(MEM_INFO_BLOCK)));
   val_memory_create_info_table(MemoryInfoTable);
 }
 
@@ -282,4 +288,3 @@ print_test_status:
 
   return 0;
 }
-

@@ -770,7 +770,7 @@ val_pcie_device_driver_present(uint32_t bdf)
   uint32_t dev  = PCIE_EXTRACT_BDF_DEV (bdf);
   uint32_t func = PCIE_EXTRACT_BDF_FUNC (bdf);
 
-  return (pal_pcie_device_driver_present(seg, bus, dev, func));
+  return pal_pcie_device_driver_present(seg, bus, dev, func);
 }
 
 /**

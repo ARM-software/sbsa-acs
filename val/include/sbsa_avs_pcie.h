@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2021, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2022, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -32,10 +32,6 @@
 #define PCIE_CREATE_BDF(seg, bus, dev, func) ((seg << 24) | ((bus & 0xFF) << 16) | ((dev & 0xFF) << 8) | func)
 
 #define GET_DEVICE_ID(bus, dev, func) ((bus << 8) | (dev << 3) | func)
-
-#define PCIE_MAX_BUS   256
-#define PCIE_MAX_DEV    32
-#define PCIE_MAX_FUNC    8
 
 #define PCIE_BUS_SHIFT 8
 #define PCIE_CFG_SIZE  4096
