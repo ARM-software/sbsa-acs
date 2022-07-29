@@ -169,9 +169,9 @@ uint32_t val_pgt_create(memory_region_descriptor_t *mem_desc, pgt_descriptor_t *
 
     for (mem_desc_iter = mem_desc; mem_desc_iter->length != 0; ++mem_desc_iter)
     {
-        val_print(PGT_DEBUG_LEVEL, "      val_pgt_create: input addr = 0x%llx     ", mem_desc->virtual_address);
-        val_print(PGT_DEBUG_LEVEL, "      val_pgt_create: output addr = 0x%llx     ", mem_desc->physical_address);
-        val_print(PGT_DEBUG_LEVEL, "      val_pgt_create: length = 0x%llx\n     ", mem_desc->length);
+        val_print(PGT_DEBUG_LEVEL, "val_pgt_create: i/p addr 0x%llx", mem_desc->virtual_address);
+        val_print(PGT_DEBUG_LEVEL, "val_pgt_create: o/p addr 0x%llx", mem_desc->physical_address);
+        val_print(PGT_DEBUG_LEVEL, "val_pgt_create: length 0x%llx\n ", mem_desc->length);
         if ((mem_desc->virtual_address & (uint64_t)(page_size - 1)) != 0 ||
             (mem_desc->physical_address & (uint64_t)(page_size - 1)) != 0)
             {
@@ -250,11 +250,11 @@ uint64_t val_pgt_get_attributes(pgt_descriptor_t pgt_desc, uint64_t virtual_addr
         tt_base_virt = (uint64_t*)val_memory_phys_to_virt(tt_base_phys);
         val64 = tt_base_virt[index];
 
-        val_print(PGT_DEBUG_LEVEL, "\n      val_pgt_get_attributes: this_level = %d     ", this_level);
-        val_print(PGT_DEBUG_LEVEL, "\n      val_pgt_get_attributes: index = %d     ", index);
-        val_print(PGT_DEBUG_LEVEL, "\n      val_pgt_get_attributes: bits_remaining = %d     ", bits_remaining);
-        val_print(PGT_DEBUG_LEVEL, "\n      val_pgt_get_attributes: tt_base_virt = %llx     ", (uint64_t)tt_base_virt);
-        val_print(PGT_DEBUG_LEVEL, "\n      val_pgt_get_attributes: val64 = %llx     ", val64);
+        val_print(PGT_DEBUG_LEVEL, "\nval_pgt_get_attr: this_level = %d     ", this_level);
+        val_print(PGT_DEBUG_LEVEL, "\nval_pgt_get_attr: index = %d     ", index);
+        val_print(PGT_DEBUG_LEVEL, "\nval_pgt_get_attr: bits_remaining = %d     ", bits_remaining);
+        val_print(PGT_DEBUG_LEVEL, "\nval_pgt_get_attr: tt_base_virt %llx", (uint64_t)tt_base_virt);
+        val_print(PGT_DEBUG_LEVEL, "\nval_pgt_get_attr: val64 = %llx     ", val64);
         if (this_level == 3)
         {
             if (!IS_PGT_ENTRY_PAGE(val64))

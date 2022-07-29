@@ -17,7 +17,7 @@ A few tests are executed by running the SBSA ACS Linux application which in turn
 
 
 ## Release details
- - Code Quality: REL v3.1
+ - Code Quality: REL v3.2
  - The tests are written for version 6.0 of the SBSA specification.
  - PCIe RCiEP tests for Appendix E of SBSA 6.0 specification are also included.
  - The compliance suite is not a substitute for design verification.
@@ -146,7 +146,7 @@ On an emulation environment with secondary storage, perform the following steps:
 
 ### Emulation environment without secondary storage
 
-On an Emulation platform where secondary storage is not available, perform the following steps:
+On an emulation platform where secondary storage is not available, perform the following steps:
 
 1. Add the path to 'Sbsa.efi' file in the UEFI FD file.
 2. Build UEFI image including the UEFI Shell.
@@ -178,8 +178,8 @@ The details of the hardware or Verification IP which enable these exerciser test
 
    Below exerciser capabilities are required by exerciser test.
    - MSI-X interrupt generation.
-   - Incoming Transaction Monitoring(order, type).
-   - Initiating transacions from and to the exerciser.
+   - Incoming Transaction Monitoring (order, type).
+   - Initiating transactions from and to the exerciser.
    - Ability to check on BDF and register address seen for each configuration address along with access type.
 
  - SBSA Test 403 (Check ECAM Memory accessibility) execution time depends on the system PCIe hierarchy. For systems with multiple ECAMs the time taken to complete can be long which is normal. Please wait until the test completes.
@@ -188,7 +188,7 @@ The details of the hardware or Verification IP which enable these exerciser test
 SBSA ACS is distributed under Apache v2.0 License.
 
 
-## Feedback, contributions and support
+## Feedback, contributions, and support
 
  - For feedback, use the GitHub Issue Tracker that is associated with this repository.
  - For support, send an email to "support-enterprise-acs@arm.com" with details.
@@ -197,4 +197,4 @@ SBSA ACS is distributed under Apache v2.0 License.
 
 --------------
 
-*Copyright (c) 2018-2021, Arm Limited and Contributors. All rights reserved.*
+*Copyright (c) 2018-2022, Arm Limited and Contributors. All rights reserved.*

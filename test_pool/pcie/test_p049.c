@@ -195,7 +195,7 @@ payload(void)
                val_print(AVS_PRINT_ERR, "\n Memory range for bdf 0x%x", bdf);
                val_print(AVS_PRINT_ERR, " is 0x%llx", updated_mem_base);
                val_print(AVS_PRINT_ERR, " 0x%llx", updated_mem_lim);
-               val_print(AVS_PRINT_ERR, "\n Out of range addr 0x%llx ", (new_mem_lim + MEM_OFFSET_SMALL));
+               val_print(AVS_PRINT_ERR, "\n Out of range 0x%llx", (new_mem_lim + MEM_OFFSET_SMALL));
                val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 03));
            }
         }
@@ -213,7 +213,7 @@ exception_return:
          * So not checking for Read-Write Data mismatch.
         */
         if (IS_TEST_FAIL(val_get_status(pe_index))) {
-          val_print(AVS_PRINT_ERR, "\n       Failed exception on Memory Access For Bdf : 0x%x", bdf);
+          val_print(AVS_PRINT_ERR, "\n     Failed exception on Memory Access For Bdf : 0x%x", bdf);
           val_pcie_clear_urd(bdf);
           return;
         }

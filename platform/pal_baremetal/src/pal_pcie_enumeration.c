@@ -470,6 +470,12 @@ pal_clear_pri_bus()
 
 void pal_pcie_enumerate(void)
 {
+    if (g_pcie_info_table->num_entries == 0)
+    {
+         print(AVS_PRINT_TEST, "\nSkipping Enumeration", 0);
+         return;
+    }
+
     print(AVS_PRINT_TEST, "\nStarting Enumeration \n", 0);
     pal_pcie_enumerate_device(PRI_BUS, SEC_BUS);
     pal_clear_pri_bus();

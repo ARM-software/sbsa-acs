@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018, 2022 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -70,8 +70,9 @@ payload (void)
       data = val_pcie_is_devicedma_64bit(dev_bdf);
       if (data == 0) {
           if(!val_pcie_is_device_behind_smmu(dev_bdf)) {
-              val_print (AVS_PRINT_ERR, "\n       WARNING:The device with bdf=0x%x doesn't support 64 bit addressing", dev_bdf);
-              val_print (AVS_PRINT_ERR, "\n       and is not behind SMMU. The device is of type = %d", dev_type);
+              val_print (AVS_PRINT_ERR, "\n       Device with bdf=0x%x doesn't support", dev_bdf);
+              val_print (AVS_PRINT_ERR, "       64 bit addressing and is not behind SMMU", 0);
+              val_print (AVS_PRINT_ERR, "       The device type is = %d", dev_type);
               val_set_status (index, RESULT_FAIL (g_sbsa_level, TEST_NUM, 1));
               return;
           }

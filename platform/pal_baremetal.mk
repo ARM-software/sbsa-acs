@@ -35,7 +35,8 @@ CC = $(GCC49_AARCH64_PREFIX)gcc -march=armv8.2-a -DTARGET_EMULATION
 AR = $(GCC49_AARCH64_PREFIX)ar
 CC_FLAGS = -g -Os -fshort-wchar -fno-builtin -fno-strict-aliasing -Wall -Werror -Wextra -Wmissing-declarations -Wstrict-prototypes -Wconversion -Wsign-conversion -Wstrict-overflow
 
-DEPS = $(SBSA_ROOT)/val/include/pal_interface.h
+DEPS = $(SBSA_ROOT)/platform/pal_baremetal/FVP/include/platform_override_fvp.h
+DEPS += $(SBSA_ROOT)/val/include/pal_interface.h
 
 FILES   += $(foreach files,$(SBSA_DIR)/,$(wildcard $(files)/*.S))
 FILES   += $(foreach files,$(SBSA_DIR)/,$(wildcard $(files)/*.c))

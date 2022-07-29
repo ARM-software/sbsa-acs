@@ -636,8 +636,8 @@ static void dump_cdtab(uint64_t *ctx_desc)
 static void smmu_cdtab_write_l1_desc(uint64_t *dst,
                       smmu_cdtab_l1_ctx_desc_t *l1_desc)
 {
-    uint64_t val = (l1_desc->l2desc_phys & (CDTAB_L1_DESC_L2PTR_MASK << CDTAB_L1_DESC_L2PTR_SHIFT)) |
-          CDTAB_L1_DESC_V;
+    uint64_t val = (l1_desc->l2desc_phys &
+          (CDTAB_L1_DESC_L2PTR_MASK << CDTAB_L1_DESC_L2PTR_SHIFT)) | CDTAB_L1_DESC_V;
 
     *dst = val;
 }

@@ -166,7 +166,7 @@ payload(void)
            {
                val_print(AVS_PRINT_ERR, "\n Memory range for bdf 0x%x", bdf);
                val_print(AVS_PRINT_ERR, " is 0x%x", read_value);
-               val_print(AVS_PRINT_ERR, "\n Out of range addr 0x%x", (new_mem_lim + MEM_OFFSET_SMALL));
+               val_print(AVS_PRINT_ERR, "\n Out of range 0x%x", (new_mem_lim + MEM_OFFSET_SMALL));
                val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 03));
            }
         }
@@ -175,7 +175,8 @@ exception_return:
         /*Write back original value */
         if ((mem_lim >> MEM_SHIFT) > (ori_mem_base >> MEM_SHIFT))
         {
-            val_pcie_write_cfg(bdf, TYPE1_NP_MEM, ((mem_lim & MEM_LIM_MASK) | (ori_mem_base  >> 16)));
+            val_pcie_write_cfg(bdf, TYPE1_NP_MEM,
+                                           ((mem_lim & MEM_LIM_MASK) | (ori_mem_base  >> 16)));
         }
 
         /* Memory Space might have constraint on RW/RO behaviour

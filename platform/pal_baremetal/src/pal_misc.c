@@ -334,7 +334,6 @@ pal_mem_alloc(uint32_t Size)
   return malloc(Size);
 }
 
-
 /**
   @brief  Allocates requested buffer size in bytes with zeros in a contiguous memory
           and returns the base address of the range.

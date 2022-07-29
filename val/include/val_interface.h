@@ -178,6 +178,7 @@ void     val_pcie_create_info_table(uint64_t *pcie_info_table);
 uint32_t val_pcie_create_device_bdf_table(void);
 addr_t val_pcie_get_ecam_base(uint32_t rp_bdf);
 void *val_pcie_bdf_table_ptr(void);
+uint32_t val_pcie_get_max_bdf(void);
 void     val_pcie_free_info_table(void);
 uint32_t val_pcie_execute_tests(uint32_t enable_pcie, uint32_t level, uint32_t num_pe);
 uint32_t val_pcie_is_devicedma_64bit(uint32_t bdf);

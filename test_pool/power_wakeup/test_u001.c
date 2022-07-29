@@ -228,7 +228,7 @@ payload4(void)
              Test will be consider as failure in case WD interrupt
              failed to fire.
           */
-          if (! (g_wd_int_received || g_failsafe_int_received)) {
+          if (!(g_wd_int_received || g_failsafe_int_received)) {
             val_gic_clear_interrupt(intid);
             val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM4, 1));
           }
