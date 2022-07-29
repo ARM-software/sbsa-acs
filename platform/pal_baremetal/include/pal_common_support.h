@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2020-2021, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2022 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -61,6 +61,8 @@ extern uint32_t g_enable_module;
 #define COMMAND_REG_OFFSET   0x04
 #define REG_ACC_DATA         0x7
 
+#define BAR_MASK        0xFFFFFFF0
+
 /* Class Code Masks */
 #define CC_SUB_MASK     0xFF   /* Sub Class */
 #define CC_BASE_MASK    0xFF   /* Base Class */
@@ -108,12 +110,12 @@ extern uint32_t g_enable_module;
 #define ECID_PASID           0x001b
 
 /* PCI Express capability struct offsets */
-#define CIDR_OFFSET    0
-#define PCIECR_OFFSET  2
-#define DCAPR_OFFSET   4
-#define DCTLR_OFFSET   8
-#define DCAP2R_OFFSET  24
-#define DCTL2R_OFFSET  28
+#define CIDR_OFFSET    0x0
+#define PCIECR_OFFSET  0x2
+#define DCAPR_OFFSET   0x4
+#define DCTLR_OFFSET   0x8
+#define DCAP2R_OFFSET  0x24
+#define DCTL2R_OFFSET  0x28
 
 /* PCIe capabilities reg shifts and masks */
 #define PCIECR_DPT_SHIFT 4
@@ -138,6 +140,7 @@ extern uint32_t g_enable_module;
 #define CLEAN                 0x2
 #define INVALIDATE            0x3
 
+#define NOT_IMPLEMENTED       0x4B1D
 
 typedef struct {
   uint64_t   Arg0;
@@ -193,13 +196,13 @@ typedef enum {
   @brief  structure instance for GIC entry
 **/
 typedef struct {
-  UINT32 type;
-  UINT64 base;
-  UINT32 entry_id;  /* This entry_id is used to tell component ID */
-  UINT64 length;  /* This length is only used in case of Re-Distributor Range Address length */
-  UINT32 flags;
-  UINT32 spi_count;
-  UINT32 spi_base;
+  uint32_t type;
+  uint64_t base;
+  uint32_t entry_id;  /* This entry_id is used to tell component ID */
+  uint64_t length;  /* This length is only used in case of Re-Distributor Range Address length */
+  uint32_t flags;
+  uint32_t spi_count;
+  uint32_t spi_base;
 }GIC_INFO_ENTRY;
 
 /**

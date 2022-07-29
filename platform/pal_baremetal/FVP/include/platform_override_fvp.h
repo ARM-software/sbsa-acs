@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2020-2021, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2022, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,6 +19,10 @@
 #include <stdint.h>
 
 /** Begin config **/
+
+/* Settings */
+#define PLATFORM_OVERRIDE_SBSA_LEVEL   0x4     //The permissible levels are 3,4,5 and 6
+#define PLATFORM_OVERRIDE_PRINT_LEVEL  0x3     //The permissible levels are 1,2,3,4 and 5
 
 /* PCIe BAR config parameters*/
 #define PLATFORM_OVERRIDE_PCIE_BAR64_VAL   0x500000000
@@ -131,6 +135,12 @@
 #define PLATFORM_OVERRIDE_TIMER_FLAGS_1         ((PLATFORM_OVERRIDE_TIMER_CMN_FLAGS_1 << 16) | \
                                                  (PLATFORM_OVERRIDE_TIMER_VIRT_FLAGS_1 << 8) | \
                                                  (PLATFORM_OVERRIDE_TIMER_PHY_FLAGS_1))
+#define PLATFORM_OVERRIDE_TIMER_CNTFRQ         0x0
+
+/* Define the Timeout values to be used */
+#define PLATFORM_OVERRIDE_TIMEOUT_LARGE         0x100000
+#define PLATFORM_OVERRIDE_TIMEOUT_MEDIUM        0x10000
+#define PLATFORM_OVERRIDE_TIMEOUT_SMALL         0x100
 
 /* Watchdog platform config parameters */
 #define WD_MODE     INTERRUPT_IS_LEVEL_TRIGGERED
@@ -151,11 +161,20 @@
 /* PCIE platform config parameters */
 #define PLATFORM_OVERRIDE_NUM_ECAM                1
 
+/* Offset from the memory range to be accesed
+ * Modify this macro w.r.t to the requirement */
+#define MEM_OFFSET_SMALL   0x10
+#define MEM_OFFSET_MEDIUM  0x1000
+
 /* Platform config parameters for ECAM_0 */
 #define PLATFORM_OVERRIDE_PCIE_ECAM_BASE_ADDR_0   0x60000000
 #define PLATFORM_OVERRIDE_PCIE_SEGMENT_GRP_NUM_0  0x0
 #define PLATFORM_OVERRIDE_PCIE_START_BUS_NUM_0    0x0
 #define PLATFORM_OVERRIDE_PCIE_END_BUS_NUM_0      0xFF
+
+#define PLATFORM_OVERRIDE_PCIE_MAX_BUS      256
+#define PLATFORM_OVERRIDE_PCIE_MAX_DEV      32
+#define PLATFORM_OVERRIDE_PCIE_MAX_FUNC     8
 
 /* Sample macros for ECAM_1
  * #define PLATFORM_OVERRIDE_PCIE_ECAM_BASE_ADDR_1  0x00000000
@@ -180,7 +199,7 @@
 #define PLATFORM_PCIE_DEV0_DMA_COHERENT  0
 #define PLATFORM_PCIE_DEV0_P2P_SUPPORT   1
 #define PLATFORM_PCIE_DEV0_DMA_64BIT     0
-#define PLATFORM_PCIE_DEV0_BEHIND_SMMU   0
+#define PLATFORM_PCIE_DEV0_BEHIND_SMMU   1
 #define PLATFORM_PCIE_DEV0_ATC_SUPPORT   0
 
 #define PLATFORM_PCIE_DEV1_CLASSCODE     0x6040000
@@ -194,7 +213,7 @@
 #define PLATFORM_PCIE_DEV1_DMA_COHERENT  0
 #define PLATFORM_PCIE_DEV1_P2P_SUPPORT   1
 #define PLATFORM_PCIE_DEV1_DMA_64BIT     0
-#define PLATFORM_PCIE_DEV1_BEHIND_SMMU   0
+#define PLATFORM_PCIE_DEV1_BEHIND_SMMU   1
 #define PLATFORM_PCIE_DEV1_ATC_SUPPORT   0
 
 #define PLATFORM_PCIE_DEV2_CLASSCODE     0x6040000
@@ -208,7 +227,7 @@
 #define PLATFORM_PCIE_DEV2_DMA_COHERENT  0
 #define PLATFORM_PCIE_DEV2_P2P_SUPPORT   1
 #define PLATFORM_PCIE_DEV2_DMA_64BIT     0
-#define PLATFORM_PCIE_DEV2_BEHIND_SMMU   0
+#define PLATFORM_PCIE_DEV2_BEHIND_SMMU   1
 #define PLATFORM_PCIE_DEV2_ATC_SUPPORT   0
 
 #define PLATFORM_PCIE_DEV3_CLASSCODE     0xED000001
@@ -222,7 +241,7 @@
 #define PLATFORM_PCIE_DEV3_DMA_COHERENT  0
 #define PLATFORM_PCIE_DEV3_P2P_SUPPORT   1
 #define PLATFORM_PCIE_DEV3_DMA_64BIT     0
-#define PLATFORM_PCIE_DEV3_BEHIND_SMMU   0
+#define PLATFORM_PCIE_DEV3_BEHIND_SMMU   1
 #define PLATFORM_PCIE_DEV3_ATC_SUPPORT   0
 
 #define PLATFORM_PCIE_DEV4_CLASSCODE     0xED000001
@@ -236,7 +255,7 @@
 #define PLATFORM_PCIE_DEV4_DMA_COHERENT  0
 #define PLATFORM_PCIE_DEV4_P2P_SUPPORT   1
 #define PLATFORM_PCIE_DEV4_DMA_64BIT     0
-#define PLATFORM_PCIE_DEV4_BEHIND_SMMU   0
+#define PLATFORM_PCIE_DEV4_BEHIND_SMMU   1
 #define PLATFORM_PCIE_DEV4_ATC_SUPPORT   0
 
 #define PLATFORM_PCIE_DEV5_CLASSCODE     0x1060101
@@ -250,7 +269,7 @@
 #define PLATFORM_PCIE_DEV5_DMA_COHERENT  0
 #define PLATFORM_PCIE_DEV5_P2P_SUPPORT   1
 #define PLATFORM_PCIE_DEV5_DMA_64BIT     0
-#define PLATFORM_PCIE_DEV5_BEHIND_SMMU   0
+#define PLATFORM_PCIE_DEV5_BEHIND_SMMU   1
 #define PLATFORM_PCIE_DEV5_ATC_SUPPORT   0
 
 #define PLATFORM_PCIE_DEV6_CLASSCODE     0x1060101
@@ -264,7 +283,7 @@
 #define PLATFORM_PCIE_DEV6_DMA_COHERENT  0
 #define PLATFORM_PCIE_DEV6_P2P_SUPPORT   1
 #define PLATFORM_PCIE_DEV6_DMA_64BIT     0
-#define PLATFORM_PCIE_DEV6_BEHIND_SMMU   0
+#define PLATFORM_PCIE_DEV6_BEHIND_SMMU   1
 #define PLATFORM_PCIE_DEV6_ATC_SUPPORT   0
 
 #define PLATFORM_PCIE_DEV7_CLASSCODE     0xED000000
@@ -278,7 +297,7 @@
 #define PLATFORM_PCIE_DEV7_DMA_COHERENT  0
 #define PLATFORM_PCIE_DEV7_P2P_SUPPORT   1
 #define PLATFORM_PCIE_DEV7_DMA_64BIT     0
-#define PLATFORM_PCIE_DEV7_BEHIND_SMMU   0
+#define PLATFORM_PCIE_DEV7_BEHIND_SMMU   1
 #define PLATFORM_PCIE_DEV7_ATC_SUPPORT   0
 
 #define PLATFORM_PCIE_DEV8_CLASSCODE     0xED000000
@@ -292,7 +311,7 @@
 #define PLATFORM_PCIE_DEV8_DMA_COHERENT  0
 #define PLATFORM_PCIE_DEV8_P2P_SUPPORT   1
 #define PLATFORM_PCIE_DEV8_DMA_64BIT     0
-#define PLATFORM_PCIE_DEV8_BEHIND_SMMU   0
+#define PLATFORM_PCIE_DEV8_BEHIND_SMMU   1
 #define PLATFORM_PCIE_DEV8_ATC_SUPPORT   0
 
 #define PLATFORM_PCIE_DEV9_CLASSCODE    0x6040000
@@ -306,7 +325,7 @@
 #define PLATFORM_PCIE_DEV9_DMA_COHERENT 0
 #define PLATFORM_PCIE_DEV9_P2P_SUPPORT  1
 #define PLATFORM_PCIE_DEV9_DMA_64BIT    0
-#define PLATFORM_PCIE_DEV9_BEHIND_SMMU  0
+#define PLATFORM_PCIE_DEV9_BEHIND_SMMU  1
 #define PLATFORM_PCIE_DEV9_ATC_SUPPORT  0
 
 #define PLATFORM_PCIE_DEV10_CLASSCODE    0x6040000
@@ -320,7 +339,7 @@
 #define PLATFORM_PCIE_DEV10_DMA_COHERENT 0
 #define PLATFORM_PCIE_DEV10_P2P_SUPPORT  1
 #define PLATFORM_PCIE_DEV10_DMA_64BIT    0
-#define PLATFORM_PCIE_DEV10_BEHIND_SMMU  0
+#define PLATFORM_PCIE_DEV10_BEHIND_SMMU  1
 #define PLATFORM_PCIE_DEV10_ATC_SUPPORT  0
 
 #define PLATFORM_PCIE_DEV11_CLASSCODE    0x6040000
@@ -334,7 +353,7 @@
 #define PLATFORM_PCIE_DEV11_DMA_COHERENT 0
 #define PLATFORM_PCIE_DEV11_P2P_SUPPORT  1
 #define PLATFORM_PCIE_DEV11_DMA_64BIT    0
-#define PLATFORM_PCIE_DEV11_BEHIND_SMMU  0
+#define PLATFORM_PCIE_DEV11_BEHIND_SMMU  1
 #define PLATFORM_PCIE_DEV11_ATC_SUPPORT  0
 
 #define PLATFORM_PCIE_DEV12_CLASSCODE    0x6040000
@@ -348,7 +367,7 @@
 #define PLATFORM_PCIE_DEV12_DMA_COHERENT 0
 #define PLATFORM_PCIE_DEV12_P2P_SUPPORT  1
 #define PLATFORM_PCIE_DEV12_DMA_64BIT    0
-#define PLATFORM_PCIE_DEV12_BEHIND_SMMU  0
+#define PLATFORM_PCIE_DEV12_BEHIND_SMMU  1
 #define PLATFORM_PCIE_DEV12_ATC_SUPPORT  0
 
 #define PLATFORM_PCIE_DEV13_CLASSCODE    0x1060101
@@ -362,7 +381,7 @@
 #define PLATFORM_PCIE_DEV13_DMA_COHERENT 0
 #define PLATFORM_PCIE_DEV13_P2P_SUPPORT  1
 #define PLATFORM_PCIE_DEV13_DMA_64BIT    0
-#define PLATFORM_PCIE_DEV13_BEHIND_SMMU  0
+#define PLATFORM_PCIE_DEV13_BEHIND_SMMU  1
 #define PLATFORM_PCIE_DEV13_ATC_SUPPORT  0
 
 #define PLATFORM_PCIE_DEV14_CLASSCODE    0xED000000
@@ -376,7 +395,7 @@
 #define PLATFORM_PCIE_DEV14_DMA_COHERENT 0
 #define PLATFORM_PCIE_DEV14_P2P_SUPPORT  1
 #define PLATFORM_PCIE_DEV14_DMA_64BIT    0
-#define PLATFORM_PCIE_DEV14_BEHIND_SMMU  0
+#define PLATFORM_PCIE_DEV14_BEHIND_SMMU  1
 #define PLATFORM_PCIE_DEV14_ATC_SUPPORT  0
 
 #define PLATFORM_PCIE_DEV15_CLASSCODE    0xED000000
@@ -390,7 +409,7 @@
 #define PLATFORM_PCIE_DEV15_DMA_COHERENT 0
 #define PLATFORM_PCIE_DEV15_P2P_SUPPORT  1
 #define PLATFORM_PCIE_DEV15_DMA_64BIT    0
-#define PLATFORM_PCIE_DEV15_BEHIND_SMMU  0
+#define PLATFORM_PCIE_DEV15_BEHIND_SMMU  1
 #define PLATFORM_PCIE_DEV15_ATC_SUPPORT  0
 
 #define PLATFORM_PCIE_DEV16_CLASSCODE    0xFF000000
@@ -404,7 +423,7 @@
 #define PLATFORM_PCIE_DEV16_DMA_COHERENT 0
 #define PLATFORM_PCIE_DEV16_P2P_SUPPORT  1
 #define PLATFORM_PCIE_DEV16_DMA_64BIT    0
-#define PLATFORM_PCIE_DEV16_BEHIND_SMMU  0
+#define PLATFORM_PCIE_DEV16_BEHIND_SMMU  1
 #define PLATFORM_PCIE_DEV16_ATC_SUPPORT  0
 
 #define PLATFORM_PCIE_DEV17_CLASSCODE    0xFF000000
@@ -418,7 +437,7 @@
 #define PLATFORM_PCIE_DEV17_DMA_COHERENT 0
 #define PLATFORM_PCIE_DEV17_P2P_SUPPORT  1
 #define PLATFORM_PCIE_DEV17_DMA_64BIT    0
-#define PLATFORM_PCIE_DEV17_BEHIND_SMMU  0
+#define PLATFORM_PCIE_DEV17_BEHIND_SMMU  1
 #define PLATFORM_PCIE_DEV17_ATC_SUPPORT  0
 
 #define PLATFORM_PCIE_DEV18_CLASSCODE    0xFF000000
@@ -432,7 +451,7 @@
 #define PLATFORM_PCIE_DEV18_DMA_COHERENT 0
 #define PLATFORM_PCIE_DEV18_P2P_SUPPORT  1
 #define PLATFORM_PCIE_DEV18_DMA_64BIT    0
-#define PLATFORM_PCIE_DEV18_BEHIND_SMMU  0
+#define PLATFORM_PCIE_DEV18_BEHIND_SMMU  1
 #define PLATFORM_PCIE_DEV18_ATC_SUPPORT  0
 
 #define PLATFORM_PCIE_DEV19_CLASSCODE    0xFF000000
@@ -446,7 +465,7 @@
 #define PLATFORM_PCIE_DEV19_DMA_COHERENT 0
 #define PLATFORM_PCIE_DEV19_P2P_SUPPORT  1
 #define PLATFORM_PCIE_DEV19_DMA_64BIT    0
-#define PLATFORM_PCIE_DEV19_BEHIND_SMMU  0
+#define PLATFORM_PCIE_DEV19_BEHIND_SMMU  1
 #define PLATFORM_PCIE_DEV19_ATC_SUPPORT  0
 
 #define PLATFORM_PCIE_DEV20_CLASSCODE    0x6040000
@@ -460,10 +479,12 @@
 #define PLATFORM_PCIE_DEV20_DMA_COHERENT 0
 #define PLATFORM_PCIE_DEV20_P2P_SUPPORT  1
 #define PLATFORM_PCIE_DEV20_DMA_64BIT    0
-#define PLATFORM_PCIE_DEV20_BEHIND_SMMU  0
+#define PLATFORM_PCIE_DEV20_BEHIND_SMMU  1
 #define PLATFORM_PCIE_DEV20_ATC_SUPPORT  0
 
 /* PERIPHERAL platform config parameters */
+#define PLATFORM_OVERRIDE_PERIPHERAL_COUNT 3  //UART + USB + SATA
+
 #define UART_ADDRESS                     0xF9750000
 #define BASE_ADDRESS_ADDRESS_SPACE_ID    0x0
 #define BASE_ADDRESS_REGISTER_BIT_WIDTH  0x20
@@ -485,6 +506,11 @@
 #define IOVIRT_ADDRESS               0xF9780000
 #define IORT_NODE_COUNT              3
 #define IOVIRT_ITS_COUNT             1
+#define IOVIRT_SMMUV3_COUNT          1
+#define IOVIRT_RC_COUNT              1
+#define IOVIRT_SMMUV2_COUNT          0
+#define IOVIRT_NAMED_COMPONENT_COUNT 0
+#define IOVIRT_PMCG_COUNT            0
 #define IOVIRT_SMMUV3_BASE_ADDRESS   0x4F000000
 #define IOVIRT_SMMU_CTX_INT_OFFSET   0x0
 #define IOVIRT_SMMU_CTX_INT_CNT      0x0
@@ -565,6 +591,7 @@
 #define PCIE_CAP_DIS_MASK   0xFFFEFFFF
 #define PCIE_CAP_EN_MASK    (1 << 16)
 #define PASID_EN_MASK       (1 << 6)
+
 /* PCIe Config space Offset */
 #define BAR0_OFFSET        0x10
 #define COMMAND_REG_OFFSET 0x04
@@ -593,187 +620,3 @@
 #define PLATFORM_OVERRIDE_MEMORY_ENTRY3_TYPE        MEMORY_TYPE_NORMAL
 
 /** End config **/
-
-typedef struct {
-  uint32_t gic_version;
-  uint32_t num_gicc;
-  uint32_t num_gicd;
-  uint32_t num_gicrd;
-  uint32_t num_gicits;
-  uint32_t num_gich;
-  uint32_t num_msiframes;
-  uint32_t gicc_type;
-  uint32_t gicd_type;
-  uint32_t gicrd_type;
-  uint32_t gicrd_length;
-  uint32_t gicits_type;
-  uint64_t gicc_base[PLATFORM_OVERRIDE_GICC_COUNT];
-  uint64_t gicd_base[PLATFORM_OVERRIDE_GICD_COUNT];
-  uint64_t gicrd_base[PLATFORM_OVERRIDE_GICRD_COUNT];
-  uint64_t gicits_base[PLATFORM_OVERRIDE_GICITS_COUNT];
-  uint64_t gicits_id[PLATFORM_OVERRIDE_GICITS_COUNT];
-  uint64_t gich_base[PLATFORM_OVERRIDE_GICH_COUNT];
-  uint64_t gicmsiframe_base[PLATFORM_OVERRIDE_GICMSIFRAME_COUNT];
-  uint64_t gicmsiframe_id[PLATFORM_OVERRIDE_GICMSIFRAME_COUNT];
-  uint32_t gicmsiframe_flags[PLATFORM_OVERRIDE_GICMSIFRAME_COUNT];
-  uint32_t gicmsiframe_spi_count[PLATFORM_OVERRIDE_GICMSIFRAME_COUNT];
-  uint32_t gicmsiframe_spi_base[PLATFORM_OVERRIDE_GICMSIFRAME_COUNT];
-} PLATFORM_OVERRIDE_GIC_INFO_TABLE;
-
-typedef struct {
-  uint32_t s_el1_timer_flags;
-  uint32_t ns_el1_timer_flags;
-  uint32_t el2_timer_flags;
-  uint32_t s_el1_timer_gsiv;
-  uint32_t ns_el1_timer_gsiv;
-  uint32_t el2_timer_gsiv;
-  uint32_t virtual_timer_flags;
-  uint32_t virtual_timer_gsiv;
-  uint32_t el2_virt_timer_gsiv;
-  uint32_t num_platform_timer;
-} PLATFORM_OVERRIDE_TIMER_INFO_HDR;
-
-typedef struct {
-  uint32_t type;
-  uint32_t timer_count;
-  uint64_t block_cntl_base;
-  uint64_t GtCntBase[PLATFORM_OVERRIDE_TIMER_COUNT];
-  uint64_t GtCntEl0Base[PLATFORM_OVERRIDE_TIMER_COUNT];
-  uint32_t gsiv[PLATFORM_OVERRIDE_TIMER_COUNT];
-  uint32_t virt_gsiv[PLATFORM_OVERRIDE_TIMER_COUNT];
-  uint32_t flags[PLATFORM_OVERRIDE_TIMER_COUNT];
-} PLATFORM_OVERRIDE_TIMER_INFO_GTBLOCK;
-
-typedef struct {
-  PLATFORM_OVERRIDE_TIMER_INFO_HDR     header;
-  PLATFORM_OVERRIDE_TIMER_INFO_GTBLOCK gt_info;
-} PLATFORM_OVERRIDE_TIMER_INFO_TABLE;
-
-typedef struct {
-  uint32_t arch_major_rev;  ///< Version 1 or 2 or 3
-  uint64_t base;              ///< SMMU Controller base address
-  uint64_t context_interrupt_offset;
-  uint32_t context_interrupt_count;
-} PLATFORM_OVERRIDE_SMMU_INFO_BLOCK;
-
-typedef struct {
-  uint32_t segment;
-  uint32_t ats_attr;
-  uint32_t cca;             //Cache Coherency Attribute
-  uint64_t smmu_base;
-}PLATFORM_OVERRIDE_IOVIRT_RC_INFO_BLOCK;
-
-typedef struct {
-  uint64_t base;
-  uint32_t overflow_gsiv;
-  uint32_t node_ref;
-} PLATFORM_OVERRIDE_IOVIRT_PMCG_INFO_BLOCK;
-
-#define MAX_NAMED_COMP_LENGTH 256
-
-typedef struct {
-  char name[MAX_NAMED_COMP_LENGTH];
-  PLATFORM_OVERRIDE_IOVIRT_RC_INFO_BLOCK rc;
-  PLATFORM_OVERRIDE_IOVIRT_PMCG_INFO_BLOCK pmcg;
-  uint32_t its_count;
-  PLATFORM_OVERRIDE_SMMU_INFO_BLOCK smmu;
-} PLATFORM_OVERRIDE_NODE_DATA;
-
-typedef struct {
-  uint32_t input_base[IOVIRT_MAX_NUM_MAP];
-  uint32_t id_count[IOVIRT_MAX_NUM_MAP];
-  uint32_t output_base[IOVIRT_MAX_NUM_MAP];
-  uint32_t output_ref[IOVIRT_MAX_NUM_MAP];
-} PLATFORM_OVERRIDE_NODE_DATA_MAP;
-
-typedef struct {
-  uint64_t Address;
-  uint32_t node_count;
-  uint32_t type[IORT_NODE_COUNT];
-  uint32_t num_map[IORT_NODE_COUNT];
-  PLATFORM_OVERRIDE_NODE_DATA_MAP map[IORT_NODE_COUNT];
-} PLATFORM_OVERRIDE_IOVIRT_INFO_TABLE;
-
-struct ecam_reg_data {
-    uint32_t offset;    //Offset into 4096 bytes ecam config reg space
-    uint32_t attribute;
-    uint32_t value;
-};
-
-struct exerciser_data_cfg_space {
-    struct ecam_reg_data reg[TEST_REG_COUNT];
-};
-
-typedef enum {
-    MMIO_PREFETCHABLE = 0x0,
-    MMIO_NON_PREFETCHABLE = 0x1
-} BAR_MEM_TYPE;
-
-struct exerciser_data_bar_space {
-    void *base_addr;
-    BAR_MEM_TYPE type;
-};
-
-typedef union exerciser_data {
-    struct exerciser_data_cfg_space cfg_space;
-    struct exerciser_data_bar_space bar_space;
-} exerciser_data_t;
-
-typedef enum {
-    EXERCISER_DATA_CFG_SPACE = 0x1,
-    EXERCISER_DATA_BAR0_SPACE = 0x2,
-} EXERCISER_DATA_TYPE;
-
-typedef enum {
-    ACCESS_TYPE_RD = 0x0,
-    ACCESS_TYPE_RW = 0x1
-} ECAM_REG_ATTRIBUTE;
-
-typedef enum {
-    TYPE0 = 0x0,
-    TYPE1 = 0x1,
-} EXERCISER_CFG_HEADER_TYPE;
-
-
-typedef enum {
-    CFG_READ   = 0x0,
-    CFG_WRITE  = 0x1,
-} EXERCISER_CFG_TXN_ATTR;
-
-
-typedef enum {
-    TXN_REQ_ID     = 0x0,
-    TXN_ADDR_TYPE  = 0x1,
-} EXERCISER_TXN_ATTR;
-
-typedef enum {
-    AT_UNTRANSLATED = 0x0,
-    AT_TRANS_REQ    = 0x1,
-    AT_TRANSLATED   = 0x2,
-    AT_RESERVED     = 0x3
-} EXERCISER_TXN_ADDR_TYPE;
-
-
-typedef enum {
-    DEVICE_nGnRnE = 0x0,
-    DEVICE_nGnRE  = 0x1,
-    DEVICE_nGRE   = 0x2,
-    DEVICE_GRE    = 0x3
-} ARM_DEVICE_MEM;
-
-typedef enum {
-    NORMAL_NC = 0x4,
-    NORMAL_WT = 0x5
-} ARM_NORMAL_MEM;
-
-typedef struct {
-    uint64_t phy_addr;
-    uint64_t virt_addr;
-    uint64_t size;
-    uint64_t type;
-} MEMORY_INFO;
-
-typedef struct {
-    uint32_t count;
-    MEMORY_INFO info[];
-} PLATFORM_OVERRIDE_MEMORY_INFO_TABLE;

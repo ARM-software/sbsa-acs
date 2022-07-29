@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, 2021 Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018, 2021-2022 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -25,7 +25,7 @@
 
 static
 void
-payload()
+payload(void)
 {
 
   uint64_t ctrl_base;
@@ -34,7 +34,7 @@ payload()
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
   uint32_t data, ns_wdg = 0;
 
-  val_print(AVS_PRINT_DEBUG, "\n       Found %d watchdogs in ACPI table ", wd_num);
+  val_print(AVS_PRINT_DEBUG, "\n       Found %d watchdogs in ACPI table   ", wd_num);
 
   if (wd_num == 0) {
       val_print(AVS_PRINT_WARN, "\n       No Watchdogs reported          %d  ", wd_num);
@@ -50,9 +50,9 @@ payload()
 
       ns_wdg++;
       refresh_base = val_wd_get_info(wd_num, WD_INFO_REFRESH_BASE);
-      val_print(AVS_PRINT_INFO, "\n       Watchdog Refresh base is %x ", refresh_base);
+      val_print(AVS_PRINT_INFO, "\n       Watchdog Refresh base is %llx ", refresh_base);
       ctrl_base    = val_wd_get_info(wd_num, WD_INFO_CTRL_BASE);
-      val_print(AVS_PRINT_INFO, "\n       Watchdog CTRL base is  %x      ", ctrl_base);
+      val_print(AVS_PRINT_INFO, "\n       Watchdog CTRL base is  %llx      ", ctrl_base);
 
       data = val_mmio_read(ctrl_base);
       //Control register bits 31:4 are reserved 0
@@ -88,9 +88,10 @@ w001_entry(uint32_t num_pe)
 
   num_pe = 1;  //This Timer test is run on single processor
 
-  val_initialize_test(TEST_NUM, TEST_DESC, num_pe, g_sbsa_level);
-
-  val_run_test_payload(TEST_NUM, num_pe, payload, 0);
+  status = val_initialize_test(TEST_NUM, TEST_DESC, num_pe, g_sbsa_level);
+  /* This check is when user is forcing us to skip this test */
+  if (status != AVS_STATUS_SKIP)
+      val_run_test_payload(TEST_NUM, num_pe, payload, 0);
 
   /* get the result from all PE and check for failure */
   error_flag = val_check_for_error(TEST_NUM, num_pe);

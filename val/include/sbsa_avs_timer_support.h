@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018,2022 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -92,7 +92,7 @@ ArmWriteCntpTval (
   uint64_t   Val
   );
 
-UINTN
+uint64_t
 ArmReadCntpCtl (
   void
   );
@@ -102,7 +102,7 @@ ArmWriteCntpCtl (
   uint64_t   Val
   );
 
-UINTN
+uint64_t
 ArmReadCntvTval (
   void
   );
@@ -112,7 +112,7 @@ ArmWriteCntvTval (
   uint64_t   Val
   );
 
-UINTN
+uint64_t
 ArmReadCntvCtl (
   void
   );

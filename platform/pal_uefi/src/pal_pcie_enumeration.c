@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2019, 2021 Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2019, 2021-2022 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -166,6 +166,7 @@ palPcieGetBase(UINT32 bdf, UINT32 bar_index)
   PCI_TYPE_GENERIC              PciHeader;
   PCI_DEVICE_HEADER_TYPE_REGION *Device;
   UINT32                        InputSeg, InputBus, InputDev, InputFunc;
+  UINT64                        bar_value;
 
   Status = gBS->LocateHandleBuffer (ByProtocol, &gEfiPciIoProtocolGuid, NULL, &HandleCount, &HandleBuffer);
   if (EFI_ERROR (Status)) {
@@ -187,8 +188,16 @@ palPcieGetBase(UINT32 bdf, UINT32 bar_index)
           Status = Pci->Pci.Read (Pci, EfiPciIoWidthUint32, 0, sizeof (PciHeader)/sizeof (UINT32), &PciHeader);
           if (!EFI_ERROR (Status)) {
             Device = &PciHeader.Device.Device;
-            return (Device->Bar[bar_index]);
-          }
+            if ((((Device->Bar[bar_index]) >> BAR_MDT_SHIFT) & BAR_MDT_MASK) == BITS_64)
+            {
+                bar_value = Device->Bar[bar_index + 1];
+                bar_value = (bar_value << 32) | (Device->Bar[bar_index]);
+                return bar_value;
+            }
+
+            else
+                return (Device->Bar[bar_index]);
+        }
       }
 
     }
@@ -221,3 +230,22 @@ VOID pal_pcie_enumerate(VOID)
    * For uefi, enumeration is done during bootup
    * Hence, not implemented for uefi.*/
 }
+
+/**
+  @brief  This API is used as placeholder to check if the bdf
+          obtained is valid or not
+
+  @param  bdf
+  @return 0 if bdf is valid else 1
+**/
+UINT32
+pal_pcie_check_device_valid(UINT32 bdf)
+{
+
+  /*Add BDFs to this function if PCIe tests
+    need to be ignored for a BDF for any reason
+  */
+
+  return 0;
+}
+

@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018, 2022 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -37,6 +37,7 @@ payload (void)
   uint32_t data;
   uint32_t dev_type;
   uint32_t dev_bdf;
+  uint32_t test_run = 0;
 
   index = val_pe_get_index_mpid (val_pe_get_mpid());
   count = val_peripheral_get_info (NUM_ALL, 0);
@@ -53,26 +54,35 @@ payload (void)
       dev_type = val_pcie_get_device_type(dev_bdf);
       // 1: Normal PCIe device, 2: PCIe Host bridge, 3: PCIe bridge device, else: INVALID
 
+      val_print(AVS_PRINT_INFO, "\n Dev bdf 0x%x", dev_bdf);
+
       if ((!dev_type) || (dev_type > 1)) {
           //Skip this device, if we either got pdev as NULL or if it is a bridge
           continue;
       }
 
+      if (!val_pcie_device_driver_present(dev_bdf)) {
+          val_print(AVS_PRINT_DEBUG, "\n Driver not present for bdf 0x%x", dev_bdf);
+          continue;
+      }
+      test_run = 1;
+
       data = val_pcie_is_devicedma_64bit(dev_bdf);
       if (data == 0) {
           if(!val_pcie_is_device_behind_smmu(dev_bdf)) {
-              val_print (AVS_PRINT_ERR, "\n       WARNING:The device with bdf=0x%x doesn't support 64 bit addressing", dev_bdf);
-              val_print (AVS_PRINT_ERR, "\n       and is not behind SMMU. Please install driver for this device and", 0);
-              val_print (AVS_PRINT_ERR, "\n       test again. If driver is already installed, this test has failed.", 0);
-              val_print (AVS_PRINT_ERR, "\n       The device is of type = %d", dev_type);
+              val_print (AVS_PRINT_ERR, "\n       Device with bdf=0x%x doesn't support", dev_bdf);
+              val_print (AVS_PRINT_ERR, "       64 bit addressing and is not behind SMMU", 0);
+              val_print (AVS_PRINT_ERR, "       The device type is = %d", dev_type);
               val_set_status (index, RESULT_FAIL (g_sbsa_level, TEST_NUM, 1));
               return;
           }
       }
-
   }
 
-  val_set_status (index, RESULT_PASS (g_sbsa_level, TEST_NUM, 01));
+  if (test_run)
+      val_set_status (index, RESULT_PASS (g_sbsa_level, TEST_NUM, 01));
+  else
+      val_set_status (index, RESULT_SKIP (g_sbsa_level, TEST_NUM, 02));
 }
 
 uint32_t

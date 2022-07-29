@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2021, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2022 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -29,6 +29,8 @@
 
 #include "SbsaAvs.h"
 
+UINT32 g_pcie_p2p;
+UINT32 g_pcie_cache_present;
 
 UINT32  g_sbsa_level;
 UINT32  g_enable_pcie_tests;
@@ -45,6 +47,7 @@ UINT32  g_sbsa_tests_fail;
 UINT64  g_stack_pointer;
 UINT64  g_exception_ret_addr;
 UINT64  g_ret_addr;
+UINT32  g_wakeup_timeout;
 SHELL_FILE_HANDLE g_sbsa_log_file_handle;
 
 STATIC VOID FlushImage (VOID)
@@ -262,6 +265,7 @@ HelpMsg (
          "              module numbers along with global verbosity level 1\n"
          "              Module numbers are PE 0, GIC 1,  ...\n"
          "              E.g., To enable mmio prints for PE and TIMER pass -v 102 \n"
+         "-mmio   Pass this flag to enable pal_mmio_read/write prints, use with -v 1\n"
          "-l      Level of compliance to be tested for\n"
          "        As per SBSA spec, 3 to 6\n"
          "-f      Name of the log file to record the test results in\n"
@@ -271,8 +275,11 @@ HelpMsg (
          "        To skip a particular test within a module, use the exact testcase number\n"
          "-nist   Enable the NIST Statistical test suite\n"
          "-p      Enable/disable PCIe SBSA 6.0 (RCiEP) compliance tests\n"
-         "-mmio Pass this flag to enable pal_mmio_read/write prints, use with -v 1\n"
          "        1 - enables PCIe tests, 0 - disables PCIe tests\n"
+         "-p2p    Pass this flag to indicate that PCIe Hierarchy Supports Peer-to-Peer\n"
+         "-cache  Pass this flag to indicate that if the test system supports PCIe address translation cache\n"
+         "-timeout  Set timeout multiple for wakeup tests\n"
+         "        1 - min value  5 - max value\n"
   );
 }
 
@@ -285,7 +292,10 @@ STATIC CONST SHELL_PARAM_ITEM ParamList[] = {
   {L"-h"    , TypeFlag},     // -h    # help : info about commands
   {L"-nist" , TypeFlag},     // -nist # Binary Flag to enable the execution of NIST STS
   {L"-p"    , TypeValue},    // -p    # Enable/disable PCIe SBSA 6.0 (RCiEP) compliance tests.
-  {L"-mmio", TypeFlag},      // -mmio # Enable pal_mmio prints
+  {L"-mmio" , TypeFlag},     // -mmio # Enable pal_mmio prints
+  {L"-p2p", TypeFlag},       // -p2p  # Peer-to-Peer is supported
+  {L"-cache", TypeFlag},     // -cache# PCIe address translation cache is supported
+  {L"-timeout" , TypeValue}, // -timeout # Set timeout multiple for wakeup tests
   {NULL     , TypeMax}
   };
 
@@ -370,6 +380,17 @@ ShellAppMainsbsa (
     }
   }
 
+  // Options with Values
+  CmdLineArg  = ShellCommandLineGetValue (ParamPackage, L"-timeout");
+  if (CmdLineArg == NULL) {
+    g_wakeup_timeout = 1;
+  } else {
+    g_wakeup_timeout = StrDecimalToUintn(CmdLineArg);
+    Print(L"Wakeup timeout multiple %d.\n", g_wakeup_timeout);
+    if (g_wakeup_timeout > 5)
+        g_wakeup_timeout = 5;
+    }
+
     // Options with Values
   CmdLineArg  = ShellCommandLineGetValue (ParamPackage, L"-f");
   if (CmdLineArg == NULL) {
@@ -401,6 +422,18 @@ ShellAppMainsbsa (
     g_print_mmio = TRUE;
   } else {
     g_print_mmio = FALSE;
+  }
+
+  if (ShellCommandLineGetFlag (ParamPackage, L"-p2p")) {
+    g_pcie_p2p = TRUE;
+  } else {
+    g_pcie_p2p = FALSE;
+  }
+
+  if (ShellCommandLineGetFlag (ParamPackage, L"-cache")) {
+    g_pcie_cache_present = TRUE;
+  } else {
+    g_pcie_cache_present = FALSE;
   }
 
   // Options with Values
@@ -465,9 +498,6 @@ ShellAppMainsbsa (
   Print(L"\n      *** Starting Watchdog tests ***  \n");
   Status |= val_wd_execute_tests(g_sbsa_level, val_pe_get_num());
 
-  Print(L"\n      *** Starting PCIe tests ***  \n");
-  Status |= val_pcie_execute_tests(g_enable_pcie_tests, g_sbsa_level, val_pe_get_num());
-
   Print(L"\n      *** Starting Power and Wakeup semantic tests ***  \n");
   Status |= val_wakeup_execute_tests(g_sbsa_level, val_pe_get_num());
 
@@ -477,18 +507,23 @@ ShellAppMainsbsa (
   Print(L"\n      *** Starting IO Virtualization tests ***  \n");
   Status |= val_smmu_execute_tests(g_sbsa_level, val_pe_get_num());
 
+  Print(L"\n      *** Starting PCIe tests ***  \n");
+  Status |= val_pcie_execute_tests(g_enable_pcie_tests, g_sbsa_level, val_pe_get_num());
+
   /*
    * Configure Gic Redistributor and ITS to support
    * Generation of LPIs.
-  */
+   */
   configureGicIts();
 
-  Print(L"\n      *** Starting PCIe Exerciser tests ***  \n");
-  Status |= val_exerciser_execute_tests(g_sbsa_level);
+  if (g_sbsa_level > 3) {
+    Print(L"\n      *** Starting PCIe Exerciser tests ***  \n");
+    Status |= val_exerciser_execute_tests(g_sbsa_level);
+  }
 
   #ifdef ENABLE_NIST
   if (g_execute_nist == TRUE) {
-    Print(L"\n      ***  Starting NIST statistical tests***  \n");
+    Print(L"\n      *** Starting NIST statistical tests ***  \n");
     Status |= val_nist_execute_tests(g_sbsa_level, val_pe_get_num());
   }
   #endif

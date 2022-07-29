@@ -40,11 +40,32 @@ val_print(uint32_t level, char8_t *string, uint64_t data)
 
 }
 
+void
+val_print_test_end(uint32_t status, char8_t *string)
+{
+  pal_print("\n      ", 0);
+
+  if (status != AVS_STATUS_PASS) {
+      pal_print("One or more ", 0);
+      pal_print(string, 0);
+      pal_print(" tests failed or were skipped.", 0);
+  }
+  else {
+      pal_print("All ", 0);
+      pal_print(string, 0);
+      pal_print(" tests passed.", 0);
+  }
+
+  pal_print("\n", 0);
+
+}
+
 /**
   @brief  This API calls PAL layer to print a string to the output console.
           1. Caller       - Application layer
           2. Prerequisite - None.
 
+  @param uart_address address of uart to be used
   @param level   the print verbosity (1 to 5)
   @param string  formatted ASCII string
   @param data    64-bit data. set to 0 if no data is to sent to console.
@@ -52,11 +73,11 @@ val_print(uint32_t level, char8_t *string, uint64_t data)
   @return        None
  **/
 void
-val_print_raw(uint32_t level, char8_t *string, uint64_t data)
+val_print_raw(uint64_t uart_address, uint32_t level, char8_t *string,
+                                                                uint64_t data)
 {
 
   if (level >= g_print_level){
-      uint64_t uart_address = val_peripheral_get_info(UART_BASE0, 0);
       pal_print_raw(uart_address, string, data);
   }
 

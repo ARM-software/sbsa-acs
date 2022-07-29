@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2020, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2020, 2022 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,7 +22,7 @@
 #define TEST_NUM   (AVS_PE_TEST_NUM_BASE  +  29)
 #define TEST_DESC  "Check Speculation Restriction     "
 
-static void payload()
+static void payload(void)
 {
     uint64_t data_csv2 = 0;
     uint64_t data_csv3 = 0;

@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2021, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2022, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -25,6 +25,30 @@
 #ifdef TARGET_LINUX
   typedef char          char8_t;
   typedef long long int addr_t;
+#define TIMEOUT_LARGE    0x1000000
+#define TIMEOUT_MEDIUM   0x100000
+#define TIMEOUT_SMALL    0x1000
+
+#define PCIE_MAX_BUS   256
+#define PCIE_MAX_DEV    32
+#define PCIE_MAX_FUNC    8
+
+#elif TARGET_EMULATION
+#include <stdlib.h>
+#include <stdint.h>
+#include <stddef.h>
+  typedef uint64_t addr_t;
+  typedef char     char8_t;
+  typedef uint64_t dma_addr_t;
+
+#define TIMEOUT_LARGE    PLATFORM_OVERRIDE_TIMEOUT_LARGE
+#define TIMEOUT_MEDIUM   PLATFORM_OVERRIDE_TIMEOUT_MEDIUM
+#define TIMEOUT_SMALL    PLATFORM_OVERRIDE_TIMEOUT_SMALL
+
+#define PCIE_MAX_BUS    PLATFORM_OVERRIDE_PCIE_MAX_BUS
+#define PCIE_MAX_DEV    PLATFORM_OVERRIDE_PCIE_MAX_DEV
+#define PCIE_MAX_FUNC   PLATFORM_OVERRIDE_PCIE_MAX_FUNC
+
 #else
   typedef INT8   int8_t;
   typedef INT32  int32_t;
@@ -36,11 +60,27 @@
   typedef UINT64 uint64_t;
   typedef UINT64 addr_t;
 
+#if PLATFORM_OVERRIDE_TIMEOUT
+    #define TIMEOUT_LARGE    PLATFORM_OVERRIDE_TIMEOUT_LARGE
+    #define TIMEOUT_MEDIUM   PLATFORM_OVERRIDE_TIMEOUT_MEDIUM
+    #define TIMEOUT_SMALL    PLATFORM_OVERRIDE_TIMEOUT_SMALL
+#else
+    #define TIMEOUT_LARGE    0x1000000
+    #define TIMEOUT_MEDIUM   0x100000
+    #define TIMEOUT_SMALL    0x1000
 #endif
 
-#define TIMEOUT_LARGE    0x1000000
-#define TIMEOUT_MEDIUM   0x100000
-#define TIMEOUT_SMALL    0x1000
+#if PLATFORM_OVERRIDE_MAX_BDF
+    #define PCIE_MAX_BUS    PLATFORM_OVERRIDE_PCIE_MAX_BUS
+    #define PCIE_MAX_DEV    PLATFORM_OVERRIDE_PCIE_MAX_DEV
+    #define PCIE_MAX_FUNC   PLATFORM_OVERRIDE_PCIE_MAX_FUNC
+#else
+    #define PCIE_MAX_BUS   256
+    #define PCIE_MAX_DEV    32
+    #define PCIE_MAX_FUNC    8
+#endif
+
+#endif
 
 #define ONE_MILLISECOND 1000
 
@@ -227,6 +267,7 @@ typedef struct {
 }TIMER_INFO_TABLE;
 
 void pal_timer_create_info_table(TIMER_INFO_TABLE *timer_info_table);
+uint64_t pal_timer_get_counter_frequency(void);
 
 /** Watchdog tests related definitions **/
 
@@ -298,6 +339,9 @@ uint32_t pal_pcie_is_cache_present(uint32_t seg, uint32_t bus, uint32_t dev, uin
 uint32_t pal_pcie_is_onchip_peripheral(uint32_t bdf);
 void pal_pcie_io_write_cfg(uint32_t bdf, uint32_t offset, uint32_t data);
 uint32_t pal_pcie_check_device_list(void);
+uint32_t pal_pcie_check_device_valid(uint32_t bdf);
+uint32_t pal_pcie_mem_get_offset(uint32_t type);
+
 /**
   @brief  Instance of SMMU INFO block
 **/
@@ -514,6 +558,7 @@ uint32_t pal_pcie_get_snoop_bit(uint32_t seg, uint32_t bus, uint32_t dev, uint32
 uint32_t pal_pcie_get_dma_support(uint32_t seg, uint32_t bus, uint32_t dev, uint32_t fn);
 uint32_t pal_pcie_get_dma_coherent(uint32_t seg, uint32_t bus, uint32_t dev, uint32_t fn);
 uint32_t pal_pcie_is_devicedma_64bit(uint32_t seg, uint32_t bus, uint32_t dev, uint32_t fn);
+uint32_t pal_pcie_device_driver_present(uint32_t seg, uint32_t bus, uint32_t dev, uint32_t fn);
 uint32_t pal_pcie_scan_bridge_devices_and_check_memtype(uint32_t seg, uint32_t bus,
                                                             uint32_t dev, uint32_t fn);
 uint32_t pal_pcie_get_rp_transaction_frwd_support(uint32_t seg, uint32_t bus, uint32_t dev, uint32_t fn);
@@ -589,6 +634,7 @@ void     pal_print_raw(uint64_t addr, char8_t *string, uint64_t data);
 uint32_t pal_strncmp(char8_t *str1, char8_t *str2, uint32_t len);
 void    *pal_memcpy(void *dest_buffer, void *src_buffer, uint32_t len);
 void    *pal_mem_alloc(uint32_t size);
+void    *pal_mem_calloc(uint32_t num, uint32_t size);
 void    *pal_mem_alloc_cacheable(uint32_t bdf, uint32_t size, void **pa);
 void     pal_mem_free(void *buffer);
 int      pal_mem_compare(void *src, void *dest, uint32_t len);
@@ -608,6 +654,7 @@ uint16_t pal_mmio_read16(uint64_t addr);
 uint32_t pal_mem_page_size(void);
 void    *pal_mem_alloc_pages(uint32_t num_pages);
 void     pal_mem_free_pages(void *page_base, uint32_t num_pages);
+void    *pal_aligned_alloc(uint32_t alignment, uint32_t size);
 
 uint32_t pal_mmio_read(uint64_t addr);
 uint64_t pal_mmio_read64(uint64_t addr);
@@ -748,16 +795,17 @@ typedef union exerciser_data {
 typedef enum {
     EXERCISER_DATA_CFG_SPACE = 0x1,
     EXERCISER_DATA_BAR0_SPACE = 0x2,
+    EXERCISER_DATA_MMIO_SPACE = 0x3,
 } EXERCISER_DATA_TYPE;
 
-
+uint32_t pal_is_bdf_exerciser(uint32_t bdf);
 uint32_t pal_exerciser_set_param(EXERCISER_PARAM_TYPE type, uint64_t value1, uint64_t value2, uint32_t bdf);
 uint32_t pal_exerciser_get_param(EXERCISER_PARAM_TYPE type, uint64_t *value1, uint64_t *value2, uint32_t bdf);
 uint32_t pal_exerciser_set_state(EXERCISER_STATE state, uint64_t *value, uint32_t bdf);
 uint32_t pal_exerciser_get_state(EXERCISER_STATE *state, uint32_t bdf);
 uint32_t pal_exerciser_ops(EXERCISER_OPS ops, uint64_t param, uint32_t instance);
 uint32_t pal_exerciser_get_data(EXERCISER_DATA_TYPE type, exerciser_data_t *data, uint32_t bdf, uint64_t ecam);
-uint32_t pal_is_bdf_exerciser(uint32_t bdf);
+
 
 uint32_t pal_nist_generate_rng(uint32_t *rng_buffer);
 #endif

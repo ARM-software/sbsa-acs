@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2021, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2022, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -39,9 +39,8 @@ val_memory_execute_tests(uint32_t level, uint32_t num_pe)
 
   status = m001_entry(num_pe);
 
-  if (status == AVS_STATUS_FAIL) {
-      val_print(AVS_PRINT_ERR, "\nOne or more Memory tests have failed. Check Output..\n", status);
-  }
+  val_print_test_end(status, "Memory");
+
   return status;
 }
 
@@ -125,8 +124,10 @@ val_memory_get_addr(MEMORY_INFO_e mem_type, uint32_t instance, uint64_t *attr)
   switch(mem_type) {
       case MEM_TYPE_DEVICE:
           i = val_memory_get_entry_index(MEMORY_TYPE_DEVICE, instance);
+          break;
       case MEM_TYPE_NORMAL:
           i = val_memory_get_entry_index(MEMORY_TYPE_NORMAL, instance);
+          break;
       default:
           i = 0xFF;
           break;
@@ -184,6 +185,12 @@ void *
 val_memory_alloc(uint32_t size)
 {
   return pal_mem_alloc(size);
+}
+
+void *
+val_memory_calloc(uint32_t num, uint32_t size)
+{
+  return pal_mem_calloc(num, size);
 }
 
 void *
@@ -273,20 +280,5 @@ val_memory_free_pages(void *addr, uint32_t num_pages)
 void
 *val_aligned_alloc( uint32_t alignment, uint32_t size )
 {
-  void *Mem = NULL;
-  void *Aligned_Ptr = NULL;
-
-  /* Generate mask for the Alignment parameter*/
-  uint64_t Mask = ~(uint64_t)(alignment - 1);
-
-  /* Allocate memory with extra bytes, so we can return an aligned address*/
-  Mem = (void *)pal_mem_alloc(size + alignment);
-
-  if( Mem == NULL)
-    return 0;
-
-  /* Add the alignment to allocated memory address and align it to target alignment*/
-  Aligned_Ptr = (void *)(((uint64_t) Mem + alignment-1) & Mask);
-
-  return Aligned_Ptr;
+  return pal_aligned_alloc(alignment, size);
 }

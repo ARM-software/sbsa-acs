@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2019-2021 Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2019-2022 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -25,6 +25,7 @@
 #define TEST_NUM   (AVS_PCIE_TEST_NUM_BASE + 35)
 #define TEST_DESC  "Check Function level reset rule   "
 
+static
 uint32_t is_flr_failed(uint32_t bdf)
 {
   uint32_t reg_value;

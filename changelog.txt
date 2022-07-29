@@ -1,3 +1,12 @@
+v22.07_REL3.2
+
+* SBSA: Faster Porting time
+* SBSA: Compile and run selected modules for Baremetal
+* SBSA: Addition of Exerciser porting guide
+* SBSA: Bug fixes and enhancements
+* SBSA: Optimization of code to reduce run-time
+* SBSA: Improved code quality
+
 v22.02_SR_REL1.0
 
 * PCIe: Implementation of skip for unsupported PAL API.

@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2020-2021, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2022, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,7 +17,7 @@
 
 #include "include/pal_pcie_enum.h"
 #include "include/pal_common_support.h"
-#include "include/platform_override_fvp.h"
+#include "include/platform_override_struct.h"
 
 extern PLATFORM_OVERRIDE_UART_INFO_TABLE platform_uart_cfg;
 extern PLATFORM_OVERRIDE_MEMORY_INFO_TABLE  platform_mem_cfg;
@@ -100,7 +100,7 @@ pal_peripheral_create_info_table(PERIPHERAL_INFO_TABLE *peripheralInfoTable)
              if ((reg_value & PCIE_ECAP_CIDR_MASK) == ECID_PASID)
              {
                   pal_pcie_read_cfg(curr_seg, curr_bus, curr_dev, curr_func, pasid_cap_offset + PASID_OFFSET, &max_pasid);
-                  per_info->max_pasids = (max_pasid >> PASID_NUM_SHIFT) && PASID_NUM_MASK;
+                  per_info->max_pasids = (max_pasid >> PASID_NUM_SHIFT) & PASID_NUM_MASK;
                   break;
              }
              pasid_cap_offset = ((reg_value >> PCIE_ECAP_NCPR_SHIFT) & PCIE_ECAP_NCPR_MASK);
@@ -155,7 +155,7 @@ pal_peripheral_create_info_table(PERIPHERAL_INFO_TABLE *peripheralInfoTable)
              if ((reg_value & PCIE_ECAP_CIDR_MASK) == ECID_PASID)
              {
                   pal_pcie_read_cfg(curr_seg, curr_bus, curr_dev, curr_func, pasid_cap_offset + PASID_OFFSET, &max_pasid);
-                  per_info->max_pasids = (max_pasid >> PASID_NUM_SHIFT) && PASID_NUM_MASK;
+                  per_info->max_pasids = (max_pasid >> PASID_NUM_SHIFT) & PASID_NUM_MASK;
                   break;
              }
              pasid_cap_offset = ((reg_value >> PCIE_ECAP_NCPR_SHIFT) & PCIE_ECAP_NCPR_MASK);

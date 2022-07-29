@@ -19,6 +19,7 @@
 #include "val/include/val_interface.h"
 
 #include "val/include/sbsa_avs_pcie.h"
+#include "val/include/sbsa_avs_pcie_spec.h"
 #include "val/include/sbsa_avs_pe.h"
 #include "val/include/sbsa_avs_memory.h"
 
@@ -70,9 +71,10 @@ payload(void)
           val_pcie_read_cfg(bdf, TYPE1_PBN, &reg_value);
           sec_bus = ((reg_value >> SECBN_SHIFT) & SECBN_MASK);
           sub_bus = ((reg_value >> SUBBN_SHIFT) & SUBBN_MASK);
+          status = val_pcie_data_link_layer_status(bdf);
 
           /* Skip the port, if switch is present below it or no device present*/
-          if ((sec_bus != sub_bus) || (sec_bus == 0))
+          if ((sec_bus != sub_bus) || (status != PCIE_DLL_LINK_STATUS_ACTIVE))
               continue;
 
           /* If test runs for atleast an endpoint */
