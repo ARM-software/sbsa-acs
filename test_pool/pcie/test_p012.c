@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, 2021 Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018,2022 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -36,7 +36,7 @@ payload (void)
   uint32_t index;
   uint32_t count;
   PERIPHERAL_IRQ_MAP *irq_map;
-  uint8_t status;
+  uint32_t status;
   uint32_t current_irq_pin;
   uint32_t next_irq_pin;
   uint64_t dev_bdf;
@@ -98,32 +98,39 @@ payload (void)
         val_print (AVS_PRINT_ERR, "\n       Maximum number of interrupts has been reached", 0);
         break;
       default:
-        val_print (AVS_PRINT_ERR, "\n       Unknown error", 0);
+        if (status == NOT_IMPLEMENTED)
+            val_print (AVS_PRINT_ERR, "\n       API not implemented", 0);
+        else
+            val_print (AVS_PRINT_ERR, "\n       Unknown error", 0);
         break;
       }
-    }
 
-    /* Compare IRQ routings */
-    if (!status) {
-      while (current_irq_pin < LEGACY_PCI_IRQ_CNT && status == 0) {
-        while (next_irq_pin < LEGACY_PCI_IRQ_CNT && status == 0) {
+      /* Compare IRQ routings */
+      if (!status) {
+        while (current_irq_pin < LEGACY_PCI_IRQ_CNT && status == 0) {
+          while (next_irq_pin < LEGACY_PCI_IRQ_CNT && status == 0) {
 
-          for (ccnt = 0; (ccnt < irq_map->legacy_irq_map[current_irq_pin].irq_count) && (status == 0); ccnt++) {
-            for (ncnt = 0; (ncnt < irq_map->legacy_irq_map[next_irq_pin].irq_count) && (status == 0); ncnt++) {
-              test_skip = 0;
-              if (irq_map->legacy_irq_map[current_irq_pin].irq_list[ccnt] ==
-                  irq_map->legacy_irq_map[next_irq_pin].irq_list[ncnt]) {
-                status = 7;
-                val_print (AVS_PRINT_ERR, "\n       Legacy interrupt %c routing", pin_name(current_irq_pin));
-                val_print (AVS_PRINT_ERR, "\n       is the same as %c routing", pin_name(next_irq_pin));
+            for (ccnt = 0; (ccnt < irq_map->legacy_irq_map[current_irq_pin].irq_count)
+                 && (status == 0); ccnt++) {
+              for (ncnt = 0; (ncnt < irq_map->legacy_irq_map[next_irq_pin].irq_count)
+                 && (status == 0); ncnt++) {
+                test_skip = 0;
+                if (irq_map->legacy_irq_map[current_irq_pin].irq_list[ccnt] ==
+                    irq_map->legacy_irq_map[next_irq_pin].irq_list[ncnt]) {
+                  status = 7;
+                  val_print (AVS_PRINT_ERR, "\n       Legacy interrupt %c routing",
+                                             pin_name(current_irq_pin));
+                  val_print (AVS_PRINT_ERR, "\n       is the same as %c routing",
+                                             pin_name(next_irq_pin));
+                }
               }
             }
-          }
 
-          next_irq_pin++;
+            next_irq_pin++;
+          }
+          current_irq_pin++;
+          next_irq_pin = current_irq_pin + 1;
         }
-        current_irq_pin++;
-        next_irq_pin = current_irq_pin + 1;
       }
     }
   }

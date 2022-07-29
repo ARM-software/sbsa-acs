@@ -1,10 +1,27 @@
+## @file
+ # Copyright (c) 2022, Arm Limited or its affiliates. All rights reserved.
+ # SPDX-License-Identifier : Apache-2.0
+ #
+ # Licensed under the Apache License, Version 2.0 (the "License");
+ # you may not use this file except in compliance with the License.
+ # You may obtain a copy of the License at
+ #
+ #  http://www.apache.org/licenses/LICENSE-2.0
+ #
+ # Unless required by applicable law or agreed to in writing, software
+ # distributed under the License is distributed on an "AS IS" BASIS,
+ # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ # See the License for the specific language governing permissions and
+ # limitations under the License.
+ ##
+
 SBSA_ROOT:= $(SBSA_PATH)
 SBSA_DIR := $(SBSA_ROOT)/platform/pal_baremetal/src/
 SBSA_A64_DIR := $(SBSA_ROOT)/platform/pal_baremetal/src/AArch64/
 FVP_DIR  := $(SBSA_ROOT)/platform/pal_baremetal/FVP/src/
 
 CFLAGS    += -I$(SBSA_ROOT)/
-CFLAGS    += -I$(SBSA_ROOT)/val/include
+CFLAGS    += -I$(SBSA_ROOT)/val/include/
 CFLAGS    += -I$(SBSA_ROOT)/platform/pal_baremetal/
 CFLAGS    += -I$(SBSA_ROOT)/platform/pal_baremetal/FVP/
 CFLAGS    += -I$(SBSA_ROOT)/platform/pal_baremetal/FVP/include/
@@ -16,6 +33,10 @@ LIB_DIR := $(SBSA_ROOT)/build/lib
 
 CC = $(GCC49_AARCH64_PREFIX)gcc -march=armv8.2-a
 AR = $(GCC49_AARCH64_PREFIX)ar
+CC_FLAGS = -g -Os -fshort-wchar -fno-builtin -fno-strict-aliasing -Wall -Werror -Wextra -Wmissing-declarations -Wstrict-prototypes -Wconversion -Wsign-conversion -Wstrict-overflow
+
+DEPS = $(SBSA_ROOT)/platform/pal_baremetal/FVP/include/platform_override_fvp.h
+DEPS += $(SBSA_ROOT)/val/include/pal_interface.h
 
 FILES   += $(foreach files,$(SBSA_DIR)/,$(wildcard $(files)/*.S))
 FILES   += $(foreach files,$(SBSA_DIR)/,$(wildcard $(files)/*.c))
@@ -38,17 +59,20 @@ create_dirs:
 	@mkdir ${OBJ_DIR}
 	@mkdir ${LIB_DIR}
 
+$(OBJ_DIR)/%.o: $(DEPS)
+	$(CC)  -c -o $@ $< >> $(OUT_DIR)/compile.log 2>&1
+
 $(OBJ_DIR)/%.o: $(SBSA_A64_DIR)/%.S
 	$(CC) $(CFLAGS) $(ASFLAGS) -c -o $@ $< >> $(OUT_DIR)/compile.log 2>&1
 
 $(OBJ_DIR)/%.o: $(SBSA_DIR)/%.c
-	$(CC) $(CFLAGS) -g -c -o $@ $< >> $(OUT_DIR)/compile.log 2>&1
+	$(CC) $(CC_FLAGS) $(CFLAGS) -c -o $@ $< >> $(OUT_DIR)/compile.log 2>&1
 
 $(OBJ_DIR)/%.o: $(SBSA_DIR)/%.S
 	$(CC) $(CFLAGS) $(ASFLAGS) -c -o $@ $< >> $(OUT_DIR)/compile.log 2>&1
 
 $(OBJ_DIR)/%.o: $(FVP_DIR)/%.c
-	$(CC) $(CFLAGS) -c -o $@ $< >> $(OUT_DIR)/compile.log 2>&1
+	$(CC) $(CC_FLAGS) $(CFLAGS) -c -o $@ $< >> $(OUT_DIR)/compile.log 2>&1
 
 $(OBJ_DIR)/%.o: $(SBSA_DIR)/AArch64/%.S
 	$(CC) $(CFLAGS) $(ASFLAGS) -c -o $@ $< >> $(OUT_DIR)/compile.log 2>&1

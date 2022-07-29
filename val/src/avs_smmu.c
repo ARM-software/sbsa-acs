@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2020, 2021 Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2022, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -99,9 +99,7 @@ val_smmu_execute_tests(uint32_t level, uint32_t num_pe)
       }
   }
 
-  if (status != AVS_STATUS_PASS) {
-      val_print(AVS_PRINT_ERR, "\n      One or more SMMU tests have failed...  \n", status);
-  }
+  val_print_test_end(status, "SMMU");
 
   return status;
 }
@@ -196,7 +194,7 @@ val_smmu_max_pasids(uint32_t smmu_index)
 {
   uint64_t smmu_base;
 
-  smmu_base = val_smmu_get_info(SMMU_CTRL_BASE, smmu_index);
+  smmu_base = val_iovirt_get_smmu_info(SMMU_CTRL_BASE, smmu_index);
   return pal_smmu_max_pasids(smmu_base);
 }
 

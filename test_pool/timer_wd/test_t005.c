@@ -28,7 +28,7 @@ static uint32_t intid;
 
 static
 void
-isr()
+isr(void)
 {
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
   /* We received our interrupt, so disable timer from generating further interrupts */
@@ -42,7 +42,7 @@ isr()
 
 static
 void
-payload()
+payload(void)
 {
 
   uint32_t timeout = TIMEOUT_LARGE;

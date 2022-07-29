@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018,2022 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -49,11 +49,9 @@ val_peripheral_execute_tests(uint32_t level, uint32_t num_pe)
   status = d001_entry(num_pe);
   status |= d002_entry(num_pe);
   status |= d003_entry(num_pe);
-  status |= m001_entry(num_pe);
 
-  if (status == AVS_STATUS_FAIL) {
-      val_print(AVS_PRINT_ERR, "\n    One or more Peripheral tests have failed...\n", status);
-  }
+  val_print_test_end(status, "Peripheral");
+
   return status;
 }
 #endif
@@ -118,66 +116,82 @@ val_peripheral_get_info(PERIPHERAL_INFO_e info_type, uint32_t instance)
           i = val_peripheral_get_entry_index(PERIPHERAL_TYPE_USB, instance);
           if (i != 0xFFFF)
               return g_peripheral_info_table->info[i].base0;
+          break;
       case USB_FLAGS:
           i = val_peripheral_get_entry_index(PERIPHERAL_TYPE_USB, instance);
           if (i != 0xFFFF)
               return g_peripheral_info_table->info[i].flags;
+          break;
       case USB_GSIV:
           i = val_peripheral_get_entry_index(PERIPHERAL_TYPE_USB, instance);
           if (i != 0xFFFF)
               return g_peripheral_info_table->info[i].irq;
+          break;
       case USB_BDF:
           i = val_peripheral_get_entry_index(PERIPHERAL_TYPE_USB, instance);
           if (i != 0xFFFF)
               return g_peripheral_info_table->info[i].bdf;
+          break;
       case SATA_BASE0:
           i = val_peripheral_get_entry_index(PERIPHERAL_TYPE_SATA, instance);
           if (i != 0xFFFF)
               return g_peripheral_info_table->info[i].base0;
+          break;
       case SATA_BASE1:
           i = val_peripheral_get_entry_index(PERIPHERAL_TYPE_SATA, instance);
           if (i != 0xFFFF)
               return g_peripheral_info_table->info[i].base1;
+          break;
       case SATA_FLAGS:
           i = val_peripheral_get_entry_index(PERIPHERAL_TYPE_SATA, instance);
           if (i != 0xFFFF)
               return g_peripheral_info_table->info[i].flags;
+          break;
       case SATA_BDF:
           i = val_peripheral_get_entry_index(PERIPHERAL_TYPE_SATA, instance);
           if (i != 0xFFFF)
               return g_peripheral_info_table->info[i].bdf;
+          break;
       case SATA_GSIV:
           i = val_peripheral_get_entry_index(PERIPHERAL_TYPE_SATA, instance);
           if (i != 0xFFFF)
               return g_peripheral_info_table->info[i].irq;
+          break;
       case UART_BASE0:
           i = val_peripheral_get_entry_index(PERIPHERAL_TYPE_UART, instance);
           if (i != 0xFFFF)
               return g_peripheral_info_table->info[i].base0;
+          break;
       case UART_GSIV:
           i = val_peripheral_get_entry_index(PERIPHERAL_TYPE_UART, instance);
           if (i != 0xFFFF)
               return g_peripheral_info_table->info[i].irq;
+          break;
       case UART_FLAGS:
           i = val_peripheral_get_entry_index(PERIPHERAL_TYPE_UART, instance);
           if (i != 0xFFFF)
               return g_peripheral_info_table->info[i].flags;
+          break;
       case ANY_FLAGS:
           i = val_peripheral_get_entry_index (PERIPHERAL_TYPE_NONE, instance);
           if (i != 0xFFFF)
               return g_peripheral_info_table->info[i].flags;
+          break;
       case ANY_GSIV:
           i = val_peripheral_get_entry_index (PERIPHERAL_TYPE_NONE, instance);
           if (i != 0xFFFF)
             return g_peripheral_info_table->info[i].irq;
+          break;
       case ANY_BDF:
           i = val_peripheral_get_entry_index (PERIPHERAL_TYPE_NONE, instance);
           if (i != 0xFFFF)
               return g_peripheral_info_table->info[i].bdf;
+          break;
       case MAX_PASIDS:
           i = val_peripheral_get_entry_index (PERIPHERAL_TYPE_NONE, instance);
           if (i != 0xFFFF)
               return g_peripheral_info_table->info[i].max_pasids;
+          break;
       default:
           break;
   }
@@ -209,7 +223,7 @@ val_peripheral_create_info_table(uint64_t *peripheral_info_table)
 
   pal_peripheral_create_info_table(g_peripheral_info_table);
 
-  val_print(AVS_PRINT_TEST, " Peripheral: Num of USB controllers   :    %d \n",
+  val_print(AVS_PRINT_TEST, "\n Peripheral: Num of USB controllers   :    %d \n",
     val_peripheral_get_info(NUM_USB, 0));
   val_print(AVS_PRINT_TEST, " Peripheral: Num of SATA controllers  :    %d \n",
     val_peripheral_get_info(NUM_SATA, 0));

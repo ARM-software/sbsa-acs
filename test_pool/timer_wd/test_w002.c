@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, 2020-2021 Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018, 2020-2022 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -29,7 +29,7 @@ static uint64_t wd_num;
 
 static
 void
-isr()
+isr(void)
 {
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
   val_wd_set_ws0(wd_num, 0);
@@ -41,7 +41,7 @@ isr()
 
 static
 void
-payload()
+payload(void)
 {
 
   uint32_t status, timeout, ns_wdg = 0;
@@ -63,7 +63,7 @@ payload()
           continue;    //Skip Secure watchdog
 
       ns_wdg++;
-      timeout = val_timer_get_info(TIMER_INFO_CNTFREQ, 0) * 2;
+      timeout = val_get_counter_frequency() * 2;
       val_set_status(index, RESULT_PENDING(g_sbsa_level, TEST_NUM));     // Set the initial result to pending
 
       int_id       = val_wd_get_info(wd_num, WD_INFO_GSIV);
@@ -79,7 +79,7 @@ payload()
 
       status = val_wd_set_ws0(wd_num, timer_expire_ticks);
       if (status) {
-          val_print(AVS_PRINT_ERR, "\n       Setting watchdof timeout failed", 0);
+          val_print(AVS_PRINT_ERR, "\n       Setting watchdog timeout failed", 0);
           val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
           return;
       }
@@ -111,9 +111,10 @@ w002_entry(uint32_t num_pe)
 
   num_pe = 1;  //This Timer test is run on single processor
 
-  val_initialize_test(TEST_NUM, TEST_DESC, num_pe, g_sbsa_level);
-
-  val_run_test_payload(TEST_NUM, num_pe, payload, 0);
+  status = val_initialize_test(TEST_NUM, TEST_DESC, num_pe, g_sbsa_level);
+  /* This check is when user is forcing us to skip this test */
+  if (status != AVS_STATUS_SKIP)
+      val_run_test_payload(TEST_NUM, num_pe, payload, 0);
 
   /* get the result from all PE and check for failure */
   error_flag = val_check_for_error(TEST_NUM, num_pe);

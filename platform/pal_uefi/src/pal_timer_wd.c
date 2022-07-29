@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2018-2019, 2021 Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2018-2019, 2021-2022 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -107,7 +107,7 @@ pal_timer_create_info_table(TIMER_INFO_TABLE *TimerTable)
       GtEntry->type = TIMER_TYPE_SYS_TIMER;
       GtEntry->block_cntl_base = Entry->CntCtlBase;
       GtEntry->timer_count     = Entry->GTBlockTimerCount;
-      sbsa_print(AVS_PRINT_DEBUG, L" CNTCTLBase = %x \n", GtEntry->block_cntl_base);
+      sbsa_print(AVS_PRINT_DEBUG, L" CNTCTLBase = %llx \n", GtEntry->block_cntl_base);
       GtBlockTimer = (EFI_ACPI_6_1_GTDT_GT_BLOCK_TIMER_STRUCTURE *)(((UINT8 *)Entry) + Entry->GTBlockTimerOffset);
       for (i = 0; i < GtEntry->timer_count; i++) {
         sbsa_print(AVS_PRINT_INFO, L" Found timer entry \n");
@@ -118,7 +118,7 @@ pal_timer_create_info_table(TIMER_INFO_TABLE *TimerTable)
         GtEntry->virt_gsiv[i]    = GtBlockTimer->GTxVirtualTimerGSIV;
         GtEntry->flags[i]        = GtBlockTimer->GTxPhysicalTimerFlags | (GtBlockTimer->GTxVirtualTimerFlags << 8) | (GtBlockTimer->GTxCommonFlags << 16);
         sbsa_print(AVS_PRINT_DEBUG,
-                   L" CNTBaseN = %x for sys counter = %d\n", GtEntry->GtCntBase[i], i);
+                   L" CNTBaseN = %llx for sys counter = %d\n", GtEntry->GtCntBase[i], i);
         GtBlockTimer++;
         TimerTable->header.num_platform_timer++;
       }
@@ -136,6 +136,20 @@ pal_timer_create_info_table(TIMER_INFO_TABLE *TimerTable)
 
   pal_timer_platform_override(TimerTable);
 
+}
+
+/**
+  @brief  This API gets the counter frequency value from user
+
+  @param  None
+
+  @return Counter frequency value
+**/
+
+UINT64
+pal_timer_get_counter_frequency(VOID)
+{
+  return PLATFORM_OVERRIDE_TIMER_CNTFRQ;
 }
 
 /* Only one watchdog information can be assigned as an override */
@@ -206,7 +220,7 @@ pal_wd_create_info_table(WD_INFO_TABLE *WdTable)
       WdEntry->wd_flags        = Entry->WatchdogTimerFlags;
       WdTable->header.num_wd++;
       sbsa_print(AVS_PRINT_DEBUG,
-                 L" Watchdog base = 0x%x INTID = 0x%x \n", WdEntry->wd_ctrl_base,
+                 L" Watchdog base = 0x%llx INTID = 0x%x \n", WdEntry->wd_ctrl_base,
                  WdEntry->wd_gsiv);
       WdEntry++;
     }

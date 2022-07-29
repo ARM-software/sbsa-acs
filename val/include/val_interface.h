@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2021, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2022, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -36,6 +36,8 @@
 #define AVS_STATUS_NIST_PASS 0x1
 #define AVS_INVALID_INDEX    0xFFFFFFFF
 
+#define NOT_IMPLEMENTED         0x4B1D  /* Feature or API not imeplemented */
+
 #define VAL_EXTRACT_BITS(data, start, end) ((data >> start) & ((1ul << (end-start+1))-1))
 
 #ifndef TARGET_UEFI
@@ -53,7 +55,9 @@
 void val_allocate_shared_mem(void);
 void val_free_shared_mem(void);
 void val_print(uint32_t level, char8_t *string, uint64_t data);
-void val_print_raw(uint32_t level, char8_t *string, uint64_t data);
+void val_print_raw(uint64_t uart_address, uint32_t level, char8_t *string,
+                                                                uint64_t data);
+void val_print_test_end(uint32_t status, char8_t *string);
 void val_set_test_data(uint32_t index, uint64_t addr, uint64_t test_data);
 void val_get_test_data(uint32_t index, uint64_t *data0, uint64_t *data1);
 uint32_t val_strncmp(char8_t *str1, char8_t *str2, uint32_t len);
@@ -165,6 +169,7 @@ void     val_wd_free_info_table(void);
 uint32_t val_wd_execute_tests(uint32_t level, uint32_t num_pe);
 uint64_t val_wd_get_info(uint32_t index, uint32_t info_type);
 uint32_t val_wd_set_ws0(uint32_t index, uint32_t timeout);
+uint64_t val_get_counter_frequency(void);
 
 
 /* PCIE VAL APIs */
@@ -173,10 +178,12 @@ void     val_pcie_create_info_table(uint64_t *pcie_info_table);
 uint32_t val_pcie_create_device_bdf_table(void);
 addr_t val_pcie_get_ecam_base(uint32_t rp_bdf);
 void *val_pcie_bdf_table_ptr(void);
+uint32_t val_pcie_get_max_bdf(void);
 void     val_pcie_free_info_table(void);
 uint32_t val_pcie_execute_tests(uint32_t enable_pcie, uint32_t level, uint32_t num_pe);
 uint32_t val_pcie_is_devicedma_64bit(uint32_t bdf);
 uint32_t val_pcie_scan_bridge_devices_and_check_memtype(uint32_t bdf);
+uint32_t val_pcie_device_driver_present(uint32_t bdf);
 void val_pcie_read_ext_cap_word(uint32_t bdf, uint32_t ext_cap_id, uint8_t offset, uint16_t *val);
 uint32_t val_pcie_get_pcie_type(uint32_t bdf);
 uint32_t val_pcie_p2p_support(void);
@@ -206,6 +213,7 @@ void val_pcie_clear_device_status_error(uint32_t bdf);
 uint32_t val_pcie_is_device_status_error(uint32_t bdf);
 uint32_t val_pcie_is_sig_target_abort(uint32_t bdf);
 void val_pcie_clear_sig_target_abort(uint32_t bdf);
+uint32_t val_pcie_mem_get_offset(uint32_t type);
 
 /* IO-VIRT APIs */
 typedef enum {
@@ -244,6 +252,7 @@ void     val_iovirt_free_info_table(void);
 uint32_t val_iovirt_get_rc_smmu_index(uint32_t rc_seg_num, uint32_t rid);
 uint32_t val_smmu_execute_tests(uint32_t level, uint32_t num_pe);
 uint64_t val_smmu_get_info(SMMU_INFO_e, uint32_t index);
+uint64_t val_iovirt_get_smmu_info(SMMU_INFO_e type, uint32_t index);
 
 typedef enum {
     DMA_NUM_CTRL = 1,

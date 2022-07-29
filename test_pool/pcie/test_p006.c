@@ -18,6 +18,7 @@
 #include "val/include/val_interface.h"
 
 #include "val/include/sbsa_avs_dma.h"
+#include "val/include/sbsa_avs_pcie.h"
 #include "val/include/sbsa_avs_smmu.h"
 
 #define TEST_NUM   (AVS_PCIE_TEST_NUM_BASE + 6)

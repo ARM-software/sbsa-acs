@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2021, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2022, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -81,6 +81,8 @@ val_pcie_read_cfg(uint32_t bdf, uint32_t offset, uint32_t *data)
   /* There are 8 functions / device, 32 devices / Bus and each has a 4KB config space */
   cfg_addr = (bus * PCIE_MAX_DEV * PCIE_MAX_FUNC * 4096) + \
                (dev * PCIE_MAX_FUNC * 4096) + (func * 4096);
+
+  val_print(AVS_PRINT_INFO, "\n Calculated config address is %llx", ecam_base + cfg_addr + offset);
 
   *data = pal_mmio_read(ecam_base + cfg_addr + offset);
   return 0;
@@ -344,9 +346,7 @@ val_pcie_execute_tests(uint32_t enable_pcie, uint32_t level, uint32_t num_pe)
     status |= p057_entry(num_pe);
   }
 
-  if (status != AVS_STATUS_PASS) {
-      val_print(AVS_PRINT_ERR, "\n     One or more PCIe tests have failed.... \n", status);
-  }
+  val_print_test_end(status, "PCIe");
 
   return status;
 }
@@ -484,6 +484,7 @@ val_pcie_create_device_bdf_table()
   uint32_t bdf;
   uint32_t reg_value;
   uint32_t cid_offset;
+  uint32_t status;
 
   /* if table is already present, return success */
   if (g_pcie_bdf_table)
@@ -542,7 +543,12 @@ val_pcie_create_device_bdf_table()
                       if (val_pcie_find_capability(bdf, PCIE_CAP, CID_PCIECS,  &cid_offset) != PCIE_SUCCESS)
                           continue;
 
+                      status = pal_pcie_check_device_valid(bdf);
+                      if (status)
+                          continue;
+
                       g_pcie_bdf_table->device[g_pcie_bdf_table->num_entries++].bdf = bdf;
+
                   }
               }
           }
@@ -743,6 +749,24 @@ val_pcie_is_devicedma_64bit(uint32_t bdf)
   uint32_t func = PCIE_EXTRACT_BDF_FUNC (bdf);
 
   return (pal_pcie_is_devicedma_64bit(seg, bus, dev, func));
+}
+
+/**
+  @brief   This API checks if device driver present for a pcie device
+           1. Caller       -  Test Suite
+  @param   bdf      - PCIe BUS/Device/Function
+  @return  0 -> not Present, 1 -> Present
+**/
+uint32_t
+val_pcie_device_driver_present(uint32_t bdf)
+{
+
+  uint32_t seg  = PCIE_EXTRACT_BDF_SEG (bdf);
+  uint32_t bus  = PCIE_EXTRACT_BDF_BUS (bdf);
+  uint32_t dev  = PCIE_EXTRACT_BDF_DEV (bdf);
+  uint32_t func = PCIE_EXTRACT_BDF_FUNC (bdf);
+
+  return pal_pcie_device_driver_present(seg, bus, dev, func);
 }
 
 /**
@@ -1527,6 +1551,8 @@ uint32_t val_pcie_bitfield_check(uint32_t bdf, uint64_t *bitfield_entry)
   {
       val_print(AVS_PRINT_ERR, "\n       BDF 0x%x : ", bdf);
       val_print(AVS_PRINT_ERR, bf_entry->err_str1, 0);
+      val_print(AVS_PRINT_ERR, ": 0x%x", bf_value);
+      val_print(AVS_PRINT_ERR, " instead of 0x%x", bf_entry->cfg_value);
       if (!val_strncmp(bf_entry->err_str1, "WARNING", WARN_STR_LEN))
           return 0;
       return 1;
@@ -1581,6 +1607,8 @@ uint32_t val_pcie_bitfield_check(uint32_t bdf, uint64_t *bitfield_entry)
   {
       val_print(AVS_PRINT_ERR, "\n       BDF 0x%x : ", bdf);
       val_print(AVS_PRINT_ERR, bf_entry->err_str2, 0);
+      val_print(AVS_PRINT_ERR, ": 0x%x", reg_overwrite_value);
+      val_print(AVS_PRINT_ERR, " instead of 0x%x", reg_value);
       if (!val_strncmp(bf_entry->err_str2, "WARNING", WARN_STR_LEN))
           return 0;
       return 1;
@@ -1687,7 +1715,7 @@ val_pcie_function_header_type(uint32_t bdf)
 
   @param  bdf   - Segment/Bus/Dev/Func in the format of PCIE_CREATE_BDF
   @param  base  - Base Address Register address in 64-bit format
-  @return BAR address in 64-bit format, if found. Else NULL pointer.
+  @return Success BAR address in 64-bit format, if found. Else NULL pointer.
 **/
 void
 val_pcie_get_mmio_bar(uint32_t bdf, void *base)
@@ -1697,6 +1725,22 @@ val_pcie_get_mmio_bar(uint32_t bdf, void *base)
   uint32_t *base_ptr;
   uint32_t bar_low32bits;
   uint32_t bar_high32bits;
+  uint64_t ecam;
+  uint32_t status;
+  exerciser_data_t data;
+
+  if (pal_is_bdf_exerciser(bdf))
+  {
+      ecam = val_pcie_get_ecam_base(bdf);
+      status = pal_exerciser_get_data(EXERCISER_DATA_MMIO_SPACE, &data, bdf, ecam);
+      if (status == NOT_IMPLEMENTED)
+      {
+          val_print(AVS_PRINT_ERR, "\n       pal_exerciser_get_data() not implemented", 0);
+      }
+
+      *(uint64_t *)base = (uint64_t)data.bar_space.base_addr;
+      return;
+  }
 
   index = 0;
   base_ptr = (uint32_t *) base;
@@ -1837,6 +1881,7 @@ val_pcie_get_rootport(uint32_t bdf, uint32_t *rp_bdf)
 {
 
   uint32_t index;
+  uint32_t seg_num;
   uint32_t sec_bus;
   uint32_t sub_bus;
   uint32_t reg_value;
@@ -1846,7 +1891,7 @@ val_pcie_get_rootport(uint32_t bdf, uint32_t *rp_bdf)
 
   dp_type = val_pcie_device_port_type(bdf);
 
-  val_print(AVS_PRINT_DEBUG, " DP type 0x%x", dp_type);
+  val_print(AVS_PRINT_DEBUG, " DP type 0x%x ", dp_type);
 
   /* If the device is RP, set its rootport value to same */
   if (dp_type == RP)
@@ -1872,13 +1917,15 @@ val_pcie_get_rootport(uint32_t bdf, uint32_t *rp_bdf)
        * bus number falls within that range.
        */
       val_pcie_read_cfg(*rp_bdf, TYPE1_PBN, &reg_value);
+      seg_num = PCIE_EXTRACT_BDF_SEG(*rp_bdf);
       sec_bus = ((reg_value >> SECBN_SHIFT) & SECBN_MASK);
       sub_bus = ((reg_value >> SUBBN_SHIFT) & SUBBN_MASK);
       dp_type = val_pcie_device_port_type(*rp_bdf);
 
       if (((dp_type == RP) || (dp_type == iEP_RP)) &&
           (sec_bus <= PCIE_EXTRACT_BDF_BUS(bdf)) &&
-          (sub_bus >= PCIE_EXTRACT_BDF_BUS(bdf)))
+          (sub_bus >= PCIE_EXTRACT_BDF_BUS(bdf)) &&
+          (seg_num == PCIE_EXTRACT_BDF_SEG(bdf)))
           return 0;
   }
 
@@ -2084,3 +2131,16 @@ uint32_t val_pcie_get_ecam_index(uint32_t bdf, uint32_t *ecam_index)
   return 1;
 }
 
+/**
+  @brief  Returns the memory offset that can be
+          accessed from the BAR base and is within
+          BAR limit value
+
+  @param  type
+  @return memory offset
+
+**/
+uint32_t val_pcie_mem_get_offset(uint32_t type)
+{
+  return pal_pcie_mem_get_offset(type);
+}

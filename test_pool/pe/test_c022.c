@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, 2020-2021 Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018, 2020-2022 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -31,7 +31,7 @@ static void check_pointer_signing_algorithm(uint32_t index, uint64_t data)
     else
         val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
 }
-static void payload()
+static void payload(void)
 {
     uint64_t data = val_pe_reg_read(ID_AA64ISAR1_EL1);
     uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());

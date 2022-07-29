@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2020-2021, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2022, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -551,6 +551,21 @@ pal_pcie_is_devicedma_64bit(uint32_t seg, uint32_t bus, uint32_t dev, uint32_t f
 }
 
 /**
+    @brief   Return if driver present for pcie device
+    @param   bus        PCI bus address
+    @param   dev        PCI device address
+    @param   fn         PCI function number
+    @return  Driver present : 0 or 1
+**/
+uint32_t
+pal_pcie_device_driver_present(uint32_t seg, uint32_t bus, uint32_t dev, uint32_t fn)
+{
+
+  return 1;
+
+}
+
+/**
   @brief  This API checks if a PCIe device has an Address
           Translation Cache or not.
   @param   bdf      - PCIe BUS/Device/Function
@@ -807,4 +822,27 @@ uint32_t pal_pcie_check_device_list(void)
       }
     }
     return 0;
+}
+
+/**
+  @brief  Returns the memory offset that can be accesed.
+          This offset is platform-specific. It needs to
+          be modified according to the requirement.
+
+  @param  memory offset
+  @return memory offset
+**/
+uint32_t
+pal_pcie_mem_get_offset(uint32_t type)
+{
+
+  switch (type) {
+      case MEM_OFFSET_SMALL:
+         return MEM_OFFSET_SMALL;
+      case MEM_OFFSET_MEDIUM:
+         return MEM_OFFSET_MEDIUM;
+      default:
+         return MEM_OFFSET_SMALL;
+  }
+
 }

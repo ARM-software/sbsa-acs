@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2020, 2021 Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2022, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,7 +18,6 @@
 #include "include/pal_common_support.h"
 #include "include/pal_pcie_enum.h"
 #include "FVP/include/platform_override_struct.h"
-
 
 uint64_t
 pal_pcie_get_mcfg_ecam();
@@ -465,6 +464,7 @@ uint32_t pal_exerciser_get_data(EXERCISER_DATA_TYPE Type, exerciser_data_t *Data
   uint32_t Index;
   uint64_t EcamBase;
   uint64_t EcamBAR0;
+  uint64_t EcamBAR;
 
   EcamBase = (Ecam + pal_exerciser_get_pcie_config_offset(Bdf));
 
@@ -489,6 +489,37 @@ uint32_t pal_exerciser_get_data(EXERCISER_DATA_TYPE Type, exerciser_data_t *Data
           else
               Data->bar_space.type = MMIO_NON_PREFETCHABLE;
           return 0;
+      case EXERCISER_DATA_MMIO_SPACE:
+          Index = 0;
+          Data->bar_space.base_addr = 0;
+          while (Index < TYPE0_MAX_BARS)
+          {
+              EcamBAR = pal_exerciser_get_ecsr_base(Bdf, Index * 4);
+
+              /* Check if the BAR is Memory Mapped IO type */
+              if (((EcamBAR >> BAR_MIT_SHIFT) & BAR_MIT_MASK) == MMIO)
+              {
+                  Data->bar_space.base_addr = (void *)(EcamBAR);
+                  if (((EcamBAR >> PREFETCHABLE_BIT_SHIFT) & MASK_BIT) == 0x1)
+                      Data->bar_space.type = MMIO_PREFETCHABLE;
+                  else
+                      Data->bar_space.type = MMIO_NON_PREFETCHABLE;
+
+                  Data->bar_space.base_addr = (void *)EcamBAR;
+                  return 0;
+              }
+
+              if (((EcamBAR >> BAR_MDT_SHIFT) & BAR_MDT_MASK) == BITS_64)
+              {
+                  /* Adjust the index to skip next sequential BAR */
+                  Index++;
+              }
+
+              /* Adjust index to point to next BAR */
+              Index++;
+          }
+
+          return 1;
       default:
           return 1;
     }

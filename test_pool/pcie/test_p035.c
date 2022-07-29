@@ -25,6 +25,7 @@
 #define TEST_NUM   (AVS_PCIE_TEST_NUM_BASE + 35)
 #define TEST_DESC  "Check Function level reset rule   "
 
+static
 uint32_t is_flr_failed(uint32_t bdf)
 {
   uint32_t reg_value;

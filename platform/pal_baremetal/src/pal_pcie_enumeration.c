@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2020-2021,2022 Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2022 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -216,22 +216,23 @@ void pal_pcie_program_bar_reg(uint32_t bus, uint32_t dev, uint32_t func)
             **/
             if ((p_bar64_size == 0) && ((g_64_bus == bus)))
             {
-                if (g_np_bar_size < bar_size)
-                    g_bar32_np_start = g_bar32_np_start + bar_size;
+                if (g_bar64_size < bar_size)
+                    g_bar64_p_start = g_bar64_p_start + bar_size;
                 else
-                    g_bar32_np_start = g_bar32_np_start + g_np_bar_size;
+                    g_bar64_p_start = g_bar64_p_start + g_bar64_size;
             }
-
-            else if ((g_np_bar_size < bar_size) && (p_bar64_size != 0))
-                g_bar32_np_start = g_bar32_np_start + bar_size;
+            else if ((g_bar64_size < bar_size) && (p_bar64_size != 0))
+                g_bar64_p_start = g_bar64_p_start + bar_size;
 
             else
-                g_bar32_np_start = g_bar32_np_start + p_bar64_size;
+                g_bar64_p_start = g_bar64_p_start + p_bar64_size;
 
             pal_pci_cfg_write(bus, dev, func, offset, g_bar64_p_start);
-            print(AVS_PRINT_INFO, "Value written to BAR register is %x\n", g_bar64_p_start);
+            pal_pci_cfg_write(bus, dev, func, offset + 4, g_bar64_p_start >> 32);
+
+            print(AVS_PRINT_INFO, "Value written to BAR register is %llx\n", g_bar64_p_start);
             p_bar64_size = bar_size;
-            g_np_bar_size = bar_size;
+            g_bar64_size = bar_size;
             g_64_bus = bus;
             offset = offset + 8;
 
@@ -469,6 +470,12 @@ pal_clear_pri_bus()
 
 void pal_pcie_enumerate(void)
 {
+    if (g_pcie_info_table->num_entries == 0)
+    {
+         print(AVS_PRINT_TEST, "\nSkipping Enumeration", 0);
+         return;
+    }
+
     print(AVS_PRINT_TEST, "\nStarting Enumeration \n", 0);
     pal_pcie_enumerate_device(PRI_BUS, SEC_BUS);
     pal_clear_pri_bus();
@@ -575,7 +582,7 @@ pal_pcie_get_base(uint32_t bdf, uint32_t bar_index)
      bar_value = bar_value | (bar_upper_bits << 32 );
   }
 
-  print(AVS_PRINT_INFO, "value read from BAR %x\n", bar_value);
+  print(AVS_PRINT_INFO, "value read from BAR 0x%llx\n", bar_value);
 
   return bar_value;
 
@@ -622,4 +629,22 @@ pal_pci_bdf_to_dev(uint32_t bdf)
 
   return (void *)device_id;
 
+}
+
+/**
+  @brief  This API is used as placeholder to check if the bdf
+          obtained is valid or not
+
+  @param  bdf
+  @return 0 if bdf is valid else 1
+**/
+uint32_t
+pal_pcie_check_device_valid(uint32_t bdf)
+{
+
+  /*Add BDFs to this function if PCIe tests
+    need to be ignored for a BDF for any reason
+  */
+
+  return 0;
 }

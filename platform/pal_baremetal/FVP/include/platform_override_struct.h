@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2020-2021, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2022, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -139,6 +139,16 @@ struct exerciser_data_bar_space {
     BAR_MEM_TYPE type;
 };
 
+typedef enum {
+  MMIO = 0,
+  IO = 1
+} BAR_MEM_INDICATOR_TYPE;
+
+typedef enum {
+  BITS_32 = 0,
+  BITS_64 = 2
+} BAR_MEM_DECODE_TYPE;
+
 typedef union exerciser_data {
     struct exerciser_data_cfg_space cfg_space;
     struct exerciser_data_bar_space bar_space;
@@ -147,6 +157,7 @@ typedef union exerciser_data {
 typedef enum {
     EXERCISER_DATA_CFG_SPACE = 0x1,
     EXERCISER_DATA_BAR0_SPACE = 0x2,
+    EXERCISER_DATA_MMIO_SPACE = 0x3,
 } EXERCISER_DATA_TYPE;
 
 typedef enum {

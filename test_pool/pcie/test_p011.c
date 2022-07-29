@@ -19,6 +19,7 @@
 #include "val/include/val_interface.h"
 
 #include "val/include/sbsa_avs_iovirt.h"
+#include "val/include/sbsa_avs_pcie.h"
 
 #define TEST_NUM   (AVS_PCIE_TEST_NUM_BASE + 11)
 #define TEST_DESC  "PCIe RC & PE, Same Inner SH Domain"

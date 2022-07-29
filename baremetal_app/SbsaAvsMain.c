@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2021, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2022, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,7 +23,6 @@
 #include "platform/pal_baremetal/FVP/include/platform_override_fvp.h"
 #include "SbsaAvs.h"
 
-
 uint32_t  g_sbsa_level;
 uint32_t  g_enable_pcie_tests;
 uint32_t  g_print_level;
@@ -37,6 +36,8 @@ uint32_t  g_sbsa_tests_fail;
 uint64_t  g_stack_pointer;
 uint64_t  g_exception_ret_addr;
 uint64_t  g_ret_addr;
+uint32_t  g_wakeup_timeout;
+
 uint32_t  g_skip_test_num[MAX_TEST_SKIP_NUM] = { 10000, 10000, 10000, 10000, 10000,
                                                10000, 10000, 10000, 10000 };
 
@@ -92,7 +93,8 @@ createTimerInfoTable(
 {
   uint64_t   *TimerInfoTable;
 
-  TimerInfoTable = val_memory_alloc(sizeof(TIMER_INFO_TABLE) + (2 * sizeof(TIMER_INFO_GTBLOCK)));
+  TimerInfoTable = val_memory_alloc(sizeof(TIMER_INFO_TABLE)
+                   + (PLATFORM_OVERRIDE_TIMER_COUNT * sizeof(TIMER_INFO_GTBLOCK)));
 
   val_timer_create_info_table(TimerInfoTable);
 }
@@ -103,7 +105,8 @@ createWatchdogInfoTable(
 {
   uint64_t *WdInfoTable;
 
-  WdInfoTable = val_memory_alloc(sizeof(WD_INFO_TABLE) + (2 * sizeof(WD_INFO_BLOCK)));
+  WdInfoTable = val_memory_alloc(sizeof(WD_INFO_TABLE)
+                + (PLATFORM_OVERRIDE_WD_TIMER_COUNT * sizeof(WD_INFO_BLOCK)));
 
   val_wd_create_info_table(WdInfoTable);
 }
@@ -116,11 +119,14 @@ createPcieVirtInfoTable(
   uint64_t   *PcieInfoTable;
   uint64_t   *IoVirtInfoTable;
 
-  PcieInfoTable = val_memory_alloc(sizeof(PCIE_INFO_TABLE) + (1 * sizeof(PCIE_INFO_BLOCK)));
+  PcieInfoTable = val_memory_alloc(sizeof(PCIE_INFO_TABLE)
+                  + (PLATFORM_OVERRIDE_NUM_ECAM * sizeof(PCIE_INFO_BLOCK)));
   val_pcie_create_info_table(PcieInfoTable);
 
-  IoVirtInfoTable = val_memory_alloc(sizeof(IOVIRT_INFO_TABLE) + (4 * sizeof(IOVIRT_BLOCK))
-                                                               + (16 * sizeof(ID_MAP)));
+  IoVirtInfoTable = val_memory_alloc(sizeof(IOVIRT_INFO_TABLE)
+                    + ((IOVIRT_ITS_COUNT + IOVIRT_SMMUV3_COUNT + IOVIRT_RC_COUNT
+                    + IOVIRT_SMMUV2_COUNT + IOVIRT_NAMED_COMPONENT_COUNT + IOVIRT_PMCG_COUNT)
+                    * sizeof(IOVIRT_BLOCK)) + (IOVIRT_MAX_NUM_MAP * sizeof(ID_MAP)));
   val_iovirt_create_info_table(IoVirtInfoTable);
 }
 
@@ -131,11 +137,12 @@ createPeripheralInfoTable(
   uint64_t   *PeripheralInfoTable;
   uint64_t   *MemoryInfoTable;
 
-  PeripheralInfoTable = val_memory_alloc(sizeof(PERIPHERAL_INFO_TABLE) +
-                                        (1 * sizeof(PERIPHERAL_INFO_BLOCK)));
+  PeripheralInfoTable = val_memory_alloc(sizeof(PERIPHERAL_INFO_TABLE)
+                        + (PLATFORM_OVERRIDE_PERIPHERAL_COUNT * sizeof(PERIPHERAL_INFO_BLOCK)));
   val_peripheral_create_info_table(PeripheralInfoTable);
 
-  MemoryInfoTable = val_memory_alloc(sizeof(MEMORY_INFO_TABLE) + (4 * sizeof(MEM_INFO_BLOCK)));
+  MemoryInfoTable = val_memory_alloc(sizeof(MEMORY_INFO_TABLE)
+                    + (PLATFORM_OVERRIDE_MEMORY_ENTRY_COUNT * sizeof(MEM_INFO_BLOCK)));
   val_memory_create_info_table(MemoryInfoTable);
 }
 
@@ -196,6 +203,7 @@ ShellAppMainsbsa(
   g_execute_nist = FALSE;
   g_print_mmio = FALSE;
   g_enable_pcie_tests = 1;
+  g_wakeup_timeout = PLATFORM_OVERRIDE_TIMEOUT;
 
   //
   // Initialize global counters

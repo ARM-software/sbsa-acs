@@ -25,6 +25,10 @@
 /* PCIe Config space Offset */
 #define COMMAND_REG_OFFSET 0x04
 
+
+#define MASTER_ABORT_MASK  0x20000000
+#define MASTER_ABORT_SHIFT 29
+
 typedef struct {
     uint32_t bdf;
     uint32_t initialized;

@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2019, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2019, 2022 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,11 +19,12 @@
 #include "val/include/val_interface.h"
 
 #include "val/include/sbsa_avs_smmu.h"
+#include "val/include/sbsa_avs_pcie.h"
 
 #define TEST_NUM   (AVS_PCIE_TEST_NUM_BASE + 10)
 #define TEST_DESC  "PASID support atleast 16 bits     "
 
-#define MIN_PASID_SUPPORT (1 << 16)
+#define MIN_PASID_SUPPORT 16
 
 static void
 payload(void)
@@ -51,10 +52,10 @@ payload(void)
   {
      /* For each SMMUv3 check for PASID support */
      /* If PASID is supported, test the max number of PASIDs supported */
-     num_smmu = val_smmu_get_info(SMMU_NUM_CTRL, 0);
-     for(num_smmu--; num_smmu >= 0; num_smmu--)
+     num_smmu = val_iovirt_get_smmu_info(SMMU_NUM_CTRL, 0);
+          for (num_smmu--; num_smmu >= 0; num_smmu--)
      {
-         if(val_smmu_get_info(SMMU_CTRL_ARCH_MAJOR_REV, num_smmu) == 3)
+         if (val_iovirt_get_smmu_info(SMMU_CTRL_ARCH_MAJOR_REV, num_smmu) == 3)
          {
              if((max_pasids = val_smmu_max_pasids(num_smmu)) > 0)
              {
