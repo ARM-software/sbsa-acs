@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, 2020-2021 Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018, 2020-2022 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,7 +23,9 @@
 #define TEST_NUM   (AVS_SMMU_TEST_NUM_BASE + 3)
 #define TEST_DESC  "SMMU Compatibility Check          "
 
-static void payload()
+static
+void
+payload(void)
 {
 
     uint64_t data;

@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2020, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2020, 2022 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,7 +15,7 @@
  * limitations under the License.
 **/
 
-#include "include/platform_override_fvp.h"
+#include "include/platform_override_struct.h"
 #include "include/pal_common_support.h"
 
 extern PLATFORM_OVERRIDE_TIMER_INFO_TABLE platform_timer_cfg;
@@ -66,6 +66,19 @@ pal_timer_create_info_table(TIMER_INFO_TABLE *TimerTable)
      TimerTable->header.num_platform_timer++;
 
   }
+}
+
+/**
+  @brief  This API gets the counter frequency value from user
+
+  @param  None
+
+  @return Counter frequency value
+**/
+uint64_t
+pal_timer_get_counter_frequency(void)
+{
+  return PLATFORM_OVERRIDE_TIMER_CNTFRQ;
 }
 
 

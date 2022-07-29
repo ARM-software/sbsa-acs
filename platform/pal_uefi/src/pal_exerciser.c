@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2018-2021, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2018-2022, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -91,26 +91,6 @@ pal_exerciser_get_pcie_config_offset(UINT32 Bdf)
                (dev * PCIE_MAX_FUNC * 4096) + (func * 4096);
 
   return cfg_addr;
-}
-
-
-/**
-  @brief  This API returns if the device is a exerciser
-  @param  bdf - Bus/Device/Function
-  @return 1 - true 0 - false
-**/
-UINT32
-pal_is_bdf_exerciser(UINT32 bdf)
-{
-  UINT64 Ecam;
-  UINT32 vendor_dev_id;
-  Ecam = pal_pcie_get_mcfg_ecam();
-
-  vendor_dev_id = pal_mmio_read(Ecam + pal_exerciser_get_pcie_config_offset(bdf));
-  if (vendor_dev_id == EXERCISER_ID)
-     return 1;
-  else
-     return 0;
 }
 
 /**
@@ -483,6 +463,7 @@ pal_exerciser_get_data (
   UINT32 Index;
   UINT64 EcamBase;
   UINT64 EcamBAR0;
+  UINT64 EcamBAR;
 
   EcamBase = (Ecam + pal_exerciser_get_pcie_config_offset(Bdf));
 
@@ -507,7 +488,60 @@ pal_exerciser_get_data (
           else
               Data->bar_space.type = MMIO_NON_PREFETCHABLE;
           return 0;
+      case EXERCISER_DATA_MMIO_SPACE:
+          Index = 0;
+          Data->bar_space.base_addr = 0;
+          while (Index < TYPE0_MAX_BARS)
+          {
+              EcamBAR = pal_exerciser_get_ecsr_base(Bdf, Index * 4);
+
+              /* Check if the BAR is Memory Mapped IO type */
+              if (((EcamBAR >> BAR_MIT_SHIFT) & BAR_MIT_MASK) == MMIO)
+              {
+                  Data->bar_space.base_addr = (void *)(EcamBAR);
+                  if (((EcamBAR >> PREFETCHABLE_BIT_SHIFT) & MASK_BIT) == 0x1)
+                      Data->bar_space.type = MMIO_PREFETCHABLE;
+                  else
+                      Data->bar_space.type = MMIO_NON_PREFETCHABLE;
+
+                  Data->bar_space.base_addr = (void *)EcamBAR;
+
+                  return 0;
+              }
+
+              if (((EcamBAR >> BAR_MDT_SHIFT) & BAR_MDT_MASK) == BITS_64)
+              {
+                  /* Adjust the index to skip next sequential BAR */
+                  Index++;
+              }
+
+              /* Adjust index to point to next BAR */
+              Index++;
+          }
+
+          return 1;
+
       default:
           return 1;
     }
+}
+
+/**
+  @brief   This API checks if the given Bdf is an exerciser
+  @param   Bdf         - Bdf of the device
+  @return  status      - 1 if bdf is exerciser
+                         0 if bdf is not exerciser
+**/
+UINT32
+pal_is_bdf_exerciser(UINT32 bdf)
+{
+  UINT64 Ecam;
+  UINT32 vendor_dev_id;
+  Ecam = pal_pcie_get_mcfg_ecam();
+
+  vendor_dev_id = pal_mmio_read(Ecam + pal_exerciser_get_pcie_config_offset(bdf));
+  if (vendor_dev_id == EXERCISER_ID)
+     return 1;
+  else
+     return 0;
 }

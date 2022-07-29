@@ -22,9 +22,6 @@
 #ifndef __SBSA_AVS_COMMON_H__
 #define __SBSA_AVS_COMMON_H__
 
-#define TEST_NAME_HELPER(x,y) c##x##y
-#define TEST_NAME(x,y) TEST_NAME_HELPER(x,y)
-
 #define AVS_PE_TEST_NUM_BASE         0
 #define AVS_GIC_TEST_NUM_BASE        100
 #define AVS_TIMER_TEST_NUM_BASE      200

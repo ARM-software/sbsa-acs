@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2020-2021 Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2022 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,7 +17,7 @@
 
 #include "include/pal_common_support.h"
 #include "include/pal_pcie_enum.h"
-#include "include/platform_override_fvp.h"
+#include "include/platform_override_struct.h"
 
 extern PE_INFO_TABLE platform_pe_cfg;
 extern PE_INFO_TABLE *g_pe_info_table;
@@ -33,7 +33,7 @@ pal_get_madt_ptr();
 
 void
 ArmCallSmc (
-  IN OUT ARM_SMC_ARGS *Args
+   ARM_SMC_ARGS *Args
   );
 
 
@@ -150,7 +150,7 @@ pal_pe_create_info_table(PE_INFO_TABLE *PeTable)
   @return status of the API
 **/
 uint32_t
-pal_pe_install_esr(uint32_t ExceptionType,  void (*esr)(uint64_t, VOID *))
+pal_pe_install_esr(uint32_t ExceptionType,  void (*esr)(uint64_t, void *))
 {
 
   /* TO DO - Baremetal

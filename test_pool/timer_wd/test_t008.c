@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018, 2022 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -30,7 +30,7 @@ static uint64_t cnt_base_n;
 
 static
 void
-isr()
+isr(void)
 {
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
 
@@ -43,11 +43,11 @@ isr()
 
 static
 void
-payload()
+payload(void)
 {
 
   volatile uint32_t timeout;
-  uint32_t timer_expire_val = 1000;
+  uint32_t timer_expire_val = TIMEOUT_MEDIUM;
   uint32_t status, ns_timer = 0;
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
   uint64_t timer_num = val_timer_get_info(TIMER_INFO_NUM_PLATFORM_TIMERS, 0);
@@ -93,7 +93,7 @@ payload()
       while ((--timeout > 0) && (IS_RESULT_PENDING(val_get_status(index))));
 
       if (timeout == 0){
-          val_print(AVS_PRINT_ERR, "\n       Sys timer interrupt not received on %d   ", intid);
+           val_print(AVS_PRINT_ERR, "\n       Sys timer interrupt not received on %d   ", intid);
           val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
           return;
       }

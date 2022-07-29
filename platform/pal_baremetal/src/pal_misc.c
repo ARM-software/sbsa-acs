@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2020-2021, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2022, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,7 +19,7 @@
 #include "include/pal_pcie_enum.h"
 #include "include/pal_common_support.h"
 
-extern VOID* g_sbsa_log_file_handle;
+extern void* g_sbsa_log_file_handle;
 
 uint8_t   *gSharedMemory;
 /**
@@ -120,10 +120,10 @@ pal_mmio_read(uint64_t addr)
 void
 pal_mmio_write8(uint64_t addr, uint8_t data)
 {
-  *(volatile uint8_t *)addr = data;
   if (g_print_mmio || (g_curr_module & g_enable_module))
       print(AVS_PRINT_INFO, " pal_mmio_write8 Address = %llx  Data = %lx \n", addr, data);
 
+  *(volatile uint8_t *)addr = data;
 }
 
 /**
@@ -138,10 +138,10 @@ pal_mmio_write8(uint64_t addr, uint8_t data)
 void
 pal_mmio_write16(uint64_t addr, uint16_t data)
 {
-  *(volatile uint16_t *)addr = data;
   if (g_print_mmio || (g_curr_module & g_enable_module))
       print(AVS_PRINT_INFO, " pal_mmio_write16 Address = %llx  Data = %lx \n", addr, data);
 
+  *(volatile uint16_t *)addr = data;
 }
 
 /**
@@ -156,10 +156,10 @@ pal_mmio_write16(uint64_t addr, uint16_t data)
 void
 pal_mmio_write64(uint64_t addr, uint64_t data)
 {
-  *(volatile uint64_t *)addr = data;
   if (g_print_mmio || (g_curr_module & g_enable_module))
       print(AVS_PRINT_INFO, " pal_mmio_write64 Address = %llx  Data = %llx \n", addr, data);
 
+  *(volatile uint64_t *)addr = data;
 }
 
 /**
@@ -180,10 +180,10 @@ pal_mmio_write(uint64_t addr, uint32_t data)
       addr = addr & ~(0x3);  //make sure addr is aligned to 4 bytes
   }
 
-    *(volatile uint32_t *)addr = data;
   if (g_print_mmio || (g_curr_module & g_enable_module))
       print(AVS_PRINT_INFO, " pal_mmio_write Address = %8x  Data = %x \n", addr, data);
 
+    *(volatile uint32_t *)addr = data;
 }
 
 /**
@@ -335,6 +335,22 @@ pal_mem_alloc(uint32_t Size)
 }
 
 /**
+  @brief  Allocates requested buffer size in bytes with zeros in a contiguous memory
+          and returns the base address of the range.
+
+  @param  Size         allocation size in bytes
+  @retval if SUCCESS   pointer to allocated memory
+  @retval if FAILURE   NULL
+**/
+void *
+pal_mem_calloc(uint32_t num, uint32_t Size)
+{
+
+  return calloc(num, Size);
+}
+
+
+/**
   @brief  Allocate memory which is to be used to share data across PEs
 
   @param  num_pe      - Number of PEs in the system
@@ -477,6 +493,20 @@ pal_mem_free_pages(void *PageBase, uint32_t NumPages)
 }
 
 /**
+  @brief  Allocates memory with the given alignement.
+
+  @param  Alignment   Specifies the alignment.
+  @param  Size        Requested memory allocation size.
+
+  @return Pointer to the allocated memory with requested alignment.
+**/
+void
+*pal_aligned_alloc( uint32_t alignment, uint32_t size )
+{
+  return (void *)memalign(alignment, size);
+}
+
+/**
   @brief   Checks if System information is passed using Baremetal (BM)
            This api is also used to check if GIC/Interrupt Init ACS Code
            is used or not. In case of BM, ACS Code is used for INIT
@@ -485,7 +515,7 @@ pal_mem_free_pages(void *PageBase, uint32_t NumPages)
 
   @return True/False
 */
-UINT32
+uint32_t
 pal_target_is_bm()
 {
   return 1;

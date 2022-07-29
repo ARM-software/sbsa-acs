@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2021, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2022, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -39,10 +39,11 @@ UINT8   *gSharedMemory;
 VOID
 pal_mmio_write8(UINT64 addr, UINT8 data)
 {
-  *(volatile UINT8 *)addr = data;
+
   if (g_print_mmio || (g_curr_module & g_enable_module))
       sbsa_print(AVS_PRINT_INFO, L" pal_mmio_write8 Address = %llx  Data = %lx \n", addr, data);
 
+  *(volatile UINT8 *)addr = data;
 }
 
 /**
@@ -57,10 +58,11 @@ pal_mmio_write8(UINT64 addr, UINT8 data)
 VOID
 pal_mmio_write16(UINT64 addr, UINT16 data)
 {
-  *(volatile UINT16 *)addr = data;
+
   if (g_print_mmio || (g_curr_module & g_enable_module))
       sbsa_print(AVS_PRINT_INFO, L" pal_mmio_write16 Address = %llx  Data = %lx \n", addr, data);
 
+  *(volatile UINT16 *)addr = data;
 }
 
 /**
@@ -75,10 +77,11 @@ pal_mmio_write16(UINT64 addr, UINT16 data)
 VOID
 pal_mmio_write64(UINT64 addr, UINT64 data)
 {
-  *(volatile UINT64 *)addr = data;
+
   if (g_print_mmio || (g_curr_module & g_enable_module))
       sbsa_print(AVS_PRINT_INFO, L" pal_mmio_write64 Address = %llx  Data = %lx \n", addr, data);
 
+  *(volatile UINT64 *)addr = data;
 }
 
 /**
@@ -178,9 +181,10 @@ pal_mmio_read(UINT64 addr)
 VOID
 pal_mmio_write(UINT64 addr, UINT32 data)
 {
-  *(volatile UINT32 *)addr = data;
   if (g_print_mmio || (g_curr_module & g_enable_module))
     sbsa_print(AVS_PRINT_INFO, L" pal_mmio_write Address = %llx  Data = %x \n", addr, data);
+
+  *(volatile UINT32 *)addr = data;
 }
 
 /**
@@ -389,6 +393,38 @@ pal_mem_alloc (
 }
 
 /**
+ * @brief  Allocates requested buffer size in bytes with zeros in a contiguous memory
+ *         and returns the base address of the range.
+ *
+ * @param  Size         allocation size in bytes
+ * @retval if SUCCESS   pointer to allocated memory
+ * @retval if FAILURE   NULL
+ */
+VOID *
+pal_mem_calloc (
+  UINT32 num,
+  UINT32 Size
+  )
+{
+  EFI_STATUS            Status;
+  VOID                  *Buffer;
+
+  Buffer = NULL;
+  Status = gBS->AllocatePool (EfiBootServicesData,
+                              num * Size,
+                              (VOID **) &Buffer);
+  if (EFI_ERROR(Status))
+  {
+    sbsa_print(AVS_PRINT_ERR, L" Allocate Pool failed %x \n", Status);
+    return NULL;
+  }
+
+  gBS->SetMem (Buffer, num * Size, 0);
+
+  return Buffer;
+}
+
+/**
  * @brief  Allocates requested buffer size in bytes in a contiguous cacheable
  *         memory and returns the base address of the range.
  *
@@ -571,6 +607,35 @@ pal_mem_alloc_pages (
   }
 
   return (VOID*)(UINTN)PageBase;
+}
+
+/**
+  @brief  Allocates memory with the given alignement.
+
+  @param  Alignment   Specifies the alignment.
+  @param  Size        Requested memory allocation size.
+
+  @return Pointer to the allocated memory with requested alignment.
+**/
+VOID *
+pal_aligned_alloc( UINT32 alignment, UINT32 size)
+{
+  VOID *Mem = NULL;
+  VOID *Aligned_Ptr = NULL;
+
+  /* Generate mask for the Alignment parameter*/
+  UINT64 Mask = ~(UINT64)(alignment - 1);
+
+  /* Allocate memory with extra bytes, so we can return an aligned address*/
+  Mem = (VOID *)pal_mem_alloc(size + alignment);
+
+  if( Mem == NULL)
+    return 0;
+
+  /* Add the alignment to allocated memory address and align it to target alignment*/
+  Aligned_Ptr = (VOID *)(((UINT64) Mem + alignment-1) & Mask);
+
+  return Aligned_Ptr;
 }
 
 /**

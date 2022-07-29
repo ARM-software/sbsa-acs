@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018,2022 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,6 +17,8 @@
 
 #ifndef __SBSA_AVS_DMA_H__
 #define __SBSA_AVS_DMA_H__
+
+#include "pal_interface.h"
 
 #define WIDTH_BIT8     0x1
 #define WIDTH_BIT16    0x2

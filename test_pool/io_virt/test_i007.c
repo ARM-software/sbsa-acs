@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2020, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2022 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,7 +23,9 @@
 #define TEST_NUM   (AVS_SMMU_TEST_NUM_BASE + 7)
 #define TEST_DESC  "Check SMMU Version                "
 
-static void payload()
+static
+void
+payload(void)
 {
   uint64_t data;
   uint32_t num_smmu;
@@ -40,7 +42,8 @@ static void payload()
   while (num_smmu--) {
       if (val_smmu_get_info(SMMU_CTRL_ARCH_MAJOR_REV, num_smmu) == 2) {
           if (g_sbsa_level > 3) {
-              val_print(AVS_PRINT_ERR, "\n       Smmuv3 should be supported Level %x", g_sbsa_level);
+              val_print(AVS_PRINT_ERR, "\n       SMMUv3 should be supported Level %x",
+                                                                                  g_sbsa_level);
               val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
               return;
           }
