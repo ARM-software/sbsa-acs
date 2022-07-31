@@ -52,7 +52,7 @@ val_pcie_read_cfg(uint32_t bdf, uint32_t offset, uint32_t *data)
 
 
   if ((bus >= PCIE_MAX_BUS) || (dev >= PCIE_MAX_DEV) || (func >= PCIE_MAX_FUNC)) {
-     val_print(AVS_PRINT_ERR, "Invalid Bus/Dev/Func  %x \n", bdf);
+     val_print(AVS_PRINT_ERR, "\n       Invalid Bus/Dev/Func  %x", bdf);
      return PCIE_NO_MAPPING;
   }
 
@@ -74,7 +74,7 @@ val_pcie_read_cfg(uint32_t bdf, uint32_t offset, uint32_t *data)
   }
 
   if (ecam_base == 0) {
-      val_print(AVS_PRINT_ERR, "\n       Read PCIe_CFG: ECAM Base is zero ", 0);
+      val_print(AVS_PRINT_ERR, "\n       Read PCIe_CFG: ECAM Base is zero for bdf %x", bdf);
       return PCIE_NO_MAPPING;
   }
 
