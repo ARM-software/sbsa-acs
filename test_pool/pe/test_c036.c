@@ -32,10 +32,10 @@ static void payload(void)
         return;
     }
 
-    /* Read ID_AA64DFR0_EL1.PMUVer[11:8] = 0b0110 For Support for PMU v8.5 Support */
+    /* Read ID_AA64DFR0_EL1.PMUVer[11:8] >= 0b0110 and != 0xF for PMU v8.5 or higher support */
     data = VAL_EXTRACT_BITS(val_pe_reg_read(ID_AA64DFR0_EL1), 8, 11);
 
-    if (data != 6)
+    if ((data < 6) || (data == 0xF))
         val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
     else
         val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
