@@ -44,6 +44,14 @@ val_gic_execute_tests(uint32_t level, uint32_t num_pe)
       }
   }
 
+  if (g_single_module != SINGLE_MODULE_SENTINEL && g_single_module != AVS_GIC_TEST_NUM_BASE &&
+       (g_single_test == SINGLE_MODULE_SENTINEL ||
+         (g_single_test - AVS_GIC_TEST_NUM_BASE > 100 ||
+          g_single_test - AVS_GIC_TEST_NUM_BASE < 0))) {
+    val_print(AVS_PRINT_TEST, "      USER Override - Skipping all GIC tests (running only a single module)\n", 0);
+    return AVS_STATUS_SKIP;
+  }
+
   g_curr_module = 1 << GIC_MODULE;
   status = g001_entry(num_pe);
   status |= g002_entry(num_pe);

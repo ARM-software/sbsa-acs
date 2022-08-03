@@ -223,7 +223,7 @@ val_mmio_write64(addr_t addr, uint64_t data)
 }
 
 /**
-  @brief  This API prinst the test number, description and
+  @brief  This API prints the test number, description and
           sets the test status to pending for the input number of PEs.
           1. Caller       - Application layer
           2. Prerequisite - val_allocate_shared_mem
@@ -258,6 +258,15 @@ val_initialize_test(uint32_t test_num, char8_t *desc, uint32_t num_pe, uint32_t 
           val_set_status(index, RESULT_SKIP(g_sbsa_level, test_num, 0));
           return AVS_STATUS_SKIP;
       }
+  }
+
+  if ((g_single_test != SINGLE_TEST_SENTINEL && test_num != g_single_test) &&
+        (g_single_module == SINGLE_MODULE_SENTINEL ||
+          (test_num - g_single_module >= 100 ||
+           test_num - g_single_module < 0))) {
+    val_print(AVS_PRINT_TEST, "\n       USER OVERRIDE VIA SINGLE TEST - Skip Test        ", 0);
+    val_set_status(index, RESULT_SKIP(g_sbsa_level, test_num, 0));
+    return AVS_STATUS_SKIP;
   }
 
   return AVS_STATUS_PASS;

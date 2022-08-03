@@ -41,6 +41,8 @@ UINT32 g_curr_module;
 UINT32 g_enable_module;
 UINT32  g_skip_test_num[MAX_TEST_SKIP_NUM] = { 10000, 10000, 10000, 10000, 10000,
                                                10000, 10000, 10000, 10000 };
+UINT32  g_single_test = SINGLE_TEST_SENTINEL;
+UINT32  g_single_module = SINGLE_MODULE_SENTINEL;
 UINT32  g_sbsa_tests_total;
 UINT32  g_sbsa_tests_pass;
 UINT32  g_sbsa_tests_fail;
@@ -256,7 +258,7 @@ HelpMsg (
   VOID
   )
 {
-  Print (L"\nUsage: Sbsa.efi [-v <nn>] | [-l <n>] | [-f <filename>] | "
+  Print (L"\nUsage: Sbsa.efi [-v <n>] | [-l <n>] | [-f <filename>] | [-skip <n>] | [-nist] | [-p <n>] | [-t <n>] | [-m <n>]\n"
          "[-skip <n>] | [-nist] | [-p <n>]\n"
          "Options:\n"
          "-v      Verbosity of the Prints\n"
@@ -276,6 +278,8 @@ HelpMsg (
          "-nist   Enable the NIST Statistical test suite\n"
          "-p      Enable/disable PCIe SBSA 6.0 (RCiEP) compliance tests\n"
          "        1 - enables PCIe tests, 0 - disables PCIe tests\n"
+         "-t      If set, will only run the specified test, all others will be skipped.\n"
+         "-m      If set, will only run the specified module, all others will be skipped.\n"
          "-p2p    Pass this flag to indicate that PCIe Hierarchy Supports Peer-to-Peer\n"
          "-cache  Pass this flag to indicate that if the test system supports PCIe address translation cache\n"
          "-timeout  Set timeout multiple for wakeup tests\n"
@@ -293,6 +297,8 @@ STATIC CONST SHELL_PARAM_ITEM ParamList[] = {
   {L"-nist" , TypeFlag},     // -nist # Binary Flag to enable the execution of NIST STS
   {L"-p"    , TypeValue},    // -p    # Enable/disable PCIe SBSA 6.0 (RCiEP) compliance tests.
   {L"-mmio" , TypeFlag},     // -mmio # Enable pal_mmio prints
+  {L"-t"    , TypeValue},    // -t    # Test to be run
+  {L"-m"    , TypeValue},    // -m    # Module to be run
   {L"-p2p", TypeFlag},       // -p2p  # Peer-to-Peer is supported
   {L"-cache", TypeFlag},     // -cache# PCIe address translation cache is supported
   {L"-timeout" , TypeValue}, // -timeout # Set timeout multiple for wakeup tests
@@ -449,6 +455,18 @@ ShellAppMainsbsa (
           Print(L"Invalid PCIe option.\nEnter \"-p 1\" to enable or \"-p 0\" to disable PCIe SBSA 6.0 (RCiEP) tests\n", g_enable_pcie_tests);
           return 0;
       }
+  }
+
+  // Options with Values
+  CmdLineArg  = ShellCommandLineGetValue (ParamPackage, L"-t");
+  if (CmdLineArg != NULL) {
+    g_single_test = StrDecimalToUintn(CmdLineArg);
+  }
+
+  // Options with Values
+  CmdLineArg  = ShellCommandLineGetValue (ParamPackage, L"-m");
+  if (CmdLineArg != NULL) {
+    g_single_module = StrDecimalToUintn(CmdLineArg);
   }
 
   //
