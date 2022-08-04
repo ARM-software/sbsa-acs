@@ -22,6 +22,8 @@
 
 #include "include/sbsa_avs_wakeup.h"
 
+extern int32_t gPsciConduit;
+
 /**
   @brief   This API executes all the wakeup tests sequentially
            1. Caller       -  Application layer.
@@ -76,7 +78,7 @@ val_suspend_pe(uint32_t power_state, uint64_t entry, uint32_t context_id)
   smc_args.Arg1 = power_state;
   smc_args.Arg2 = entry;
   smc_args.Arg3 = context_id;
-  pal_pe_call_smc(&smc_args);
+  pal_pe_call_smc(&smc_args, gPsciConduit);
 }
 
 

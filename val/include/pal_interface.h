@@ -92,6 +92,13 @@
 /**  PE Test related Definitions **/
 
 /**
+  @brief Conduits for service calls (SMC vs HVC).
+**/
+#define CONDUIT_SMC  0
+#define CONDUIT_HVC  1
+int32_t pal_psci_get_conduit(void);
+
+/**
   @brief  number of PEs discovered
 **/
 typedef struct {
@@ -141,7 +148,7 @@ typedef struct {
   uint64_t  Arg7;
 } ARM_SMC_ARGS;
 
-void pal_pe_call_smc(ARM_SMC_ARGS *args);
+void pal_pe_call_smc(ARM_SMC_ARGS *args, int32_t conduit);
 void pal_pe_execute_payload(ARM_SMC_ARGS *args);
 uint32_t pal_pe_install_esr(uint32_t exception_type, void (*esr)(uint64_t, void *));
 /* ********** PE INFO END **********/

@@ -29,17 +29,54 @@ static   EFI_ACPI_6_1_MULTIPLE_APIC_DESCRIPTION_TABLE_HEADER *gMadtHdr;
 UINT8   *gSecondaryPeStack;
 UINT64  gMpidrMax;
 static UINT32 g_num_pe;
+extern INT32 gPsciConduit;
 
 #define SIZE_STACK_SECONDARY_PE  0x100		//256 bytes per core
 #define UPDATE_AFF_MAX(src,dest,mask)  ((dest & mask) > (src & mask) ? (dest & mask) : (src & mask))
 
 UINT64
 pal_get_madt_ptr();
-VOID
-ArmCallSmc (
-  IN OUT ARM_SMC_ARGS *Args
+
+UINT64
+pal_get_fadt_ptr (
+  VOID
   );
 
+VOID
+ArmCallSmc (
+  IN OUT ARM_SMC_ARGS *Args,
+  IN     INT32          Conduit
+  );
+
+/**
+  @brief   Queries the FADT ACPI table to check whether PSCI is implemented and,
+           if so, using which conduit (HVC or SMC).
+
+  @param
+
+  @retval  -1:                    PSCI is not implemented or the FADT
+                                  table could not be discovered.
+  @retval  CONDUIT_SMC:           PSCI is implemented and uses SMC as
+                                  the conduit.
+  @retval  CONDUIT_HVC:           PSCI is implemented and uses HVC as
+                                  the conduit.
+**/
+INT32
+pal_psci_get_conduit (
+  VOID
+  )
+{
+  EFI_ACPI_6_1_FIXED_ACPI_DESCRIPTION_TABLE  *Fadt;
+
+  Fadt = (EFI_ACPI_6_1_FIXED_ACPI_DESCRIPTION_TABLE *)pal_get_fadt_ptr ();
+  if (!Fadt || !(Fadt->ArmBootArch & EFI_ACPI_6_1_ARM_PSCI_COMPLIANT)) {
+    return -1;
+  } else if (Fadt->ArmBootArch & EFI_ACPI_6_1_ARM_PSCI_USE_HVC) {
+    return CONDUIT_HVC;
+  } else {
+    return CONDUIT_SMC;
+  }
+}
 
 /**
   @brief   Return the base address of the region allocated for Stack use for the Secondary
@@ -225,13 +262,14 @@ pal_pe_install_esr(UINT32 ExceptionType,  VOID (*esr)(UINT64, VOID *))
           for both input and output values.
 
   @param  Argumets to pass to the EL3 firmware
+  @param  Conduit  SMC or HVC
 
   @return  None
 **/
 VOID
-pal_pe_call_smc(ARM_SMC_ARGS *ArmSmcArgs)
+pal_pe_call_smc(ARM_SMC_ARGS *ArmSmcArgs, INT32 Conduit)
 {
-  ArmCallSmc (ArmSmcArgs);
+  ArmCallSmc (ArmSmcArgs, Conduit);
 }
 
 VOID
@@ -249,7 +287,7 @@ VOID
 pal_pe_execute_payload(ARM_SMC_ARGS *ArmSmcArgs)
 {
   ArmSmcArgs->Arg2 = (UINT64)ModuleEntryPoint;
-  pal_pe_call_smc(ArmSmcArgs);
+  pal_pe_call_smc(ArmSmcArgs, gPsciConduit);
 }
 
 /**

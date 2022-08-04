@@ -21,6 +21,8 @@
 #include "include/sbsa_std_smc.h"
 #include "sys_arch_src/gic/sbsa_exception.h"
 
+int32_t gPsciConduit;
+
 /**
   @brief   Pointer to the memory location of the PE Information table
 **/
@@ -42,6 +44,7 @@ ARM_SMC_ARGS g_smc_args;
 uint32_t
 val_pe_create_info_table(uint64_t *pe_info_table)
 {
+  gPsciConduit = pal_psci_get_conduit();
 
   if (pe_info_table == NULL) {
       val_print(AVS_PRINT_ERR, "Input memory for PE Info table cannot be NULL \n", 0);
@@ -189,7 +192,7 @@ val_test_entry(void)
   // We have completed our TEST code. So, switch off the PE now
   smc_args.Arg0 = ARM_SMC_ID_PSCI_CPU_OFF;
   smc_args.Arg1 = val_pe_get_mpid();
-  pal_pe_call_smc(&smc_args);
+  pal_pe_call_smc(&smc_args, gPsciConduit);
 }
 
 
