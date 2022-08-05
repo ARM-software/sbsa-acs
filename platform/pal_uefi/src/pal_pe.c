@@ -124,7 +124,7 @@ PalAllocateSecondaryStack(UINT64 mpidr)
       } else {
         // None needed. Just store the address with padding and return.
         ((UINTN*)Buffer)[1] = (UINTN)Buffer;
-        gSecondaryPeStack = (UINT8*)(&((UINTN*)Buffer)[2]);
+        gSecondaryPeStack = (UINT8*)(((UINTN*)Buffer)+2);
       }
   }
 
