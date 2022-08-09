@@ -107,7 +107,7 @@
 void
 ArmCallSmc (
   ARM_SMC_ARGS *Args,
-  INT32         Conduit
+  int32_t      Conduit
   );
 
 #endif
