@@ -82,8 +82,10 @@ typedef struct {
 /**
   Conduits for service calls (SMC vs HVC).
 **/
-#define CONDUIT_SMC  0
-#define CONDUIT_HVC  1
+#define CONDUIT_SMC       0
+#define CONDUIT_HVC       1
+#define CONDUIT_UNKNOWN  -1
+#define CONDUIT_NONE     -2
 
 typedef struct {
   UINT32 num_of_pe;

@@ -54,8 +54,8 @@ ArmCallSmc (
 
   @param
 
-  @retval  -1:                    PSCI is not implemented or the FADT
-                                  table could not be discovered.
+  @retval  CONDUIT_UNKNOWN:       The FADT table could not be discovered.
+  @retval  CONDUIT_NONE:          PSCI is not implemented
   @retval  CONDUIT_SMC:           PSCI is implemented and uses SMC as
                                   the conduit.
   @retval  CONDUIT_HVC:           PSCI is implemented and uses HVC as
@@ -69,8 +69,10 @@ pal_psci_get_conduit (
   EFI_ACPI_6_1_FIXED_ACPI_DESCRIPTION_TABLE  *Fadt;
 
   Fadt = (EFI_ACPI_6_1_FIXED_ACPI_DESCRIPTION_TABLE *)pal_get_fadt_ptr ();
-  if (!Fadt || !(Fadt->ArmBootArch & EFI_ACPI_6_1_ARM_PSCI_COMPLIANT)) {
-    return -1;
+  if (!Fadt) {
+    return CONDUIT_UNKNOWN;
+  } else if (!(Fadt->ArmBootArch & EFI_ACPI_6_1_ARM_PSCI_COMPLIANT)) {
+    return CONDUIT_NONE;
   } else if (Fadt->ArmBootArch & EFI_ACPI_6_1_ARM_PSCI_USE_HVC) {
     return CONDUIT_HVC;
   } else {

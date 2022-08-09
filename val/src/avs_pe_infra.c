@@ -45,6 +45,18 @@ uint32_t
 val_pe_create_info_table(uint64_t *pe_info_table)
 {
   gPsciConduit = pal_psci_get_conduit();
+  if (gPsciConduit == CONDUIT_UNKNOWN) {
+      val_print(AVS_PRINT_WARN, " FADT not found, assuming SMC as PSCI conduit\n", 0);
+      gPsciConduit = CONDUIT_SMC;
+  } else if (gPsciConduit == CONDUIT_NONE) {
+      val_print(AVS_PRINT_WARN, " PSCI not supported, assuming SMC as conduit for tests\n"
+                                " Multi-PE and wakeup tests likely to fail\n", 0);
+      gPsciConduit = CONDUIT_SMC;
+  } else if (gPsciConduit == CONDUIT_HVC) {
+      val_print(AVS_PRINT_INFO, " Using HVC as PSCI conduit\n", 0);
+  } else {
+      val_print(AVS_PRINT_INFO, " Using SMC as PSCI conduit\n", 0);
+  }
 
   if (pe_info_table == NULL) {
       val_print(AVS_PRINT_ERR, "Input memory for PE Info table cannot be NULL \n", 0);

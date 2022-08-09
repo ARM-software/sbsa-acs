@@ -94,8 +94,10 @@
 /**
   @brief Conduits for service calls (SMC vs HVC).
 **/
-#define CONDUIT_SMC  0
-#define CONDUIT_HVC  1
+#define CONDUIT_SMC       0
+#define CONDUIT_HVC       1
+#define CONDUIT_UNKNOWN  -1
+#define CONDUIT_NONE     -2
 int32_t pal_psci_get_conduit(void);
 
 /**
