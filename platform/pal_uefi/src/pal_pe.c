@@ -107,7 +107,7 @@ PalAllocateSecondaryStack(UINT64 mpidr)
       // returned if we do have to align we still have the proper address to
       // free.
 
-      StackSize = (NumPe * SIZE_STACK_SECONDARY_PE) + 24;
+      StackSize = (NumPe * SIZE_STACK_SECONDARY_PE) + CPU_STACK_ALIGNMENT;
       Status = gBS->AllocatePool ( EfiBootServicesData,
                     StackSize,
                     (VOID **) &Buffer);
