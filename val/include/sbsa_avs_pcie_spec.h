@@ -42,9 +42,12 @@
 #define TYPE01_IPR_MASK     0xFF
 #define TYPE01_ILR_SHIFT    0
 #define TYPE01_ILR_MASK     0xFF
+#define TYPE01_BCC_SHIFT    24
 
 #define TYPE0_HEADER 0
 #define TYPE1_HEADER 1
+#define CNTRL_CC     0x2
+#define DP_CNTRL_CC  0x3
 
 /* Command register shifts */
 #define CR_MSE_SHIFT   1
