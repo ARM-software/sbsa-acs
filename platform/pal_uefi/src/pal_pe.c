@@ -90,7 +90,8 @@ VOID
 PalAllocateSecondaryStack(UINT64 mpidr)
 {
   EFI_STATUS Status;
-  UINT32 NumPe, Aff0, Aff1, Aff2, Aff3;
+  UINT8 *Buffer;
+  UINT32 NumPe, Aff0, Aff1, Aff2, Aff3, StackSize;
 
   Aff0 = ((mpidr & 0x00000000ff) >>  0);
   Aff1 = ((mpidr & 0x000000ff00) >>  8);
@@ -100,13 +101,31 @@ PalAllocateSecondaryStack(UINT64 mpidr)
   NumPe = ((Aff3+1) * (Aff2+1) * (Aff1+1) * (Aff0+1));
 
   if (gSecondaryPeStack == NULL) {
+      // AllocatePool guarantees 8b alignment, but stack pointers must be 16b
+      // aligned for aarch64. Pad the size with an extra 8b so that we can
+      // force-align the returned buffer to 16b. We store the original address
+      // returned if we do have to align we still have the proper address to
+      // free.
+
+      StackSize = (NumPe * SIZE_STACK_SECONDARY_PE) + CPU_STACK_ALIGNMENT;
       Status = gBS->AllocatePool ( EfiBootServicesData,
-                    (NumPe * SIZE_STACK_SECONDARY_PE),
-                    (VOID **) &gSecondaryPeStack);
+                    StackSize,
+                    (VOID **) &Buffer);
       if (EFI_ERROR(Status)) {
           sbsa_print(AVS_PRINT_ERR, L"\n FATAL - Allocation for Seconday stack failed %x \n", Status);
       }
-      pal_pe_data_cache_ops_by_va((UINT64)&gSecondaryPeStack, CLEAN_AND_INVALIDATE);
+      pal_pe_data_cache_ops_by_va((UINT64)&Buffer, CLEAN_AND_INVALIDATE);
+
+      // Check if we need alignment
+      if ((UINT8*)(((UINTN) Buffer) & (0xFll))) {
+        // Needs alignment, so just store the original address and return +1
+        ((UINTN*)Buffer)[0] = (UINTN)Buffer;
+        gSecondaryPeStack = (UINT8*)(((UINTN*)Buffer)+1);
+      } else {
+        // None needed. Just store the address with padding and return.
+        ((UINTN*)Buffer)[1] = (UINTN)Buffer;
+        gSecondaryPeStack = (UINT8*)(((UINTN*)Buffer)+2);
+      }
   }
 
 }
