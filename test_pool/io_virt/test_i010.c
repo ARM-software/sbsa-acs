@@ -69,9 +69,12 @@ payload(void)
 
       data_smmu_idr5 = val_smmu_read_cfg(SMMUv3_IDR5, num_smmu);
 
-      /* If PE Supports 4KB Gran, (TGran4 == 0) or (TGran4_2 == 0x2) */
-      if ((VAL_EXTRACT_BITS(data_pe_mmfr0, 28, 31) == 0x0) ||
-          (VAL_EXTRACT_BITS(data_pe_mmfr0, 40, 43) == 0x2)) {
+      /* If PE Supports 4KB Gran, (TGran4 == 0) or (TGran4 == 0x1)
+       * or (TGran4_2 == 0x2) or (TGran4_2 == 0x3) */
+      if (((VAL_EXTRACT_BITS(data_pe_mmfr0, 28, 31) == 0x0) ||
+           (VAL_EXTRACT_BITS(data_pe_mmfr0, 28, 31) == 0x1)) ||
+          ((VAL_EXTRACT_BITS(data_pe_mmfr0, 40, 43) == 0x2) ||
+           (VAL_EXTRACT_BITS(data_pe_mmfr0, 40, 43) == 0x3))) {
           is_gran4k = 1;
           if (VAL_EXTRACT_BITS(data_smmu_idr5, 4, 4) != 1) {
               val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
@@ -79,9 +82,12 @@ payload(void)
           }
       }
 
-      /* If PE Supports 16KB Gran, (TGran16 == 1) or (TGran16_2 == 0x2) */
-      if ((VAL_EXTRACT_BITS(data_pe_mmfr0, 20, 23) == 0x1) ||
-          (VAL_EXTRACT_BITS(data_pe_mmfr0, 32, 35) == 0x2)) {
+      /* If PE Supports 16KB Gran, (TGran16 == 0x1) or (TGran16 == 0x2)
+       * or (TGran16_2 == 0x2) or (TGran16_2 == 0x3) */
+      if (((VAL_EXTRACT_BITS(data_pe_mmfr0, 20, 23) == 0x1) ||
+           (VAL_EXTRACT_BITS(data_pe_mmfr0, 20, 23) == 0x2)) ||
+          ((VAL_EXTRACT_BITS(data_pe_mmfr0, 32, 35) == 0x2) ||
+          (VAL_EXTRACT_BITS(data_pe_mmfr0, 32, 35) == 0x3))) {
           if (VAL_EXTRACT_BITS(data_smmu_idr5, 5, 5) != 1) {
               val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
               return;
