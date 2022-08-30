@@ -42,6 +42,8 @@ payload(void)
   while (count > 0) {
       count--;
       dev_bdf = val_peripheral_get_info(ANY_BDF, count);
+
+      val_print(AVS_PRINT_DEBUG, "\n       dev_bdf %x", dev_bdf);
       /* Check for pcie device */
       if (!val_peripheral_is_pcie(dev_bdf))
           continue;
@@ -52,6 +54,7 @@ payload(void)
           continue;
 
       data = val_peripheral_get_info(ANY_FLAGS, count);
+      val_print(AVS_PRINT_DEBUG, "       data %x", data);
 
       if ((data & PER_FLAG_MSI_ENABLED) == 0) {
           val_print(AVS_PRINT_ERR, "\n       MSI should be enabled for a PCIe device ", 0);
