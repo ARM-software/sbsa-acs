@@ -1905,8 +1905,9 @@ val_pcie_get_rootport(uint32_t bdf, uint32_t *rp_bdf)
 
   val_print(AVS_PRINT_DEBUG, " DP type 0x%x ", dp_type);
 
-  /* If the device is RP, set its rootport value to same */
-  if (dp_type == RP)
+
+  /* If the device is RP or iEP_RP, set its rootport value to same */
+  if ((dp_type == RP) || (dp_type == iEP_RP))
   {
       *rp_bdf = bdf;
       return 0;
@@ -1969,7 +1970,7 @@ val_pcie_parent_is_rootport(uint32_t dsf_bdf, uint32_t *rp_bdf)
       dp_type = val_pcie_device_port_type(bdf);
 
       /* Check if this table entry is a Root Port */
-      if (dp_type == RP)
+      if ((dp_type == RP) || (dp_type == iEP_RP))
       {
          /* Check if device is a direct child of this root port */
           val_pcie_read_cfg(bdf, TYPE1_PBN, &reg_value);
