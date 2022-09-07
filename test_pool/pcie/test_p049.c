@@ -83,7 +83,7 @@ check_bdf_under_rp(uint32_t rp_bdf)
                       val_pcie_read_cfg(dev_bdf, TYPE01_RIDR, &reg_value);
                       val_print(AVS_PRINT_DEBUG, "\n Class code is %x", reg_value);
                       base_cc = reg_value >> TYPE01_BCC_SHIFT;
-                      if ((base_cc == CNTRL_CC) || (base_cc == DP_CNTRL_CC))
+                      if ((base_cc == CNTRL_CC) || (base_cc == DP_CNTRL_CC) || (base_cc == MAS_CC))
                           return 1;
                   }
               }

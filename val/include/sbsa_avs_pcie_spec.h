@@ -46,6 +46,7 @@
 
 #define TYPE0_HEADER 0
 #define TYPE1_HEADER 1
+#define MAS_CC       0x1
 #define CNTRL_CC     0x2
 #define DP_CNTRL_CC  0x3
 
