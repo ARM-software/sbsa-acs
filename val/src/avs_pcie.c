@@ -257,7 +257,7 @@ void val_pcie_enumerate(void)
 uint32_t
 val_pcie_execute_tests(uint32_t enable_pcie, uint32_t level, uint32_t num_pe)
 {
-  uint32_t status, i;
+  uint32_t status = AVS_STATUS_PASS, i;
 
   for (i=0 ; i<MAX_TEST_SKIP_NUM ; i++){
       if (g_skip_test_num[i] == AVS_PCIE_TEST_NUM_BASE) {
@@ -265,7 +265,8 @@ val_pcie_execute_tests(uint32_t enable_pcie, uint32_t level, uint32_t num_pe)
           return AVS_STATUS_SKIP;
       }
   }
-   if (pcie_bdf_table_list_flag == 1) {
+
+  if (pcie_bdf_table_list_flag == 1) {
     val_print(AVS_PRINT_WARN, "\n     *** Created device list with valid bdf doesn't match \
                     with the platform pcie device hierarchy, Skipping PCIE tests *** \n", 0);
     return AVS_STATUS_SKIP;
@@ -281,6 +282,17 @@ val_pcie_execute_tests(uint32_t enable_pcie, uint32_t level, uint32_t num_pe)
   }
 
   g_curr_module = 1 << PCIE_MODULE;
+
+#ifdef ONLY_SBSA_RULE_TESTS
+#ifdef TARGET_LINUX
+  status = p009_entry(num_pe);  /* This covers GIC rule */
+#endif
+  if (level < 6) {
+      val_print(AVS_PRINT_TEST, " RCiEP and iEP tests are for sbsa level 6+ \n", 0);
+      return AVS_STATUS_SKIP;
+  }
+#endif
+
   status = p001_entry(num_pe);
 
   if (status != AVS_STATUS_PASS) {
@@ -288,38 +300,43 @@ val_pcie_execute_tests(uint32_t enable_pcie, uint32_t level, uint32_t num_pe)
     return status;
   }
 
+#ifndef ONLY_SBSA_RULE_TESTS
   status |= p002_entry(num_pe);
+#endif
+
+
 #ifdef TARGET_LINUX
   status |= p005_entry(num_pe);
+#ifndef ONLY_SBSA_RULE_TESTS
   status |= p006_entry(num_pe);
   status |= p007_entry(num_pe);
   status |= p008_entry(num_pe);
   status |= p009_entry(num_pe);
+  status |= p010_entry(num_pe);
   status |= p011_entry(num_pe);
   status |= p012_entry(num_pe);
-  status |= p010_entry(num_pe);
   status |= p013_entry(num_pe);
   status |= p014_entry(num_pe);
   status |= p015_entry(num_pe);
-
-  if (level > 3) {
-    status |= p016_entry(num_pe);
-    status |= p017_entry(num_pe);
-    status |= p018_entry(num_pe);
-    status |= p019_entry(num_pe);
-  }
+  status |= p016_entry(num_pe);
+  status |= p017_entry(num_pe);
+  status |= p018_entry(num_pe);
+  status |= p019_entry(num_pe);
+#endif
 #else
-  status |= p003_entry(num_pe);
 
   if (g_pcie_bdf_table->num_entries == 0) {
-    val_print(AVS_PRINT_WARN, "\n     *** No Valid Devices Found, Skipping remaining PCIE tests *** \n", 0);
+    val_print(AVS_PRINT_WARN, "\n     *** No Valid Devices Found, \
+                                                Skipping remaining PCIE tests *** \n", 0);
     return AVS_STATUS_SKIP;
   }
+
+  status |= p003_entry(num_pe);
 
   if (enable_pcie) {
     status |= p020_entry(num_pe);
     status |= p021_entry(num_pe);
-    status |= p022_entry(num_pe);
+    status |= p022_entry(num_pe); /* iEP/RP only */
     status |= p023_entry(num_pe);
     status |= p024_entry(num_pe);
     status |= p025_entry(num_pe);
@@ -333,28 +350,30 @@ val_pcie_execute_tests(uint32_t enable_pcie, uint32_t level, uint32_t num_pe)
     status |= p033_entry(num_pe);
     status |= p034_entry(num_pe);
     status |= p035_entry(num_pe);
-    status |= p036_entry(num_pe);
-    status |= p037_entry(num_pe);
-    status |= p038_entry(num_pe);
-    status |= p039_entry(num_pe);
-    status |= p040_entry(num_pe);
+    status |= p036_entry(num_pe); /* iEP/RP only */
+    status |= p037_entry(num_pe); /* iEP/RP only */
+    status |= p038_entry(num_pe); /* iEP/RP only */
+    status |= p039_entry(num_pe); /* iEP/RP only */
     status |= p041_entry(num_pe);
     status |= p042_entry(num_pe);
-    status |= p043_entry(num_pe);
-    status |= p044_entry(num_pe);
-    status |= p045_entry(num_pe);
+    status |= p043_entry(num_pe); /* iEP/RP only */
+    status |= p044_entry(num_pe); /* iEP/RP only */
+    status |= p045_entry(num_pe); /* iEP/RP only */
     status |= p046_entry(num_pe);
-    status |= p047_entry(num_pe);
-    status |= p048_entry(num_pe);
+    status |= p047_entry(num_pe); /* iEP/RP only */
+    status |= p048_entry(num_pe); /* iEP/RP only */
     status |= p049_entry(num_pe);
     status |= p050_entry(num_pe);
-    status |= p051_entry(num_pe);
+    status |= p051_entry(num_pe); /* iEP/RP only */
     status |= p052_entry(num_pe);
+    status |= p056_entry(num_pe); /* iEP/RP only */
+    status |= p057_entry(num_pe);
+#ifndef ONLY_SBSA_RULE_TESTS
+    status |= p040_entry(num_pe);
     status |= p053_entry(num_pe);
     status |= p054_entry(num_pe);
     status |= p055_entry(num_pe);
-    status |= p056_entry(num_pe);
-    status |= p057_entry(num_pe);
+#endif
   }
 #endif
 
@@ -498,6 +517,7 @@ val_pcie_create_device_bdf_table()
   uint32_t reg_value;
   uint32_t cid_offset;
   uint32_t status;
+  uint32_t dp_type;
 
   /* if table is already present, return success */
   if (g_pcie_bdf_table)
@@ -556,12 +576,18 @@ val_pcie_create_device_bdf_table()
                       if (val_pcie_find_capability(bdf, PCIE_CAP, CID_PCIECS,  &cid_offset) != PCIE_SUCCESS)
                           continue;
 
+                      dp_type = val_pcie_device_port_type(bdf);
+                      val_print(AVS_PRINT_INFO, "\n       dp_type 0x%x ", dp_type);
+#ifdef ONLY_SBSA_RULE_TESTS
+                      /* SBSA 6.1 have only rciep and iep/rp rules only */
+                      if ((dp_type != RCiEP) && (dp_type != iEP_EP) && (dp_type != iEP_RP))
+                          continue;
+#endif
                       status = pal_pcie_check_device_valid(bdf);
                       if (status)
                           continue;
 
                       g_pcie_bdf_table->device[g_pcie_bdf_table->num_entries++].bdf = bdf;
-
                   }
               }
           }

@@ -42,7 +42,7 @@ extern ARM_SMC_ARGS g_smc_args;
 uint32_t
 val_pe_execute_tests(uint32_t level, uint32_t num_pe)
 {
-  uint32_t status, i;
+  uint32_t status = AVS_STATUS_PASS, i;
 
   for (i=0 ; i<MAX_TEST_SKIP_NUM ; i++){
       if (g_skip_test_num[i] == AVS_PE_TEST_NUM_BASE) {
@@ -60,34 +60,34 @@ val_pe_execute_tests(uint32_t level, uint32_t num_pe)
   }
 
   g_curr_module = 1 << PE_MODULE;
-  status = c001_entry();
+
+#ifndef ONLY_SBSA_RULE_TESTS
+  status |= c001_entry();
   status |= c002_entry(num_pe);
-  status |= c003_entry(num_pe);
-  status |= c004_entry(num_pe);
   status |= c005_entry(num_pe);
   status |= c006_entry(num_pe);
   status |= c007_entry(num_pe);
   status |= c008_entry(num_pe);
-  status |= c010_entry(num_pe);
   status |= c011_entry(num_pe);
   status |= c012_entry(num_pe);
   status |= c013_entry(num_pe);
   status |= c014_entry(num_pe);
   status |= c015_entry(num_pe);
   status |= c017_entry(num_pe);
+#endif
 
-  if (level > 5) {
-      status |= c018_entry(num_pe);
-  }
+  status |= c003_entry(num_pe);
+  status |= c004_entry(num_pe);
+  status |= c010_entry(num_pe);
 
   if (level > 3) {
       status |= c019_entry(num_pe);
       status |= c020_entry(num_pe);
       status |= c021_entry(num_pe);
-      status |= c022_entry(num_pe);
   }
 
   if (level > 4) {
+      status |= c022_entry(num_pe);
       status |= c023_entry(num_pe);
       status |= c024_entry(num_pe);
       status |= c025_entry(num_pe);
@@ -96,6 +96,7 @@ val_pe_execute_tests(uint32_t level, uint32_t num_pe)
   }
 
   if (level > 5) {
+      status |= c018_entry(num_pe);
       status |= c028_entry(num_pe);
       status |= c029_entry(num_pe);
       status |= c030_entry(num_pe);
@@ -105,6 +106,10 @@ val_pe_execute_tests(uint32_t level, uint32_t num_pe)
       status |= c034_entry(num_pe);
       status |= c035_entry(num_pe);
       status |= c036_entry(num_pe);
+
+#ifdef ONLY_SBSA_RULE_TESTS
+      status |= os_c018_entry(num_pe);
+#endif
   }
 
   val_print_test_end(status, "PE");

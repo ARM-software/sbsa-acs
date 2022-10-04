@@ -510,23 +510,32 @@ ShellAppMainsbsa (
   Print(L"\n      ***  Starting GIC tests ***  \n");
   Status |= val_gic_execute_tests(g_sbsa_level, val_pe_get_num());
 
+#ifndef ONLY_SBSA_RULE_TESTS
   Print(L"\n      *** Starting Timer tests ***  \n");
   Status |= val_timer_execute_tests(g_sbsa_level, val_pe_get_num());
+#endif
 
   Print(L"\n      *** Starting Watchdog tests ***  \n");
   Status |= val_wd_execute_tests(g_sbsa_level, val_pe_get_num());
 
+#ifndef ONLY_SBSA_RULE_TESTS
   Print(L"\n      *** Starting Power and Wakeup semantic tests ***  \n");
   Status |= val_wakeup_execute_tests(g_sbsa_level, val_pe_get_num());
 
   Print(L"\n      *** Starting Peripheral tests ***  \n");
   Status |= val_peripheral_execute_tests(g_sbsa_level, val_pe_get_num());
+#endif
 
   Print(L"\n      *** Starting IO Virtualization tests ***  \n");
   Status |= val_smmu_execute_tests(g_sbsa_level, val_pe_get_num());
 
-  Print(L"\n      *** Starting PCIe tests ***  \n");
-  Status |= val_pcie_execute_tests(g_enable_pcie_tests, g_sbsa_level, val_pe_get_num());
+#ifdef ONLY_SBSA_RULE_TESTS
+  if (g_sbsa_level > 5)
+#endif
+  {
+    Print(L"\n      *** Starting PCIe tests ***  \n");
+    Status |= val_pcie_execute_tests(g_enable_pcie_tests, g_sbsa_level, val_pe_get_num());
+  }
 
   /*
    * Configure Gic Redistributor and ITS to support
@@ -538,6 +547,7 @@ ShellAppMainsbsa (
     Print(L"\n      *** Starting PCIe Exerciser tests ***  \n");
     Status |= val_exerciser_execute_tests(g_sbsa_level);
   }
+
 
   #ifdef ENABLE_NIST
   if (g_execute_nist == TRUE) {

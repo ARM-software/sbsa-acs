@@ -55,7 +55,7 @@ val_smmu_read_cfg(uint32_t offset, uint32_t index)
 uint32_t
 val_smmu_execute_tests(uint32_t level, uint32_t num_pe)
 {
-  uint32_t status, i;
+  uint32_t status = AVS_STATUS_PASS, i;
   uint32_t num_smmu;
   uint32_t status_version_chk;
 
@@ -82,29 +82,47 @@ val_smmu_execute_tests(uint32_t level, uint32_t num_pe)
   }
 
   g_curr_module = 1 << SMMU_MODULE;
-  status = i001_entry(num_pe);
+
+#ifndef ONLY_SBSA_RULE_TESTS
+  status |= i001_entry(num_pe);
   status |= i002_entry(num_pe);
-  status |= i003_entry(num_pe);
   status |= i004_entry(num_pe);
   status |= i005_entry(num_pe);
   status |= i006_entry(num_pe);
+#endif
 
-  status_version_chk = i007_entry(num_pe);
-  status |= status_version_chk;
+  if (g_sbsa_level > 3)
+      status |= i003_entry(num_pe);
+
+  if (g_sbsa_level > 4) {
+      status_version_chk = i007_entry(num_pe);
+      status |= status_version_chk;
+  }
 
   if (g_sbsa_level > 5) {
       if (status_version_chk != AVS_STATUS_PASS) {
           val_print(AVS_PRINT_ERR, "\n      SMMU Version Not Compliant, Skipping Remaining SMMU Tests...\n", 0);
       } else {
+
+#ifndef ONLY_SBSA_RULE_TESTS
           status |= i008_entry(num_pe);
           status |= i009_entry(num_pe);
           status |= i010_entry(num_pe);
           status |= i011_entry(num_pe);
           status |= i012_entry(num_pe);
-          status |= i013_entry(num_pe);
-          status |= i014_entry(num_pe);
           status |= i015_entry(num_pe);
           status |= i016_entry(num_pe);
+#endif
+          status |= i013_entry(num_pe);
+          status |= i014_entry(num_pe);
+
+#ifdef ONLY_SBSA_RULE_TESTS
+          status |= hyp_i005_entry(num_pe);
+          status |= os_i005_entry(num_pe);
+          status |= os_i006_entry(num_pe);
+          status |= os_i007_entry(num_pe);
+          status |= os_i008_entry(num_pe);
+#endif
       }
   }
 

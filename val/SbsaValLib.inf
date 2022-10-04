@@ -61,3 +61,4 @@
 
 [BuildOptions]
   GCC:*_*_*_ASM_FLAGS  =  -march=armv8.2-a
+  GCC:*_*_*_CC_FLAGS   = -D ONLY_SBSA_RULE_TESTS

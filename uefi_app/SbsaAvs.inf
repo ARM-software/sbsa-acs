@@ -158,6 +158,14 @@
   ../test_pool/exerciser/test_e014.c
   ../test_pool/exerciser/test_e015.c
   ../test_pool/exerciser/test_e016.c
+# BSA test which gets compile with SBSA
+  ../test_pool/pe/test_os_c018.c
+  ../test_pool/io_virt/test_os_i005.c
+  ../test_pool/io_virt/test_os_i006.c
+  ../test_pool/io_virt/test_os_i007.c
+  ../test_pool/io_virt/test_os_i008.c
+#  ../test_pool/io_virt/test_os_i009.c
+  ../test_pool/io_virt/test_hyp_i005.c
 
 [Packages]
   StdLib/StdLib.dec
@@ -190,4 +198,4 @@
 
 [BuildOptions]
   GCC:*_*_*_ASM_FLAGS  =  -march=armv8.1-a
-  GCC:*_*_*_CC_FLAGS   = -O0
+  GCC:*_*_*_CC_FLAGS   = -O0 -D ONLY_SBSA_RULE_TESTS
