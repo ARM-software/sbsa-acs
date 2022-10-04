@@ -52,7 +52,6 @@ check_bdf_under_rp(uint32_t rp_bdf)
   uint32_t rp_sec_bus, rp_sub_bus;
   uint32_t dev_bdf, dev_bus, dev_sec_bus;
   uint32_t rp_seg, dev_seg;
-  uint32_t dp_type;
   uint32_t base_cc;
   uint32_t dev_num, func_num;
 
@@ -72,19 +71,15 @@ check_bdf_under_rp(uint32_t rp_bdf)
               if (reg_value == PCIE_UNKNOWN_RESPONSE)
                   continue;
 
-              dp_type = val_pcie_device_port_type(dev_bdf);
-              if ((dp_type == iEP_EP) || (dp_type == EP))
+              dev_bus = PCIE_EXTRACT_BDF_BUS(dev_bdf);
+              dev_seg = PCIE_EXTRACT_BDF_SEG(dev_bdf);
+              if ((dev_seg == rp_seg) && ((dev_bus >= rp_sec_bus) && (dev_bus <= rp_sub_bus)))
               {
-                  dev_bus = PCIE_EXTRACT_BDF_BUS(dev_bdf);
-                  dev_seg = PCIE_EXTRACT_BDF_SEG(dev_bdf);
-                  if ((dev_seg == rp_seg) && ((dev_bus >= rp_sec_bus) && (dev_bus <= rp_sub_bus)))
-                  {
-                      val_pcie_read_cfg(dev_bdf, TYPE01_RIDR, &reg_value);
-                      val_print(AVS_PRINT_DEBUG, "\n Class code is %x", reg_value);
-                      base_cc = reg_value >> TYPE01_BCC_SHIFT;
-                      if ((base_cc == CNTRL_CC) || (base_cc == DP_CNTRL_CC) || (base_cc == MAS_CC))
-                          return 1;
-                  }
+                  val_pcie_read_cfg(dev_bdf, TYPE01_RIDR, &reg_value);
+                  val_print(AVS_PRINT_DEBUG, "\n Class code is %x", reg_value);
+                  base_cc = reg_value >> TYPE01_BCC_SHIFT;
+                  if ((base_cc == CNTRL_CC) || (base_cc == DP_CNTRL_CC) || (base_cc == MAS_CC))
+                      return 1;
               }
            }
        }
