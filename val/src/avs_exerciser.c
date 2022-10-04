@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2021 Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2022 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -234,8 +234,12 @@ val_exerciser_execute_tests(uint32_t level)
       }
   }
 
-  if (g_single_module != SINGLE_MODULE_SENTINEL && g_single_module != AVS_EXERCISER_TEST_NUM_BASE) {
-    val_print(AVS_PRINT_TEST, " USER Override - Skipping all Exerciser tests (running only a single module)\n", 0);
+  if (g_single_module != SINGLE_MODULE_SENTINEL && g_single_module != AVS_EXERCISER_TEST_NUM_BASE &&
+       (g_single_test == SINGLE_MODULE_SENTINEL ||
+         (g_single_test - AVS_EXERCISER_TEST_NUM_BASE > 100 ||
+          g_single_test - AVS_EXERCISER_TEST_NUM_BASE < 0))) {
+    val_print(AVS_PRINT_TEST, " USER Override - Skipping all Exerciser tests \n", 0);
+    val_print(AVS_PRINT_TEST, " (Running only a single module)\n", 0);
     return AVS_STATUS_SKIP;
   }
 

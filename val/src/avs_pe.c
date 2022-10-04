@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2021, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2021, 2022 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -54,7 +54,8 @@ val_pe_execute_tests(uint32_t level, uint32_t num_pe)
   if (g_single_module != SINGLE_MODULE_SENTINEL && g_single_module != AVS_PE_TEST_NUM_BASE &&
        (g_single_test == SINGLE_MODULE_SENTINEL ||
        (g_single_test - AVS_PE_TEST_NUM_BASE > 100))) {
-    val_print(AVS_PRINT_TEST, "      USER Override - Skipping all PE tests (running only a single module)\n", 0);
+    val_print(AVS_PRINT_TEST, " USER Override - Skipping all PE tests \n", 0);
+    val_print(AVS_PRINT_TEST, " (Running only a single module)\n", 0);
     return AVS_STATUS_SKIP;
   }
 

@@ -275,7 +275,8 @@ val_pcie_execute_tests(uint32_t enable_pcie, uint32_t level, uint32_t num_pe)
        (g_single_test == SINGLE_MODULE_SENTINEL ||
          (g_single_test - AVS_PCIE_TEST_NUM_BASE > 100 ||
           g_single_test - AVS_PCIE_TEST_NUM_BASE < 0))) {
-    val_print(AVS_PRINT_TEST, "      USER Override - Skipping all PCIe tests (running only a single module)\n", 0);
+    val_print(AVS_PRINT_TEST, " USER Override - Skipping all PCIE tests \n", 0);
+    val_print(AVS_PRINT_TEST, " (Running only a single module)\n", 0);
     return AVS_STATUS_SKIP;
   }
 
@@ -1904,7 +1905,6 @@ val_pcie_get_rootport(uint32_t bdf, uint32_t *rp_bdf)
   dp_type = val_pcie_device_port_type(bdf);
 
   val_print(AVS_PRINT_DEBUG, " DP type 0x%x ", dp_type);
-
 
   /* If the device is RP or iEP_RP, set its rootport value to same */
   if ((dp_type == RP) || (dp_type == iEP_RP))
