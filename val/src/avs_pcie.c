@@ -374,6 +374,11 @@ val_pcie_execute_tests(uint32_t enable_pcie, uint32_t level, uint32_t num_pe)
     status |= p054_entry(num_pe);
     status |= p055_entry(num_pe);
 #endif
+#ifdef ONLY_SBSA_RULE_TESTS
+    status |= p058_entry(num_pe);
+    status |= p059_entry(num_pe);
+    status |= p060_entry(num_pe);
+#endif
   }
 #endif
 
@@ -2182,4 +2187,47 @@ uint32_t val_pcie_get_ecam_index(uint32_t bdf, uint32_t *ecam_index)
 uint32_t val_pcie_mem_get_offset(uint32_t type)
 {
   return pal_pcie_mem_get_offset(type);
+}
+
+/**
+  @brief  Checks if link Capabilities is supported
+  @param  bdf    -  Segment/Bus/Dev/Func in the format of PCIE_CREATE_BDF
+  @return 0 if link capability is not supported else 1.
+**/
+uint32_t
+val_pcie_link_cap_support(uint32_t bdf)
+{
+  uint32_t pciecs_base;
+  uint32_t reg_value = 0xFFFFFFFF;
+
+  val_pcie_find_capability(bdf, PCIE_CAP, CID_PCIECS, &pciecs_base);
+  val_pcie_read_cfg(bdf, pciecs_base + LCAPR_OFFSET, &reg_value);
+
+  if (reg_value != 0) {
+     val_print(AVS_PRINT_ERR, "\n       Link Capabilities reg check failed", 0);
+     return 1;
+  }
+
+  reg_value = 0xFFFFFFFF;
+  val_pcie_read_cfg(bdf, pciecs_base + LCTRLR_OFFSET, &reg_value);
+  if (reg_value != 0) {
+     val_print(AVS_PRINT_ERR, "\n       Link Capabilities control and status check failed", 0);
+     return 1;
+  }
+
+  reg_value = 0xFFFFFFFF;
+  val_pcie_read_cfg(bdf, pciecs_base + LCAP2R_OFFSET, &reg_value);
+  if (reg_value != 0) {
+     val_print(AVS_PRINT_ERR, "\n       Link Capabilities 2 reg check failed", 0);
+     return 1;
+  }
+
+  reg_value = 0xFFFFFFFF;
+  val_pcie_read_cfg(bdf, pciecs_base + LCTL2R_OFFSET, &reg_value);
+  if (reg_value != 0) {
+     val_print(AVS_PRINT_ERR, "\n       Link Capabilities 2 control and status check failed", 0);
+     return 1;
+  }
+
+  return 0;
 }
