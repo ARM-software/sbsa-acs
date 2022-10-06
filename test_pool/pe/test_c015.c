@@ -79,9 +79,9 @@ reg_details reg_list[] = {
     {MVFR0_EL1,        0x0,            "MVFR0_EL1"       , AA32},
     {MVFR1_EL1,        0x0,            "MVFR1_EL1"       , AA32},
     {MVFR2_EL1,        0x0,            "MVFR2_EL1"       , AA32},
-    {PMCEID0_EL0,      0x0,            "PMCEID0_EL0"     , PMUV3 },
-    {PMCEID1_EL0,      0x0,            "PMCEID1_EL0"     , PMUV3 },
-    {PMCR_EL0,         MASK_PMCR,      "PMCR_EL0"        , PMUV3 },
+    {PMCEID0_EL0,      0x0,            "PMCEID0_EL0", PMUV3 },
+    {PMCEID1_EL0,      0x0,            "PMCEID1_EL0", PMUV3 },
+    {PMCR_EL0,         MASK_PMCR,      "PMCR_EL0", PMUV3 },
     {PMBIDR_EL1,       0x0,            "PMBIDR_EL1"      , SPE },
     {PMSIDR_EL1,       0x0,            "PMSIDR_EL1"      , SPE },
     {ERRIDR_EL1,       0x0,            "ERRIDR_EL1"      , RAS },
@@ -142,7 +142,7 @@ return_reg_value(uint32_t reg, uint8_t dependency)
     case PMUV3: // If PMUv3 is not supported, then skip register check
         temp = val_pe_reg_read(ID_AA64DFR0_EL1);
         temp = (temp >> 8) & 0xf;
-        if(temp != 0 && temp != 0b1111)
+        if (temp != 0 && temp != 0b1111)
             return val_pe_reg_read(reg);
         else
             return 0;

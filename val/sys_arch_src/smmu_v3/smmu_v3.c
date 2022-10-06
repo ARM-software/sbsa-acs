@@ -195,7 +195,8 @@ static void smmu_strtab_write_ste(smmu_master_t *master, uint64_t *ste)
              BITFIELD_SET(STRTAB_STE_1_S1CSH, SMMU_SH_ISH) |
              BITFIELD_SET(STRTAB_STE_1_EATS, 0x1);
 
-        val |= (stage1_cfg->cdcfg.cdtab_phys & (STRTAB_STE_0_S1CONTEXTPTR_MASK << STRTAB_STE_0_S1CONTEXTPTR_SHIFT)) |
+        val |= (stage1_cfg->cdcfg.cdtab_phys &
+               (STRTAB_STE_0_S1CONTEXTPTR_MASK << STRTAB_STE_0_S1CONTEXTPTR_SHIFT)) |
             BITFIELD_SET(STRTAB_STE_0_CONFIG, STRTAB_STE_0_CONFIG_S1_TRANS) |
             BITFIELD_SET(STRTAB_STE_0_S1CDMAX, stage1_cfg->s1cdmax) |
             BITFIELD_SET(STRTAB_STE_0_S1FMT, stage1_cfg->s1fmt);
@@ -320,7 +321,6 @@ static int smmu_strtab_init_level1(smmu_dev_t *smmu)
     smmu_strtab_config_t *cfg = &smmu->strtab_cfg;
 
     cfg->l1_desc = val_memory_calloc(cfg->l1_ent_count, sizeof(*cfg->l1_desc));
-
     if (!cfg->l1_desc) {
         val_print(AVS_PRINT_ERR, "\n      failed to allocate l1 stream table desc     ", 0);
         return 0;

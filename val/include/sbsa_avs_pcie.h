@@ -383,4 +383,13 @@ p056_entry(uint32_t num_pe);
 uint32_t
 p057_entry(uint32_t num_pe);
 
+uint32_t
+p058_entry(uint32_t num_pe);
+
+uint32_t
+p059_entry(uint32_t num_pe);
+
+uint32_t
+p060_entry(uint32_t num_pe);
+
 #endif

@@ -34,7 +34,7 @@ payload(void)
 
   if (num_ecam == 0) {
       val_print(AVS_PRINT_ERR, "\n       No ECAMs discovered              ", 0);
-      val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
+      val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
       return;
   }
   val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));

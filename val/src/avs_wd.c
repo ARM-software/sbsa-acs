@@ -34,7 +34,7 @@ WD_INFO_TABLE  *g_wd_info_table;
 uint32_t
 val_wd_execute_tests(uint32_t level, uint32_t num_pe)
 {
-  uint32_t status, i;
+  uint32_t status = AVS_STATUS_PASS, i;
 
   for (i=0 ; i<MAX_TEST_SKIP_NUM ; i++){
       if (g_skip_test_num[i] == AVS_WD_TEST_NUM_BASE) {
@@ -47,15 +47,19 @@ val_wd_execute_tests(uint32_t level, uint32_t num_pe)
        (g_single_test == SINGLE_MODULE_SENTINEL ||
          (g_single_test - AVS_WD_TEST_NUM_BASE > 100 ||
           g_single_test - AVS_WD_TEST_NUM_BASE < 0))) {
-    val_print(AVS_PRINT_TEST, " USER Override - Skipping all Watchdog tests (running only a single module)\n", 0);
+    val_print(AVS_PRINT_TEST, " USER Override - Skipping all Watchdog tests \n", 0);
+    val_print(AVS_PRINT_TEST, " (Running only a single module)\n", 0);
     return AVS_STATUS_SKIP;
   }
 
   g_curr_module = 1 << WD_MODULE;
-  status = w001_entry(num_pe);
+
+#ifndef ONLY_SBSA_RULE_TESTS
+  status |= w001_entry(num_pe);
   status |= w002_entry(num_pe);
-  if (level > 4)
-	status |= w003_entry(num_pe);
+#endif
+  if (level > 5)
+    status |= w003_entry(num_pe);
 
   val_print_test_end(status, "Watchdog");
 

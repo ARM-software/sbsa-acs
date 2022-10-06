@@ -85,13 +85,19 @@
 /* Class Code Masks */
 #define CC_SUB_MASK     0xFF   /* Sub Class */
 #define CC_BASE_MASK    0xFF   /* Base Class */
+#define CC_PGM_IF_MASK  0xFF   /* Programming Interface */
 
 /* Class Code Shifts */
+#define CC_PGM_IF_SHIFT 8
 #define CC_SUB_SHIFT    16
 #define CC_BASE_SHIFT   24
 
 #define HB_BASE_CLASS   0x06
 #define HB_SUB_CLASS    0x00
+
+#define RCEC_BASE_CLASS 0x08
+#define RCEC_SUB_CLASS  0x07
+#define RCEC_PGMING_IF  0x00
 
 /* BIST register masks */
 #define BIST_REG_START  24
@@ -183,6 +189,7 @@
 #define CID_MSIX       0x11
 #define CID_PMC        0x01
 #define ECID_AER       0x0001
+#define ECID_RCECEA    0x0007
 #define ECID_ACS       0x000D
 #define ECID_ARICS     0x000E
 #define ECID_ATS       0x000F
@@ -199,6 +206,9 @@
 #define LCTRLR_OFFSET  0x10
 #define DCAP2R_OFFSET  0x24
 #define DCTL2R_OFFSET  0x28
+#define DCTL2R_MASK    0xFFFF
+#define LCAP2R_OFFSET  0x2C
+#define LCTL2R_OFFSET  0x30
 #define DCTL2R_MASK    0xFFFF
 
 /* ACS Capability Register */

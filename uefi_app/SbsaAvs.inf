@@ -121,6 +121,9 @@
   ../test_pool/pcie/test_p055.c
   ../test_pool/pcie/test_p056.c
   ../test_pool/pcie/test_p057.c
+  ../test_pool/pcie/test_p058.c
+  ../test_pool/pcie/test_p059.c
+  ../test_pool/pcie/test_p060.c
   ../test_pool/io_virt/test_i001.c
   ../test_pool/io_virt/test_i002.c
   ../test_pool/io_virt/test_i003.c
@@ -158,6 +161,14 @@
   ../test_pool/exerciser/test_e014.c
   ../test_pool/exerciser/test_e015.c
   ../test_pool/exerciser/test_e016.c
+# BSA test which gets compile with SBSA
+  ../test_pool/pe/test_os_c018.c
+  ../test_pool/io_virt/test_os_i005.c
+  ../test_pool/io_virt/test_os_i006.c
+  ../test_pool/io_virt/test_os_i007.c
+  ../test_pool/io_virt/test_os_i008.c
+#  ../test_pool/io_virt/test_os_i009.c
+  ../test_pool/io_virt/test_hyp_i005.c
 
 [Packages]
   StdLib/StdLib.dec
@@ -190,4 +201,4 @@
 
 [BuildOptions]
   GCC:*_*_*_ASM_FLAGS  =  -march=armv8.1-a
-  GCC:*_*_*_CC_FLAGS   = -O0
+  GCC:*_*_*_CC_FLAGS   = -O0 -D ONLY_SBSA_RULE_TESTS
