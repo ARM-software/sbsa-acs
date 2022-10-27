@@ -403,7 +403,7 @@ val_pcie_print_device_info(void)
 
   if (bdf_tbl_ptr->num_entries == 0)
   {
-    val_print(AVS_PRINT_ERR, " PCIE_INFO: BDF Table : No Devices Found\n", 0);
+    val_print(AVS_PRINT_ERR, " PCIE_INFO: BDF Table: No RCiEP or iEP devices found\n", 0);
     return;
   }
 

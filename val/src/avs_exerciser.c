@@ -229,7 +229,7 @@ val_exerciser_execute_tests(uint32_t level)
 
   for (i = 0; i < MAX_TEST_SKIP_NUM; i++){
       if (g_skip_test_num[i] == AVS_EXERCISER_TEST_NUM_BASE) {
-          val_print(AVS_PRINT_TEST, "\n USER Override - Skipping three Exerciser tests \n", 0);
+          val_print(AVS_PRINT_TEST, "\n USER Override - Skipping the Exerciser tests \n", 0);
           return AVS_STATUS_SKIP;
       }
   }
