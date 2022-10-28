@@ -216,6 +216,12 @@ val_peripheral_dump_info(void)
   uint32_t reg_value, base_cc;
   uint32_t dply = 0, ntwk = 0, strg = 0;
 
+  if (val_pcie_get_info(PCIE_INFO_NUM_ECAM, 0) == 0)
+  {
+      val_print(AVS_PRINT_DEBUG, "\n No ECAM is present", 0);
+      return;
+  }
+
   for (bus = 0; bus < PCIE_MAX_BUS; bus++)
   {
       for (dev = 0; dev < PCIE_MAX_DEV; dev++)
