@@ -476,13 +476,16 @@ ShellAppMainsbsa (
   g_sbsa_tests_pass  = 0;
   g_sbsa_tests_fail  = 0;
 
-  Print(L"\n\n SBSA Architecture Compliance Suite \n");
-  Print(L"    Version %d.%d  \n", SBSA_ACS_MAJOR_VER, SBSA_ACS_MINOR_VER);
+  val_print(AVS_PRINT_TEST, "\n\n SBSA Architecture Compliance Suite \n", 0);
+  val_print(AVS_PRINT_TEST, "    Version %d.", SBSA_ACS_MAJOR_VER);
+  val_print(AVS_PRINT_TEST, "%d.", SBSA_ACS_MINOR_VER);
+  val_print(AVS_PRINT_TEST, "%d  \n", SBSA_ACS_SUBMINOR_VER);
 
-  Print(L"\n Starting tests for level %2d (Print level is %2d)\n\n", g_sbsa_level, g_print_level);
+  val_print(AVS_PRINT_TEST, "\n Starting tests for level %2d", g_sbsa_level);
+  val_print(AVS_PRINT_TEST, " (Print level is %2d)\n\n", g_print_level);
 
+  val_print(AVS_PRINT_TEST, " Creating Platform Information Tables \n", 0);
 
-  Print(L" Creating Platform Information Tables \n");
   Status = createPeInfoTable();
   if (Status)
     return Status;
@@ -504,36 +507,41 @@ ShellAppMainsbsa (
   val_pe_initialize_default_exception_handler(val_pe_default_esr);
   FlushImage();
 
-  Print(L"\n      ***  Starting PE tests ***  \n");
+  val_print(AVS_PRINT_TEST, "\n      ***  Starting PE tests ***  \n", 0);
   Status = val_pe_execute_tests(g_sbsa_level, val_pe_get_num());
 
-  Print(L"\n      ***  Starting GIC tests ***  \n");
+  val_print(AVS_PRINT_TEST, "\n      ***  Starting GIC tests ***  \n", 0);
   Status |= val_gic_execute_tests(g_sbsa_level, val_pe_get_num());
 
 #ifndef ONLY_SBSA_RULE_TESTS
-  Print(L"\n      *** Starting Timer tests ***  \n");
+  val_print(AVS_PRINT_TEST, "\n      *** Starting Timer tests ***  \n", 0);
   Status |= val_timer_execute_tests(g_sbsa_level, val_pe_get_num());
 #endif
 
-  Print(L"\n      *** Starting Watchdog tests ***  \n");
-  Status |= val_wd_execute_tests(g_sbsa_level, val_pe_get_num());
+#ifdef ONLY_SBSA_RULE_TESTS
+  if (g_sbsa_level > 4)
+#endif
+  {
+    val_print(AVS_PRINT_TEST, "\n      *** Starting Watchdog tests ***  \n", 0);
+    Status |= val_wd_execute_tests(g_sbsa_level, val_pe_get_num());
+  }
 
 #ifndef ONLY_SBSA_RULE_TESTS
-  Print(L"\n      *** Starting Power and Wakeup semantic tests ***  \n");
+  val_print(AVS_PRINT_TEST, "\n      *** Starting Power and Wakeup semantic tests ***  \n", 0);
   Status |= val_wakeup_execute_tests(g_sbsa_level, val_pe_get_num());
 
-  Print(L"\n      *** Starting Peripheral tests ***  \n");
+  val_print(AVS_PRINT_TEST, "\n      *** Starting Peripheral tests ***  \n", 0);
   Status |= val_peripheral_execute_tests(g_sbsa_level, val_pe_get_num());
 #endif
 
-  Print(L"\n      *** Starting IO Virtualization tests ***  \n");
+  val_print(AVS_PRINT_TEST, "\n      *** Starting SMMU  tests ***  \n", 0);
   Status |= val_smmu_execute_tests(g_sbsa_level, val_pe_get_num());
 
 #ifdef ONLY_SBSA_RULE_TESTS
   if (g_sbsa_level > 5)
 #endif
   {
-    Print(L"\n      *** Starting PCIe tests ***  \n");
+    val_print(AVS_PRINT_TEST, "\n      *** Starting PCIe tests ***  \n", 0);
     Status |= val_pcie_execute_tests(g_enable_pcie_tests, g_sbsa_level, val_pe_get_num());
   }
 
@@ -544,14 +552,14 @@ ShellAppMainsbsa (
   configureGicIts();
 
   if (g_sbsa_level > 3) {
-    Print(L"\n      *** Starting PCIe Exerciser tests ***  \n");
+    val_print(AVS_PRINT_TEST, "\n      *** Starting PCIe Exerciser tests ***  \n", 0);
     Status |= val_exerciser_execute_tests(g_sbsa_level);
   }
 
 
   #ifdef ENABLE_NIST
   if (g_execute_nist == TRUE) {
-    Print(L"\n      *** Starting NIST statistical tests ***  \n");
+    val_print(AVS_PRINT_TEST, "\n      *** Starting NIST statistical tests ***  \n", 0);
     Status |= val_nist_execute_tests(g_sbsa_level, val_pe_get_num());
   }
   #endif
@@ -565,11 +573,11 @@ print_test_status:
 
   freeSbsaAvsMem();
 
+  val_print(AVS_PRINT_TEST, "\n      *** SBSA tests complete. Reset the system. *** \n\n", 0);
+
   if(g_sbsa_log_file_handle) {
     ShellCloseFile(&g_sbsa_log_file_handle);
   }
-
-  Print(L"\n      *** SBSA tests complete. Reset the system. *** \n\n");
 
   val_pe_context_restore(AA64WriteSp(g_stack_pointer));
 

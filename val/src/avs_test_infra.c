@@ -585,7 +585,7 @@ val_memcpy(void *dst_buffer, void *src_buffer, uint32_t len)
 
   @param  MicroSeconds  The minimum number of microseconds to delay.
 
-  @return The value of MicroSeconds inputted.
+  @return zero for success
 
 **/
 uint64_t

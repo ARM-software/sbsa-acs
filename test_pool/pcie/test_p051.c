@@ -169,7 +169,7 @@ payload(void)
 
           /* Wait for Timeout */
           delay_status = val_time_delay_ms(100 * ONE_MILLISECOND);
-          if (!delay_status)
+          if (delay_status)
           {
               val_print(AVS_PRINT_ERR, "\n Failed to time delay for BDF 0x%x ", bdf);
               val_memory_free(cfg_space_buf);
@@ -184,7 +184,7 @@ payload(void)
               {
                   /* Wait for for additional Timeout and check the status*/
                   delay_status = val_time_delay_ms(100 * ONE_MILLISECOND);
-                  if (!delay_status)
+                  if (delay_status)
                   {
                       val_print(AVS_PRINT_ERR, "\n Failed to time delay for BDF 0x%x ", bdf);
                       val_memory_free(cfg_space_buf);
