@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2020, 2022 Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2020,2021 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,40 +19,39 @@
 #include "val/include/sbsa_avs_pe.h"
 #include "val/include/val_interface.h"
 
-#define TEST_NUM   (AVS_PE_TEST_NUM_BASE  +  36)
-#define TEST_DESC  "Check PMU Version Support         "
+#define TEST_NUM   (AVS_PE_TEST_NUM_BASE  + 40)
+#define TEST_RULE  "B_SEC_03"
+#define TEST_DESC  "Check PEs Impl CSDB,SSBB,PSSBB        "
 
-static void payload(void)
+static
+void
+payload()
 {
     uint64_t data = 0;
     uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
 
-    if (g_sbsa_level < 6) {
-        val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
-        return;
-    }
+    /* Read ID_AA64PFR1_EL1[7:4] != 0 For CSDB, SSBB and PSSBB barriers  */
+    data = VAL_EXTRACT_BITS(val_pe_reg_read(ID_AA64PFR1_EL1), 4, 7);
 
-    /* Read ID_AA64DFR0_EL1.PMUVer[11:8] >= 0b0110 and != 0xF for PMU v8.5 or higher support */
-    data = VAL_EXTRACT_BITS(val_pe_reg_read(ID_AA64DFR0_EL1), 8, 11);
-
-    if ((data < 6) || (data == 0xF))
-        val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
+    if (data == 0)
+        val_set_status(index, RESULT_FAIL(6, TEST_NUM, 1));
     else
-        val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
+        val_set_status(index, RESULT_PASS(6, TEST_NUM, 1));
 }
 
-uint32_t c036_entry(uint32_t num_pe)
+uint32_t
+os_c018_entry(uint32_t num_pe)
 {
     uint32_t status = AVS_STATUS_FAIL;
 
-    status = val_initialize_test(TEST_NUM, TEST_DESC, num_pe, g_sbsa_level);
+    status = val_initialize_test(TEST_NUM, TEST_DESC, num_pe, 6);
     /* This check is when user is forcing us to skip this test */
     if (status != AVS_STATUS_SKIP)
         val_run_test_payload(TEST_NUM, num_pe, payload, 0);
 
     /* get the result from all PE and check for failure */
     status = val_check_for_error(TEST_NUM, num_pe);
-    val_report_status(0, SBSA_AVS_END(g_sbsa_level, TEST_NUM));
+    val_report_status(0, SBSA_AVS_END(6, TEST_NUM));
 
     return status;
 }

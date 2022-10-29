@@ -29,17 +29,56 @@ static   EFI_ACPI_6_1_MULTIPLE_APIC_DESCRIPTION_TABLE_HEADER *gMadtHdr;
 UINT8   *gSecondaryPeStack;
 UINT64  gMpidrMax;
 static UINT32 g_num_pe;
+extern INT32 gPsciConduit;
 
 #define SIZE_STACK_SECONDARY_PE  0x100		//256 bytes per core
 #define UPDATE_AFF_MAX(src,dest,mask)  ((dest & mask) > (src & mask) ? (dest & mask) : (src & mask))
 
 UINT64
 pal_get_madt_ptr();
-VOID
-ArmCallSmc (
-  IN OUT ARM_SMC_ARGS *Args
+
+UINT64
+pal_get_fadt_ptr (
+  VOID
   );
 
+VOID
+ArmCallSmc (
+  IN OUT ARM_SMC_ARGS *Args,
+  IN     INT32          Conduit
+  );
+
+/**
+  @brief   Queries the FADT ACPI table to check whether PSCI is implemented and,
+           if so, using which conduit (HVC or SMC).
+
+  @param
+
+  @retval  CONDUIT_UNKNOWN:       The FADT table could not be discovered.
+  @retval  CONDUIT_NONE:          PSCI is not implemented
+  @retval  CONDUIT_SMC:           PSCI is implemented and uses SMC as
+                                  the conduit.
+  @retval  CONDUIT_HVC:           PSCI is implemented and uses HVC as
+                                  the conduit.
+**/
+INT32
+pal_psci_get_conduit (
+  VOID
+  )
+{
+  EFI_ACPI_6_1_FIXED_ACPI_DESCRIPTION_TABLE  *Fadt;
+
+  Fadt = (EFI_ACPI_6_1_FIXED_ACPI_DESCRIPTION_TABLE *)pal_get_fadt_ptr ();
+  if (!Fadt) {
+    return CONDUIT_UNKNOWN;
+  } else if (!(Fadt->ArmBootArch & EFI_ACPI_6_1_ARM_PSCI_COMPLIANT)) {
+    return CONDUIT_NONE;
+  } else if (Fadt->ArmBootArch & EFI_ACPI_6_1_ARM_PSCI_USE_HVC) {
+    return CONDUIT_HVC;
+  } else {
+    return CONDUIT_SMC;
+  }
+}
 
 /**
   @brief   Return the base address of the region allocated for Stack use for the Secondary
@@ -90,7 +129,8 @@ VOID
 PalAllocateSecondaryStack(UINT64 mpidr)
 {
   EFI_STATUS Status;
-  UINT32 NumPe, Aff0, Aff1, Aff2, Aff3;
+  UINT8 *Buffer;
+  UINT32 NumPe, Aff0, Aff1, Aff2, Aff3, StackSize;
 
   Aff0 = ((mpidr & 0x00000000ff) >>  0);
   Aff1 = ((mpidr & 0x000000ff00) >>  8);
@@ -100,13 +140,31 @@ PalAllocateSecondaryStack(UINT64 mpidr)
   NumPe = ((Aff3+1) * (Aff2+1) * (Aff1+1) * (Aff0+1));
 
   if (gSecondaryPeStack == NULL) {
+      // AllocatePool guarantees 8b alignment, but stack pointers must be 16b
+      // aligned for aarch64. Pad the size with an extra 8b so that we can
+      // force-align the returned buffer to 16b. We store the original address
+      // returned if we do have to align we still have the proper address to
+      // free.
+
+      StackSize = (NumPe * SIZE_STACK_SECONDARY_PE) + CPU_STACK_ALIGNMENT;
       Status = gBS->AllocatePool ( EfiBootServicesData,
-                    (NumPe * SIZE_STACK_SECONDARY_PE),
-                    (VOID **) &gSecondaryPeStack);
+                    StackSize,
+                    (VOID **) &Buffer);
       if (EFI_ERROR(Status)) {
           sbsa_print(AVS_PRINT_ERR, L"\n FATAL - Allocation for Seconday stack failed %x \n", Status);
       }
-      pal_pe_data_cache_ops_by_va((UINT64)&gSecondaryPeStack, CLEAN_AND_INVALIDATE);
+      pal_pe_data_cache_ops_by_va((UINT64)&Buffer, CLEAN_AND_INVALIDATE);
+
+      // Check if we need alignment
+      if ((UINT8*)(((UINTN) Buffer) & (0xFll))) {
+        // Needs alignment, so just store the original address and return +1
+        ((UINTN*)Buffer)[0] = (UINTN)Buffer;
+        gSecondaryPeStack = (UINT8*)(((UINTN*)Buffer)+1);
+      } else {
+        // None needed. Just store the address with padding and return.
+        ((UINTN*)Buffer)[1] = (UINTN)Buffer;
+        gSecondaryPeStack = (UINT8*)(((UINTN*)Buffer)+2);
+      }
   }
 
 }
@@ -225,13 +283,14 @@ pal_pe_install_esr(UINT32 ExceptionType,  VOID (*esr)(UINT64, VOID *))
           for both input and output values.
 
   @param  Argumets to pass to the EL3 firmware
+  @param  Conduit  SMC or HVC
 
   @return  None
 **/
 VOID
-pal_pe_call_smc(ARM_SMC_ARGS *ArmSmcArgs)
+pal_pe_call_smc(ARM_SMC_ARGS *ArmSmcArgs, INT32 Conduit)
 {
-  ArmCallSmc (ArmSmcArgs);
+  ArmCallSmc (ArmSmcArgs, Conduit);
 }
 
 VOID
@@ -249,7 +308,7 @@ VOID
 pal_pe_execute_payload(ARM_SMC_ARGS *ArmSmcArgs)
 {
   ArmSmcArgs->Arg2 = (UINT64)ModuleEntryPoint;
-  pal_pe_call_smc(ArmSmcArgs);
+  pal_pe_call_smc(ArmSmcArgs, gPsciConduit);
 }
 
 /**

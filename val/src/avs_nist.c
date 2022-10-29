@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2020, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2020, 2022 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -37,6 +37,15 @@ val_nist_execute_tests(uint32_t level, uint32_t num_pe)
           val_print(AVS_PRINT_TEST, "      USER Override - Skipping all NIST tests \n", 0);
           return AVS_STATUS_SKIP;
       }
+  }
+
+  if (g_single_module != SINGLE_MODULE_SENTINEL && g_single_module != AVS_NIST_TEST_NUM_BASE &&
+       (g_single_test == SINGLE_MODULE_SENTINEL ||
+         (g_single_test - AVS_NIST_TEST_NUM_BASE > 100 ||
+          g_single_test - AVS_NIST_TEST_NUM_BASE < 0))) {
+    val_print(AVS_PRINT_TEST, " USER Override - Skipping all NIST tests \n", 0);
+    val_print(AVS_PRINT_TEST, " (Running only a single module)\n", 0);
+    return AVS_STATUS_SKIP;
   }
 
   status = n001_entry(num_pe);

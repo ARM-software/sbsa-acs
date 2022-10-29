@@ -51,6 +51,9 @@
 
 #define VAL_EXTRACT_BITS(data, start, end) ((data >> start) & ((1ul << (end-start+1))-1))
 
+#define SINGLE_TEST_SENTINEL   10000
+#define SINGLE_MODULE_SENTINEL 10001
+
 /* GENERIC VAL APIs */
 void val_allocate_shared_mem(void);
 void val_free_shared_mem(void);
@@ -214,6 +217,7 @@ uint32_t val_pcie_is_device_status_error(uint32_t bdf);
 uint32_t val_pcie_is_sig_target_abort(uint32_t bdf);
 void val_pcie_clear_sig_target_abort(uint32_t bdf);
 uint32_t val_pcie_mem_get_offset(uint32_t type);
+uint32_t val_pcie_link_cap_support(uint32_t bdf);
 
 /* IO-VIRT APIs */
 typedef enum {
@@ -321,6 +325,7 @@ void     val_peripheral_free_info_table(void);
 uint32_t val_peripheral_execute_tests(uint32_t level, uint32_t num_pe);
 uint64_t val_peripheral_get_info(PERIPHERAL_INFO_e info_type, uint32_t index);
 uint32_t val_peripheral_is_pcie(uint32_t bdf);
+void     val_peripheral_dump_info(void);
 
 /* Memory Tests APIs */
 typedef enum {
