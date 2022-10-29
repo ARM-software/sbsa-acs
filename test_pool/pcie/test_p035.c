@@ -39,7 +39,8 @@ uint32_t is_flr_failed(uint32_t bdf)
       val_pcie_read_cfg(bdf, TYPE01_BAR + (index * BAR_BASE_SHIFT), &reg_value);
       if ((reg_value >> BAR_BASE_SHIFT) != 0)
       {
-          val_print(AVS_PRINT_ERR, "\n       BAR%d base addr not cleared", 0);
+          val_print(AVS_PRINT_ERR, "\n      BAR%d base addr ", index);
+          val_print(AVS_PRINT_ERR, "for BDF 0x%x not cleared", bdf);
           check_failed++;
       }
   }
@@ -136,7 +137,7 @@ payload(void)
 
           /* Wait for 100 ms */
           status = val_time_delay_ms(100 * ONE_MILLISECOND);
-          if (!status)
+          if (status)
           {
               val_print(AVS_PRINT_ERR, "\n       Failed to time delay for BDF 0x%x ", bdf);
               val_memory_free(func_config_space);

@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018, 2022 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -42,6 +42,8 @@ payload(void)
   while (count > 0) {
       count--;
       dev_bdf = val_peripheral_get_info(ANY_BDF, count);
+
+      val_print(AVS_PRINT_DEBUG, "\n       dev_bdf %x", dev_bdf);
       /* Check for pcie device */
       if (!val_peripheral_is_pcie(dev_bdf))
           continue;
@@ -52,6 +54,7 @@ payload(void)
           continue;
 
       data = val_peripheral_get_info(ANY_FLAGS, count);
+      val_print(AVS_PRINT_DEBUG, "       data %x", data);
 
       if ((data & PER_FLAG_MSI_ENABLED) == 0) {
           val_print(AVS_PRINT_ERR, "\n       MSI should be enabled for a PCIe device ", 0);

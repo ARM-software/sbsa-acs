@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, 2021 Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018, 2021-2022 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -45,7 +45,16 @@ val_peripheral_execute_tests(uint32_t level, uint32_t num_pe)
       }
   }
 
-   g_curr_module = 1 << PERIPHERAL_MODULE;
+  if (g_single_module != SINGLE_MODULE_SENTINEL && g_single_module != AVS_PER_TEST_NUM_BASE &&
+       (g_single_test == SINGLE_MODULE_SENTINEL ||
+         (g_single_test - AVS_PER_TEST_NUM_BASE > 100 ||
+          g_single_test - AVS_PER_TEST_NUM_BASE < 0))) {
+    val_print(AVS_PRINT_TEST, " USER Override - Skipping all Peripheral tests \n", 0);
+    val_print(AVS_PRINT_TEST, " (Running only a single module)\n", 0);
+    return AVS_STATUS_SKIP;
+  }
+
+  g_curr_module = 1 << PERIPHERAL_MODULE;
   status = d001_entry(num_pe);
   status |= d002_entry(num_pe);
   status |= d003_entry(num_pe);
@@ -198,6 +207,53 @@ val_peripheral_get_info(PERIPHERAL_INFO_e info_type, uint32_t instance)
   return 0;
 }
 
+void
+val_peripheral_dump_info(void)
+{
+
+  uint32_t bus, dev, func, seg = 0;
+  uint32_t dev_bdf;
+  uint32_t reg_value, base_cc;
+  uint32_t dply = 0, ntwk = 0, strg = 0;
+
+  if (val_pcie_get_info(PCIE_INFO_NUM_ECAM, 0) == 0)
+  {
+      val_print(AVS_PRINT_DEBUG, "\n No ECAM is present", 0);
+      return;
+  }
+
+  for (bus = 0; bus < PCIE_MAX_BUS; bus++)
+  {
+      for (dev = 0; dev < PCIE_MAX_DEV; dev++)
+      {
+          for (func = 0; func < PCIE_MAX_FUNC; func++)
+          {
+              dev_bdf = PCIE_CREATE_BDF(seg, bus, dev, func);
+              val_pcie_read_cfg(dev_bdf, TYPE01_VIDR, &reg_value);
+              if (reg_value == PCIE_UNKNOWN_RESPONSE)
+                  continue;
+              val_pcie_read_cfg(dev_bdf, TYPE01_RIDR, &reg_value);
+              val_print(AVS_PRINT_DEBUG, "\n BDF is %x", dev_bdf);
+              val_print(AVS_PRINT_DEBUG, "\n Class code is %x", reg_value);
+              base_cc = reg_value >> TYPE01_BCC_SHIFT;
+              if (base_cc == CNTRL_CC)
+                  ntwk++;
+              if (base_cc == DP_CNTRL_CC)
+                  dply++;
+              if (base_cc == MAS_CC)
+                  strg++;
+              else
+                  continue;
+          }
+      }
+  }
+
+  val_print(AVS_PRINT_DEBUG, " Peripheral: Num of Network ctrl      :    %d \n", ntwk);
+  val_print(AVS_PRINT_DEBUG, " Peripheral: Num of Storage ctrl      :    %d \n", strg);
+  val_print(AVS_PRINT_DEBUG, " Peripheral: Num of Display ctrl      :    %d \n", dply);
+
+}
+
 /*
  * val_create_peripheralinfo_table:
  *    Caller         Application layer.
@@ -229,7 +285,7 @@ val_peripheral_create_info_table(uint64_t *peripheral_info_table)
     val_peripheral_get_info(NUM_SATA, 0));
   val_print(AVS_PRINT_TEST, " Peripheral: Num of UART controllers  :    %d \n",
     val_peripheral_get_info(NUM_UART, 0));
-
+  val_peripheral_dump_info();
 }
 
 

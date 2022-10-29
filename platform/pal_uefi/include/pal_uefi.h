@@ -79,6 +79,14 @@ typedef struct {
 #define sbsa_print(verbose, string, ...) if(verbose >= g_print_level) \
                                             Print(string, ##__VA_ARGS__)
 
+/**
+  Conduits for service calls (SMC vs HVC).
+**/
+#define CONDUIT_SMC       0
+#define CONDUIT_HVC       1
+#define CONDUIT_UNKNOWN  -1
+#define CONDUIT_NONE     -2
+
 typedef struct {
   UINT32 num_of_pe;
 }PE_INFO_HDR;

@@ -44,6 +44,51 @@ esr(uint64_t interrupt_type, void *context)
 }
 
 static
+uint32_t
+check_bdf_under_rp(uint32_t rp_bdf)
+{
+
+  uint32_t reg_value;
+  uint32_t rp_sec_bus, rp_sub_bus;
+  uint32_t dev_bdf, dev_bus, dev_sec_bus;
+  uint32_t rp_seg, dev_seg;
+  uint32_t base_cc;
+  uint32_t dev_num, func_num;
+
+  rp_seg = PCIE_EXTRACT_BDF_SEG(rp_bdf);
+  val_pcie_read_cfg(rp_bdf, TYPE1_PBN, &reg_value);
+  rp_sec_bus = ((reg_value >> SECBN_SHIFT) & SECBN_MASK);
+  rp_sub_bus = ((reg_value >> SUBBN_SHIFT) & SUBBN_MASK);
+
+  for (dev_sec_bus = rp_sec_bus; dev_sec_bus <= rp_sub_bus; dev_sec_bus++)
+  {
+      for (dev_num = 0; dev_num < PCIE_MAX_DEV; dev_num++)
+      {
+          for (func_num = 0; func_num < PCIE_MAX_FUNC; func_num++)
+          {
+              dev_bdf = PCIE_CREATE_BDF(rp_seg, dev_sec_bus, dev_num, func_num);
+              val_pcie_read_cfg(dev_bdf, TYPE01_VIDR, &reg_value);
+              if (reg_value == PCIE_UNKNOWN_RESPONSE)
+                  continue;
+
+              dev_bus = PCIE_EXTRACT_BDF_BUS(dev_bdf);
+              dev_seg = PCIE_EXTRACT_BDF_SEG(dev_bdf);
+              if ((dev_seg == rp_seg) && ((dev_bus >= rp_sec_bus) && (dev_bus <= rp_sub_bus)))
+              {
+                  val_pcie_read_cfg(dev_bdf, TYPE01_RIDR, &reg_value);
+                  val_print(AVS_PRINT_DEBUG, "\n Class code is %x", reg_value);
+                  base_cc = reg_value >> TYPE01_BCC_SHIFT;
+                  if ((base_cc == CNTRL_CC) || (base_cc == DP_CNTRL_CC) || (base_cc == MAS_CC))
+                      return 1;
+              }
+           }
+       }
+  }
+
+   return 0;
+}
+
+static
 void
 payload(void)
 {
@@ -105,11 +150,15 @@ payload(void)
 
         /* Read Function's NP Memory Base Limit Register */
         val_pcie_read_cfg(bdf, TYPE1_NP_MEM, &read_value);
+        val_print(AVS_PRINT_DEBUG, "\n  BDF is 0x%x", bdf);
         if (read_value == 0)
           continue;
 
         mem_base = (read_value & MEM_BA_MASK) << MEM_BA_SHIFT;
         mem_lim = (read_value & MEM_LIM_MASK) | MEM_LIM_LOWER_BITS;
+
+        val_print(AVS_PRINT_DEBUG, "\n   Memory base is 0x%llx", mem_base);
+        val_print(AVS_PRINT_DEBUG, " Memory lim is  0x%llx", mem_lim);
 
         /* If Memory Limit is programmed with value less the Base, then Skip.*/
         if (mem_lim < mem_base)
@@ -147,6 +196,15 @@ payload(void)
           return;
         }
 
+        /** Skip Check_2 if there is an Ethernet or Display controller
+         * under the RP device
+         **/
+        if (check_bdf_under_rp(bdf))
+        {
+            val_print(AVS_PRINT_DEBUG, "\n   Skipping for RP BDF %x", bdf);
+            continue;
+        }
+
         /**Check_2: Accessing out of NP memory limit range should return 0xFFFFFFFF
          *
          * If the limit exceeds 1MB then modify the range to be 1MB
@@ -156,12 +214,14 @@ payload(void)
 
         if ((mem_lim >> MEM_SHIFT) > (mem_base >> MEM_SHIFT))
         {
+           val_print(AVS_PRINT_DEBUG, "\n Entered Check_2 for bdf %x", bdf);
            new_mem_lim = mem_base + MEM_OFFSET_LARGE;
            mem_base = mem_base | (mem_base  >> 16);
            val_pcie_write_cfg(bdf, TYPE1_NP_MEM, mem_base);
            val_pcie_read_cfg(bdf, TYPE1_NP_MEM, &read_value);
 
            value = (*(volatile uint32_t *)(new_mem_lim + MEM_OFFSET_SMALL));
+           val_print(AVS_PRINT_DEBUG, "  Value read is 0x%llx", value);
            if (value != PCIE_UNKNOWN_RESPONSE)
            {
                val_print(AVS_PRINT_ERR, "\n Memory range for bdf 0x%x", bdf);

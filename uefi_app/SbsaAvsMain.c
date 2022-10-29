@@ -41,6 +41,8 @@ UINT32 g_curr_module;
 UINT32 g_enable_module;
 UINT32  g_skip_test_num[MAX_TEST_SKIP_NUM] = { 10000, 10000, 10000, 10000, 10000,
                                                10000, 10000, 10000, 10000 };
+UINT32  g_single_test = SINGLE_TEST_SENTINEL;
+UINT32  g_single_module = SINGLE_MODULE_SENTINEL;
 UINT32  g_sbsa_tests_total;
 UINT32  g_sbsa_tests_pass;
 UINT32  g_sbsa_tests_fail;
@@ -256,7 +258,7 @@ HelpMsg (
   VOID
   )
 {
-  Print (L"\nUsage: Sbsa.efi [-v <nn>] | [-l <n>] | [-f <filename>] | "
+  Print (L"\nUsage: Sbsa.efi [-v <n>] | [-l <n>] | [-f <filename>] | [-skip <n>] | [-nist] | [-p <n>] | [-t <n>] | [-m <n>]\n"
          "[-skip <n>] | [-nist] | [-p <n>]\n"
          "Options:\n"
          "-v      Verbosity of the Prints\n"
@@ -276,6 +278,8 @@ HelpMsg (
          "-nist   Enable the NIST Statistical test suite\n"
          "-p      Enable/disable PCIe SBSA 6.0 (RCiEP) compliance tests\n"
          "        1 - enables PCIe tests, 0 - disables PCIe tests\n"
+         "-t      If set, will only run the specified test, all others will be skipped.\n"
+         "-m      If set, will only run the specified module, all others will be skipped.\n"
          "-p2p    Pass this flag to indicate that PCIe Hierarchy Supports Peer-to-Peer\n"
          "-cache  Pass this flag to indicate that if the test system supports PCIe address translation cache\n"
          "-timeout  Set timeout multiple for wakeup tests\n"
@@ -293,6 +297,8 @@ STATIC CONST SHELL_PARAM_ITEM ParamList[] = {
   {L"-nist" , TypeFlag},     // -nist # Binary Flag to enable the execution of NIST STS
   {L"-p"    , TypeValue},    // -p    # Enable/disable PCIe SBSA 6.0 (RCiEP) compliance tests.
   {L"-mmio" , TypeFlag},     // -mmio # Enable pal_mmio prints
+  {L"-t"    , TypeValue},    // -t    # Test to be run
+  {L"-m"    , TypeValue},    // -m    # Module to be run
   {L"-p2p", TypeFlag},       // -p2p  # Peer-to-Peer is supported
   {L"-cache", TypeFlag},     // -cache# PCIe address translation cache is supported
   {L"-timeout" , TypeValue}, // -timeout # Set timeout multiple for wakeup tests
@@ -451,6 +457,18 @@ ShellAppMainsbsa (
       }
   }
 
+  // Options with Values
+  CmdLineArg  = ShellCommandLineGetValue (ParamPackage, L"-t");
+  if (CmdLineArg != NULL) {
+    g_single_test = StrDecimalToUintn(CmdLineArg);
+  }
+
+  // Options with Values
+  CmdLineArg  = ShellCommandLineGetValue (ParamPackage, L"-m");
+  if (CmdLineArg != NULL) {
+    g_single_module = StrDecimalToUintn(CmdLineArg);
+  }
+
   //
   // Initialize global counters
   //
@@ -458,13 +476,16 @@ ShellAppMainsbsa (
   g_sbsa_tests_pass  = 0;
   g_sbsa_tests_fail  = 0;
 
-  Print(L"\n\n SBSA Architecture Compliance Suite \n");
-  Print(L"    Version %d.%d  \n", SBSA_ACS_MAJOR_VER, SBSA_ACS_MINOR_VER);
+  val_print(AVS_PRINT_TEST, "\n\n SBSA Architecture Compliance Suite \n", 0);
+  val_print(AVS_PRINT_TEST, "    Version %d.", SBSA_ACS_MAJOR_VER);
+  val_print(AVS_PRINT_TEST, "%d.", SBSA_ACS_MINOR_VER);
+  val_print(AVS_PRINT_TEST, "%d  \n", SBSA_ACS_SUBMINOR_VER);
 
-  Print(L"\n Starting tests for level %2d (Print level is %2d)\n\n", g_sbsa_level, g_print_level);
+  val_print(AVS_PRINT_TEST, "\n Starting tests for level %2d", g_sbsa_level);
+  val_print(AVS_PRINT_TEST, " (Print level is %2d)\n\n", g_print_level);
 
+  val_print(AVS_PRINT_TEST, " Creating Platform Information Tables \n", 0);
 
-  Print(L" Creating Platform Information Tables \n");
   Status = createPeInfoTable();
   if (Status)
     return Status;
@@ -486,29 +507,43 @@ ShellAppMainsbsa (
   val_pe_initialize_default_exception_handler(val_pe_default_esr);
   FlushImage();
 
-  Print(L"\n      ***  Starting PE tests ***  \n");
+  val_print(AVS_PRINT_TEST, "\n      ***  Starting PE tests ***  \n", 0);
   Status = val_pe_execute_tests(g_sbsa_level, val_pe_get_num());
 
-  Print(L"\n      ***  Starting GIC tests ***  \n");
+  val_print(AVS_PRINT_TEST, "\n      ***  Starting GIC tests ***  \n", 0);
   Status |= val_gic_execute_tests(g_sbsa_level, val_pe_get_num());
 
-  Print(L"\n      *** Starting Timer tests ***  \n");
+#ifndef ONLY_SBSA_RULE_TESTS
+  val_print(AVS_PRINT_TEST, "\n      *** Starting Timer tests ***  \n", 0);
   Status |= val_timer_execute_tests(g_sbsa_level, val_pe_get_num());
+#endif
 
-  Print(L"\n      *** Starting Watchdog tests ***  \n");
-  Status |= val_wd_execute_tests(g_sbsa_level, val_pe_get_num());
+#ifdef ONLY_SBSA_RULE_TESTS
+  if (g_sbsa_level > 4)
+#endif
+  {
+    val_print(AVS_PRINT_TEST, "\n      *** Starting Watchdog tests ***  \n", 0);
+    Status |= val_wd_execute_tests(g_sbsa_level, val_pe_get_num());
+  }
 
-  Print(L"\n      *** Starting Power and Wakeup semantic tests ***  \n");
+#ifndef ONLY_SBSA_RULE_TESTS
+  val_print(AVS_PRINT_TEST, "\n      *** Starting Power and Wakeup semantic tests ***  \n", 0);
   Status |= val_wakeup_execute_tests(g_sbsa_level, val_pe_get_num());
 
-  Print(L"\n      *** Starting Peripheral tests ***  \n");
+  val_print(AVS_PRINT_TEST, "\n      *** Starting Peripheral tests ***  \n", 0);
   Status |= val_peripheral_execute_tests(g_sbsa_level, val_pe_get_num());
+#endif
 
-  Print(L"\n      *** Starting IO Virtualization tests ***  \n");
+  val_print(AVS_PRINT_TEST, "\n      *** Starting SMMU  tests ***  \n", 0);
   Status |= val_smmu_execute_tests(g_sbsa_level, val_pe_get_num());
 
-  Print(L"\n      *** Starting PCIe tests ***  \n");
-  Status |= val_pcie_execute_tests(g_enable_pcie_tests, g_sbsa_level, val_pe_get_num());
+#ifdef ONLY_SBSA_RULE_TESTS
+  if (g_sbsa_level > 5)
+#endif
+  {
+    val_print(AVS_PRINT_TEST, "\n      *** Starting PCIe tests ***  \n", 0);
+    Status |= val_pcie_execute_tests(g_enable_pcie_tests, g_sbsa_level, val_pe_get_num());
+  }
 
   /*
    * Configure Gic Redistributor and ITS to support
@@ -517,13 +552,14 @@ ShellAppMainsbsa (
   configureGicIts();
 
   if (g_sbsa_level > 3) {
-    Print(L"\n      *** Starting PCIe Exerciser tests ***  \n");
+    val_print(AVS_PRINT_TEST, "\n      *** Starting PCIe Exerciser tests ***  \n", 0);
     Status |= val_exerciser_execute_tests(g_sbsa_level);
   }
 
+
   #ifdef ENABLE_NIST
   if (g_execute_nist == TRUE) {
-    Print(L"\n      *** Starting NIST statistical tests ***  \n");
+    val_print(AVS_PRINT_TEST, "\n      *** Starting NIST statistical tests ***  \n", 0);
     Status |= val_nist_execute_tests(g_sbsa_level, val_pe_get_num());
   }
   #endif
@@ -537,11 +573,11 @@ print_test_status:
 
   freeSbsaAvsMem();
 
+  val_print(AVS_PRINT_TEST, "\n      *** SBSA tests complete. Reset the system. *** \n\n", 0);
+
   if(g_sbsa_log_file_handle) {
     ShellCloseFile(&g_sbsa_log_file_handle);
   }
-
-  Print(L"\n      *** SBSA tests complete. Reset the system. *** \n\n");
 
   val_pe_context_restore(AA64WriteSp(g_stack_pointer));
 
