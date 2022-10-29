@@ -27,7 +27,7 @@ A few tests are executed by running the SBSA ACS Linux application which in turn
 
 
 ## GitHub branch
-  - To pick up the release version of the code, checkout the release branch.
+  - To pick up the release version of the code, checkout the corresponding tag from master branch.
   - To get the latest version of the code with bug fixes and new features, use the master branch.
 
 ## Additional reading
@@ -50,7 +50,7 @@ To enable the export of a few kernel APIs that are necessary for PCIe and IOMMU 
 ## ACS build steps - UEFI Shell application
 
 ### Prebuilt images
-Prebuilt images for each release are available in the prebuilt_images folder of the release branch. You can choose to use these images or build your own image by following the steps below. If you choose to use the prebuilt image, jump to the test suite execution section below for details on how to run the application.
+Prebuilt images for v22_10_REL6.1.0 release is available in the prebuilt_images folder of the master branch. The prebuilt images of previous release are present in [release branch](https://github.com/chetan-rathore/sbsa-acs/tree/release/prebuilt_images). You can choose to use this images or build your own image by following the steps below. If you choose to use the prebuilt image, jump to the test suite execution section below for details on how to run the application.
 
 ### Prerequisites
     Before starting the ACS build, ensure that the following requirements are met.
