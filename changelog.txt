@@ -1,0 +1,9 @@
+v22.10_REL_6.1.0
+This version is used in SystemReady SR v1.1.0 images.
+
+* SBSA ACS updated to SBSA 6.1 specification
+* SBSA ACS coverage will be covered by BSA and SBSA binaries
+* BSA ACS will provide coverage for common rules of BSA and SBSA checklist.
+* SBSA ACS will provide coverage for SBSA-specific rules
+* RCiEP and iEP rules test will run at Level 6.
+* Bug Fixes
