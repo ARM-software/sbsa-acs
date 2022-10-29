@@ -165,7 +165,7 @@ Certain Peripheral, PCIe and Memory map tests require Linux operating system.Thi
 
 ### 1. Build steps and environment setup
 This section lists the porting and build steps for the kernel module.
-The patch for the kernel tree and the Linux PAL are hosted separately on [syscomp_linux_acs](https://ap-gerrit-1.ap01.arm.com/admin/repos/avk/syscomp_linux_acs) repository
+The patch for the kernel tree and the Linux PAL are hosted separately on [linux-acs](https://gitlab.arm.com/linux-arm/linux-acs) repository.
 
 ### 1.1 Building the kernel module
 #### Prerequisites
@@ -177,8 +177,8 @@ NOTE: <br />
 - GCC 7.5 is recommended toolchain, build issues are observed with toolchain version 10.xx and above. 
 
 #### Porting steps for Linux kernel
-1. git clone ssh://ap-gerrit-1.ap01.arm.com:29418/avk/syscomp_linux_acs sbsa-acs-drv
-2. git clone ssh://ap-gerrit-1.ap01.arm.com:29418/avk/syscomp_sbsa sbsa-acs
+1. git clone https://gitlab.arm.com/linux-arm/linux-acs sbsa-acs-drv
+2. git clone https://github.com/ARM-software/sbsa-acs.git sbsa-acs
 3. git clone https://github.com/torvalds/linux.git -b v6.0
 4. export CROSS_COMPILE=<GCC7.5 toolchain path> pointing to /bin/aarch64-linux-gnu-
 5. git apply <local_dir>/sbsa-acs-drv/kernel/src/0001-BSA-ACS-Linux-6.0.patch to your kernel source tree.
