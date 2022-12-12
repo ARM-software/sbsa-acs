@@ -295,7 +295,7 @@ val_pcie_execute_tests(uint32_t enable_pcie, uint32_t level, uint32_t num_pe)
 
   status = p001_entry(num_pe);
 
-  if (status != AVS_STATUS_PASS) {
+  if (status == AVS_STATUS_FAIL) {
     val_print(AVS_PRINT_WARN, "\n     *** Skipping remaining PCIE tests *** \n", 0);
     return status;
   }
