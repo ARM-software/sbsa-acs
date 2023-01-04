@@ -30,7 +30,7 @@
 
 static uint64_t l_uart_base;
 static uint32_t int_id;
-static void *branch_to_test;
+static uint64_t branch_to_test;
 static uint32_t test_fail;
 
 static
@@ -40,7 +40,7 @@ esr(uint64_t interrupt_type, void *context)
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
 
   /* Update the ELR to point to next instrcution */
-  val_pe_update_elr(context, (uint64_t)branch_to_test);
+  val_pe_update_elr(context, branch_to_test);
 
   val_print(AVS_PRINT_ERR, "\n       Error : Received Sync Exception type %d", interrupt_type);
   val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
@@ -150,7 +150,7 @@ payload(void)
   val_pe_install_esr(EXCEPT_AARCH64_SYNCHRONOUS_EXCEPTIONS, esr);
   val_pe_install_esr(EXCEPT_AARCH64_SERROR, esr);
 
-  branch_to_test = &&exception_taken;
+  branch_to_test = (uint64_t)&&exception_taken;
 
   if (count == 0) {
       val_print(AVS_PRINT_WARN, "\n       No UART defined by Platform      ", 0);
