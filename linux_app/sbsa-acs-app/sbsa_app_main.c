@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, 2020 Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2023 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -117,7 +117,8 @@ main (int argc, char **argv)
 
 
     printf ("\n ************ SBSA Architecture Compliance Suite ********* \n");
-    printf ("                        Version %d.%d.%d  \n", SBSA_APP_VERSION_MAJOR, SBSA_APP_VERSION_MINOR, SBSA_APP_VERSION_SUBMINOR);
+    printf ("                        Version %d.%d.%d\n", SBSA_APP_VERSION_MAJOR,
+            SBSA_APP_VERSION_MINOR, SBSA_APP_VERSION_SUBMINOR);
 
 
     printf ("\n Starting tests for level %2d (Print level is %2d)\n\n", g_sbsa_level, g_print_level);
@@ -129,14 +130,18 @@ main (int argc, char **argv)
         return 0;
     }
 
+    if (g_sbsa_level > 6)
+    {
+        printf("\n      *** Starting SMMU tests ***  \n");
+        execute_tests_smmu(1, g_sbsa_level, g_print_level);
+    }
+    printf("\n      *** Starting PCIe tests ***  \n");
+    execute_tests_pcie(1, g_sbsa_level, g_print_level);
+
     if (run_exerciser) {
         printf("\n      *** PCIe Exerciser tests only runs on UEFI ***  \n");
         //execute_tests_exerciser(1, g_sbsa_level, g_print_level);
-    } else {
-        printf("\n      *** Starting PCIe tests ***  \n");
-        execute_tests_pcie(1, g_sbsa_level, g_print_level);
     }
-
     printf("\n                    *** SBSA tests complete *** \n\n");
 
     cleanup_test_environment();

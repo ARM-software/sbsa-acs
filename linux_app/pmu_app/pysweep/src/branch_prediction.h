@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2023, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2022, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,28 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  **/
+#ifndef __included_br_pred_h
+#define __included_br_pred_h
 
+int branch_load_gen(int scale);
 
-#ifndef __SBSA_APP_LINUX_H__
-#define __SBSA_APP_LINUX_H__
-
-
-#define SBSA_APP_VERSION_MAJOR      7
-#define SBSA_APP_VERSION_MINOR      1
-#define SBSA_APP_VERSION_SUBMINOR  0
-
-#include "sbsa_drv_intf.h"
-
-typedef unsigned long int addr_t;
-typedef unsigned char     char8_t;
-
-int
-execute_tests_pcie(int num_pe, int level, unsigned int print_level);
-
-int
-execute_tests_exerciser(int num_pe, int level, unsigned int print_level);
-
-
-int
-execute_tests_smmu(int num_pe, int level, unsigned int print_level);
 #endif

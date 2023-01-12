@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2022, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2023, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -27,6 +27,15 @@
 #define TEST_DDR_REGION_CNT 16
 
 #define BUS_MEM_EN_MASK 0x06
+
+#define PCIE_EXTRACT_BDF_SEG(bdf)  ((bdf >> 24) & 0xFF)
+#define PCIE_EXTRACT_BDF_BUS(bdf)  ((bdf >> 16) & 0xFF)
+#define PCIE_EXTRACT_BDF_DEV(bdf)  ((bdf >> 8) & 0xFF)
+#define PCIE_EXTRACT_BDF_FUNC(bdf) (bdf & 0xFF)
+
+#define PCIE_CREATE_BDF_PACKED(bdf)  PCIE_EXTRACT_BDF_FUNC(bdf) | \
+                                    (PCIE_EXTRACT_BDF_DEV(bdf) << 3) | \
+                                    (PCIE_EXTRACT_BDF_BUS(bdf) << 8)
 
 /* PCIe Config space Offset */
 #define BAR0_OFFSET        0x10

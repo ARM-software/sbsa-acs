@@ -1,5 +1,5 @@
 ## @file
- # Copyright (c) 2016-2020, Arm Limited or its affiliates. All rights reserved.
+ # Copyright (c) 2016-2023, Arm Limited or its affiliates. All rights reserved.
  # SPDX-License-Identifier : Apache-2.0
  #
  # Licensed under the Apache License, Version 2.0 (the "License");
@@ -25,15 +25,9 @@ TEST_POOL = $(ACS_DIR)/
 
 obj-m += sbsa_acs_test.o
 sbsa_acs_test-objs += $(TEST_POOL)/pcie/test_p001.o \
-    $(TEST_POOL)/pcie/test_p002.o \
-    $(TEST_POOL)/pcie/test_p005.o $(TEST_POOL)/pcie/test_p006.o \
-    $(TEST_POOL)/pcie/test_p007.o $(TEST_POOL)/pcie/test_p008.o \
-    $(TEST_POOL)/pcie/test_p009.o $(TEST_POOL)/pcie/test_p010.o \
-    $(TEST_POOL)/pcie/test_p011.o $(TEST_POOL)/pcie/test_p012.o \
-    $(TEST_POOL)/pcie/test_p013.o $(TEST_POOL)/pcie/test_p014.o \
-    $(TEST_POOL)/pcie/test_p015.o $(TEST_POOL)/pcie/test_p016.o \
-    $(TEST_POOL)/pcie/test_p017.o $(TEST_POOL)/pcie/test_p018.o \
-    $(TEST_POOL)/pcie/test_p019.o \
+    $(TEST_POOL)/pcie/test_p002.o $(TEST_POOL)/pcie/test_p005.o \
+    $(TEST_POOL)/pcie/operating_system/test_p009.o \
+    $(TEST_POOL)/smmu/operating_system/test_i016.o
 
 ccflags-y=-I$(PWD)/$(ACS_DIR)/.. -I$(PWD)/$(ACS_DIR)/val/ -I$(PWD)/$(ACS_DIR)/ -DTARGET_LINUX -Wall -Werror
 
