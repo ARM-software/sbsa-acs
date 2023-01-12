@@ -181,6 +181,11 @@ val_peripheral_get_info(PERIPHERAL_INFO_e info_type, uint32_t instance)
           if (i != 0xFFFF)
               return g_peripheral_info_table->info[i].flags;
           break;
+      case ANY_BASE0:
+          i = val_peripheral_get_entry_index(PERIPHERAL_TYPE_NONE, instance);
+          if (i != 0xFFFF)
+              return g_peripheral_info_table->info[i].base0;
+          break;
       case ANY_FLAGS:
           i = val_peripheral_get_entry_index (PERIPHERAL_TYPE_NONE, instance);
           if (i != 0xFFFF)

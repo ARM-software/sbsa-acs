@@ -115,6 +115,7 @@ typedef struct {
   uint32_t   attr;      ///< PE attributes
   uint64_t   mpidr;     ///< PE MPIDR
   uint32_t   pmu_gsiv;  ///< PMU Interrupt ID
+  uint32_t   gmain_gsiv;                      /* GIC Maintenance Interrupt */
 }PE_INFO_ENTRY;
 
 typedef struct {
@@ -615,6 +616,7 @@ typedef enum {
   MEMORY_TYPE_NORMAL,
   MEMORY_TYPE_RESERVED,
   MEMORY_TYPE_NOT_POPULATED,
+  MEMORY_TYPE_PERSISTENT,
   MEMORY_TYPE_LAST_ENTRY
 }MEM_INFO_TYPE_e;
 

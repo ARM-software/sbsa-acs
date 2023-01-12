@@ -215,6 +215,7 @@ pal_pe_create_info_table(PE_INFO_TABLE *PeTable)
       Ptr->mpidr    = Entry->MPIDR;
       Ptr->pe_num   = PeTable->header.num_of_pe;
       Ptr->pmu_gsiv = Entry->PerformanceInterruptGsiv;
+      Ptr->gmain_gsiv = Entry->VGICMaintenanceInterrupt;
       sbsa_print(AVS_PRINT_DEBUG, L" MPIDR %x PE num %x \n", Ptr->mpidr, Ptr->pe_num);
       pal_pe_data_cache_ops_by_va((UINT64)Ptr, CLEAN_AND_INVALIDATE);
       Ptr++;

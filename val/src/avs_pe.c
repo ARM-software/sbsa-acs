@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2021, 2022 Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2023, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -61,32 +61,35 @@ val_pe_execute_tests(uint32_t level, uint32_t num_pe)
 
   g_curr_module = 1 << PE_MODULE;
 
-#ifndef ONLY_SBSA_RULE_TESTS
-  status |= c001_entry();
+  status |= c001_entry(num_pe);
   status |= c002_entry(num_pe);
-  status |= c005_entry(num_pe);
-  status |= c006_entry(num_pe);
-  status |= c007_entry(num_pe);
-  status |= c008_entry(num_pe);
-  status |= c011_entry(num_pe);
-  status |= c012_entry(num_pe);
-  status |= c013_entry(num_pe);
-  status |= c014_entry(num_pe);
-  status |= c015_entry(num_pe);
-  status |= c017_entry(num_pe);
-#endif
-
   status |= c003_entry(num_pe);
   status |= c004_entry(num_pe);
-  status |= c010_entry(num_pe);
 
   if (level > 3) {
-      status |= c019_entry(num_pe);
-      status |= c020_entry(num_pe);
-      status |= c021_entry(num_pe);
+      status |= c005_entry(num_pe);
+      status |= c006_entry(num_pe);
+      status |= c007_entry(num_pe);
+      status |= c008_entry(num_pe);
   }
 
   if (level > 4) {
+      status |= c009_entry(num_pe);
+      status |= c010_entry(num_pe);
+      status |= c011_entry(num_pe);
+      status |= c012_entry(num_pe);
+      status |= c013_entry(num_pe);
+      status |= c014_entry(num_pe);
+      status |= c015_entry(num_pe);
+      status |= c016_entry(num_pe);
+  }
+
+  if (level > 5) {
+      status |= c017_entry(num_pe);
+      status |= c018_entry(num_pe);
+      status |= c019_entry(num_pe);
+      status |= c020_entry(num_pe);
+      status |= c021_entry(num_pe);
       status |= c022_entry(num_pe);
       status |= c023_entry(num_pe);
       status |= c024_entry(num_pe);
@@ -95,8 +98,7 @@ val_pe_execute_tests(uint32_t level, uint32_t num_pe)
       status |= c027_entry(num_pe);
   }
 
-  if (level > 5) {
-      status |= c018_entry(num_pe);
+  if (level > 6) {
       status |= c028_entry(num_pe);
       status |= c029_entry(num_pe);
       status |= c030_entry(num_pe);
@@ -106,10 +108,7 @@ val_pe_execute_tests(uint32_t level, uint32_t num_pe)
       status |= c034_entry(num_pe);
       status |= c035_entry(num_pe);
       status |= c036_entry(num_pe);
-
-#ifdef ONLY_SBSA_RULE_TESTS
-      status |= os_c018_entry(num_pe);
-#endif
+      status |= c037_entry(num_pe);
   }
 
   val_print_test_end(status, "PE");
@@ -249,7 +248,8 @@ val_pe_reg_read(uint32_t reg_id)
           if (AA64ReadCurrentEL() == AARCH64_EL2)
             return AA64ReadTcr2();
       default:
-           val_report_status(val_pe_get_index_mpid(val_pe_get_mpid()), RESULT_FAIL(g_sbsa_level, 0, 0x78));
+           val_report_status(val_pe_get_index_mpid(val_pe_get_mpid()),
+                             RESULT_FAIL(g_sbsa_level, 0, 0x78), NULL);
   }
 
   return 0x0;
@@ -308,7 +308,8 @@ val_pe_reg_write(uint32_t reg_id, uint64_t write_data)
           AA64WritePmblimitr(write_data);
           break;
       default:
-           val_report_status(val_pe_get_index_mpid(val_pe_get_mpid()), RESULT_FAIL(g_sbsa_level, 0, 0x78));
+           val_report_status(val_pe_get_index_mpid(val_pe_get_mpid()),
+                             RESULT_FAIL(g_sbsa_level, 0, 0x78), NULL);
   }
 
 }
@@ -361,7 +362,7 @@ val_pe_get_pmu_gsiv(uint32_t index)
   PE_INFO_ENTRY *entry;
 
   if (index > g_pe_info_table->header.num_of_pe) {
-        val_report_status(index, RESULT_FAIL(g_sbsa_level, 0, 0xFF));
+        val_report_status(index, RESULT_FAIL(g_sbsa_level, 0, 0xFF), NULL);
         return 0xFFFFFF;
   }
 
@@ -460,4 +461,28 @@ uint32_t val_pe_reg_read_ttbr(uint32_t ttbr1, uint64_t *ttbr_ptr)
 
     *ttbr_ptr = ReadTtbr[ttbr1][(el >> 2) - 1]();
     return 0;
+}
+
+/**
+  @brief   This API returns the GIC Maintenance Interrupt ID for a given PE index
+           1. Caller       -  Test Suite
+           2. Prerequisite -  val_create_peinfo_table
+  @param   index - the index of PE whose GIC Maintenace interrupt ID is returned.
+  @return  GIC Maintenance interrupt ID
+**/
+uint32_t
+val_pe_get_gmain_gsiv(uint32_t index)
+{
+
+  PE_INFO_ENTRY *entry;
+
+  if (index > g_pe_info_table->header.num_of_pe) {
+        val_report_status(index, RESULT_FAIL(g_sbsa_level, 0, 0xFF), NULL);
+        return 0xFFFFFF;
+  }
+
+  entry = g_pe_info_table->pe_info;
+
+  return entry[index].gmain_gsiv;
+
 }

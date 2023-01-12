@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, 2020-2021 Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018, 2020-2023 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -191,6 +191,25 @@ IsDeviceMemory(EFI_MEMORY_TYPE type)
   switch(type) {
     case  EfiMemoryMappedIO:
     case  EfiMemoryMappedIOPortSpace:
+      return TRUE;
+    default:
+      return FALSE;
+  }
+}
+
+/**
+  @brief  Check if the memory type is persistent
+
+  @param  EFI_MEMORY_TYPE  - Type of UEFI memory.
+
+  @return  true   if memory is persistent
+           false  otherwise
+**/
+BOOLEAN
+IsPersistentMemory(EFI_MEMORY_TYPE type)
+{
+
+  switch(type) {
     case  EfiPersistentMemory:
       return TRUE;
     default:
@@ -261,7 +280,11 @@ pal_memory_create_info_table(MEMORY_INFO_TABLE *memoryInfoTable)
           if (IsDeviceMemory ((EFI_MEMORY_TYPE)MemoryMapPtr->Type)) {
             memoryInfoTable->info[i].type      = MEMORY_TYPE_DEVICE;
           } else {
-            memoryInfoTable->info[i].type      = MEMORY_TYPE_NOT_POPULATED;
+            if (IsPersistentMemory ((EFI_MEMORY_TYPE)MemoryMapPtr->Type)) {
+              memoryInfoTable->info[i].type      = MEMORY_TYPE_PERSISTENT;
+            } else {
+                memoryInfoTable->info[i].type      = MEMORY_TYPE_NOT_POPULATED;
+            }
           }
         }
       }

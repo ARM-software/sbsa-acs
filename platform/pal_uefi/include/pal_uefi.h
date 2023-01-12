@@ -18,6 +18,11 @@
 #ifndef __PAL_UEFI_H__
 #define __PAL_UEFI_H__
 
+/* include ACPI specification headers */
+#include "Include/Guid/Acpi.h"
+#include <Protocol/AcpiTable.h>
+#include "Include/IndustryStandard/Acpi.h"
+
 extern VOID* g_sbsa_log_file_handle;
 extern UINT32 g_print_level;
 extern UINT32 g_print_mmio;
@@ -99,6 +104,7 @@ typedef struct {
   UINT32   attr;      ///< PE attributes
   UINT64   mpidr;     ///< PE MPIDR
   UINT32   pmu_gsiv;  ///< PMU Interrupt ID
+  UINT32   gmain_gsiv;                    /* GIC Maintenace Interrupt */
 }PE_INFO_ENTRY;
 
 typedef struct {
@@ -415,6 +421,7 @@ typedef enum {
   MEMORY_TYPE_NORMAL,
   MEMORY_TYPE_RESERVED,
   MEMORY_TYPE_NOT_POPULATED,
+  MEMORY_TYPE_PERSISTENT,
   MEMORY_TYPE_LAST_ENTRY
 }MEM_INFO_TYPE_e;
 

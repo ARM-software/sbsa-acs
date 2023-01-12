@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, 2020-2021 Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2023 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -144,7 +144,7 @@ val_pe_get_mpid_index(uint32_t index)
   PE_INFO_ENTRY *entry;
 
   if (index > g_pe_info_table->header.num_of_pe) {
-        val_report_status(index, RESULT_FAIL(g_sbsa_level, 0, 0xFF));
+        val_report_status(index, RESULT_FAIL(g_sbsa_level, 0, 0xFF), NULL);
         return 0xFFFFFF;
   }
 
@@ -225,7 +225,7 @@ val_execute_on_pe(uint32_t index, void (*payload)(void), uint64_t test_input)
   int timeout = TIMEOUT_LARGE;
   if (index > g_pe_info_table->header.num_of_pe) {
       val_print(AVS_PRINT_ERR, "Input Index exceeds Num of PE %x \n", index);
-      val_report_status(index, RESULT_FAIL(g_sbsa_level, 0, 0xFF));
+      val_report_status(index, RESULT_FAIL(g_sbsa_level, 0, 0xFF), NULL);
       return;
   }
 

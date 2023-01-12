@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2022, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2023, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -50,7 +50,8 @@ val_gic_reg_read(uint32_t reg_id)
       case ICH_MISR_EL2:
           return GicReadIchMisr();
       default:
-           val_report_status(val_pe_get_index_mpid(val_pe_get_mpid()), RESULT_FAIL(g_sbsa_level, 0, 0x78));
+           val_report_status(val_pe_get_index_mpid(val_pe_get_mpid()),
+                             RESULT_FAIL(g_sbsa_level, 0, 0x78), NULL);
   }
 
   return 0x0;
@@ -86,7 +87,8 @@ val_gic_reg_write(uint32_t reg_id, uint64_t write_data)
           GicWriteIccPmr(write_data);
           break;
       default:
-           val_report_status(val_pe_get_index_mpid(val_pe_get_mpid()), RESULT_FAIL(g_sbsa_level, 0, 0x78));
+           val_report_status(val_pe_get_index_mpid(val_pe_get_mpid()),
+                             RESULT_FAIL(g_sbsa_level, 0, 0x78), NULL);
   }
 
 }

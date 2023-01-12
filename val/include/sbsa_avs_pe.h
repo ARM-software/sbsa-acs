@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2022, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2023, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -317,7 +317,7 @@ void val_pe_context_restore(uint64_t sp);
 void val_pe_default_esr(uint64_t interrupt_type, void *context);
 void val_pe_cache_clean_range(uint64_t start_addr, uint64_t length);
 
-uint32_t c001_entry(void);
+uint32_t c001_entry(uint32_t num_pe);
 uint32_t c002_entry(uint32_t num_pe);
 uint32_t c003_entry(uint32_t num_pe);
 uint32_t c004_entry(uint32_t num_pe);
@@ -353,7 +353,7 @@ uint32_t c033_entry(uint32_t num_pe);
 uint32_t c034_entry(uint32_t num_pe);
 uint32_t c035_entry(uint32_t num_pe);
 uint32_t c036_entry(uint32_t num_pe);
+uint32_t c037_entry(uint32_t num_pe);
 
-uint32_t os_c018_entry(uint32_t num_pe);
 #endif
 

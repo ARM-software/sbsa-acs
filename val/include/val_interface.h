@@ -78,6 +78,7 @@ uint32_t val_pe_get_pmu_gsiv(uint32_t index);
 uint64_t val_pe_get_mpid(void);
 uint32_t val_pe_get_index_mpid(uint64_t mpid);
 uint32_t val_pe_install_esr(uint32_t exception_type, void (*esr)(uint64_t, void *));
+uint32_t val_pe_get_gmain_gsiv(uint32_t index);
 
 void     val_execute_on_pe(uint32_t index, void (*payload)(void), uint64_t args);
 void     val_suspend_pe(uint32_t power_state, uint64_t entry, uint32_t context_id);
@@ -314,6 +315,7 @@ typedef enum {
   UART_BASE0,
   UART_GSIV,
   UART_FLAGS,
+  ANY_BASE0,
   ANY_FLAGS,
   ANY_GSIV,
   ANY_BDF,
