@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2016-2023, Arm Limited and Contributors. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
  *
  * Redistribution and use in source and binary forms, with or without
@@ -85,10 +85,6 @@ uint32_t
 g001_entry(uint32_t num_pe);
 uint32_t
 g002_entry(uint32_t num_pe);
-uint32_t
-g003_entry(uint32_t num_pe);
-uint32_t
-g004_entry(uint32_t num_pe);
 
 uint32_t
 val_get_max_intid(void);

@@ -24,6 +24,13 @@
 
 #define MPIDR_AFF_MASK           (0xFF00FFFFFF)
 
+/* PE Affinity level masks */
+#define PE_AFFINITY_LVL_1  0xFF00FFFF00ULL
+#define PE_AFFINITY_LVL_2  0xFF00FF0000ULL
+#define PE_AFFINITY_LVL_3  0xFF00000000ULL
+
+#define INVALID_PE_INFO 0xDEADDEAD
+
 //
 //  AARCH64 processor exception types.
 //
@@ -134,7 +141,8 @@ typedef enum {
   RDVL,
   MAIR_ELx,
   TCR_ELx,
-  TTBR_ELx
+  TTBR_ELx,
+  ID_AA64ZFR0_EL1
 }SBSA_AVS_PE_REGS;
 
 uint64_t ArmReadMpidr(void);
@@ -296,6 +304,8 @@ uint64_t ArmRdvl(void);
 void ArmCallWFI(void);
 
 void ArmExecuteMemoryBarrier(void);
+
+uint64_t AA64ReadZfr0(void);
 
 void SpeProgramUnderProfiling(uint64_t interval, uint64_t address);
 

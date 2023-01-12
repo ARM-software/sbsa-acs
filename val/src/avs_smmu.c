@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2022, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2023, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -42,7 +42,6 @@ val_smmu_read_cfg(uint32_t offset, uint32_t index)
   return val_mmio_read(ctrl_base + offset);
 }
 
-#ifndef TARGET_LINUX
 
 /**
   @brief   This API executes all the SMMU tests sequentially
@@ -57,7 +56,6 @@ val_smmu_execute_tests(uint32_t level, uint32_t num_pe)
 {
   uint32_t status = AVS_STATUS_PASS, i;
   uint32_t num_smmu;
-  uint32_t status_version_chk;
 
   for (i=0 ; i<MAX_TEST_SKIP_NUM ; i++){
       if (g_skip_test_num[i] == AVS_SMMU_TEST_NUM_BASE) {
@@ -83,54 +81,47 @@ val_smmu_execute_tests(uint32_t level, uint32_t num_pe)
 
   g_curr_module = 1 << SMMU_MODULE;
 
-#ifndef ONLY_SBSA_RULE_TESTS
+#ifndef TARGET_LINUX
   status |= i001_entry(num_pe);
-  status |= i002_entry(num_pe);
-  status |= i004_entry(num_pe);
-  status |= i005_entry(num_pe);
-  status |= i006_entry(num_pe);
-#endif
+  if (status != AVS_STATUS_PASS) {
+      val_print(AVS_PRINT_ERR, "\n      SMMU Version Not Compliant, \
+                         Skipping Remaining SMMU Tests\n", 0);
+      return AVS_STATUS_SKIP;
+  }
 
   if (g_sbsa_level > 3)
-      status |= i003_entry(num_pe);
+      status |= i002_entry(num_pe);
 
   if (g_sbsa_level > 4) {
-      status_version_chk = i007_entry(num_pe);
-      status |= status_version_chk;
+      status = i003_entry(num_pe);
+      status = i004_entry(num_pe);
   }
 
   if (g_sbsa_level > 5) {
-      if (status_version_chk != AVS_STATUS_PASS) {
-          val_print(AVS_PRINT_ERR, "\n      SMMU Version Not Compliant, Skipping Remaining SMMU Tests...\n", 0);
-      } else {
-
-#ifndef ONLY_SBSA_RULE_TESTS
-          status |= i008_entry(num_pe);
-          status |= i009_entry(num_pe);
-          status |= i010_entry(num_pe);
-          status |= i011_entry(num_pe);
-          status |= i012_entry(num_pe);
-          status |= i015_entry(num_pe);
-          status |= i016_entry(num_pe);
-#endif
-          status |= i013_entry(num_pe);
-          status |= i014_entry(num_pe);
-
-#ifdef ONLY_SBSA_RULE_TESTS
-          status |= hyp_i005_entry(num_pe);
-          status |= os_i005_entry(num_pe);
-          status |= os_i006_entry(num_pe);
-          status |= os_i007_entry(num_pe);
-          status |= os_i008_entry(num_pe);
-#endif
-      }
+      status |= i005_entry(num_pe);
+      status |= i006_entry(num_pe);
+      status |= i007_entry(num_pe);
+      status |= i008_entry(num_pe);
+      status |= i009_entry(num_pe);
+      status |= i010_entry(num_pe);
+      status |= i011_entry(num_pe);
+      status |= i012_entry(num_pe);
+      status |= i015_entry(num_pe);
   }
 
+  if (g_sbsa_level > 6) {
+     status |= i013_entry(num_pe);
+     status |= i014_entry(num_pe);
+  }
+#endif
+#ifdef TARGET_LINUX
+  if (level > 6)
+     status |= i016_entry(num_pe);
+#endif
   val_print_test_end(status, "SMMU");
 
   return status;
 }
-#endif
 
 uint32_t
 val_smmu_start_monitor_dev(uint32_t ctrl_index)

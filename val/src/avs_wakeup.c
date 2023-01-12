@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, 2021-2022 Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018, 2021-2023 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -35,7 +35,7 @@ extern int32_t gPsciConduit;
 uint32_t
 val_wakeup_execute_tests(uint32_t level, uint32_t num_pe)
 {
-  uint32_t status, i;
+  uint32_t status = AVS_STATUS_SKIP, i;
 
   for (i=0 ; i<MAX_TEST_SKIP_NUM ; i++){
       if (g_skip_test_num[i] == AVS_WAKEUP_TEST_NUM_BASE) {
@@ -53,11 +53,6 @@ val_wakeup_execute_tests(uint32_t level, uint32_t num_pe)
     return AVS_STATUS_SKIP;
   }
 
-  g_curr_module = 1 << WAKEUP_MODULE;
-  status = u001_entry(num_pe);
-  //status |= u002_entry(num_pe);
-
-  val_print_test_end(status, "Wakeup");
   return status;
 
 }

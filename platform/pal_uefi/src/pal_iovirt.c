@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2019, 2021 Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2019, 2021-2023 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,11 +19,7 @@
 #include <Library/UefiBootServicesTableLib.h>
 #include <Library/BaseLib.h>
 #include <Library/BaseMemoryLib.h>
-
-#include <Protocol/AcpiTable.h>
 #include <Protocol/HardwareInterrupt.h>
-
-#include "Include/IndustryStandard/Acpi61.h"
 
 #include "include/pal_uefi.h"
 #include "include/platform_override.h"
@@ -59,7 +55,8 @@ dump_block(IOVIRT_BLOCK *block) {
       return;
       case IOVIRT_NODE_NAMED_COMPONENT:
       sbsa_print(AVS_PRINT_INFO,
-                 L" Named Component: Device Name:%a\n", block->data.name);
+                 L" Named Component:\n Device Name:%a", block->data.named_comp.name);
+      sbsa_print(AVS_PRINT_INFO, L"\n CCA Attribute: 0x%lx\n", block->data.named_comp.cca);
       break;
       case IOVIRT_NODE_PCI_ROOT_COMPLEX:
       sbsa_print(AVS_PRINT_INFO,
@@ -252,14 +249,17 @@ iort_add_block(IORT_TABLE *iort, IORT_NODE *iort_node, IOVIRT_INFO_TABLE *IoVirt
       count = &IoVirtTable->num_its_groups;
       break;
     case IOVIRT_NODE_NAMED_COMPONENT:
-      AsciiStrnCpyS((CHAR8*)(*data).name, MAX_NAMED_COMP_LENGTH,
+      AsciiStrnCpyS((CHAR8*)(*data).named_comp.name, MAX_NAMED_COMP_LENGTH,
                     (CHAR8*)((IORT_NAMED_COMPONENT*)node_data)->device_name, (MAX_NAMED_COMP_LENGTH -1));
+      (*data).named_comp.cca = (UINT32)(((IORT_NAMED_COMPONENT*)node_data)->memory_properties & IOVIRT_CCA_MASK);
+      (*data).named_comp.smmu_base = 0; /* initialize smmu_base info for named component */
       count = &IoVirtTable->num_named_components;
       break;
     case IOVIRT_NODE_PCI_ROOT_COMPLEX:
       (*data).rc.segment = ((IORT_ROOT_COMPLEX*)node_data)->pci_segment_number;
       (*data).rc.cca = (UINT32)(((IORT_ROOT_COMPLEX*)node_data)->memory_properties & IOVIRT_CCA_MASK);
       (*data).rc.ats_attr = ((IORT_ROOT_COMPLEX*)node_data)->ats_attribute;
+      (*data).rc.smmu_base = 0; /* initialize smmu_base info for root complex */
       count = &IoVirtTable->num_pci_rcs;
       break;
     case IOVIRT_NODE_SMMU:
@@ -330,12 +330,23 @@ iort_add_block(IORT_TABLE *iort, IORT_NODE *iort_node, IOVIRT_INFO_TABLE *IoVirt
        * Else save NULL pointer.
        */
       temp_block = ADD_PTR(IOVIRT_BLOCK, IoVirtTable, offset);
-      (*data).rc.smmu_base = 0;
       if (((*block)->type == IOVIRT_NODE_PCI_ROOT_COMPLEX) &&
            ((temp_block->type == IOVIRT_NODE_SMMU) ||
             (temp_block->type == IOVIRT_NODE_SMMU_V3))) {
         temp_data = &(temp_block->data);
         (*data).rc.smmu_base = (*temp_data).smmu.base;
+      }
+
+      /* If this node is a named component, Check whether it is behind a SMMU
+       * store the SMMU base in named component info structure if true, else
+       * save NULL pointer.
+       */
+      temp_block = ADD_PTR(IOVIRT_BLOCK, IoVirtTable, offset);
+      if (((*block)->type == IOVIRT_NODE_NAMED_COMPONENT) &&
+           ((temp_block->type == IOVIRT_NODE_SMMU) ||
+            (temp_block->type == IOVIRT_NODE_SMMU_V3))) {
+        temp_data = &(temp_block->data);
+        (*data).named_comp.smmu_base = (*temp_data).smmu.base;
       }
 
     }

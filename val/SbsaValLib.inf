@@ -1,5 +1,5 @@
 ## @file
-#  Copyright (c) 2016-2021, Arm Limited or its affiliates. All rights reserved.
+#  Copyright (c) 2016-2023, Arm Limited or its affiliates. All rights reserved.
 #  SPDX-License-Identifier : Apache-2.0
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
@@ -28,6 +28,8 @@
   src/AArch64/PeTestSupport.S
   src/AArch64/ArchTimerSupport.S
   src/AArch64/GicSupport.S
+  src/AArch64/MpamSupport.s
+  src/AArch64/RasSupport.S
   src/avs_status.c
   src/avs_pe.c
   src/avs_pe_infra.c
@@ -45,6 +47,7 @@
   src/avs_memory.c
   src/avs_exerciser.c
   src/avs_pgt.c
+  src/avs_ras.c
   sys_arch_src/smmu_v3/smmu_v3.c
   sys_arch_src/gic/gic.c
   sys_arch_src/gic/sbsa_exception.c
@@ -55,10 +58,12 @@
   sys_arch_src/gic/v2/gic_v2.c
   sys_arch_src/gic/its/sbsa_gic_its.c
   sys_arch_src/gic/its/sbsa_gic_redistributor.c
+  src/avs_pmu.c
+  src/avs_mpam.c
+  src/avs_mmu.c
 
 [Packages]
   MdePkg/MdePkg.dec
 
 [BuildOptions]
-  GCC:*_*_*_ASM_FLAGS  =  -march=armv8.2-a
-  GCC:*_*_*_CC_FLAGS   = -D ONLY_SBSA_RULE_TESTS
+  GCC:*_*_*_ASM_FLAGS  =  -march=armv8.2-a+sve+profile

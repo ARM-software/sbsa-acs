@@ -247,6 +247,8 @@ val_pe_reg_read(uint32_t reg_id)
             return AA64ReadTcr1();
           if (AA64ReadCurrentEL() == AARCH64_EL2)
             return AA64ReadTcr2();
+      case ID_AA64ZFR0_EL1:
+          return AA64ReadZfr0();
       default:
            val_report_status(val_pe_get_index_mpid(val_pe_get_mpid()),
                              RESULT_FAIL(g_sbsa_level, 0, 0x78), NULL);
@@ -485,4 +487,42 @@ val_pe_get_gmain_gsiv(uint32_t index)
 
   return entry[index].gmain_gsiv;
 
+}
+
+/**
+  @brief   This API checks whether the requested PE feature is implemented or not.
+  @param   pe_feature - PE feature to be checked.
+  @return  AVS_STATUS_PASS if implemented., else AVS_STATUS_FAIL.
+**/
+uint32_t val_pe_feat_check(PE_FEAT_NAME pe_feature)
+{
+    uint64_t data;
+
+    switch (pe_feature) {
+    case PE_FEAT_MPAM:
+        /* ID_AA64PFR0_EL1.MPAM bits[43:40] > 0 or ID_AA64PFR1_EL1.MPAM_frac bits[19:16] > 0
+        indicates implementation of MPAM extension */
+        if ((VAL_EXTRACT_BITS(val_pe_reg_read(ID_AA64PFR0_EL1), 40, 43) > 0) ||
+        (VAL_EXTRACT_BITS(val_pe_reg_read(ID_AA64PFR1_EL1), 16, 19) > 0))
+            return AVS_STATUS_PASS;
+        else
+            return AVS_STATUS_FAIL;
+    case PE_FEAT_PMU:
+        /* ID_AA64DFR0_EL1.PMUVer, bits [11:8] == 0000 or 1111
+           indicate PMU extension not implemented */
+        data = VAL_EXTRACT_BITS(val_pe_reg_read(ID_AA64DFR0_EL1), 8, 11);
+        if (!(data == 0 || data == 0xF))
+            return AVS_STATUS_PASS;
+        else
+            return AVS_STATUS_FAIL;
+    case PE_FEAT_RAS:
+        /*  ID_AA64PFR0_EL1 RAS bits [31:28] != 0 indicate RAS extension implemented */
+        if ((VAL_EXTRACT_BITS(val_pe_reg_read(ID_AA64PFR0_EL1), 28, 31)) != 0)
+            return AVS_STATUS_PASS;
+        else
+            return AVS_STATUS_FAIL;
+    default:
+        val_print(AVS_PRINT_ERR, "\nPE_FEAT_CHECK: Invalid PE feature", 0);
+        return AVS_STATUS_FAIL;
+    }
 }

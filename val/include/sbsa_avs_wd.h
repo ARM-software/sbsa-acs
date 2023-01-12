@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, 2020 Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2023, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,11 +22,5 @@
 
 uint32_t
 w001_entry(uint32_t num_pe);
-
-uint32_t
-w002_entry(uint32_t num_pe);
-
-uint32_t
-w003_entry(uint32_t num_pe);
 
 #endif // __SBSA_AVS_WD_H
