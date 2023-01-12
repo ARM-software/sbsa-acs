@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2022 Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2023 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -36,9 +36,9 @@ UINT32  g_sbsa_level;
 UINT32  g_enable_pcie_tests;
 UINT32  g_print_level;
 UINT32  g_execute_nist;
-UINT32 g_print_mmio;
-UINT32 g_curr_module;
-UINT32 g_enable_module;
+UINT32 g_print_mmio = FALSE;
+UINT32 g_curr_module = 0;
+UINT32 g_enable_module = 0;
 UINT32  g_skip_test_num[MAX_TEST_SKIP_NUM] = { 10000, 10000, 10000, 10000, 10000,
                                                10000, 10000, 10000, 10000 };
 UINT32  g_single_test = SINGLE_TEST_SENTINEL;
@@ -239,6 +239,175 @@ createPeripheralInfoTable(
   return Status;
 }
 
+EFI_STATUS
+createPmuInfoTable(
+)
+{
+  UINT64   *PmuInfoTable;
+  EFI_STATUS Status;
+
+  Status = gBS->AllocatePool (EfiBootServicesData,
+                              PMU_INFO_TBL_SZ,
+                              (VOID **) &PmuInfoTable);
+
+  if (EFI_ERROR(Status))
+  {
+    Print(L"Allocate Pool failed %x \n", Status);
+    return Status;
+  }
+  val_pmu_create_info_table(PmuInfoTable);
+
+  return Status;
+
+}
+
+EFI_STATUS
+createRasInfoTable(
+)
+{
+  UINT64   *RasInfoTable;
+  EFI_STATUS Status;
+
+  Status = gBS->AllocatePool(EfiBootServicesData,
+                             RAS_INFO_TBL_SZ,
+                             (VOID **) &RasInfoTable);
+
+  if (EFI_ERROR(Status))
+  {
+    Print(L"Allocate Pool failed %x \n", Status);
+    return Status;
+  }
+  val_ras_create_info_table(RasInfoTable);
+
+  return Status;
+
+}
+
+EFI_STATUS
+createCacheInfoTable(
+)
+{
+  UINT64   *CacheInfoTable;
+  EFI_STATUS Status;
+
+  Status = gBS->AllocatePool(EfiBootServicesData,
+                              CACHE_INFO_TBL_SZ,
+                              (VOID **) &CacheInfoTable);
+
+  if (EFI_ERROR(Status))
+  {
+    Print(L"Allocate Pool failed %x \n", Status);
+    return Status;
+  }
+  val_cache_create_info_table(CacheInfoTable);
+
+  return Status;
+}
+
+EFI_STATUS
+createMpamInfoTable(
+)
+{
+  UINT64      *MpamInfoTable;
+  EFI_STATUS  Status;
+
+  Status = gBS->AllocatePool(EfiBootServicesData,
+                              MPAM_INFO_TBL_SZ,
+                              (VOID **) &MpamInfoTable);
+
+  if (EFI_ERROR(Status))
+  {
+    Print(L"Allocate Pool failed %x \n", Status);
+    return Status;
+  }
+  val_mpam_create_info_table(MpamInfoTable);
+
+  return Status;
+}
+
+EFI_STATUS
+createHmatInfoTable(
+)
+{
+  UINT64      *HmatInfoTable;
+  EFI_STATUS  Status;
+
+  Status = gBS->AllocatePool(EfiBootServicesData,
+                              HMAT_INFO_TBL_SZ,
+                              (VOID **) &HmatInfoTable);
+
+  if (EFI_ERROR(Status))
+  {
+    Print(L"Allocate Pool failed %x \n", Status);
+    return Status;
+  }
+  val_hmat_create_info_table(HmatInfoTable);
+
+  return Status;
+}
+
+EFI_STATUS
+createSratInfoTable(
+)
+{
+  UINT64      *SratInfoTable;
+  EFI_STATUS  Status;
+
+  Status = gBS->AllocatePool(EfiBootServicesData,
+                              SRAT_INFO_TBL_SZ,
+                              (VOID **) &SratInfoTable);
+
+  if (EFI_ERROR(Status))
+  {
+    Print(L"Allocate Pool failed %x \n", Status);
+    return Status;
+  }
+  val_srat_create_info_table(SratInfoTable);
+
+  return Status;
+}
+
+/**
+  @brief  This API allocates memory for info table and
+          calls create info table function passed as parameter.
+
+  @param  create_info_tbl_func  - function pointer to val_*_create_info_table
+  @param  info_table_size       - memory size to be allocated.
+
+  @return  None
+**/
+
+EFI_STATUS
+createInfoTable(
+  VOID(*create_info_tbl_func)(UINT64 *),
+  UINT64 info_table_size,
+  CHAR8 *table_name
+  )
+{
+  UINT64      *InfoTable;
+  EFI_STATUS  Status;
+
+  val_print(AVS_PRINT_DEBUG, "\n Allocating memory for ", 0);
+  val_print(AVS_PRINT_DEBUG, table_name, 0);
+  val_print(AVS_PRINT_DEBUG, " info table", 0);
+
+  Status = gBS->AllocatePool(EfiBootServicesData,
+                              info_table_size,
+                              (VOID **) &InfoTable);
+
+  if (EFI_ERROR(Status))
+  {
+    val_print(AVS_PRINT_ERR, "\n Allocate memory for ", 0);
+    val_print(AVS_PRINT_ERR, table_name, 0);
+    val_print(AVS_PRINT_ERR, " info table failed : %x", Status);
+    return Status;
+  }
+
+  (*create_info_tbl_func)(InfoTable);
+
+  return Status;
+}
+
 VOID
 freeSbsaAvsMem()
 {
@@ -250,6 +419,12 @@ freeSbsaAvsMem()
   val_pcie_free_info_table();
   val_iovirt_free_info_table();
   val_peripheral_free_info_table();
+  val_pmu_free_info_table();
+  val_cache_free_info_table();
+  val_mpam_free_info_table();
+  val_hmat_free_info_table();
+  val_srat_free_info_table();
+  val_ras2_free_info_table();
   val_free_shared_mem();
 }
 
@@ -258,16 +433,14 @@ HelpMsg (
   VOID
   )
 {
-  Print (L"\nUsage: Sbsa.efi [-v <n>] | [-l <n>] | [-f <filename>] | [-skip <n>] | [-nist] | [-p <n>] | [-t <n>] | [-m <n>]\n"
-         "[-skip <n>] | [-nist] | [-p <n>]\n"
+   Print (L"\nUsage: Sbsa.efi [-v <n>] | [-l <n>] | [-f <filename>] | "
+         "[-skip <n>] | [-nist] | [-p <n>] | [-t <n>] | [-m <n>]\n"
          "Options:\n"
          "-v      Verbosity of the Prints\n"
          "        1 shows all prints, 5 shows Errors\n"
-         "        Note: pal_mmio prints can be enabled for specific modules by passing\n"
-         "              module numbers along with global verbosity level 1\n"
-         "              Module numbers are PE 0, GIC 1,  ...\n"
-         "              E.g., To enable mmio prints for PE and TIMER pass -v 102 \n"
          "-mmio   Pass this flag to enable pal_mmio_read/write prints, use with -v 1\n"
+         "        Refer to section 4 of SBSA_ACS_User_Guide\n"
+         "        To skip a module, use Model_ID as mentioned in user guide\n"
          "-l      Level of compliance to be tested for\n"
          "        As per SBSA spec, 3 to 6\n"
          "-f      Name of the log file to record the test results in\n"
@@ -296,7 +469,7 @@ STATIC CONST SHELL_PARAM_ITEM ParamList[] = {
   {L"-h"    , TypeFlag},     // -h    # help : info about commands
   {L"-nist" , TypeFlag},     // -nist # Binary Flag to enable the execution of NIST STS
   {L"-p"    , TypeValue},    // -p    # Enable/disable PCIe SBSA 6.0 (RCiEP) compliance tests.
-  {L"-mmio" , TypeFlag},     // -mmio # Enable pal_mmio prints
+  {L"-mmio" , TypeValue},    // -mmio # Enable pal_mmio prints
   {L"-t"    , TypeValue},    // -t    # Test to be run
   {L"-m"    , TypeValue},    // -m    # Module to be run
   {L"-p2p", TypeFlag},       // -p2p  # Peer-to-Peer is supported
@@ -325,7 +498,7 @@ ShellAppMainsbsa (
   CONST CHAR16       *CmdLineArg;
   CHAR16             *ProbParam;
   UINT32             Status;
-  UINT32             ReadVerbosity;
+  UINT32             MmioVerbosity;
   UINT32             i,j=0;
   VOID               *branch_label;
 
@@ -375,12 +548,7 @@ ShellAppMainsbsa (
   if (CmdLineArg == NULL) {
     g_print_level = G_PRINT_LEVEL;
   } else {
-    ReadVerbosity = StrDecimalToUintn(CmdLineArg);
-    while (ReadVerbosity/10) {
-      g_enable_module |= (1 << ReadVerbosity%10);
-      ReadVerbosity /= 10;
-    }
-    g_print_level = ReadVerbosity;
+    g_print_level = StrDecimalToUintn(CmdLineArg);
     if (g_print_level > 5) {
       g_print_level = G_PRINT_LEVEL;
     }
@@ -417,17 +585,21 @@ ShellAppMainsbsa (
      return 0;
   }
 
-  // Options with Flags
-  if (ShellCommandLineGetFlag (ParamPackage, L"-nist")) {
-    g_execute_nist = TRUE;
-  } else {
-    g_execute_nist = FALSE;
-  }
 
   if (ShellCommandLineGetFlag (ParamPackage, L"-mmio")) {
-    g_print_mmio = TRUE;
-  } else {
-    g_print_mmio = FALSE;
+    CmdLineArg  = ShellCommandLineGetValue (ParamPackage, L"-mmio");
+    if (CmdLineArg == NULL) {
+      g_print_mmio = TRUE;
+    } else {
+      MmioVerbosity = StrDecimalToUintn((CONST CHAR16 *)(CmdLineArg+0));
+      g_enable_module |= (1 << MmioVerbosity/100);
+      for (i=0 ; i < StrLen(CmdLineArg) ; i++) {
+        if (*(CmdLineArg + i) == L',') {
+          MmioVerbosity = StrDecimalToUintn((CONST CHAR16 *)(CmdLineArg+i+1));
+          g_enable_module |= (1 << MmioVerbosity/100);
+        }
+      }
+    }
   }
 
   if (ShellCommandLineGetFlag (ParamPackage, L"-p2p")) {
@@ -456,6 +628,16 @@ ShellAppMainsbsa (
           return 0;
       }
   }
+
+  // Options with Flags
+  if (ShellCommandLineGetFlag (ParamPackage, L"-nist")) {
+    g_execute_nist = TRUE;
+  } else {
+    g_execute_nist = FALSE;
+  }
+
+  if (g_sbsa_level == 7)
+      g_execute_nist = TRUE;
 
   // Options with Values
   CmdLineArg  = ShellCommandLineGetValue (ParamPackage, L"-t");
@@ -496,8 +678,31 @@ ShellAppMainsbsa (
 
   createTimerInfoTable();
   createWatchdogInfoTable();
+
+  Status = createCacheInfoTable();
+  if (Status)
+    Print(L" Failed to created Cache info table \n");
+
+  Status = createMpamInfoTable();
+  if (Status)
+    Print(L" Failed to created Mpam info table \n");
+
+  Status = createHmatInfoTable();
+  if (Status)
+    Print(L" Failed to created HMAT info table \n");
+
+  Status = createSratInfoTable();
+  if (Status)
+    Print(L" Failed to created SRAT info table \n");
+
+  Status = createInfoTable(val_ras2_create_info_table, RAS2_FEAT_INFO_TBL_SZ, "RAS2");
+  if (Status)
+    Print(L" Failed to created RAS2 feature info table \n");
+
   createPcieVirtInfoTable();
   createPeripheralInfoTable();
+  createPmuInfoTable();
+  createRasInfoTable();
 
   val_allocate_shared_mem();
 
@@ -513,33 +718,36 @@ ShellAppMainsbsa (
   val_print(AVS_PRINT_TEST, "\n      ***  Starting GIC tests ***  \n", 0);
   Status |= val_gic_execute_tests(g_sbsa_level, val_pe_get_num());
 
-#ifndef ONLY_SBSA_RULE_TESTS
-  val_print(AVS_PRINT_TEST, "\n      *** Starting Timer tests ***  \n", 0);
-  Status |= val_timer_execute_tests(g_sbsa_level, val_pe_get_num());
-#endif
-
-#ifdef ONLY_SBSA_RULE_TESTS
   if (g_sbsa_level > 4)
-#endif
   {
     val_print(AVS_PRINT_TEST, "\n      *** Starting Watchdog tests ***  \n", 0);
     Status |= val_wd_execute_tests(g_sbsa_level, val_pe_get_num());
   }
 
-#ifndef ONLY_SBSA_RULE_TESTS
-  val_print(AVS_PRINT_TEST, "\n      *** Starting Power and Wakeup semantic tests ***  \n", 0);
-  Status |= val_wakeup_execute_tests(g_sbsa_level, val_pe_get_num());
+  if (g_sbsa_level > 3) {
+    val_print(AVS_PRINT_TEST, "\n      *** Starting SMMU  tests ***  \n", 0);
+    Status |= val_smmu_execute_tests(g_sbsa_level, val_pe_get_num());
+  }
 
-  val_print(AVS_PRINT_TEST, "\n      *** Starting Peripheral tests ***  \n", 0);
-  Status |= val_peripheral_execute_tests(g_sbsa_level, val_pe_get_num());
-#endif
+  val_print(AVS_PRINT_TEST, "\n      ***  Starting Memory tests ***  \n", 0);
+  Status |= val_memory_execute_tests(g_sbsa_level, val_pe_get_num());
 
-  val_print(AVS_PRINT_TEST, "\n      *** Starting SMMU  tests ***  \n", 0);
-  Status |= val_smmu_execute_tests(g_sbsa_level, val_pe_get_num());
+  if (g_sbsa_level > 6) {
+    val_print(AVS_PRINT_TEST, "\n      *** Starting MPAM tests ***  \n", 0);
+    Status |= val_mpam_execute_tests(g_sbsa_level, val_pe_get_num());
+  }
 
-#ifdef ONLY_SBSA_RULE_TESTS
+  if (g_sbsa_level > 6) {
+    val_print(AVS_PRINT_TEST, "\n      *** Starting PMU tests ***  \n",  0);
+    Status |= val_pmu_execute_tests(g_sbsa_level, val_pe_get_num());
+  }
+
+  if (g_sbsa_level > 6) {
+    val_print(AVS_PRINT_TEST, "\n      *** Starting RAS tests ***  \n", 0);
+    Status |= val_ras_execute_tests(g_sbsa_level, val_pe_get_num());
+  }
+
   if (g_sbsa_level > 5)
-#endif
   {
     val_print(AVS_PRINT_TEST, "\n      *** Starting PCIe tests ***  \n", 0);
     Status |= val_pcie_execute_tests(g_enable_pcie_tests, g_sbsa_level, val_pe_get_num());
@@ -557,12 +765,12 @@ ShellAppMainsbsa (
   }
 
 
-  #ifdef ENABLE_NIST
+#ifdef ENABLE_NIST
   if (g_execute_nist == TRUE) {
     val_print(AVS_PRINT_TEST, "\n      *** Starting NIST statistical tests ***  \n", 0);
     Status |= val_nist_execute_tests(g_sbsa_level, val_pe_get_num());
   }
-  #endif
+#endif
 
 print_test_status:
   val_print(AVS_PRINT_TEST, "\n     ------------------------------------------------------- \n", 0);

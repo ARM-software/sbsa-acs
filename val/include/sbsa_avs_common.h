@@ -32,6 +32,9 @@
 #define AVS_SMMU_TEST_NUM_BASE       700
 #define AVS_EXERCISER_TEST_NUM_BASE  800
 #define AVS_NIST_TEST_NUM_BASE       900
+#define AVS_MPAM_TEST_NUM_BASE       1000
+#define AVS_PMU_TEST_NUM_BASE        1100
+#define AVS_RAS_TEST_NUM_BASE        1200
 #define AVS_MEM_MAP_TEST_NUM_BASE    1300
 
 #define STATE_BIT   28
@@ -63,7 +66,9 @@
 #define SBSA_AVS_START(level, test_num) (((TEST_START_VAL) << STATE_BIT) | ((level) << LEVEL_BIT) | ((test_num) << TEST_NUM_BIT))
 #define SBSA_AVS_END(level, test_num) (((TEST_END_VAL) << STATE_BIT) | ((level) << LEVEL_BIT) | ((test_num) << TEST_NUM_BIT))
 
+/* status definations*/
 
+#define STATUS_SYS_REG_ACCESS_FAIL 0x78
 
 /* TEST Result defines */
 
@@ -133,6 +138,10 @@ typedef enum {
     PERIPHERAL_MODULE,
     SMMU_MODULE,
     EXERCISER_MODULE,
+    NIST_MODULE,
+    MPAM_MODULE,
+    PMU_MODULE,
+    RAS_MODULE,
     MEM_MAP_MODULE
 } MODULE_ID_e;
 

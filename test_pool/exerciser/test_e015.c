@@ -54,12 +54,7 @@ static uint32_t test_sequence_check(uint32_t instance)
   uint64_t num_transactions;
   uint64_t transaction_type;
 
-  /* Get number of transactions captured from exerciser */
-  val_exerciser_get_param(NUM_TRANSACTIONS, NULL, &num_transactions, instance);
-  if (num_transactions !=  sizeof(transaction_order)/sizeof(transaction_order[0])) {
-      val_print(AVS_PRINT_ERR, "\n       Exerciser %d gathering check failed", instance);
-      return 1;
-  }
+  num_transactions = sizeof(transaction_order)/sizeof(transaction_order[0]);
 
   /* Check transactions arrival order */
   for (idx = 0; idx < sizeof(transaction_order)/sizeof(transaction_order[0]); idx++) {
@@ -69,6 +64,13 @@ static uint32_t test_sequence_check(uint32_t instance)
           return 1;
       }
   }
+
+  /* Get number of transactions captured from exerciser */
+  if (num_transactions != idx) {
+      val_print(AVS_PRINT_ERR, "\n       Exerciser %d gathering check failed", instance);
+      return 1;
+  }
+
   return 0;
 }
 

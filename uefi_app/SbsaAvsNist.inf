@@ -1,5 +1,5 @@
 ## @file
-#  Copyright (c) 2020-2021, Arm Limited or its affiliates. All rights reserved.
+#  Copyright (c) 2020-2023, Arm Limited or its affiliates. All rights reserved.
 #  SPDX-License-Identifier : Apache-2.0
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
@@ -75,7 +75,6 @@
   ../test_pool/watchdog/operating_system/test_w001.c
 
   ../test_pool/pcie/test_p001.c
-  ../test_pool/pcie/test_p002.c
   ../test_pool/pcie/test_p003.c
   ../test_pool/pcie/test_p020.c
   ../test_pool/pcie/test_p021.c
@@ -97,7 +96,6 @@
   ../test_pool/pcie/test_p037.c
   ../test_pool/pcie/test_p038.c
   ../test_pool/pcie/test_p039.c
-  ../test_pool/pcie/test_p040.c
   ../test_pool/pcie/test_p041.c
   ../test_pool/pcie/test_p042.c
   ../test_pool/pcie/test_p043.c
@@ -110,11 +108,14 @@
   ../test_pool/pcie/test_p050.c
   ../test_pool/pcie/test_p051.c
   ../test_pool/pcie/test_p052.c
-  ../test_pool/pcie/test_p053.c
-  ../test_pool/pcie/test_p054.c
-  ../test_pool/pcie/test_p055.c
   ../test_pool/pcie/test_p056.c
   ../test_pool/pcie/test_p057.c
+  ../test_pool/pcie/test_p058.c
+  ../test_pool/pcie/test_p059.c
+  ../test_pool/pcie/test_p060.c
+  ../test_pool/pcie/operating_system/test_p061.c
+  ../test_pool/pcie/operating_system/test_p062.c
+
   ../test_pool/smmu/operating_system/test_i001.c
   ../test_pool/smmu/operating_system/test_i002.c
   ../test_pool/smmu/operating_system/test_i003.c
@@ -146,6 +147,42 @@
   ../test_pool/exerciser/test_e013.c
   ../test_pool/exerciser/test_e014.c
   ../test_pool/exerciser/test_e015.c
+  ../test_pool/exerciser/test_e016.c
+  ../test_pool/exerciser/operating_system/test_e017.c
+  ../test_pool/exerciser/operating_system/test_e018.c
+  ../test_pool/exerciser/operating_system/test_e019.c
+  ../test_pool/exerciser/operating_system/test_e020.c
+
+  ../test_pool/mpam/operating_system/test_mpam001.c
+  ../test_pool/mpam/operating_system/test_mpam002.c
+  ../test_pool/mpam/operating_system/test_mpam003.c
+  ../test_pool/mpam/operating_system/test_mpam004.c
+  ../test_pool/mpam/operating_system/test_mpam005.c
+  ../test_pool/mpam/operating_system/test_mpam006.c
+
+  ../test_pool/pmu/operating_system/test_pmu001.c
+  ../test_pool/pmu/operating_system/test_pmu002.c
+  ../test_pool/pmu/operating_system/test_pmu003.c
+  ../test_pool/pmu/operating_system/test_pmu004.c
+  ../test_pool/pmu/operating_system/test_pmu005.c
+  ../test_pool/pmu/operating_system/test_pmu006.c
+  ../test_pool/pmu/operating_system/test_pmu007.c
+  ../test_pool/pmu/operating_system/test_pmu008.c
+  ../test_pool/pmu/operating_system/test_pmu009.c
+
+  ../test_pool/ras/operating_system/test_ras001.c
+  ../test_pool/ras/operating_system/test_ras002.c
+  ../test_pool/ras/operating_system/test_ras003.c
+  ../test_pool/ras/operating_system/test_ras004.c
+  ../test_pool/ras/operating_system/test_ras005.c
+  ../test_pool/ras/operating_system/test_ras006.c
+  ../test_pool/ras/operating_system/test_ras007.c
+  ../test_pool/ras/operating_system/test_ras008.c
+  ../test_pool/ras/operating_system/test_ras009.c
+  ../test_pool/ras/operating_system/test_ras010.c
+  ../test_pool/ras/operating_system/test_ras011.c
+  ../test_pool/ras/operating_system/test_ras012.c
+
   ../test_pool/nist_sts/test_n001.c
 
 [Packages]
@@ -180,3 +217,5 @@
 
 [BuildOptions]
   GCC:*_*_*_ASM_FLAGS  =  -march=armv8.1-a
+  GCC:*_*_*_CC_FLAGS   = -O0
+

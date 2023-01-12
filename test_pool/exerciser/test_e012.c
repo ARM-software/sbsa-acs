@@ -245,6 +245,8 @@ payload(void)
       if (val_pcie_get_rootport(req_e_bdf, &req_rp_bdf))
           continue;
 
+      val_print(AVS_PRINT_DEBUG, "\n bdf is  0x%x", req_e_bdf);
+      val_print(AVS_PRINT_DEBUG, "\n RP bdf is  0x%x", req_rp_bdf);
       /* It ACS Not Supported, Fail.*/
       if (val_pcie_find_capability(req_rp_bdf, PCIE_ECAP, ECID_ACS, &cap_base) != PCIE_SUCCESS) {
           val_print(AVS_PRINT_ERR, "\n       ACS Not Supported for BDF : 0x%x", req_rp_bdf);
@@ -258,9 +260,15 @@ payload(void)
       val_pcie_write_cfg(req_rp_bdf, cap_base + ACSCR_OFFSET, reg_value);
 
       /* Find another exerciser on other rootport,
-         Break from the test if no such exerciser if found */
+         Break from the test if no such exerciser if found and
+         Disable Source Validation & Transaction Blocking of req_rp_bdf*/
       if (get_target_exer_bdf(req_rp_bdf, &tgt_e_bdf, &tgt_rp_bdf, &bar_base))
-          continue;
+      {
+           val_pcie_read_cfg(req_rp_bdf, cap_base + ACSCR_OFFSET, &reg_value);
+           reg_value = reg_value & (0 << ACS_CTRL_SVE_SHIFT) & (0 << ACS_CTRL_TBE_SHIFT);
+           val_pcie_write_cfg(req_rp_bdf, cap_base + ACSCR_OFFSET, reg_value);
+           continue;
+      }
 
       /* Enable Source Validation & Transaction Blocking */
       val_pcie_read_cfg(tgt_rp_bdf, cap_base + ACSCR_OFFSET, &reg_value);
@@ -279,18 +287,23 @@ payload(void)
 
       status = check_transaction_blocking(instance, req_rp_bdf, bar_base);
       if (status == AVS_STATUS_SKIP)
-          val_print(AVS_PRINT_DEBUG, "\n       ACS Transaction Blocking Skipped for 0x%x", req_rp_bdf);
+          val_print(AVS_PRINT_DEBUG, "\n    ACS Transaction Blocking Skipped for 0x%x", req_rp_bdf);
       else if (status)
           curr_bdf_failed++;
 
       if(curr_bdf_failed > 0) {
-          val_print(AVS_PRINT_ERR, "\n       ACS Functional Check Failed, RP Bdf : 0x%x", req_rp_bdf);
+          val_print(AVS_PRINT_ERR, "\n     ACS Functional Check Failed, RP Bdf : 0x%x", req_rp_bdf);
           curr_bdf_failed = 0;
           fail_cnt++;
       }
       /* Clear Error Status Bits */
       val_pcie_clear_device_status_error(req_rp_bdf);
       val_pcie_clear_sig_target_abort(req_rp_bdf);
+
+      /* Disable Source Validation & Transaction Blocking */
+      val_pcie_read_cfg(tgt_rp_bdf, cap_base + ACSCR_OFFSET, &reg_value);
+      reg_value = reg_value & (0 << ACS_CTRL_SVE_SHIFT) & (0 << ACS_CTRL_TBE_SHIFT);
+      val_pcie_write_cfg(tgt_rp_bdf, cap_base + ACSCR_OFFSET, reg_value);
   }
 
   if (test_skip == 1)

@@ -161,6 +161,9 @@ create_va_pa_mapping (uint64_t txn_va, uint64_t txn_pa,
       if (!pgt_desc->oas)
         return AVS_STATUS_FAIL;
 
+      /* set pgt_desc.pgt_base to NULL to create new translation table, val_pgt_create
+       will update pgt_desc.pgt_base to point to created translation table */
+      pgt_desc->pgt_base = (uint64_t) NULL;
       if (val_pgt_create(mem_desc, pgt_desc))
         return AVS_STATUS_FAIL;
 

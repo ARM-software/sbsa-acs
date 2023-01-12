@@ -38,6 +38,16 @@
 
 extern int main(int argc, char *argv[]);
 
+static int acs_strnlen(const char *buffer, size_t max_len)
+{
+    size_t len;
+    for (len = 0; len < max_len; len++, buffer++) {
+        if (!*buffer)
+            break;
+    }
+    return (len);
+}
+
 /*Enabling all NIST test suites(test 1 - 15) by default */
 uint32_t test_select = ALL_NIST_TEST;
 
@@ -55,7 +65,7 @@ check_prerequisite_nist(void)
    * executing NIST test suite.
    */
   for (i = 0; i < REQ_OPEN_FILES; i++) {
-      sprintf(file_name[i], "tmp_%d.txt", i);
+      snprintf(file_name[i], 20, "tmp_%d.txt", i);
       fp[i] = fopen(file_name[i], "wb");
       if (fp[i] == NULL) {
           val_print(AVS_PRINT_ERR, "\nMax # of opened files has been reached. "
@@ -96,7 +106,7 @@ print_nist_result(void)
   while (fgets(buffer, BUFFER_SIZE, fptr) != NULL)
   {
       /* Total character read count */
-      totalRead = strlen(buffer);
+      totalRead = acs_strnlen(buffer, BUFFER_SIZE);
 
       /* Trim new line character from last if exists */
       buffer[totalRead - 1] = buffer[totalRead - 1] == '\n'
