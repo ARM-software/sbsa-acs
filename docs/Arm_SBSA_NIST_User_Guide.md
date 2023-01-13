@@ -56,19 +56,19 @@ To start the ACS build with NIST STS, perform the following steps:
         *_*_*_CC_FLAGS =
     !endif
 
-    !include StdLib/StdLib.inc
+    !include edk2-libc/StdLib/StdLib.inc
 ```
-4.  Modify the following in the StdLib/LibC/Main/Main.c
+4.  Modify the following in the edk2-libc/StdLib/LibC/Main/Main.c
 ```
     -extern int main( int, char**);
     +extern int ShellAppMainsbsa( int, char**);
 ```
-5.  Modify the following in ShellAppMain() of StdLib/LibC/Main/Main.c
+5.  Modify the following in ShellAppMain() of edk2-libc/StdLib/LibC/Main/Main.c
 ```
     -ExitVal = (INTN)main( (int)Argc, gMD->NArgV);
     +ExitVal = (INTN)ShellAppMainsbsa( (int)Argc, gMD->NArgV);
 ```
-6. Comment the map[] variable in StdLib/LibC/Main/Arm/flt_rounds.c to avoid -werror=unused-variable
+6. Comment the map[] variable in edk2-libc/StdLib/LibC/Main/Arm/flt_rounds.c to avoid -werror=unused-variable
 ```
     +#if 0
     static const int map[] = {
@@ -104,11 +104,8 @@ The following figure shows the source code directory for SBSA ACS
     │<br/>
     ├── platform<br/>
     │   ├── pal_baremetal<br/>
-    │   ├── pal_linux<br/>
     │   ├── pal_uefi<br/>
-    │   └── secure_sw<br/>
-    │       └── arm-tf<br/>
-    │<br/>
+    |
     ├── test_pool<br/>
     │   ├── exerciser<br/>
     │   ├── gic<br/>
@@ -116,8 +113,11 @@ The following figure shows the source code directory for SBSA ACS
     │   ├── pcie<br/>
     │   ├── pe<br/>
     │   ├── peripherals<br/>
-    │   ├──  power_wakeup<br/>
-    │   ├── secure<br/>
+    │   ├── power_wakeup<br/>
+    │   ├── mpam<br/>
+    │   ├── ras<br/>
+    │   ├── pmu<br/>
+    │   ├── smmu<br/>
     │   ├── timer_wd<br/>
     │   └── nist_sts<br/>
     │       ├── test_n001.c     ────────>  NIST entry point to STS<br/>
@@ -170,8 +170,8 @@ Final analysis report is generated when statistical testing is complete. The rep
 
 For more details on NIST STS, see: <https://doi.org/10.6028/NIST.SP.800-22r1a>
 
-**Note**: For SBSA level 6 compliance, passing the NIST statistical test suite is not mandatory.
+**Note**: For SBSA level 7 compliance, passing the NIST statistical test suite is required for S_L7ENT_1 rule.
 
 --------------
 
-*Copyright (c) 2020, Arm Limited and Contributors. All rights reserved.*
+*Copyright (c) 2020, 2023, Arm Limited and Contributors. All rights reserved.*
