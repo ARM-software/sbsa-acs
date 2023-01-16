@@ -142,6 +142,8 @@ main (int argc, char **argv)
         printf("\n      *** PCIe Exerciser tests only runs on UEFI ***  \n");
         //execute_tests_exerciser(1, g_sbsa_level, g_print_level);
     }
+    printf("\n                    **  For complete SBSA test coverage, it is ");
+    printf("\n                          necessary to also run the BSA test  **\n\n");
     printf("\n                    *** SBSA tests complete *** \n\n");
 
     cleanup_test_environment();
