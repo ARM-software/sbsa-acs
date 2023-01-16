@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, 2021-2022 Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2023, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -36,7 +36,7 @@ uint32_t
 val_peripheral_execute_tests(uint32_t level, uint32_t num_pe)
 {
 
-  uint32_t status, i;
+  uint32_t status = AVS_STATUS_SKIP, i;
 
   for (i=0 ; i<MAX_TEST_SKIP_NUM ; i++){
       if (g_skip_test_num[i] == AVS_PER_TEST_NUM_BASE) {
@@ -54,12 +54,6 @@ val_peripheral_execute_tests(uint32_t level, uint32_t num_pe)
     return AVS_STATUS_SKIP;
   }
 
-  g_curr_module = 1 << PERIPHERAL_MODULE;
-  status = d001_entry(num_pe);
-  status |= d002_entry(num_pe);
-  status |= d003_entry(num_pe);
-
-  val_print_test_end(status, "Peripheral");
 
   return status;
 }
@@ -181,6 +175,11 @@ val_peripheral_get_info(PERIPHERAL_INFO_e info_type, uint32_t instance)
           if (i != 0xFFFF)
               return g_peripheral_info_table->info[i].flags;
           break;
+      case ANY_BASE0:
+          i = val_peripheral_get_entry_index(PERIPHERAL_TYPE_NONE, instance);
+          if (i != 0xFFFF)
+              return g_peripheral_info_table->info[i].base0;
+          break;
       case ANY_FLAGS:
           i = val_peripheral_get_entry_index (PERIPHERAL_TYPE_NONE, instance);
           if (i != 0xFFFF)
@@ -212,38 +211,47 @@ val_peripheral_dump_info(void)
 {
 
   uint32_t bus, dev, func, seg = 0;
-  uint32_t dev_bdf;
+  uint32_t dev_bdf, ecam_index, num_ecam;
   uint32_t reg_value, base_cc;
   uint32_t dply = 0, ntwk = 0, strg = 0;
+  uint32_t start_bus, end_bus;
 
-  if (val_pcie_get_info(PCIE_INFO_NUM_ECAM, 0) == 0)
+  num_ecam = val_pcie_get_info(PCIE_INFO_NUM_ECAM, 0);
+  if (num_ecam == 0)
   {
       val_print(AVS_PRINT_DEBUG, "\n No ECAM is present", 0);
       return;
   }
 
-  for (bus = 0; bus < PCIE_MAX_BUS; bus++)
+  for (ecam_index = 0; ecam_index < num_ecam; ecam_index++)
   {
-      for (dev = 0; dev < PCIE_MAX_DEV; dev++)
+      seg = val_pcie_get_info(PCIE_INFO_SEGMENT, ecam_index);
+      start_bus = val_pcie_get_info(PCIE_INFO_START_BUS, ecam_index);
+      end_bus = val_pcie_get_info(PCIE_INFO_END_BUS, ecam_index);
+
+      for (bus = start_bus; bus <= end_bus; bus++)
       {
-          for (func = 0; func < PCIE_MAX_FUNC; func++)
+          for (dev = 0; dev < PCIE_MAX_DEV; dev++)
           {
-              dev_bdf = PCIE_CREATE_BDF(seg, bus, dev, func);
-              val_pcie_read_cfg(dev_bdf, TYPE01_VIDR, &reg_value);
-              if (reg_value == PCIE_UNKNOWN_RESPONSE)
-                  continue;
-              val_pcie_read_cfg(dev_bdf, TYPE01_RIDR, &reg_value);
-              val_print(AVS_PRINT_DEBUG, "\n BDF is %x", dev_bdf);
-              val_print(AVS_PRINT_DEBUG, "\n Class code is %x", reg_value);
-              base_cc = reg_value >> TYPE01_BCC_SHIFT;
-              if (base_cc == CNTRL_CC)
-                  ntwk++;
-              if (base_cc == DP_CNTRL_CC)
-                  dply++;
-              if (base_cc == MAS_CC)
-                  strg++;
-              else
-                  continue;
+              for (func = 0; func < PCIE_MAX_FUNC; func++)
+              {
+                  dev_bdf = PCIE_CREATE_BDF(seg, bus, dev, func);
+                  val_pcie_read_cfg(dev_bdf, TYPE01_VIDR, &reg_value);
+                  if (reg_value == PCIE_UNKNOWN_RESPONSE)
+                      continue;
+                  val_pcie_read_cfg(dev_bdf, TYPE01_RIDR, &reg_value);
+                  val_print(AVS_PRINT_DEBUG, "\n BDF is %x", dev_bdf);
+                  val_print(AVS_PRINT_DEBUG, "\n Class code is %x", reg_value);
+                  base_cc = reg_value >> TYPE01_BCC_SHIFT;
+                  if (base_cc == CNTRL_CC)
+                      ntwk++;
+                  if (base_cc == DP_CNTRL_CC)
+                      dply++;
+                  if (base_cc == MAS_CC)
+                      strg++;
+                  else
+                      continue;
+              }
           }
       }
   }
@@ -279,7 +287,7 @@ val_peripheral_create_info_table(uint64_t *peripheral_info_table)
 
   pal_peripheral_create_info_table(g_peripheral_info_table);
 
-  val_print(AVS_PRINT_TEST, "\n Peripheral: Num of USB controllers   :    %d \n",
+  val_print(AVS_PRINT_TEST, " Peripheral: Num of USB controllers   :    %d \n",
     val_peripheral_get_info(NUM_USB, 0));
   val_print(AVS_PRINT_TEST, " Peripheral: Num of SATA controllers  :    %d \n",
     val_peripheral_get_info(NUM_SATA, 0));

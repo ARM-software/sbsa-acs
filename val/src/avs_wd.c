@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2022, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2023, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -54,12 +54,8 @@ val_wd_execute_tests(uint32_t level, uint32_t num_pe)
 
   g_curr_module = 1 << WD_MODULE;
 
-#ifndef ONLY_SBSA_RULE_TESTS
-  status |= w001_entry(num_pe);
-  status |= w002_entry(num_pe);
-#endif
   if (level > 5)
-    status |= w003_entry(num_pe);
+    status |= w001_entry(num_pe);
 
   val_print_test_end(status, "Watchdog");
 

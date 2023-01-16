@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2022, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2023, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -424,6 +424,55 @@ pal_mem_calloc (
   return Buffer;
 }
 
+/**
+  @brief   Creates a buffer with length equal to size within the
+           address range (mem_base, mem_base + mem_size)
+
+  @param   mem_base    - Base address of the memory range
+  @param   mem_size    - Size of the memory range of interest
+  @param   size        - Buffer size to be created
+
+  @return  Buffer address if SUCCESSFUL, else NULL
+**/
+VOID *
+pal_mem_alloc_at_address (
+  UINT64 mem_base,
+  UINT64 Size
+  )
+{
+  EFI_STATUS Status;
+  EFI_PHYSICAL_ADDRESS PageBase;
+
+  PageBase = mem_base;
+  Status = gBS->AllocatePages (AllocateAddress,
+                               EfiBootServicesData,
+                               EFI_SIZE_TO_PAGES(Size),
+                               &PageBase);
+  if (EFI_ERROR(Status))
+  {
+    sbsa_print(AVS_PRINT_ERR, L" Allocate Pages failed %x \n", Status);
+    return NULL;
+  }
+
+  return (VOID*)(UINTN)PageBase;
+}
+
+/**
+  @brief Free number of pages in the memory as requested.
+
+  @param PageBase Address from where we need to free
+  @param NumPages Number of memory pages needed
+
+  @return None
+**/
+VOID
+pal_mem_free_at_address(
+  UINT64 mem_base,
+  UINT64 Size
+  )
+{
+  gBS->FreePages(mem_base, EFI_SIZE_TO_PAGES(Size));
+}
 /**
  * @brief  Allocates requested buffer size in bytes in a contiguous cacheable
  *         memory and returns the base address of the range.

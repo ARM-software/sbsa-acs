@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018,2022 Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2023, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,6 +23,7 @@
 
 #define TEST_NUM   (AVS_PCIE_TEST_NUM_BASE + 11)
 #define TEST_DESC  "PCIe RC & PE, Same Inner SH Domain"
+#define TEST_RULE  "PCI_IC_02"
 
 #define INNER_SHAREABLE 1
 
@@ -64,14 +65,14 @@ p011_entry(uint32_t num_pe)
 
   num_pe = 1;  //This test is run on single processor
 
-  status = val_initialize_test(TEST_NUM, TEST_DESC, num_pe, g_sbsa_level);
+  status = val_initialize_test(TEST_NUM, TEST_DESC, num_pe, g_sbsa_level, TEST_RULE);
   if (status != AVS_STATUS_SKIP)
       val_run_test_payload(TEST_NUM, num_pe, payload, 0);
 
   /* get the result from all PE and check for failure */
-  status = val_check_for_error(TEST_NUM, num_pe);
+  status = val_check_for_error(TEST_NUM, num_pe, TEST_RULE);
 
-  val_report_status(0, SBSA_AVS_END(g_sbsa_level, TEST_NUM));
+  val_report_status(0, SBSA_AVS_END(g_sbsa_level, TEST_NUM), TEST_RULE);
 
   return status;
 }

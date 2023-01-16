@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2022, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2023, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,6 +23,13 @@
 #define MAX_NUM_PE               (2 << 27)
 
 #define MPIDR_AFF_MASK           (0xFF00FFFFFF)
+
+/* PE Affinity level masks */
+#define PE_AFFINITY_LVL_1  0xFF00FFFF00ULL
+#define PE_AFFINITY_LVL_2  0xFF00FF0000ULL
+#define PE_AFFINITY_LVL_3  0xFF00000000ULL
+
+#define INVALID_PE_INFO 0xDEADDEAD
 
 //
 //  AARCH64 processor exception types.
@@ -134,7 +141,8 @@ typedef enum {
   RDVL,
   MAIR_ELx,
   TCR_ELx,
-  TTBR_ELx
+  TTBR_ELx,
+  ID_AA64ZFR0_EL1
 }SBSA_AVS_PE_REGS;
 
 uint64_t ArmReadMpidr(void);
@@ -297,6 +305,8 @@ void ArmCallWFI(void);
 
 void ArmExecuteMemoryBarrier(void);
 
+uint64_t AA64ReadZfr0(void);
+
 void SpeProgramUnderProfiling(uint64_t interval, uint64_t address);
 
 void DisableSpe(void);
@@ -317,7 +327,7 @@ void val_pe_context_restore(uint64_t sp);
 void val_pe_default_esr(uint64_t interrupt_type, void *context);
 void val_pe_cache_clean_range(uint64_t start_addr, uint64_t length);
 
-uint32_t c001_entry(void);
+uint32_t c001_entry(uint32_t num_pe);
 uint32_t c002_entry(uint32_t num_pe);
 uint32_t c003_entry(uint32_t num_pe);
 uint32_t c004_entry(uint32_t num_pe);
@@ -353,7 +363,7 @@ uint32_t c033_entry(uint32_t num_pe);
 uint32_t c034_entry(uint32_t num_pe);
 uint32_t c035_entry(uint32_t num_pe);
 uint32_t c036_entry(uint32_t num_pe);
+uint32_t c037_entry(uint32_t num_pe);
 
-uint32_t os_c018_entry(uint32_t num_pe);
 #endif
 

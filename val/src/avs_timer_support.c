@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2023, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -71,7 +71,8 @@ ArmArchTimerReadReg (
 
     case CnthCtl:
     case CnthpCval:
-      pal_print ("The register is related to Hypervisor Mode. Can't perform requested operation\n ", 0);
+      pal_print ("The register is related to Hypervisor Mode."
+                 " Can't perform requested operation\n ", 0);
       break;
 
     default:
@@ -88,7 +89,7 @@ ArmArchTimerWriteReg (
   )
 {
 
-    switch(Reg) {
+    switch (Reg) {
 
     case CntPct:
       pal_print("Can't write to Read Only Register: CNTPCT \n", 0);
@@ -144,7 +145,8 @@ ArmArchTimerWriteReg (
       break;
     case CnthCtl:
     case CnthpCval:
-      pal_print("The register is related to Hypervisor Mode. Can't perform requested operation\n ", 0);
+      pal_print("The register is related to Hypervisor Mode."
+                " Can't perform requested operation\n ", 0);
       break;
 
     default:

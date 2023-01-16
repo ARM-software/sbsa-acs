@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2019-2022, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2019-2023, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -188,6 +188,7 @@
 #define CID_MSI        0x05
 #define CID_MSIX       0x11
 #define CID_PMC        0x01
+#define CID_EA         0x14
 #define ECID_AER       0x0001
 #define ECID_RCECEA    0x0007
 #define ECID_ACS       0x000D
@@ -195,6 +196,8 @@
 #define ECID_ATS       0x000F
 #define ECID_PRI       0x0013
 #define ECID_PASID     0x001B
+#define ECID_DPC       0x001D
+#define ECID_DVSEC     0x0023
 
 /* PCI Express capability struct offsets */
 #define CIDR_OFFSET    0x0
@@ -210,6 +213,66 @@
 #define LCAP2R_OFFSET  0x2C
 #define LCTL2R_OFFSET  0x30
 #define DCTL2R_MASK    0xFFFF
+#define DSTS_SHIFT     16
+#define DS_UNCORR_MASK 0x6
+#define DS_CORR_MASK   0x1
+
+/* DPC Capability struct offsets and shifts */
+#define DPC_CTRL_OFFSET        0x4
+#define DPC_STATUS_OFFSET      0x8
+#define DPC_STATUS_RESET       0xFFFFFFFF
+#define DPC_STATUS_MASK        0x1
+#define DPC_TRIGGER_MASK       0x6
+#define DPC_TRIGGER_FATAL      0x2
+#define DPC_TRIGGER_NON_FATAL  0x1
+#define DPC_CTRL_TRG_EN_SHIFT  16
+#define DPC_CTRL_TRG_EN_MASK   0x3
+#define DPC_SOURCE_ID_SHIFT    16
+#define DPC_TRIGGER_SHIFT      0x1
+
+/* AER Capability struct offsets and shifts */
+#define ERR_CNT                  0x18
+#define AER_UNCORR_STATUS_OFFSET 0x4
+#define AER_UNCORR_MASK_OFFSET   0x8
+#define AER_UNCORR_SEVR_OFFSET   0xC
+#define AER_UNCORR_SEVR_FATAL    0xFFFFFFFF
+#define AER_UNCORR_SEVR_NONFATAL 0x0
+#define AER_CORR_STATUS_OFFSET   0x10
+#define AER_CORR_MASK_OFFSET     0x14
+#define AER_ROOT_ERR_CMD_OFFSET  0x2C
+#define AER_ROOT_ERR_OFFSET      0x30
+#define AER_ROOT_ERR_SOURCE_ID   0x34
+#define AER_SOURCE_ID_SHIFT      16
+#define AER_SOURCE_ID_MASK       0xFFFF
+#define AER_ERROR_MASK           0xFFFFFFFF
+
+/* DPC Capability struct offsets and shifts */
+#define DPC_CTRL_OFFSET        0x4
+#define DPC_STATUS_OFFSET      0x8
+#define DPC_STATUS_RESET       0xFFFFFFFF
+#define DPC_STATUS_MASK        0x1
+#define DPC_TRIGGER_MASK       0x6
+#define DPC_TRIGGER_FATAL      0x2
+#define DPC_TRIGGER_NON_FATAL  0x1
+#define DPC_CTRL_TRG_EN_SHIFT  16
+#define DPC_CTRL_TRG_EN_MASK   0x3
+#define DPC_SOURCE_ID_SHIFT    16
+#define DPC_TRIGGER_SHIFT      0x1
+#define DPC_DISABLE_MASK       0xFFFCFFFF
+#define DPC_INTR_ENABLE        0x80000
+
+/* AER Capability struct offsets and shifts */
+#define AER_UNCORR_STATUS_OFFSET 0x4
+#define AER_UNCORR_MASK_OFFSET   0x8
+#define AER_UNCORR_SEVR_OFFSET   0xC
+#define AER_UNCORR_SEVR_FATAL    0xFFFFFFFF
+#define AER_UNCORR_SEVR_NONFATAL 0x0
+#define AER_ROOT_ERR_OFFSET      0x30
+
+/* EA Capability struct offsets */
+#define EA_ENTRY_TYPE_OFFSET       8
+#define EA_ENTRY_TYPE_ENABLE_SHIFT 31
+#define EA_ENTRY_TYPE_ENABLE_MASK  1
 
 /* ACS Capability Register */
 #define ACS_CTRL_SVE_SHIFT  16

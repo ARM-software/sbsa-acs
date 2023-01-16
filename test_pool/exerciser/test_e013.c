@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2020-2022, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2023, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -29,6 +29,7 @@
 
 #define TEST_NUM   (AVS_EXERCISER_TEST_NUM_BASE + 13)
 #define TEST_DESC  "Check ACS Redirected Req Valid    "
+#define TEST_RULE  "PCI_PP_04"
 
 static
 uint32_t
@@ -160,6 +161,9 @@ create_va_pa_mapping (uint64_t txn_va, uint64_t txn_pa,
       if (!pgt_desc->oas)
         return AVS_STATUS_FAIL;
 
+      /* set pgt_desc.pgt_base to NULL to create new translation table, val_pgt_create
+       will update pgt_desc.pgt_base to point to created translation table */
+      pgt_desc->pgt_base = (uint64_t) NULL;
       if (val_pgt_create(mem_desc, pgt_desc))
         return AVS_STATUS_FAIL;
 
@@ -462,14 +466,14 @@ e013_entry(void)
   uint32_t num_pe = 1;
   uint32_t status = AVS_STATUS_FAIL;
 
-  status = val_initialize_test(TEST_NUM, TEST_DESC, num_pe, g_sbsa_level);
+  status = val_initialize_test(TEST_NUM, TEST_DESC, num_pe, g_sbsa_level, TEST_RULE);
   if (status != AVS_STATUS_SKIP)
       val_run_test_payload(TEST_NUM, num_pe, payload, 0);
 
   /* Get the result from all PE and check for failure */
-  status = val_check_for_error(TEST_NUM, num_pe);
+  status = val_check_for_error(TEST_NUM, num_pe, TEST_RULE);
 
-  val_report_status(0, SBSA_AVS_END(g_sbsa_level, TEST_NUM));
+  val_report_status(0, SBSA_AVS_END(g_sbsa_level, TEST_NUM), TEST_RULE);
 
   return status;
 }

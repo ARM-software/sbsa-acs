@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2018-2022, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2018-2023, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -45,6 +45,7 @@
 
 #define TEST_NUM   (AVS_EXERCISER_TEST_NUM_BASE + 7)
 #define TEST_DESC  "Check PCI Express I/O Coherency   "
+#define TEST_RULE  "PCI_IC_01, PCI_IC_03, PCI_IC_06, PCI_IC_07, PCI_IC_08"
 
 #define TEST_DATA_BLK_SIZE  (4*1024)
 #define KNOWN_DATA 0xDE
@@ -234,15 +235,15 @@ e007_entry (void)
   uint32_t num_pe = 1;
   uint32_t status = AVS_STATUS_FAIL;
 
-  status = val_initialize_test (TEST_NUM, TEST_DESC, num_pe, g_sbsa_level);
+  status = val_initialize_test(TEST_NUM, TEST_DESC, num_pe, g_sbsa_level, TEST_RULE);
   if (status != AVS_STATUS_SKIP) {
       val_run_test_payload (TEST_NUM, num_pe, payload, 0);
   }
 
   /* Get the result from all PE and check for failure */
-  status = val_check_for_error (TEST_NUM, num_pe);
+  status = val_check_for_error(TEST_NUM, num_pe, TEST_RULE);
 
-  val_report_status (0, SBSA_AVS_END (g_sbsa_level, TEST_NUM));
+  val_report_status(0, SBSA_AVS_END(g_sbsa_level, TEST_NUM), TEST_RULE);
 
   return status;
 }

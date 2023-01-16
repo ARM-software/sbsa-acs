@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2022, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2023, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -283,7 +283,6 @@ val_pcie_execute_tests(uint32_t enable_pcie, uint32_t level, uint32_t num_pe)
 
   g_curr_module = 1 << PCIE_MODULE;
 
-#ifdef ONLY_SBSA_RULE_TESTS
 #ifdef TARGET_LINUX
   status = p009_entry(num_pe);  /* This covers GIC rule */
 #endif
@@ -291,38 +290,17 @@ val_pcie_execute_tests(uint32_t enable_pcie, uint32_t level, uint32_t num_pe)
       val_print(AVS_PRINT_TEST, " RCiEP and iEP tests are for sbsa level 6+ \n", 0);
       return AVS_STATUS_SKIP;
   }
-#endif
 
   status = p001_entry(num_pe);
 
-  if (status == AVS_STATUS_FAIL) {
+  if (status != AVS_STATUS_PASS) {
     val_print(AVS_PRINT_WARN, "\n     *** Skipping remaining PCIE tests *** \n", 0);
     return status;
   }
 
-#ifndef ONLY_SBSA_RULE_TESTS
-  status |= p002_entry(num_pe);
-#endif
-
 
 #ifdef TARGET_LINUX
   status |= p005_entry(num_pe);
-#ifndef ONLY_SBSA_RULE_TESTS
-  status |= p006_entry(num_pe);
-  status |= p007_entry(num_pe);
-  status |= p008_entry(num_pe);
-  status |= p009_entry(num_pe);
-  status |= p010_entry(num_pe);
-  status |= p011_entry(num_pe);
-  status |= p012_entry(num_pe);
-  status |= p013_entry(num_pe);
-  status |= p014_entry(num_pe);
-  status |= p015_entry(num_pe);
-  status |= p016_entry(num_pe);
-  status |= p017_entry(num_pe);
-  status |= p018_entry(num_pe);
-  status |= p019_entry(num_pe);
-#endif
 #else
 
   if (g_pcie_bdf_table->num_entries == 0) {
@@ -368,17 +346,12 @@ val_pcie_execute_tests(uint32_t enable_pcie, uint32_t level, uint32_t num_pe)
     status |= p052_entry(num_pe);
     status |= p056_entry(num_pe); /* iEP/RP only */
     status |= p057_entry(num_pe);
-#ifndef ONLY_SBSA_RULE_TESTS
-    status |= p040_entry(num_pe);
-    status |= p053_entry(num_pe);
-    status |= p054_entry(num_pe);
-    status |= p055_entry(num_pe);
-#endif
-#ifdef ONLY_SBSA_RULE_TESTS
     status |= p058_entry(num_pe);
     status |= p059_entry(num_pe);
     status |= p060_entry(num_pe);
-#endif
+    status |= p061_entry(num_pe);
+    status |= p062_entry(num_pe);
+
   }
 #endif
 
@@ -403,7 +376,7 @@ val_pcie_print_device_info(void)
 
   if (bdf_tbl_ptr->num_entries == 0)
   {
-    val_print(AVS_PRINT_ERR, " PCIE_INFO: BDF Table: No RCiEP or iEP devices found\n", 0);
+    val_print(AVS_PRINT_DEBUG, "  BDF Table: No RCiEP or iEP found\n", 0);
     return;
   }
 
@@ -583,11 +556,9 @@ val_pcie_create_device_bdf_table()
 
                       dp_type = val_pcie_device_port_type(bdf);
                       val_print(AVS_PRINT_INFO, "\n       dp_type 0x%x ", dp_type);
-#ifdef ONLY_SBSA_RULE_TESTS
                       /* SBSA 6.1 have only rciep and iep/rp rules only */
                       if ((dp_type != RCiEP) && (dp_type != iEP_EP) && (dp_type != iEP_RP))
                           continue;
-#endif
                       status = pal_pcie_check_device_valid(bdf);
                       if (status)
                           continue;
@@ -599,16 +570,19 @@ val_pcie_create_device_bdf_table()
       }
   }
 
-  val_print(AVS_PRINT_INFO,
-            " PCIE_INFO: Number of valid BDFs is %x\n", g_pcie_bdf_table->num_entries);
-
   /* Sanity Check : Confirm all EP (normal, integrated) have a rootport */
   if (val_pcie_populate_device_rootport())
   {
       /* Discard the bdf table */
       g_pcie_bdf_table->num_entries = 0;
+      val_print(AVS_PRINT_TEST,
+            " PCIE_INFO: Number of BDFs found      :    %x\n", g_pcie_bdf_table->num_entries);
+
       return 1;
   }
+  val_print(AVS_PRINT_TEST,
+            " PCIE_INFO: Number of BDFs found      :    %x\n", g_pcie_bdf_table->num_entries);
+
   return 0;
 }
 
@@ -1490,6 +1464,43 @@ val_pcie_is_sig_target_abort(uint32_t bdf)
 }
 
 /**
+  @brief  Enable error reporting of the PCIe Function to the upstream
+  @param  bdf   - Segment/Bus/Dev/Func in the format of PCIE_CREATE_BDF
+  @return None
+**/
+void
+val_pcie_enable_eru(uint32_t bdf)
+{
+
+  uint32_t reg_value;
+  uint32_t dis_mask;
+  uint32_t pciecs_base;
+
+  /* Set SERR# Enable bit in the Command Register to enable reporting
+   * upstream of Non-fatal and Fatal errors detected by the Function.
+   */
+  val_pcie_read_cfg(bdf, TYPE01_CR, &reg_value);
+  dis_mask = (1 << CR_SERRE_SHIFT);
+  val_pcie_write_cfg(bdf, TYPE01_CR, reg_value | dis_mask);
+
+  /* Get the PCI Express Capability structure offset and
+   * use that offset to read the Device Control register
+   */
+  val_pcie_find_capability(bdf, PCIE_CAP, CID_PCIECS, &pciecs_base);
+  val_pcie_read_cfg(bdf, pciecs_base + DCTLR_OFFSET, &reg_value);
+
+  /* Set Correctable, Non-fatal, Fatal, UR Reporting Enable bits in the
+   * Device Control Register to enable reporting upstream of these errors
+   * detected by the Function.
+   */
+  dis_mask = (1 << DCTLR_CERE_SHIFT |
+              1 << DCTLR_NFERE_SHIFT |
+              1 << DCTLR_FERE_SHIFT |
+              1 << DCTLR_URRE_SHIFT);
+  val_pcie_write_cfg(bdf, pciecs_base + DCTLR_OFFSET, reg_value | dis_mask);
+}
+
+/**
   @brief  Disable error reporting of the PCIe Function to the upstream
   @param  bdf   - Segment/Bus/Dev/Func in the format of PCIE_CREATE_BDF
   @return None
@@ -1782,6 +1793,7 @@ val_pcie_get_mmio_bar(uint32_t bdf, void *base)
           val_print(AVS_PRINT_ERR, "\n       pal_exerciser_get_data() not implemented", 0);
       }
 
+      /* data.bar_space.base_addr will be zero if no MMIO bar are present for the function */
       *(uint64_t *)base = (uint64_t)data.bar_space.base_addr;
       return;
   }

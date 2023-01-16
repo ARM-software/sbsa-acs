@@ -1,5 +1,5 @@
 #/** @file
-# Copyright (c) 2016-2020, Arm Limited or its affiliates. All rights reserved.
+# Copyright (c) 2016-2023, Arm Limited or its affiliates. All rights reserved.
 # SPDX-License-Identifier : Apache-2.0
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -117,6 +117,7 @@ GCC_ASM_EXPORT (AA64ReadTtbr0El1)
 GCC_ASM_EXPORT (AA64ReadTtbr0El2)
 GCC_ASM_EXPORT (AA64ReadTtbr1El1)
 GCC_ASM_EXPORT (AA64ReadTtbr1El2)
+GCC_ASM_EXPORT (AA64ReadZfr0)
 
 ASM_PFX(ArmReadMpidr):
   mrs   x0, mpidr_el1           // read EL1 MPIDR
@@ -336,7 +337,7 @@ ASM_PFX(AA64ReadVpidr):
   ret
 
 ASM_PFX(AA64ReadPmbidr):
-  //mrs   x0, pmbidr_el1
+  mrs   x0, pmbidr_el1
   ret
 
 ASM_PFX(AA64ReadPmsidr):
@@ -445,3 +446,6 @@ ASM_PFX(ArmRdvl):
   .inst 0x04BF5100
   ret
 
+ASM_PFX(AA64ReadZfr0):
+  mrs x0, id_aa64zfr0_el1
+  ret

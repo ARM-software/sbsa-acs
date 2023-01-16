@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2018-2022, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2018-2023, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -29,6 +29,7 @@
 
 #define TEST_NUM   (AVS_EXERCISER_TEST_NUM_BASE + 5)
 #define TEST_DESC  "Generate PASID PCIe transactions  "
+#define TEST_RULE  "PCI_PAS_1, RE_SMU_4"
 
 #define TEST_DATA_NUM_PAGES  2
 #define TEST_DATA 0xDE
@@ -231,6 +232,9 @@ payload(void)
         if ((pgt_desc.oas = val_smmu_get_info(SMMU_OUT_ADDR_SIZE, master.smmu_index)) == 0)
             goto test_fail;
 
+        /* set pgt_desc.pgt_base to NULL to create new translation table, val_pgt_create
+           will update pgt_desc.pgt_base to point to created translation table */
+        pgt_desc.pgt_base = (uint64_t) NULL;
         if (val_pgt_create(mem_desc, &pgt_desc))
             goto test_fail;
 
@@ -307,6 +311,9 @@ payload(void)
     mem_desc->length = test_data_blk_size;
     mem_desc->attributes |= PGT_STAGE1_AP_RW;
 
+    /* set pgt_desc.pgt_base to NULL to create new translation table, val_pgt_create
+       will update pgt_desc.pgt_base to point to created translation table */
+    pgt_desc.pgt_base = (uint64_t) NULL;
     if (val_pgt_create(mem_desc, &pgt_desc))
         goto test_fail;
 
@@ -393,14 +400,14 @@ e005_entry(void)
   uint32_t num_pe = 1;
   uint32_t status = AVS_STATUS_FAIL;
 
-  status = val_initialize_test(TEST_NUM, TEST_DESC, num_pe, g_sbsa_level);
+  status = val_initialize_test(TEST_NUM, TEST_DESC, num_pe, g_sbsa_level, TEST_RULE);
   if (status != AVS_STATUS_SKIP)
       val_run_test_payload(TEST_NUM, num_pe, payload, 0);
 
   /* Get the result from all PE and check for failure */
-  status = val_check_for_error(TEST_NUM, num_pe);
+  status = val_check_for_error(TEST_NUM, num_pe, TEST_RULE);
 
-  val_report_status(0, SBSA_AVS_END(g_sbsa_level, TEST_NUM));
+  val_report_status(0, SBSA_AVS_END(g_sbsa_level, TEST_NUM), TEST_RULE);
 
   return status;
 }

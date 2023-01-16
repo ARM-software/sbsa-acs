@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2023, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -26,6 +26,7 @@
 #define SBSA_PCIE_EXECUTE_TEST    0x2000
 #define SBSA_UPDATE_SKIP_LIST     0x3000
 #define SBSA_EXERCISER_EXECUTE_TEST    0x4000
+#define SBSA_SMMU_EXECUTE_TEST    0x5000
 #define SBSA_FREE_INFO_TABLES     0x9000
 
 

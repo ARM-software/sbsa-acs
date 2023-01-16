@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2020, 2022 Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2023 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -236,7 +236,8 @@ val_mmio_write64(addr_t addr, uint64_t data)
   @return         Skip - if the user has overriden to skip the test.
  **/
 uint32_t
-val_initialize_test(uint32_t test_num, char8_t *desc, uint32_t num_pe, uint32_t level)
+val_initialize_test(uint32_t test_num, char8_t *desc, uint32_t num_pe, uint32_t level,
+                    char8_t *ruleid)
 {
 
   uint32_t i;
@@ -244,7 +245,7 @@ val_initialize_test(uint32_t test_num, char8_t *desc, uint32_t num_pe, uint32_t 
 
   val_print(AVS_PRINT_ERR, "%4d : ", test_num); //Always print this
   val_print(AVS_PRINT_TEST, desc, 0);
-  val_report_status(0, SBSA_AVS_START(level, test_num));
+  val_report_status(0, SBSA_AVS_START(level, test_num), ruleid);
   val_pe_initialize_default_exception_handler(val_pe_default_esr);
 
   g_sbsa_tests_total++;
@@ -454,7 +455,7 @@ val_run_test_payload(uint32_t test_num, uint32_t num_pe, void (*payload)(void), 
   @return     Success or on failure - status of the last failed PE
  **/
 uint32_t
-val_check_for_error(uint32_t test_num, uint32_t num_pe)
+val_check_for_error(uint32_t test_num, uint32_t num_pe, char8_t *ruleid)
 {
   uint32_t i;
   uint32_t status = 0;
@@ -465,7 +466,7 @@ val_check_for_error(uint32_t test_num, uint32_t num_pe)
      of pe_info_table but num_pe is 1 for SOC tests */
   if (num_pe == 1) {
       status = val_get_status(my_index);
-      val_report_status(my_index, status);
+      val_report_status(my_index, status, ruleid);
       if (IS_TEST_PASS(status)) {
           g_sbsa_tests_pass++;
           return AVS_STATUS_PASS;
@@ -481,14 +482,14 @@ val_check_for_error(uint32_t test_num, uint32_t num_pe)
       status = val_get_status(i);
       //val_print(AVS_PRINT_ERR, "Status %4x \n", status);
       if (IS_TEST_FAIL_SKIP(status)) {
-          val_report_status(i, status);
+          val_report_status(i, status, ruleid);
           error_flag += 1;
           break;
       }
   }
 
   if (!error_flag)
-      val_report_status(my_index, status);
+      val_report_status(my_index, status, ruleid);
 
   if (IS_TEST_PASS(status)) {
       g_sbsa_tests_pass++;

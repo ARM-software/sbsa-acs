@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2020, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2020, 2023 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -25,6 +25,7 @@
 #include "val/include/sbsa_avs_nist.h"
 
 #define TEST_NUM   (AVS_NIST_TEST_NUM_BASE + 1)
+#define TEST_RULE "S_L7ENT_1"
 #define TEST_DESC  "NIST Statistical Test Suite      \n "
 
 #define BUFFER_SIZE     1000
@@ -36,6 +37,16 @@
 #define MIN_NIST_TEST   0x0000   /* Test 9 - 12, 13 - 14 */
 
 extern int main(int argc, char *argv[]);
+
+static int acs_strnlen(const char *buffer, size_t max_len)
+{
+    size_t len;
+    for (len = 0; len < max_len; len++, buffer++) {
+        if (!*buffer)
+            break;
+    }
+    return (len);
+}
 
 /*Enabling all NIST test suites(test 1 - 15) by default */
 uint32_t test_select = ALL_NIST_TEST;
@@ -54,7 +65,7 @@ check_prerequisite_nist(void)
    * executing NIST test suite.
    */
   for (i = 0; i < REQ_OPEN_FILES; i++) {
-      sprintf(file_name[i], "tmp_%d.txt", i);
+      snprintf(file_name[i], 20, "tmp_%d.txt", i);
       fp[i] = fopen(file_name[i], "wb");
       if (fp[i] == NULL) {
           val_print(AVS_PRINT_ERR, "\nMax # of opened files has been reached. "
@@ -95,7 +106,7 @@ print_nist_result(void)
   while (fgets(buffer, BUFFER_SIZE, fptr) != NULL)
   {
       /* Total character read count */
-      totalRead = strlen(buffer);
+      totalRead = acs_strnlen(buffer, BUFFER_SIZE);
 
       /* Trim new line character from last if exists */
       buffer[totalRead - 1] = buffer[totalRead - 1] == '\n'
@@ -261,15 +272,15 @@ n001_entry(uint32_t num_pe)
 
   num_pe = 1;  //This NIST test is run on single processor
 
-  status = val_initialize_test(TEST_NUM, TEST_DESC, num_pe, g_sbsa_level);
+  status = val_initialize_test(TEST_NUM, TEST_DESC, num_pe, g_sbsa_level, TEST_RULE);
 
   if (status != AVS_STATUS_SKIP)
       val_run_test_payload(TEST_NUM, num_pe, payload, 0);
 
   /* get the result from all PE and check for failure */
-//  status = val_check_for_error(TEST_NUM, num_pe);
+//  status = val_check_for_error(TEST_NUM, num_pe, TEST_RULE);
 
-//  val_report_status(0, SBSA_AVS_END(g_sbsa_level, TEST_NUM));
+//  val_report_status(0, SBSA_AVS_END(g_sbsa_level, TEST_NUM), TEST_RULE);
 
   return status;
 }

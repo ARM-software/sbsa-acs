@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2020, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2023 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,5 +23,7 @@ uint32_t val_iovirt_check_unique_ctx_intid(uint32_t smmu_index);
 uint32_t val_iovirt_unique_rid_strid_map(uint32_t rc_index);
 int val_iovirt_get_device_info(uint32_t rid, uint32_t segment, uint32_t *device_id, uint32_t *stream_id, uint32_t *its_id);
 uint64_t val_iovirt_get_pcie_rc_info(PCIE_RC_INFO_e type, uint32_t index);
+uint64_t val_iovirt_get_named_comp_info(NAMED_COMP_INFO_e type, uint32_t index);
+uint64_t val_iovirt_get_pmcg_info(PMCG_INFO_e type, uint32_t index);
 
 #endif

@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2022, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2023, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,10 +19,7 @@
 #include <Library/BaseMemoryLib.h>
 #include <Library/UefiBootServicesTableLib.h>
 #include <Library/UefiLib.h>
-
-#include "Include/IndustryStandard/Acpi61.h"
 #include "Include/IndustryStandard/MemoryMappedConfigurationSpaceAccessTable.h"
-#include <Protocol/AcpiTable.h>
 #include <Protocol/HardwareInterrupt.h>
 
 #include "Include/IndustryStandard/Pci.h"
@@ -222,7 +219,7 @@ UINT32
 pal_pcie_p2p_support()
 {
   /*
-   * TODO
+   * This is platform specific API which needs to be populated with system p2p capability
    * PCIe support for peer to peer
    * transactions is platform implementation specific
    */
@@ -246,7 +243,7 @@ pal_pcie_dev_p2p_support (
   UINT32 Fn)
 {
   /*
-   * TODO
+   * This is platform specific API which needs to be populated with pcie device  p2p capability
    * Root port or Switch support for peer to peer
    * transactions is platform implementation specific
    */
@@ -383,7 +380,7 @@ pal_pcie_check_device_list(void)
           accessed from the BAR base and is within
           BAR limit value
 
-  @param  memory offset
+  @param  type
   @return memory offset
 **/
 UINT32

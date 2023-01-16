@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2020, 2022 Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2023 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -27,6 +27,7 @@
 
 #define TEST_NUM   (AVS_EXERCISER_TEST_NUM_BASE + 15)
 #define TEST_DESC  "Arrival order & Gathering Check   "
+#define TEST_RULE  "PCI_IC_05, RE_ORD_1, RE_ORD_2"
 
 /* 0 means read transction, 1 means write transaction */
 static uint32_t transaction_order[] = {1, 1, 0, 1, 0, 0, 0, 0};
@@ -53,12 +54,7 @@ static uint32_t test_sequence_check(uint32_t instance)
   uint64_t num_transactions;
   uint64_t transaction_type;
 
-  /* Get number of transactions captured from exerciser */
-  val_exerciser_get_param(NUM_TRANSACTIONS, NULL, &num_transactions, instance);
-  if (num_transactions !=  sizeof(transaction_order)/sizeof(transaction_order[0])) {
-      val_print(AVS_PRINT_ERR, "\n       Exerciser %d gathering check failed", instance);
-      return 1;
-  }
+  num_transactions = sizeof(transaction_order)/sizeof(transaction_order[0]);
 
   /* Check transactions arrival order */
   for (idx = 0; idx < sizeof(transaction_order)/sizeof(transaction_order[0]); idx++) {
@@ -68,6 +64,13 @@ static uint32_t test_sequence_check(uint32_t instance)
           return 1;
       }
   }
+
+  /* Get number of transactions captured from exerciser */
+  if (num_transactions != idx) {
+      val_print(AVS_PRINT_ERR, "\n       Exerciser %d gathering check failed", instance);
+      return 1;
+  }
+
   return 0;
 }
 
@@ -342,14 +345,14 @@ e015_entry(void)
   uint32_t num_pe = 1;
   uint32_t status = AVS_STATUS_FAIL;
 
-  status = val_initialize_test(TEST_NUM, TEST_DESC, num_pe, g_sbsa_level);
+  status = val_initialize_test(TEST_NUM, TEST_DESC, num_pe, g_sbsa_level, TEST_RULE);
   if (status != AVS_STATUS_SKIP)
       val_run_test_payload(TEST_NUM, num_pe, payload, 0);
 
   /* Get the result from all PE and check for failure */
-  status = val_check_for_error(TEST_NUM, num_pe);
+  status = val_check_for_error(TEST_NUM, num_pe, TEST_RULE);
 
-  val_report_status(0, SBSA_AVS_END(g_sbsa_level, TEST_NUM));
+  val_report_status(0, SBSA_AVS_END(g_sbsa_level, TEST_NUM), TEST_RULE);
 
   return status;
 }
