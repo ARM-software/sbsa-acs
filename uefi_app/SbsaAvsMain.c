@@ -781,6 +781,8 @@ print_test_status:
 
   freeSbsaAvsMem();
 
+  val_print(AVS_PRINT_TEST, "\n      **  For complete SBSA test coverage, it is ", 0);
+  val_print(AVS_PRINT_TEST, "\n            necessary to also run the BSA test    ** \n\n", 0);
   val_print(AVS_PRINT_TEST, "\n      *** SBSA tests complete. Reset the system. *** \n\n", 0);
 
   if(g_sbsa_log_file_handle) {
