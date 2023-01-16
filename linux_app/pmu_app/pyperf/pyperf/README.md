@@ -26,4 +26,4 @@ These modules replicate some of the functionality of the userspace perf tools:
 
 --------------
 
-*Copyright (c) 2022, Arm Limited and Contributors. All rights reserved.*
+*Copyright (c) 2023, Arm Limited and Contributors. All rights reserved.*
