@@ -7,3 +7,12 @@ This version is used in SystemReady SR v1.1.0 images.
 * SBSA ACS will provide coverage for SBSA-specific rules
 * RCiEP and iEP rules test will run at Level 6.
 * Bug Fixes
+
+v23.01_REL7.1.0_BETA-0
+This version is used in SystemReady SR v2.0.0 images.
+
+* SBSA ACS updated to SBSA7.1 specification.
+* MPAM, RAS, PMU tests are newly added at L7.
+* PE, SMMU, GIC L7 rules tests added.
+* pmu_app for PMU PE events added in linux_app.
+* Bug fixes on SBSA 6.1.0 release.
