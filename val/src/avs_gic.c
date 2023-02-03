@@ -249,7 +249,7 @@ val_get_cpuif_base(void)
   @return  32-bit data
 **/
 uint32_t
-val_gic_get_info(uint32_t type)
+val_gic_get_info(GIC_INFO_e type)
 {
   uint32_t rdbase_len;
 
