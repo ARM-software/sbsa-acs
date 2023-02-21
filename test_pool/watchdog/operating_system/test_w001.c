@@ -80,7 +80,7 @@ payload(void)
 
   if(!ns_wdg) {
       val_print(AVS_PRINT_WARN, "\n       No non-secure Watchdogs reported", 0);
-      val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 03));
+      val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 03));
       return;
   }
 
