@@ -78,8 +78,10 @@ val_peripheral_get_entry_index(uint32_t type, uint32_t instance)
 
   while (g_peripheral_info_table->info[i].type != 0xFF) {
       if (type == PERIPHERAL_TYPE_NONE || g_peripheral_info_table->info[i].type == type) {
-          if (instance == 0)
+          if (instance == 0) {
+             val_print(AVS_PRINT_INFO, "\n Peripheral %x", g_peripheral_info_table->info[i].type);
              return i;
+          }
           else
              instance--;
 

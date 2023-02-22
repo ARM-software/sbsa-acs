@@ -31,6 +31,7 @@ static void payload(void)
     uint32_t peri_index, peri_index1;
     uint64_t peri_count, addr_diff;
     uint64_t peri_addr1, peri_addr2;
+    uint32_t fail_cnt = 0;
 
     pe_index = val_pe_get_index_mpid(val_pe_get_mpid());
     peri_count = val_peripheral_get_info(NUM_ALL, 0);
@@ -41,17 +42,27 @@ static void payload(void)
 
             peri_addr1 = val_peripheral_get_info(ANY_BASE0, peri_index);
             peri_addr2 = val_peripheral_get_info(ANY_BASE0, peri_index1);
+            val_print(AVS_PRINT_INFO, "\n   addr of Peripheral 1 is  %llx", peri_addr1);
+            val_print(AVS_PRINT_INFO, "\n   addr of Peripheral 2 is  %llx", peri_addr2);
+
+           if ((peri_addr1 == 0) || (peri_addr2 == 0))
+                continue;
 
             addr_diff = (peri_addr1 > peri_addr2) ?
                          peri_addr1 - peri_addr2 : peri_addr2 - peri_addr1;
 
             if (addr_diff < MEM_SIZE_64KB) {
                 val_print(AVS_PRINT_ERR,
-                         "\n      Peripheral base addresses isn't atleast 64Kb apart", 0);
-                val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
-                return;
+                         "\n  Peripheral base addresses isn't atleast 64Kb apart %llx", addr_diff);
+                fail_cnt++;
             }
         }
+    }
+
+    if (fail_cnt)
+    {
+        val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
+        return;
     }
 
     val_set_status(pe_index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));

@@ -50,6 +50,7 @@ pal_peripheral_create_info_table(PERIPHERAL_INFO_TABLE *peripheralInfoTable)
 {
   UINT32   DeviceBdf = 0;
   UINT32   StartBdf  = 0;
+  UINT32   bar_index = 0;
   PERIPHERAL_INFO_BLOCK *per_info = NULL;
   EFI_ACPI_SERIAL_PORT_CONSOLE_REDIRECTION_TABLE *spcr = NULL;
 
@@ -65,6 +66,7 @@ pal_peripheral_create_info_table(PERIPHERAL_INFO_TABLE *peripheralInfoTable)
   peripheralInfoTable->header.num_sata = 0;
   peripheralInfoTable->header.num_uart = 0;
   peripheralInfoTable->header.num_all = 0;
+  per_info->base0 = 0;
 
   /* check for any USB Controllers */
   do {
@@ -72,7 +74,12 @@ pal_peripheral_create_info_table(PERIPHERAL_INFO_TABLE *peripheralInfoTable)
        DeviceBdf = palPcieGetBdf(USB_CLASSCODE, StartBdf);
        if (DeviceBdf != 0) {
           per_info->type  = PERIPHERAL_TYPE_USB;
-          per_info->base0 = palPcieGetBase(DeviceBdf, BAR0);
+          for (bar_index = 0; bar_index < TYPE0_MAX_BARS; bar_index++)
+          {
+              per_info->base0 = palPcieGetBase(DeviceBdf, bar_index);
+              if (per_info->base0 != 0)
+                  break;
+          }
           per_info->bdf   = DeviceBdf;
           sbsa_print(AVS_PRINT_INFO, L" Found a USB controller %4x \n", per_info->base0);
           peripheralInfoTable->header.num_usb++;
@@ -90,7 +97,12 @@ pal_peripheral_create_info_table(PERIPHERAL_INFO_TABLE *peripheralInfoTable)
        DeviceBdf = palPcieGetBdf(SATA_CLASSCODE, StartBdf);
        if (DeviceBdf != 0) {
           per_info->type  = PERIPHERAL_TYPE_SATA;
-          per_info->base0 = palPcieGetBase(DeviceBdf, BAR0);
+          for (bar_index = 0; bar_index < TYPE0_MAX_BARS; bar_index++)
+          {
+              per_info->base0 = palPcieGetBase(DeviceBdf, bar_index);
+              if (per_info->base0 != 0)
+                  break;
+          }
           per_info->bdf   = DeviceBdf;
           sbsa_print(AVS_PRINT_INFO, L" Found a SATA controller %4x \n", per_info->base0);
           peripheralInfoTable->header.num_sata++;
