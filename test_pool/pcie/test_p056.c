@@ -24,7 +24,7 @@
 
 #define TEST_NUM   (AVS_PCIE_TEST_NUM_BASE + 56)
 #define TEST_DESC  "Check iEP-RootPort P2P Support    "
-#define TEST_RULE  ""
+#define TEST_RULE  "IE_ACS_2"
 
 static
 void

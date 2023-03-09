@@ -22,7 +22,7 @@
 
 #define TEST_NUM   (AVS_PCIE_TEST_NUM_BASE + 8)
 #define TEST_DESC  "Check MSI(X) vectors uniqueness   "
-#define TEST_RULE  ""
+#define TEST_RULE  "PCI_MSI_2"
 
 /**
     @brief   Returns MSI(X) status of the device
