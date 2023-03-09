@@ -22,7 +22,7 @@
 
 #define TEST_NUM   (AVS_PCIE_TEST_NUM_BASE + 2)
 #define TEST_DESC  "Check ECAM value in MCFG table    "
-#define TEST_RULE  ""
+#define TEST_RULE  "PCI_IN_01"
 
 static
 void
