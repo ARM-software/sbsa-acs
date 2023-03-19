@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2022, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2023, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -50,7 +50,8 @@ val_gic_reg_read(uint32_t reg_id)
       case ICH_MISR_EL2:
           return GicReadIchMisr();
       default:
-           val_report_status(val_pe_get_index_mpid(val_pe_get_mpid()), RESULT_FAIL(g_sbsa_level, 0, 0x78));
+           val_report_status(val_pe_get_index_mpid(val_pe_get_mpid()),
+                             RESULT_FAIL(g_sbsa_level, 0, 0x78), NULL);
   }
 
   return 0x0;
@@ -86,7 +87,8 @@ val_gic_reg_write(uint32_t reg_id, uint64_t write_data)
           GicWriteIccPmr(write_data);
           break;
       default:
-           val_report_status(val_pe_get_index_mpid(val_pe_get_mpid()), RESULT_FAIL(g_sbsa_level, 0, 0x78));
+           val_report_status(val_pe_get_index_mpid(val_pe_get_mpid()),
+                             RESULT_FAIL(g_sbsa_level, 0, 0x78), NULL);
   }
 
 }
@@ -212,7 +214,7 @@ uint32_t val_gic_its_configure()
     goto its_fail;
 
   /* Allocate memory to store ITS info */
-  g_gic_its_info = (GIC_ITS_INFO *) val_memory_alloc(1024);
+  g_gic_its_info = (GIC_ITS_INFO *) val_aligned_alloc(MEM_ALIGN_4K, 1024);
   if (!g_gic_its_info) {
       val_print(AVS_PRINT_ERR, "GIC : ITS table memory allocation failed\n", 0);
       return AVS_STATUS_ERR;
@@ -274,6 +276,7 @@ its_fail:
 
   val_print(AVS_PRINT_ERR, "GIC ITS Initialization Failed.\n", 0);
   val_print(AVS_PRINT_ERR, "LPI Interrupt related test may not pass.\n", 0);
+  val_memory_free_aligned((void *)g_gic_its_info);
 
   return AVS_STATUS_ERR;
 }

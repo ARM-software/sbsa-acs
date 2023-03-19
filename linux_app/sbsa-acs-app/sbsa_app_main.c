@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, 2020 Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2023 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -26,7 +26,8 @@
 
 int  g_sbsa_level = 4;
 int  g_print_level = 3;
-int  g_skip_test_num[3] = {10000, 10000, 10000};
+unsigned int g_num_skip = 3;
+unsigned int *g_skip_test_num;
 unsigned long int  g_exception_ret_addr;
 unsigned int g_print_mmio;
 unsigned int g_curr_module;
@@ -52,7 +53,7 @@ void print_help(){
          "-v      Verbosity of the Prints\n"
          "        1 shows all prints, 5 shows Errors\n"
          "-l      Level of compliance to be tested for\n"
-         "        As per SBSA spec, 0 to 6\n"
+         "        As per SBSA spec, 0 to 7\n"
          "--skip  Test(s) to be skipped\n"
          "        Refer to section 4 of SBSA_ACS_User_Guide\n"
          "        To skip a module, use Model_ID as mentioned in user guide\n"
@@ -76,6 +77,8 @@ main (int argc, char **argv)
       {NULL, 0, NULL, 0}
     };
 
+    g_skip_test_num = (unsigned int *) malloc(g_num_skip * sizeof(unsigned int));
+
     /* Process Command Line arguments */
     while ((c = getopt_long(argc, argv, "hv:l:e:", long_opt, NULL)) != -1)
     {
@@ -93,7 +96,7 @@ main (int argc, char **argv)
          break;
        case 'n':/*SKIP tests */
          pt = strtok(optarg, ",");
-         while((pt!=NULL) && (i<3)){
+         while ((pt != NULL) && (i < g_num_skip)) {
            int a = atoi(pt);
            g_skip_test_num[i++] = a;
            pt = strtok(NULL, ",");
@@ -117,7 +120,8 @@ main (int argc, char **argv)
 
 
     printf ("\n ************ SBSA Architecture Compliance Suite ********* \n");
-    printf ("                        Version %d.%d  \n", SBSA_APP_VERSION_MAJOR, SBSA_APP_VERSION_MINOR);
+    printf ("                        Version %d.%d.%d\n", SBSA_APP_VERSION_MAJOR,
+            SBSA_APP_VERSION_MINOR, SBSA_APP_VERSION_SUBMINOR);
 
 
     printf ("\n Starting tests for level %2d (Print level is %2d)\n\n", g_sbsa_level, g_print_level);
@@ -129,14 +133,20 @@ main (int argc, char **argv)
         return 0;
     }
 
+    if (g_sbsa_level > 6)
+    {
+        printf("\n      *** Starting SMMU tests ***  \n");
+        execute_tests_smmu(1, g_sbsa_level, g_print_level);
+    }
+    printf("\n      *** Starting PCIe tests ***  \n");
+    execute_tests_pcie(1, g_sbsa_level, g_print_level);
+
     if (run_exerciser) {
         printf("\n      *** PCIe Exerciser tests only runs on UEFI ***  \n");
         //execute_tests_exerciser(1, g_sbsa_level, g_print_level);
-    } else {
-        printf("\n      *** Starting PCIe tests ***  \n");
-        execute_tests_pcie(1, g_sbsa_level, g_print_level);
     }
-
+    printf("\n                    **  For complete SBSA test coverage, it is ");
+    printf("\n                          necessary to also run the BSA test  **\n\n");
     printf("\n                    *** SBSA tests complete *** \n\n");
 
     cleanup_test_environment();

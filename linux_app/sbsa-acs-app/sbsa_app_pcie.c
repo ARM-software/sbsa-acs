@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018, 2023 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -27,7 +27,7 @@
 #include "include/sbsa_drv_intf.h"
 
 
-extern int  g_skip_test_num[3];
+extern unsigned int *g_skip_test_num;
 
 /**
   This function calls the SBSA Kernel Module in a loop to execute all the PCIe tests

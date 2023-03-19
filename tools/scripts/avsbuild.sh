@@ -1,4 +1,4 @@
-if [ -v $GCC49_AARCH64_PREFIX ]
+if [ $(uname -m) != "aarch64" ] && [ -v $GCC49_AARCH64_PREFIX ]
 then
     echo "GCC49_AARCH64_PREFIX is not set"
     echo "set using export GCC49_AARCH64_PREFIX=<lib_path>/bin/aarch64-linux-gnu-"
@@ -38,7 +38,7 @@ function build_with_NIST()
     fi
     cd -
 
-    build -a AARCH64 -t GCC49 -p ShellPkg/ShellPkg.dsc -m ShellPkg/Application/sbsa-acs/uefi_app/SbsaAvsNist.inf -D ENABLE_NIST -D TARGET_UEFI
+    build -a AARCH64 -t GCC49 -p ShellPkg/ShellPkg.dsc -m ShellPkg/Application/sbsa-acs/uefi_app/SbsaAvsNist.inf -D ENABLE_NIST -D TARGET_EMULATION
     status=$?
     if [ $status -ne 0 ]; then
         echo "Build failed for NIST. Building sbsa without NIST"
@@ -55,12 +55,11 @@ if [ "$1" == "NIST" ]; then
 fi
 
 if [ "$1" == "ENABLE_OOB" ]; then
-    build -a AARCH64 -t GCC49 -p ShellPkg/ShellPkg.dsc -m ShellPkg/Application/sbsa-acs/baremetal_app/SbsaAvs.inf -D ENABLE_OOB -D TARGET_UEFI
-    echo "Build successful"
+    build -a AARCH64 -t GCC49 -p ShellPkg/ShellPkg.dsc -m ShellPkg/Application/sbsa-acs/baremetal_app/SbsaAvs.inf -D TARGET_EMULATION -D ENABLE_OOB
     return 0;
 fi
 
 if [ $NISTStatus -ne 0 ]; then
-    build -a AARCH64 -t GCC49 -p ShellPkg/ShellPkg.dsc -m ShellPkg/Application/sbsa-acs/uefi_app/SbsaAvs.inf -D TARGET_UEFI
+    build -a AARCH64 -t GCC49 -p ShellPkg/ShellPkg.dsc -m ShellPkg/Application/sbsa-acs/uefi_app/SbsaAvs.inf -D TARGET_EMULATION
 fi
 

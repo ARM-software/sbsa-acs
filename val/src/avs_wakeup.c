@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, 2021 Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018, 2021-2023 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,6 +22,8 @@
 
 #include "include/sbsa_avs_wakeup.h"
 
+extern int32_t gPsciConduit;
+
 /**
   @brief   This API executes all the wakeup tests sequentially
            1. Caller       -  Application layer.
@@ -33,20 +35,24 @@
 uint32_t
 val_wakeup_execute_tests(uint32_t level, uint32_t num_pe)
 {
-  uint32_t status, i;
+  uint32_t status = AVS_STATUS_SKIP, i;
 
-  for (i=0 ; i<MAX_TEST_SKIP_NUM ; i++){
+  for (i = 0; i < g_num_skip; i++) {
       if (g_skip_test_num[i] == AVS_WAKEUP_TEST_NUM_BASE) {
           val_print(AVS_PRINT_TEST, "      USER Override - Skipping all Wakeup tests \n", 0);
           return AVS_STATUS_SKIP;
       }
   }
 
-  g_curr_module = 1 << WAKEUP_MODULE;
-  status = u001_entry(num_pe);
-  //status |= u002_entry(num_pe);
+  if (g_single_module != SINGLE_MODULE_SENTINEL && g_single_module != AVS_WAKEUP_TEST_NUM_BASE &&
+       (g_single_test == SINGLE_MODULE_SENTINEL ||
+         (g_single_test - AVS_WAKEUP_TEST_NUM_BASE > 100 ||
+          g_single_test - AVS_WAKEUP_TEST_NUM_BASE < 0))) {
+    val_print(AVS_PRINT_TEST, " USER Override - Skipping all Wakeup tests \n", 0);
+    val_print(AVS_PRINT_TEST, " (Running only a single module)\n", 0);
+    return AVS_STATUS_SKIP;
+  }
 
-  val_print_test_end(status, "Wakeup");
   return status;
 
 }
@@ -68,7 +74,7 @@ val_suspend_pe(uint32_t power_state, uint64_t entry, uint32_t context_id)
   smc_args.Arg1 = power_state;
   smc_args.Arg2 = entry;
   smc_args.Arg3 = context_id;
-  pal_pe_call_smc(&smc_args);
+  pal_pe_call_smc(&smc_args, gPsciConduit);
 }
 
 

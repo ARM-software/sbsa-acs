@@ -20,6 +20,7 @@ CFLAGS    += -I$(SBSA_ROOT)/val/sys_arch_src/gic/v2
 ASFLAGS   += -I$(SBSA_ROOT)/val/src/AArch64/
 
 DEPS = $(SBSA_ROOT)/val/include/val_interface.h
+DEPS += $(SBSA_ROOT)/platform/pal_baremetal/FVP/RDN2/include/platform_override_fvp.h
 
 OUT_DIR = $(SBSA_ROOT)/build/
 OBJ_DIR := $(SBSA_ROOT)/build/obj

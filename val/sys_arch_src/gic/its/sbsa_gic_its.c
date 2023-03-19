@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2022, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2022-2023, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -517,7 +517,8 @@ uint32_t val_its_init(void)
   uint32_t    Status;
   uint32_t    index;
 
-  g_cwriter_ptr = (uint32_t *)pal_mem_alloc(sizeof(uint32_t) * (g_gic_its_info->GicNumIts));
+  g_cwriter_ptr = (uint32_t *)pal_aligned_alloc(MEM_ALIGN_4K,
+                                                sizeof(uint32_t) * (g_gic_its_info->GicNumIts));
 
   if (g_cwriter_ptr == NULL) {
     val_print(AVS_PRINT_ERR, "ITS : Could Not Allocate Memory CWriteR. Test may not pass.\n", 0);

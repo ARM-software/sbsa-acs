@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2021, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2023, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -42,44 +42,55 @@ extern ARM_SMC_ARGS g_smc_args;
 uint32_t
 val_pe_execute_tests(uint32_t level, uint32_t num_pe)
 {
-  uint32_t status, i;
+  uint32_t status = AVS_STATUS_PASS, i;
 
-  for (i=0 ; i<MAX_TEST_SKIP_NUM ; i++){
+  for (i = 0; i < g_num_skip; i++) {
       if (g_skip_test_num[i] == AVS_PE_TEST_NUM_BASE) {
           val_print(AVS_PRINT_TEST, "\n USER Override - Skipping all PE tests \n", 0);
           return AVS_STATUS_SKIP;
       }
   }
 
+  if (g_single_module != SINGLE_MODULE_SENTINEL && g_single_module != AVS_PE_TEST_NUM_BASE &&
+       (g_single_test == SINGLE_MODULE_SENTINEL ||
+       (g_single_test - AVS_PE_TEST_NUM_BASE > 100))) {
+    val_print(AVS_PRINT_TEST, " USER Override - Skipping all PE tests \n", 0);
+    val_print(AVS_PRINT_TEST, " (Running only a single module)\n", 0);
+    return AVS_STATUS_SKIP;
+  }
+
   g_curr_module = 1 << PE_MODULE;
-  status = c001_entry();
+
+  status |= c001_entry(num_pe);
   status |= c002_entry(num_pe);
   status |= c003_entry(num_pe);
   status |= c004_entry(num_pe);
-  status |= c005_entry(num_pe);
-  status |= c006_entry(num_pe);
-  status |= c007_entry(num_pe);
-  status |= c008_entry(num_pe);
-  status |= c010_entry(num_pe);
-  status |= c011_entry(num_pe);
-  status |= c012_entry(num_pe);
-  status |= c013_entry(num_pe);
-  status |= c014_entry(num_pe);
-  status |= c015_entry(num_pe);
-  status |= c017_entry(num_pe);
-
-  if (level > 5) {
-      status |= c018_entry(num_pe);
-  }
 
   if (level > 3) {
+      status |= c005_entry(num_pe);
+      status |= c006_entry(num_pe);
+      status |= c007_entry(num_pe);
+      status |= c008_entry(num_pe);
+  }
+
+  if (level > 4) {
+      status |= c009_entry(num_pe);
+      status |= c010_entry(num_pe);
+      status |= c011_entry(num_pe);
+      status |= c012_entry(num_pe);
+      status |= c013_entry(num_pe);
+      status |= c014_entry(num_pe);
+      status |= c015_entry(num_pe);
+      status |= c016_entry(num_pe);
+  }
+
+  if (level > 5) {
+      status |= c017_entry(num_pe);
+      status |= c018_entry(num_pe);
       status |= c019_entry(num_pe);
       status |= c020_entry(num_pe);
       status |= c021_entry(num_pe);
       status |= c022_entry(num_pe);
-  }
-
-  if (level > 4) {
       status |= c023_entry(num_pe);
       status |= c024_entry(num_pe);
       status |= c025_entry(num_pe);
@@ -87,7 +98,7 @@ val_pe_execute_tests(uint32_t level, uint32_t num_pe)
       status |= c027_entry(num_pe);
   }
 
-  if (level > 5) {
+  if (level > 6) {
       status |= c028_entry(num_pe);
       status |= c029_entry(num_pe);
       status |= c030_entry(num_pe);
@@ -97,6 +108,7 @@ val_pe_execute_tests(uint32_t level, uint32_t num_pe)
       status |= c034_entry(num_pe);
       status |= c035_entry(num_pe);
       status |= c036_entry(num_pe);
+      status |= c037_entry(num_pe);
   }
 
   val_print_test_end(status, "PE");
@@ -235,8 +247,11 @@ val_pe_reg_read(uint32_t reg_id)
             return AA64ReadTcr1();
           if (AA64ReadCurrentEL() == AARCH64_EL2)
             return AA64ReadTcr2();
+      case ID_AA64ZFR0_EL1:
+          return AA64ReadZfr0();
       default:
-           val_report_status(val_pe_get_index_mpid(val_pe_get_mpid()), RESULT_FAIL(g_sbsa_level, 0, 0x78));
+           val_report_status(val_pe_get_index_mpid(val_pe_get_mpid()),
+                             RESULT_FAIL(g_sbsa_level, 0, 0x78), NULL);
   }
 
   return 0x0;
@@ -295,7 +310,8 @@ val_pe_reg_write(uint32_t reg_id, uint64_t write_data)
           AA64WritePmblimitr(write_data);
           break;
       default:
-           val_report_status(val_pe_get_index_mpid(val_pe_get_mpid()), RESULT_FAIL(g_sbsa_level, 0, 0x78));
+           val_report_status(val_pe_get_index_mpid(val_pe_get_mpid()),
+                             RESULT_FAIL(g_sbsa_level, 0, 0x78), NULL);
   }
 
 }
@@ -348,7 +364,7 @@ val_pe_get_pmu_gsiv(uint32_t index)
   PE_INFO_ENTRY *entry;
 
   if (index > g_pe_info_table->header.num_of_pe) {
-        val_report_status(index, RESULT_FAIL(g_sbsa_level, 0, 0xFF));
+        val_report_status(index, RESULT_FAIL(g_sbsa_level, 0, 0xFF), NULL);
         return 0xFFFFFF;
   }
 
@@ -447,4 +463,66 @@ uint32_t val_pe_reg_read_ttbr(uint32_t ttbr1, uint64_t *ttbr_ptr)
 
     *ttbr_ptr = ReadTtbr[ttbr1][(el >> 2) - 1]();
     return 0;
+}
+
+/**
+  @brief   This API returns the GIC Maintenance Interrupt ID for a given PE index
+           1. Caller       -  Test Suite
+           2. Prerequisite -  val_create_peinfo_table
+  @param   index - the index of PE whose GIC Maintenace interrupt ID is returned.
+  @return  GIC Maintenance interrupt ID
+**/
+uint32_t
+val_pe_get_gmain_gsiv(uint32_t index)
+{
+
+  PE_INFO_ENTRY *entry;
+
+  if (index > g_pe_info_table->header.num_of_pe) {
+        val_report_status(index, RESULT_FAIL(g_sbsa_level, 0, 0xFF), NULL);
+        return 0xFFFFFF;
+  }
+
+  entry = g_pe_info_table->pe_info;
+
+  return entry[index].gmain_gsiv;
+
+}
+
+/**
+  @brief   This API checks whether the requested PE feature is implemented or not.
+  @param   pe_feature - PE feature to be checked.
+  @return  AVS_STATUS_PASS if implemented., else AVS_STATUS_FAIL.
+**/
+uint32_t val_pe_feat_check(PE_FEAT_NAME pe_feature)
+{
+    uint64_t data;
+
+    switch (pe_feature) {
+    case PE_FEAT_MPAM:
+        /* ID_AA64PFR0_EL1.MPAM bits[43:40] > 0 or ID_AA64PFR1_EL1.MPAM_frac bits[19:16] > 0
+        indicates implementation of MPAM extension */
+        if ((VAL_EXTRACT_BITS(val_pe_reg_read(ID_AA64PFR0_EL1), 40, 43) > 0) ||
+        (VAL_EXTRACT_BITS(val_pe_reg_read(ID_AA64PFR1_EL1), 16, 19) > 0))
+            return AVS_STATUS_PASS;
+        else
+            return AVS_STATUS_FAIL;
+    case PE_FEAT_PMU:
+        /* ID_AA64DFR0_EL1.PMUVer, bits [11:8] == 0000 or 1111
+           indicate PMU extension not implemented */
+        data = VAL_EXTRACT_BITS(val_pe_reg_read(ID_AA64DFR0_EL1), 8, 11);
+        if (!(data == 0 || data == 0xF))
+            return AVS_STATUS_PASS;
+        else
+            return AVS_STATUS_FAIL;
+    case PE_FEAT_RAS:
+        /*  ID_AA64PFR0_EL1 RAS bits [31:28] != 0 indicate RAS extension implemented */
+        if ((VAL_EXTRACT_BITS(val_pe_reg_read(ID_AA64PFR0_EL1), 28, 31)) != 0)
+            return AVS_STATUS_PASS;
+        else
+            return AVS_STATUS_FAIL;
+    default:
+        val_print(AVS_PRINT_ERR, "\nPE_FEAT_CHECK: Invalid PE feature", 0);
+        return AVS_STATUS_FAIL;
+    }
 }

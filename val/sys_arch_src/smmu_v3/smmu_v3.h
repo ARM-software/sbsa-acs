@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2020, 2022 Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2020, 2022-2023 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -33,13 +33,29 @@ static uint64_t inline get_max(uint64_t x, uint64_t y)
 #define CMDQ_OP_CFGI_ALL 0x4
 #define CMDQ_OP_TLBI_EL2_ALL 0x20
 #define CMDQ_OP_TLBI_NSNH_ALL 0x30
+#define CMDQ_OP_CMD_RESUME 0x44
 #define CMDQ_OP_CMD_SYNC 0x46
 
 typedef struct {
     uint32_t prod;
     uint32_t cons;
     uint32_t log2nent;
+    uint32_t irq;
 } smmu_queue_t;
+
+typedef struct {
+    smmu_queue_t queue;
+    void    *base_ptr;
+    uint8_t *base;
+    uint8_t resp;
+    uint16_t stag;
+    uint64_t base_phys;
+    uint64_t queue_base;
+    uint64_t entry_size;
+    uint32_t *prod_reg;
+    uint32_t *cons_reg;
+    uint32_t sid;
+} smmu_cmd_queue_t;
 
 typedef struct {
     smmu_queue_t queue;
@@ -50,7 +66,7 @@ typedef struct {
     uint64_t entry_size;
     uint32_t *prod_reg;
     uint32_t *cons_reg;
-} smmu_cmd_queue_t;
+} smmu_evnt_queue_t;
 
 typedef struct {
     uint8_t  span;
@@ -105,11 +121,13 @@ typedef struct {
 
 typedef struct {
     uint64_t base;
+    uint64_t page1_base;
     uint64_t ias;
     uint64_t oas;
     uint32_t ssid_bits;
     uint32_t sid_bits;
     smmu_cmd_queue_t cmdq;
+    smmu_evnt_queue_t evntq;
     smmu_strtab_config_t strtab_cfg;
     union {
         struct {
@@ -118,9 +136,11 @@ typedef struct {
            uint32_t hyp:1;
            uint32_t s1p:1;
            uint32_t s2p:1;
+           uint32_t msi:1;
         };
         uint32_t bitmap;
     } supported;
+    uint64_t msi_address;
 } smmu_dev_t;
 
 typedef enum {
@@ -139,5 +159,10 @@ typedef struct {
     uint32_t ssid;
     uint32_t ssid_bits;
 } smmu_master_t;
+
+struct smmu_master_node {
+    smmu_master_t *master;
+    struct smmu_master_node *next;
+};
 
 #endif /*__SMMU_V3_H__ */

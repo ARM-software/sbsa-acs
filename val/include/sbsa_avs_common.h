@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2021, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2023, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,19 +22,20 @@
 #ifndef __SBSA_AVS_COMMON_H__
 #define __SBSA_AVS_COMMON_H__
 
-#define TEST_NAME_HELPER(x,y) c##x##y
-#define TEST_NAME(x,y) TEST_NAME_HELPER(x,y)
-
 #define AVS_PE_TEST_NUM_BASE         0
-#define AVS_GIC_TEST_NUM_BASE        100
-#define AVS_TIMER_TEST_NUM_BASE      200
-#define AVS_WD_TEST_NUM_BASE         300
-#define AVS_PCIE_TEST_NUM_BASE       400
+#define AVS_MEM_MAP_TEST_NUM_BASE    100
+#define AVS_GIC_TEST_NUM_BASE        200
+#define AVS_SMMU_TEST_NUM_BASE       300
+#define AVS_TIMER_TEST_NUM_BASE      400
 #define AVS_WAKEUP_TEST_NUM_BASE     500
 #define AVS_PER_TEST_NUM_BASE        600
-#define AVS_SMMU_TEST_NUM_BASE       700
-#define AVS_EXERCISER_TEST_NUM_BASE  800
-#define AVS_NIST_TEST_NUM_BASE       900
+#define AVS_WD_TEST_NUM_BASE         700
+#define AVS_PCIE_TEST_NUM_BASE       800
+#define AVS_EXERCISER_TEST_NUM_BASE  900
+#define AVS_MPAM_TEST_NUM_BASE       1000
+#define AVS_PMU_TEST_NUM_BASE        1100
+#define AVS_RAS_TEST_NUM_BASE        1200
+#define AVS_NIST_TEST_NUM_BASE       1300
 
 #define STATE_BIT   28
 #define STATE_MASK 0xF
@@ -65,7 +66,9 @@
 #define SBSA_AVS_START(level, test_num) (((TEST_START_VAL) << STATE_BIT) | ((level) << LEVEL_BIT) | ((test_num) << TEST_NUM_BIT))
 #define SBSA_AVS_END(level, test_num) (((TEST_END_VAL) << STATE_BIT) | ((level) << LEVEL_BIT) | ((test_num) << TEST_NUM_BIT))
 
+/* status definations*/
 
+#define STATUS_SYS_REG_ACCESS_FAIL 0x78
 
 /* TEST Result defines */
 
@@ -111,10 +114,11 @@ void
 val_mmio_write64(addr_t addr, uint64_t data);
 
 uint32_t
-val_initialize_test(uint32_t test_num, char8_t * desc, uint32_t num_pe, uint32_t level);
+val_initialize_test(uint32_t test_num, char8_t *desc, uint32_t num_pe, uint32_t level,
+                    char8_t *ruleid);
 
 uint32_t
-val_check_for_error(uint32_t test_num, uint32_t num_pe);
+val_check_for_error(uint32_t test_num, uint32_t num_pe, char8_t *ruleid);
 
 void
 val_run_test_payload(uint32_t test_num, uint32_t num_pe, void (*payload)(void), uint64_t test_input);
@@ -133,7 +137,12 @@ typedef enum {
     WAKEUP_MODULE,
     PERIPHERAL_MODULE,
     SMMU_MODULE,
-    EXERCISER_MODULE
+    EXERCISER_MODULE,
+    NIST_MODULE,
+    MPAM_MODULE,
+    PMU_MODULE,
+    RAS_MODULE,
+    MEM_MAP_MODULE
 } MODULE_ID_e;
 
 #endif

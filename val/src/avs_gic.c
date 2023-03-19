@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, 2021 Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018, 2021-2023 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -37,18 +37,29 @@ val_gic_execute_tests(uint32_t level, uint32_t num_pe)
 
   uint32_t status, i;
 
-  for (i=0 ; i<MAX_TEST_SKIP_NUM ; i++){
+  for (i = 0; i < g_num_skip; i++) {
       if (g_skip_test_num[i] == AVS_GIC_TEST_NUM_BASE) {
           val_print(AVS_PRINT_TEST, "      USER Override - Skipping all GIC tests \n", 0);
           return AVS_STATUS_SKIP;
       }
   }
 
+  if (g_single_module != SINGLE_MODULE_SENTINEL && g_single_module != AVS_GIC_TEST_NUM_BASE &&
+       (g_single_test == SINGLE_MODULE_SENTINEL ||
+         (g_single_test - AVS_GIC_TEST_NUM_BASE > 100 ||
+          g_single_test - AVS_GIC_TEST_NUM_BASE < 0))) {
+      val_print(AVS_PRINT_TEST, " USER Override - Skipping all GIC tests \n", 0);
+      val_print(AVS_PRINT_TEST, " (Running only a single module)\n", 0);
+      return AVS_STATUS_SKIP;
+  }
+
   g_curr_module = 1 << GIC_MODULE;
+
   status = g001_entry(num_pe);
-  status |= g002_entry(num_pe);
-  status |= g003_entry(num_pe);
-  status |= g004_entry(num_pe);
+
+  if (level > 4) {
+      status = g002_entry(num_pe);
+  }
 
   val_print_test_end(status, "GIC");
 
@@ -238,7 +249,7 @@ val_get_cpuif_base(void)
   @return  32-bit data
 **/
 uint32_t
-val_gic_get_info(uint32_t type)
+val_gic_get_info(GIC_INFO_e type)
 {
   uint32_t rdbase_len;
 

@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2021, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2023, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -29,7 +29,7 @@
   @return  none
  **/
 void
-val_report_status(uint32_t index, uint32_t status)
+val_report_status(uint32_t index, uint32_t status, char8_t *ruleid)
 {
 
   if (IS_TEST_FAIL(status)) {
@@ -37,14 +37,32 @@ val_report_status(uint32_t index, uint32_t status)
       val_print(AVS_PRINT_ERR, "for Level= %2d ", (status >> LEVEL_BIT) & LEVEL_MASK);
   }
 
-  if (IS_TEST_PASS(status))
-    val_print(AVS_PRINT_TEST, ": Result:  PASS \n", status);
+  if (IS_TEST_PASS(status)) {
+      val_print(AVS_PRINT_DEBUG, "\n       ", 0);
+      val_print(AVS_PRINT_DEBUG, ruleid, 0);
+      val_print(AVS_PRINT_DEBUG, "\n                                  ", 0);
+      val_print(AVS_PRINT_TEST, ": Result:  PASS \n", status);
+  }
   else
-    if (IS_TEST_FAIL(status))
-      val_print(AVS_PRINT_ERR, ": Result:  --FAIL-- %x \n", status & STATUS_MASK);
+    if (IS_TEST_FAIL(status)) {
+        if (ruleid) {
+            val_print(AVS_PRINT_ERR, "\n       ", 0);
+            val_print(AVS_PRINT_ERR, ruleid, 0);
+            val_print(AVS_PRINT_ERR, "\n       Checkpoint -- %2d             ",
+                      status & STATUS_MASK);
+        }
+        val_print(AVS_PRINT_ERR, "     : Result:  FAIL \n", 0);
+    }
     else
-      if (IS_TEST_SKIP(status))
-        val_print(AVS_PRINT_WARN, ": Result:  -SKIPPED- %x \n", status & STATUS_MASK);
+      if (IS_TEST_SKIP(status)) {
+          if (ruleid) {
+              val_print(AVS_PRINT_WARN, "\n       ", 0);
+              val_print(AVS_PRINT_WARN, ruleid, 0);
+              val_print(AVS_PRINT_WARN, "\n       Checkpoint -- %2d             ",
+                        status & STATUS_MASK);
+          }
+          val_print(AVS_PRINT_WARN, "     : Result:  SKIPPED \n", 0);
+      }
       else
         if (IS_TEST_START(status))
           val_print(AVS_PRINT_INFO, "\n       START  ", status);

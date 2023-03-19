@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2020, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2023 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -49,7 +49,7 @@ uint8_t
 val_is_el2_enabled(void);
 
 void
-val_report_status(uint32_t id, uint32_t status);
+val_report_status(uint32_t id, uint32_t status, char8_t *ruleid);
 
 void
 val_set_status(uint32_t index, uint32_t status);

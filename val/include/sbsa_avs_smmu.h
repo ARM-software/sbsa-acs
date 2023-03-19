@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2020, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2023, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -31,6 +31,11 @@
 #define SMMUv3_IDR5   0x14
 #define SMMUv3_IIDR   0x18
 #define SMMUv3_AIDR   0x1C
+
+#define SMMUv3_MPAMIDR      0x130
+
+/* PMCG CNTBaseN register offset*/
+#define SMMU_PMCG_CFGR 0xE00
 
 uint64_t
 val_smmu_ssid_bits(uint32_t smmu_index);
@@ -69,6 +74,9 @@ val_smmu_map(smmu_master_attributes_t master,
 
 void
 val_smmu_unmap(smmu_master_attributes_t master);
+
+void
+val_smmu_dump_eventq(void);
 
 uint32_t
 i001_entry(uint32_t num_pe);

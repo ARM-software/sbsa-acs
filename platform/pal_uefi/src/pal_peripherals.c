@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, 2020-2021 Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018, 2020-2023 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,9 +22,6 @@
 #include <Library/BaseLib.h>
 #include <Library/BaseMemoryLib.h>
 #include <Library/DxeServicesTableLib.h>
-
-#include <Protocol/AcpiTable.h>
-#include "Include/IndustryStandard/Acpi61.h"
 #include "Include/IndustryStandard/SerialPortConsoleRedirectionTable.h"
 
 #include "include/pal_uefi.h"
@@ -53,6 +50,7 @@ pal_peripheral_create_info_table(PERIPHERAL_INFO_TABLE *peripheralInfoTable)
 {
   UINT32   DeviceBdf = 0;
   UINT32   StartBdf  = 0;
+  UINT32   bar_index = 0;
   PERIPHERAL_INFO_BLOCK *per_info = NULL;
   EFI_ACPI_SERIAL_PORT_CONSOLE_REDIRECTION_TABLE *spcr = NULL;
 
@@ -67,6 +65,8 @@ pal_peripheral_create_info_table(PERIPHERAL_INFO_TABLE *peripheralInfoTable)
   peripheralInfoTable->header.num_usb = 0;
   peripheralInfoTable->header.num_sata = 0;
   peripheralInfoTable->header.num_uart = 0;
+  peripheralInfoTable->header.num_all = 0;
+  per_info->base0 = 0;
 
   /* check for any USB Controllers */
   do {
@@ -74,10 +74,16 @@ pal_peripheral_create_info_table(PERIPHERAL_INFO_TABLE *peripheralInfoTable)
        DeviceBdf = palPcieGetBdf(USB_CLASSCODE, StartBdf);
        if (DeviceBdf != 0) {
           per_info->type  = PERIPHERAL_TYPE_USB;
-          per_info->base0 = palPcieGetBase(DeviceBdf, BAR0);
+          for (bar_index = 0; bar_index < TYPE0_MAX_BARS; bar_index++)
+          {
+              per_info->base0 = palPcieGetBase(DeviceBdf, bar_index);
+              if (per_info->base0 != 0)
+                  break;
+          }
           per_info->bdf   = DeviceBdf;
           sbsa_print(AVS_PRINT_INFO, L" Found a USB controller %4x \n", per_info->base0);
           peripheralInfoTable->header.num_usb++;
+          peripheralInfoTable->header.num_all++;
           per_info++;
        }
        StartBdf = incrementBusDev(DeviceBdf);
@@ -91,10 +97,16 @@ pal_peripheral_create_info_table(PERIPHERAL_INFO_TABLE *peripheralInfoTable)
        DeviceBdf = palPcieGetBdf(SATA_CLASSCODE, StartBdf);
        if (DeviceBdf != 0) {
           per_info->type  = PERIPHERAL_TYPE_SATA;
-          per_info->base0 = palPcieGetBase(DeviceBdf, BAR0);
+          for (bar_index = 0; bar_index < TYPE0_MAX_BARS; bar_index++)
+          {
+              per_info->base0 = palPcieGetBase(DeviceBdf, bar_index);
+              if (per_info->base0 != 0)
+                  break;
+          }
           per_info->bdf   = DeviceBdf;
           sbsa_print(AVS_PRINT_INFO, L" Found a SATA controller %4x \n", per_info->base0);
           peripheralInfoTable->header.num_sata++;
+          peripheralInfoTable->header.num_all++;
           per_info++;
        }
        //Increment and check if we have more controllers
@@ -107,6 +119,7 @@ pal_peripheral_create_info_table(PERIPHERAL_INFO_TABLE *peripheralInfoTable)
 
   if (spcr) {
     peripheralInfoTable->header.num_uart++;
+    peripheralInfoTable->header.num_all++;
     per_info->base0 = spcr->BaseAddress.Address;
     per_info->irq   = spcr->GlobalSystemInterrupt;
     per_info->type  = PERIPHERAL_TYPE_UART;
@@ -115,6 +128,7 @@ pal_peripheral_create_info_table(PERIPHERAL_INFO_TABLE *peripheralInfoTable)
 
   if (PLATFORM_GENERIC_UART_BASE) {
     peripheralInfoTable->header.num_uart++;
+    peripheralInfoTable->header.num_all++;
     per_info->base0 = PLATFORM_GENERIC_UART_BASE;
     per_info->irq   = PLATFORM_GENERIC_UART_INTID;
     per_info->type  = PERIPHERAL_TYPE_UART;
@@ -191,6 +205,25 @@ IsDeviceMemory(EFI_MEMORY_TYPE type)
   switch(type) {
     case  EfiMemoryMappedIO:
     case  EfiMemoryMappedIOPortSpace:
+      return TRUE;
+    default:
+      return FALSE;
+  }
+}
+
+/**
+  @brief  Check if the memory type is persistent
+
+  @param  EFI_MEMORY_TYPE  - Type of UEFI memory.
+
+  @return  true   if memory is persistent
+           false  otherwise
+**/
+BOOLEAN
+IsPersistentMemory(EFI_MEMORY_TYPE type)
+{
+
+  switch(type) {
     case  EfiPersistentMemory:
       return TRUE;
     default:
@@ -261,7 +294,11 @@ pal_memory_create_info_table(MEMORY_INFO_TABLE *memoryInfoTable)
           if (IsDeviceMemory ((EFI_MEMORY_TYPE)MemoryMapPtr->Type)) {
             memoryInfoTable->info[i].type      = MEMORY_TYPE_DEVICE;
           } else {
-            memoryInfoTable->info[i].type      = MEMORY_TYPE_NOT_POPULATED;
+            if (IsPersistentMemory ((EFI_MEMORY_TYPE)MemoryMapPtr->Type)) {
+              memoryInfoTable->info[i].type      = MEMORY_TYPE_PERSISTENT;
+            } else {
+                memoryInfoTable->info[i].type      = MEMORY_TYPE_NOT_POPULATED;
+            }
           }
         }
       }

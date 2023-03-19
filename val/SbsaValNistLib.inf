@@ -1,5 +1,5 @@
 ## @file
-#  Copyright (c) 2020, Arm Limited or its affiliates. All rights reserved.
+#  Copyright (c) 2020-2023, Arm Limited or its affiliates. All rights reserved.
 #  SPDX-License-Identifier : Apache-2.0
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
@@ -28,6 +28,8 @@
   src/AArch64/PeTestSupport.S
   src/AArch64/ArchTimerSupport.S
   src/AArch64/GicSupport.S
+  src/AArch64/MpamSupport.s
+  src/AArch64/RasSupport.S
   src/avs_status.c
   src/avs_pe.c
   src/avs_pe_infra.c
@@ -43,11 +45,24 @@
   src/avs_dma.c
   src/avs_wakeup.c
   src/avs_peripherals.c
-  src/avs_secure.c
   src/avs_memory.c
   src/avs_exerciser.c
-  sys_arch_src/smmu_v3/smmu_v3.c
+  src/avs_nist.c
   src/avs_pgt.c
+  src/avs_ras.c
+  sys_arch_src/smmu_v3/smmu_v3.c
+  sys_arch_src/gic/gic.c
+  sys_arch_src/gic/sbsa_exception.c
+  sys_arch_src/gic/AArch64/sbsa_exception_asm.S
+  sys_arch_src/gic/v3/gic_v3.c
+  sys_arch_src/gic/v3/gic_v3_extended.c
+  sys_arch_src/gic/v3/AArch64/v3_asm.S
+  sys_arch_src/gic/v2/gic_v2.c
+  sys_arch_src/gic/its/sbsa_gic_its.c
+  sys_arch_src/gic/its/sbsa_gic_redistributor.c
+  src/avs_pmu.c
+  src/avs_mpam.c
+  src/avs_mmu.c
 
  [Packages]
   StdLib/StdLib.dec
@@ -63,4 +78,4 @@
   MdePkg/MdePkg.dec
 
 [BuildOptions]
-  GCC:*_*_*_ASM_FLAGS  =  -march=armv8.2-a
+  GCC:*_*_*_ASM_FLAGS  =  -march=armv8.2-a+sve+profile
