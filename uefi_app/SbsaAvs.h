@@ -22,7 +22,7 @@
 
   #define SBSA_ACS_MAJOR_VER      7
   #define SBSA_ACS_MINOR_VER      1
-  #define SBSA_ACS_SUBMINOR_VER  0
+  #define SBSA_ACS_SUBMINOR_VER   1
 
   #define G_SBSA_LEVEL  4
   #define SBSA_MIN_LEVEL_SUPPORTED 3
@@ -37,7 +37,7 @@
   #define MEM_INFO_TBL_SZ        32768/*Supports maximum 800 memory regions*/
   #define IOVIRT_INFO_TBL_SZ     32768/*Supports maximum 240 nodes of a typical iort table*/
   #define PERIPHERAL_INFO_TBL_SZ 1024 /*Supports maximum 20 PCIe EPs (USB and SATA controllers only) */
-  #define PCIE_INFO_TBL_SZ       512  /*Supports maximum 20 RC's*/
+  #define PCIE_INFO_TBL_SZ       1024  /*Supports maximum 20 RC's*/
 
   #define PMU_INFO_TBL_SZ        20488   /*Supports maximum 512 PMUs*/
   #define RAS_INFO_TBL_SZ        32768   /*Supports maximum 256 RAS Nodes*/

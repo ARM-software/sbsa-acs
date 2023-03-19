@@ -287,7 +287,7 @@ uint32_t val_smmu_execute_tests(uint32_t level, uint32_t num_pe);
 uint64_t val_smmu_get_info(SMMU_INFO_e, uint32_t index);
 uint64_t val_iovirt_get_smmu_info(SMMU_INFO_e type, uint32_t index);
 
-#ifdef TARGET_LINUX
+#if defined(TARGET_LINUX) || defined(TARGET_EMULATION)
 uint32_t val_get_device_path(const char *hid, char hid_path[][MAX_NAMED_COMP_LENGTH]);
 uint32_t val_smmu_is_etr_behind_catu(char *etr_path);
 #endif
@@ -374,6 +374,11 @@ typedef enum {
 
 #define MEM_ATTR_UNCACHED  0x2000
 #define MEM_ATTR_CACHED    0x1000
+#define MEM_ALIGN_4K       0x1000
+#define MEM_ALIGN_8K       0x2000
+#define MEM_ALIGN_16K      0x4000
+#define MEM_ALIGN_32K      0x8000
+#define MEM_ALIGN_64K      0x10000
 
 /* MMU entries APIs*/
 uint32_t val_mmu_update_entry(uint64_t address, uint32_t size);

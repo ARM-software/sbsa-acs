@@ -214,7 +214,7 @@ uint32_t val_gic_its_configure()
     goto its_fail;
 
   /* Allocate memory to store ITS info */
-  g_gic_its_info = (GIC_ITS_INFO *) val_memory_alloc(1024);
+  g_gic_its_info = (GIC_ITS_INFO *) val_aligned_alloc(MEM_ALIGN_4K, 1024);
   if (!g_gic_its_info) {
       val_print(AVS_PRINT_ERR, "GIC : ITS table memory allocation failed\n", 0);
       return AVS_STATUS_ERR;
@@ -276,6 +276,7 @@ its_fail:
 
   val_print(AVS_PRINT_ERR, "GIC ITS Initialization Failed.\n", 0);
   val_print(AVS_PRINT_ERR, "LPI Interrupt related test may not pass.\n", 0);
+  val_memory_free_aligned((void *)g_gic_its_info);
 
   return AVS_STATUS_ERR;
 }

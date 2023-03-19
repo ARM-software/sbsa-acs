@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2020-2022, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2023,Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,19 +17,8 @@
 
 #include "include/pal_common_support.h"
 #include "include/pal_pcie_enum.h"
-#include "include/platform_override_struct.h"
 
-uint64_t
-pal_pcie_get_mcfg_ecam();
-
-/**
-  @brief This API will return the ECSR base address of particular BAR Index
-**/
-uint64_t
-pal_exerciser_get_ecsr_base(uint32_t Bdf, uint32_t BarIndex)
-{
-    return 0;
-}
+extern PCIE_INFO_TABLE *g_pcie_info_table;
 
 uint64_t
 pal_exerciser_get_pcie_config_offset(uint32_t Bdf)
@@ -46,103 +35,79 @@ pal_exerciser_get_pcie_config_offset(uint32_t Bdf)
   return cfg_addr;
 }
 
-/**
-  @brief  This API returns if the device is a exerciser
-  @param  bdf - Bus/Device/Function
-  @return 1 - true 0 - false
-**/
-uint32_t
-pal_is_bdf_exerciser(uint32_t bdf)
+
+uint64_t
+pal_exerciser_get_ecam(uint32_t bdf)
 {
+
+  uint32_t i = 0;
+  uint32_t bus = PCIE_EXTRACT_BDF_BUS(bdf);
+
+  while (i < g_pcie_info_table->num_entries)
+  {
+    if ((bus >= g_pcie_info_table->block[i].start_bus_num) &&
+         (bus <= g_pcie_info_table->block[i].end_bus_num))
+    {
+      return g_pcie_info_table->block[i].ecam_base;
+    }
+    i++;
+  }
+  print(AVS_PRINT_ERR, "\n No ECAM base ",0);
   return 0;
 }
 
 /**
-  @brief   This API writes the configuration parameters of the PCIe stimulus generation hardware
-  @param   Type         - Parameter type that needs to be set in the stimulus hadrware
-  @param   Value1       - Parameter 1 that needs to be set
-  @param   Value2       - Parameter 2 that needs to be set
-  @param   Instance     - Stimulus hardware instance number
-  @return  Status       - SUCCESS if the input paramter type is successfully written
+  @brief This API will return the ECSR base address of particular BAR Index
 **/
-uint32_t pal_exerciser_set_param(EXERCISER_PARAM_TYPE Type, uint64_t Value1, uint64_t Value2, uint32_t Bdf)
+uint64_t
+pal_exerciser_get_ecsr_base(uint32_t Bdf, uint32_t BarIndex)
 {
-  return 1;
+    return pal_pcie_get_base(Bdf, BarIndex);
 }
-
-/**
-  @brief This function triggers the DMA operation
-**/
-uint32_t pal_exerciser_start_dma_direction (uint64_t Base, EXERCISER_DMA_ATTR Direction)
-{
-  return 0;
-}
-
 
 /**
   @brief This function finds the PCI capability and return 0 if it finds.
 **/
 uint32_t pal_exerciser_find_pcie_capability (uint32_t ID, uint32_t Bdf, uint32_t Value, uint32_t *Offset)
 {
-  return 0;
-}
 
-/**
-  @brief   This API reads the configuration parameters of the PCIe stimulus generation hardware
-  @param   Type         - Parameter type that needs to be read from the stimulus hadrware
-  @param   Value1       - Parameter 1 that is read from hardware
-  @param   Value2       - Parameter 2 that is read from hardware
-  @param   Instance     - Stimulus hardware instance number
-  @return  Status       - SUCCESS if the requested paramter type is successfully read
-**/
-uint32_t pal_exerciser_get_param(EXERCISER_PARAM_TYPE Type, uint64_t *Value1, uint64_t *Value2, uint32_t Bdf)
-{
-  return 0;
-}
+  uint64_t NxtPtr;
+  uint32_t Data;
+  uint32_t TempId;
+  uint64_t Ecam;
+  uint32_t IdMask;
+  uint32_t PtrMask;
+  uint32_t PtrOffset;
 
-/**
-  @brief   This API obtains the state of the PCIe stimulus generation hardware
-  @param   State        - State that is read from the stimulus hadrware
-  @param   Bdf          - Stimulus hardware bdf number
-  @return  Status       - SUCCESS if the state is successfully read from hardware
-**/
-uint32_t pal_exerciser_get_state(EXERCISER_STATE *State, uint32_t Bdf)
-{
-    return 0;
-}
+  Ecam = pal_exerciser_get_ecam(Bdf);
+  NxtPtr = PCIE_CAP_OFFSET;
 
-/**
-  @brief   This API performs the input operation using the PCIe stimulus generation hardware
-  @param   Ops          - Operation thta needs to be performed with the stimulus hadrware
-  @param   Value        - Additional information to perform the operation
-  @param   Instance     - Stimulus hardware instance number
-  @return  Status       - SUCCESS if the operation is successfully performed using the hardware
-**/
-uint32_t pal_exerciser_ops(EXERCISER_OPS Ops, uint64_t Param, uint32_t Bdf)
-{
+  if (Value == 1) {
+      IdMask = PCIE_CAP_ID_MASK;
+      PtrMask = PCIE_NXT_CAP_PTR_MASK;
+      PtrOffset = PCIE_CAP_PTR_OFFSET;
+      NxtPtr = PCIE_CAP_OFFSET;
+  }
+  else {
+      IdMask = PCI_CAP_ID_MASK;
+      PtrMask = PCI_NXT_CAP_PTR_MASK;
+      PtrOffset = PCI_CAP_PTR_OFFSET;
+      NxtPtr = ((pal_mmio_read(Ecam + CAP_PTR_OFFSET + pal_exerciser_get_pcie_config_offset(Bdf)))
+                               & CAP_PTR_MASK);
+  }
+
+  while (NxtPtr != 0) {
+    Data = pal_mmio_read(Ecam + pal_exerciser_get_pcie_config_offset(Bdf) + NxtPtr);
+    TempId = Data & IdMask;
+    if (TempId == ID){
+        *Offset = NxtPtr;
+        return 0;
+    }
+
+    NxtPtr = (Data >> PtrOffset) & PtrMask;
+  }
+
+  print(AVS_PRINT_ERR, "\n No capabilities found",0);
   return 1;
 }
 
-/**
-  @brief   This API sets the state of the PCIe stimulus generation hardware
-  @param   State        - State that needs to be set for the stimulus hadrware
-  @param   Value        - Additional information associated with the state
-  @param   Instance     - Stimulus hardware instance number
-  @return  Status       - SUCCESS if the input state is successfully written to hardware
-**/
-uint32_t pal_exerciser_set_state (EXERCISER_STATE State, uint64_t *Value, uint32_t Instance)
-{
-    return 0;
-}
-
-/**
-  @brief   This API returns test specific data from the PCIe stimulus generation hardware
-  @param   type         - data type for which the data needs to be returned
-  @param   data         - test specific data to be be filled by pal layer
-  @param   instance     - Stimulus hardware instance number
-  @return  status       - SUCCESS if the requested data is successfully filled
-**/
-uint32_t pal_exerciser_get_data(EXERCISER_DATA_TYPE Type, exerciser_data_t *Data, uint32_t Bdf, uint64_t Ecam)
-{
-  return NOT_IMPLEMENTED;
-}

@@ -68,13 +68,16 @@ payload(void)
       enable_value = (reg_value >> EA_ENTRY_TYPE_ENABLE_SHIFT) & EA_ENTRY_TYPE_ENABLE_MASK;
       if (enable_value)
       {
-          val_print(AVS_PRINT_ERR, "\n        Failed. BDF 0x%x Supports Enhanced Allocation", bdf);
+          val_print(AVS_PRINT_ERR, "\n       Failed. BDF 0x%x Supports Enhanced Allocation", bdf);
           test_fails++;
       }
   }
 
-  if (test_skip == 1)
+  if (test_skip == 1) {
+      val_print(AVS_PRINT_DEBUG,
+               "\n       Found no Endpoint with PCIe Capability. Skipping test", 0);
       val_set_status(pe_index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
+  }
   else if (test_fails)
       val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, test_fails));
   else

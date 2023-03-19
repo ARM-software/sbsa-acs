@@ -253,7 +253,7 @@ val_initialize_test(uint32_t test_num, char8_t *desc, uint32_t num_pe, uint32_t 
   for (i = 0; i < num_pe; i++)
       val_set_status(i, RESULT_PENDING(level, test_num));
 
-  for (i=0 ; i<MAX_TEST_SKIP_NUM ; i++){
+  for (i = 0; i < g_num_skip ; i++) {
       if (g_skip_test_num[i] == test_num) {
           val_print(AVS_PRINT_TEST, "\n       USER OVERRIDE  - Skip Test        ", 0);
           val_set_status(index, RESULT_SKIP(g_sbsa_level, test_num, 0));

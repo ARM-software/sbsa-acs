@@ -38,7 +38,7 @@ val_mpam_execute_tests(uint32_t level, uint32_t num_pe)
   uint32_t status = AVS_STATUS_FAIL, i;
   uint32_t msc_node_cnt;
 
-  for (i = 0; i < MAX_TEST_SKIP_NUM; i++) {
+  for (i = 0; i < g_num_skip; i++) {
       if (g_skip_test_num[i] == AVS_MPAM_TEST_NUM_BASE) {
           val_print(AVS_PRINT_TEST, "      USER Override - Skipping all MPAM tests \n", 0);
           return AVS_STATUS_SKIP;

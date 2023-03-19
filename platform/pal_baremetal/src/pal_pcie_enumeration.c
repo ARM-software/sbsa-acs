@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2020-2022 Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2023 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@
 
 extern PCIE_INFO_TABLE *g_pcie_info_table;
 
+uint32_t index = 0, enumerate = 1;
 /*64-bit address initialisation*/
 uint64_t g_bar64_p_start = PLATFORM_OVERRIDE_PCIE_BAR64_VAL;
 uint64_t g_bar64_p_max;
@@ -45,7 +46,22 @@ uint32_t pal_pci_cfg_read(uint32_t bus, uint32_t dev, uint32_t func, uint32_t of
 {
 
   uint32_t cfg_addr;
-  uint64_t ecam_base = g_pcie_info_table->block[0].ecam_base;
+  uint32_t i = 0;
+  if (!enumerate)
+  {
+      while (i < g_pcie_info_table->num_entries)
+      {
+         if ((bus >= g_pcie_info_table->block[i].start_bus_num) &&
+              (bus <= g_pcie_info_table->block[i].end_bus_num))
+         {
+                 index = i;
+                 break;
+         }
+         i++;
+      }
+  }
+
+  uint64_t ecam_base = g_pcie_info_table->block[index].ecam_base;
 
   cfg_addr = (bus * PCIE_MAX_DEV * PCIE_MAX_FUNC * PCIE_CFG_SIZE) + (dev * PCIE_MAX_FUNC * PCIE_CFG_SIZE) + (func * PCIE_CFG_SIZE);
   *value = pal_mmio_read(ecam_base + cfg_addr + offset);
@@ -64,7 +80,8 @@ uint32_t pal_pci_cfg_read(uint32_t bus, uint32_t dev, uint32_t func, uint32_t of
 void pal_pci_cfg_write(uint32_t bus, uint32_t dev, uint32_t func, uint32_t offset, uint32_t data)
 {
 
-  uint64_t ecam_base = g_pcie_info_table->block[0].ecam_base;
+  uint64_t ecam_base = g_pcie_info_table->block[index].ecam_base;
+
   uint32_t cfg_addr;
 
   cfg_addr = (bus * PCIE_MAX_DEV * PCIE_MAX_FUNC * PCIE_CFG_SIZE) + (dev * PCIE_MAX_FUNC * PCIE_CFG_SIZE) + (func * PCIE_CFG_SIZE);
@@ -84,7 +101,8 @@ void pal_pci_cfg_write(uint32_t bus, uint32_t dev, uint32_t func, uint32_t offse
   @return  None
 **/
 static void
-get_resource_base_32(uint32_t bus, uint32_t dev, uint32_t func, uint32_t bar32_p_base, uint32_t bar32_np_base, uint32_t bar32_p_limit, uint32_t bar32_np_limit)
+get_resource_base_32(uint32_t bus, uint32_t dev, uint32_t func, uint32_t bar32_p_base,
+                     uint32_t bar32_np_base, uint32_t bar32_p_limit, uint32_t bar32_np_limit)
 {
   uint32_t mem_bar_np;
   uint32_t mem_bar_p;
@@ -363,7 +381,7 @@ uint32_t pal_pcie_enumerate_device(uint32_t bus, uint32_t sec_bus)
   uint32_t bar32_p_limit;
   uint32_t bar32_np_limit;
 
-  if (bus == (PCIE_MAX_BUS-1))
+  if (bus == (g_pcie_info_table->block[index].end_bus_num))
       return sub_bus;
 
   uint32_t bar32_p_base = g_bar32_p_start;
@@ -446,7 +464,7 @@ pal_clear_pri_bus()
     uint32_t header_value;
     uint32_t vendor_id;
 
-    for (bus = 0; bus < PCIE_MAX_BUS; bus++)
+    for (bus = 0; bus <= g_pcie_info_table->block[index].end_bus_num; bus++)
     {
         for (dev = 0; dev < PCIE_MAX_DEV; dev++)
         {
@@ -470,15 +488,24 @@ pal_clear_pri_bus()
 
 void pal_pcie_enumerate(void)
 {
+    uint32_t pri_bus, sec_bus;
     if (g_pcie_info_table->num_entries == 0)
     {
          print(AVS_PRINT_TEST, "\nSkipping Enumeration", 0);
          return;
     }
 
-    print(AVS_PRINT_TEST, "\nStarting Enumeration \n", 0);
-    pal_pcie_enumerate_device(PRI_BUS, SEC_BUS);
-    pal_clear_pri_bus();
+    print(AVS_PRINT_INFO, "\nStarting Enumeration \n", 0);
+    while (index < g_pcie_info_table->num_entries)
+    {
+       pri_bus = g_pcie_info_table->block[index].start_bus_num;
+       sec_bus = pri_bus + 1;
+       pal_pcie_enumerate_device(pri_bus, sec_bus);
+       pal_clear_pri_bus();
+       index++;
+    }
+    enumerate = 0;
+    index = 0;
 }
 
 /**
@@ -629,22 +656,4 @@ pal_pci_bdf_to_dev(uint32_t bdf)
 
   return (void *)device_id;
 
-}
-
-/**
-  @brief  This API is used as placeholder to check if the bdf
-          obtained is valid or not
-
-  @param  bdf
-  @return 0 if bdf is valid else 1
-**/
-uint32_t
-pal_pcie_check_device_valid(uint32_t bdf)
-{
-
-  /*Add BDFs to this function if PCIe tests
-    need to be ignored for a BDF for any reason
-  */
-
-  return 0;
 }

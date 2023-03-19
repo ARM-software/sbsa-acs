@@ -60,7 +60,7 @@
   typedef UINT32 uint32_t;
   typedef UINT64 uint64_t;
   typedef UINT64 addr_t;
-
+  typedef UINT64 dma_addr_t;
 #if PLATFORM_OVERRIDE_TIMEOUT
     #define TIMEOUT_LARGE    PLATFORM_OVERRIDE_TIMEOUT_LARGE
     #define TIMEOUT_MEDIUM   PLATFORM_OVERRIDE_TIMEOUT_MEDIUM
@@ -80,7 +80,12 @@
     #define PCIE_MAX_DEV    32
     #define PCIE_MAX_FUNC    8
 #endif
+#endif
 
+#ifdef PLATFORM_OVERRIDE_IRQ
+    #define MAX_IRQ_CNT    PLATFORM_OVERRIDE_MAX_IRQ_CNT
+#else
+    #define MAX_IRQ_CNT    0xFFFF
 #endif
 
 #define ONE_MILLISECOND 1000
@@ -447,7 +452,8 @@ void pal_iovirt_create_info_table(IOVIRT_INFO_TABLE *iovirt);
 uint32_t pal_iovirt_check_unique_ctx_intid(uint64_t smmu_block);
 uint32_t pal_iovirt_unique_rid_strid_map(uint64_t rc_block);
 uint64_t pal_iovirt_get_rc_smmu_base(IOVIRT_INFO_TABLE *iovirt, uint32_t rc_seg_num, uint32_t rid);
-#ifdef TARGET_LINUX
+
+#if defined(TARGET_LINUX) || defined(TARGET_EMULATION)
 uint32_t pal_get_device_path(const char *hid, char hid_path[][MAX_NAMED_COMP_LENGTH]);
 uint32_t pal_smmu_is_etr_behind_catu(char *etr_path);
 #endif
@@ -563,7 +569,6 @@ typedef struct PERIPHERAL_VECTOR_LIST_STRUCT
 uint32_t pal_get_msi_vectors (uint32_t seg, uint32_t bus, uint32_t dev, uint32_t fn, PERIPHERAL_VECTOR_LIST **mvector);
 
 #define LEGACY_PCI_IRQ_CNT 4  // Legacy PCI IRQ A, B, C. and D
-#define MAX_IRQ_CNT 0xFFFF    // This value is arbitrary and may have to be adjusted
 
 typedef struct {
   uint32_t  irq_list[MAX_IRQ_CNT];
@@ -682,6 +687,7 @@ uint32_t pal_mem_page_size(void);
 void    *pal_mem_alloc_pages(uint32_t num_pages);
 void     pal_mem_free_pages(void *page_base, uint32_t num_pages);
 void    *pal_aligned_alloc(uint32_t alignment, uint32_t size);
+void     pal_mem_free_aligned(void *buffer);
 
 uint32_t pal_mmio_read(uint64_t addr);
 uint64_t pal_mmio_read64(uint64_t addr);
@@ -1086,7 +1092,6 @@ typedef struct {
   RAS_NODE_DATA       node_data;         /* Node Specific Data */
   RAS_INTERFACE_INFO  intf_info;         /* Node Interface Info */
   RAS_INTERRUPT_INFO  intr_info[2];      /* Node Interrupt Info */
-  uint32_t            err_grp_id;        /* Error Group ID used in the ACS */
 } RAS_NODE_INFO;
 
 typedef struct {

@@ -74,47 +74,48 @@
 
   ../test_pool/watchdog/operating_system/test_w001.c
 
-  ../test_pool/pcie/test_p001.c
-  ../test_pool/pcie/test_p003.c
-  ../test_pool/pcie/test_p020.c
-  ../test_pool/pcie/test_p021.c
-  ../test_pool/pcie/test_p022.c
-  ../test_pool/pcie/test_p023.c
-  ../test_pool/pcie/test_p024.c
-  ../test_pool/pcie/test_p025.c
-  ../test_pool/pcie/test_p026.c
-  ../test_pool/pcie/test_p027.c
-  ../test_pool/pcie/test_p028.c
-  ../test_pool/pcie/test_p029.c
-  ../test_pool/pcie/test_p030.c
-  ../test_pool/pcie/test_p031.c
-  ../test_pool/pcie/test_p032.c
-  ../test_pool/pcie/test_p033.c
-  ../test_pool/pcie/test_p034.c
-  ../test_pool/pcie/test_p035.c
-  ../test_pool/pcie/test_p036.c
-  ../test_pool/pcie/test_p037.c
-  ../test_pool/pcie/test_p038.c
-  ../test_pool/pcie/test_p039.c
-  ../test_pool/pcie/test_p041.c
-  ../test_pool/pcie/test_p042.c
-  ../test_pool/pcie/test_p043.c
-  ../test_pool/pcie/test_p044.c
-  ../test_pool/pcie/test_p045.c
-  ../test_pool/pcie/test_p046.c
-  ../test_pool/pcie/test_p047.c
-  ../test_pool/pcie/test_p048.c
-  ../test_pool/pcie/test_p049.c
-  ../test_pool/pcie/test_p050.c
-  ../test_pool/pcie/test_p051.c
-  ../test_pool/pcie/test_p052.c
-  ../test_pool/pcie/test_p056.c
-  ../test_pool/pcie/test_p057.c
-  ../test_pool/pcie/test_p058.c
-  ../test_pool/pcie/test_p059.c
-  ../test_pool/pcie/test_p060.c
+  ../test_pool/pcie/operating_system/test_p001.c
+  ../test_pool/pcie/operating_system/test_p003.c
+  ../test_pool/pcie/operating_system/test_p020.c
+  ../test_pool/pcie/operating_system/test_p021.c
+  ../test_pool/pcie/operating_system/test_p022.c
+  ../test_pool/pcie/operating_system/test_p023.c
+  ../test_pool/pcie/operating_system/test_p024.c
+  ../test_pool/pcie/operating_system/test_p025.c
+  ../test_pool/pcie/operating_system/test_p026.c
+  ../test_pool/pcie/operating_system/test_p027.c
+  ../test_pool/pcie/operating_system/test_p028.c
+  ../test_pool/pcie/operating_system/test_p029.c
+  ../test_pool/pcie/operating_system/test_p030.c
+  ../test_pool/pcie/operating_system/test_p031.c
+  ../test_pool/pcie/operating_system/test_p032.c
+  ../test_pool/pcie/operating_system/test_p033.c
+  ../test_pool/pcie/operating_system/test_p034.c
+  ../test_pool/pcie/operating_system/test_p035.c
+  ../test_pool/pcie/operating_system/test_p036.c
+  ../test_pool/pcie/operating_system/test_p037.c
+  ../test_pool/pcie/operating_system/test_p038.c
+  ../test_pool/pcie/operating_system/test_p039.c
+  ../test_pool/pcie/operating_system/test_p041.c
+  ../test_pool/pcie/operating_system/test_p042.c
+  ../test_pool/pcie/operating_system/test_p043.c
+  ../test_pool/pcie/operating_system/test_p044.c
+  ../test_pool/pcie/operating_system/test_p045.c
+  ../test_pool/pcie/operating_system/test_p046.c
+  ../test_pool/pcie/operating_system/test_p047.c
+  ../test_pool/pcie/operating_system/test_p048.c
+  ../test_pool/pcie/operating_system/test_p049.c
+  ../test_pool/pcie/operating_system/test_p050.c
+  ../test_pool/pcie/operating_system/test_p051.c
+  ../test_pool/pcie/operating_system/test_p052.c
+  ../test_pool/pcie/operating_system/test_p056.c
+  ../test_pool/pcie/operating_system/test_p057.c
+  ../test_pool/pcie/operating_system/test_p058.c
+  ../test_pool/pcie/operating_system/test_p059.c
+  ../test_pool/pcie/operating_system/test_p060.c
   ../test_pool/pcie/operating_system/test_p061.c
   ../test_pool/pcie/operating_system/test_p062.c
+  ../test_pool/pcie/operating_system/test_p063.c
 
   ../test_pool/smmu/operating_system/test_i001.c
   ../test_pool/smmu/operating_system/test_i002.c
@@ -132,26 +133,17 @@
   ../test_pool/smmu/operating_system/test_i014.c
   ../test_pool/smmu/operating_system/test_i015.c
   ../test_pool/memory_map/operating_system/test_m001.c
-  ../test_pool/exerciser/test_e001.c
-  ../test_pool/exerciser/test_e002.c
-  ../test_pool/exerciser/test_e003.c
-  ../test_pool/exerciser/test_e004.c
-  ../test_pool/exerciser/test_e005.c
-  ../test_pool/exerciser/test_e006.c
-  ../test_pool/exerciser/test_e007.c
-  ../test_pool/exerciser/test_e008.c
-  ../test_pool/exerciser/test_e009.c
-  ../test_pool/exerciser/test_e010.c
-  ../test_pool/exerciser/test_e011.c
-  ../test_pool/exerciser/test_e012.c
-  ../test_pool/exerciser/test_e013.c
-  ../test_pool/exerciser/test_e014.c
-  ../test_pool/exerciser/test_e015.c
-  ../test_pool/exerciser/test_e016.c
-  ../test_pool/exerciser/operating_system/test_e017.c
-  ../test_pool/exerciser/operating_system/test_e018.c
-  ../test_pool/exerciser/operating_system/test_e019.c
-  ../test_pool/exerciser/operating_system/test_e020.c
+  ../test_pool/exerciser/operating_system/test_e001.c
+  ../test_pool/exerciser/operating_system/test_e002.c
+  ../test_pool/exerciser/operating_system/test_e003.c
+  ../test_pool/exerciser/operating_system/test_e004.c
+  ../test_pool/exerciser/operating_system/test_e005.c
+  ../test_pool/exerciser/operating_system/test_e006.c
+  ../test_pool/exerciser/operating_system/test_e007.c
+  ../test_pool/exerciser/operating_system/test_e008.c
+  ../test_pool/exerciser/operating_system/test_e009.c
+  ../test_pool/exerciser/operating_system/test_e010.c
+  ../test_pool/exerciser/operating_system/test_e011.c
 
   ../test_pool/mpam/operating_system/test_mpam001.c
   ../test_pool/mpam/operating_system/test_mpam002.c

@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2020-2022, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2023, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -187,20 +187,6 @@ pal_mmio_write(uint64_t addr, uint32_t data)
 }
 
 /**
-  @brief  Sends a formatted string to the output console
-
-  @param  string  An ASCII string
-  @param  data    data for the formatted output
-
-  @return None
-**/
-void
-pal_print(char *string, uint64_t data)
-{
-
-}
-
-/**
   @brief  Sends a string to the output console without using Baremetal print function
           This function will get COMM port address and directly writes to the addr char-by-char
 
@@ -367,66 +353,6 @@ pal_mem_allocate_shared(uint32_t num_pe, uint32_t sizeofentry)
 }
 
 /**
-  @brief  Allocates memory of the requested size.
-
-  @param  Bdf:  BDF of the requesting PCIe device
-  @param  Size: size of the memory region to be allocated
-  @param  Pa:   physical address of the allocated memory
-**/
-void *
-pal_mem_alloc_cacheable(uint32_t Bdf, uint32_t Size, void **Pa)
-{
-
-  return NULL;
-}
-
-/**
-  @brief  Frees the memory allocated
-
-  @param  Bdf:  BDF of the requesting PCIe device
-  @param  Size: size of the memory region to be freed
-  @param  Va:   virtual address of the memory to be freed
-  @param  Pa:   physical address of the memory to be freed
-**/
-void
-pal_mem_free_cacheable(uint32_t Bdf, uint32_t Size, void *Va, void *Pa)
-{
-
-}
-
-/**
-  @brief  Returns the physical address of the input virtual address.
-
-  @param Va virtual address of the memory to be converted
-
-  Returns the physical address.
-**/
-void *
-pal_mem_virt_to_phys(void *Va)
-{
-  /* Place holder function. Need to be
-   * implemented if needed in later releases
-   */
-  return Va;
-}
-
-/**
-  @brief  Returns the virtual address of the input physical address.
-
-  @param Pa physical address of the memory to be converted
-
-  Returns the virtual address.
-**/
-void *
-pal_mem_phys_to_virt (
-  uint64_t Pa
-  )
-{
-  /* Place holder function*/
-  return (void*)Pa;
-}
-
-/**
   Copies a source buffer to a destination buffer, and returns the destination buffer.
 
   @param  DestinationBuffer   The pointer to the destination buffer of the memory copy.
@@ -441,69 +367,6 @@ pal_memcpy(void *DestinationBuffer, void *SourceBuffer, uint32_t Length)
 {
 
   return memcpy(DestinationBuffer, SourceBuffer, Length);
-}
-
-/**
-  Stalls the CPU for the number of microseconds specified by MicroSeconds.
-
-  @param  MicroSeconds  The minimum number of microseconds to delay.
-
-  @return 1 - Success, 0 -Failure
-
-**/
-uint64_t
-pal_time_delay_ms(uint64_t MicroSeconds)
-{
-  /**Need to implement**/
-  return 0;
-}
-
-/**
-  @brief  page size being used in current translation regime.
-
-  @return page size being used
-**/
-uint32_t
-pal_mem_page_size()
-{
-    return 0;
-}
-
-/**
-  @brief  allocates contiguous numpages of size
-          returned by pal_mem_page_size()
-
-  @return Start address of base page
-**/
-void *
-pal_mem_alloc_pages (uint32_t NumPages)
-{
-  return 0;
-}
-
-/**
-  @brief  frees continguous numpages starting from page
-          at address PageBase
-
-**/
-void
-pal_mem_free_pages(void *PageBase, uint32_t NumPages)
-{
-
-}
-
-/**
-  @brief  Allocates memory with the given alignement.
-
-  @param  Alignment   Specifies the alignment.
-  @param  Size        Requested memory allocation size.
-
-  @return Pointer to the allocated memory with requested alignment.
-**/
-void
-*pal_aligned_alloc( uint32_t alignment, uint32_t size )
-{
-  return (void *)memalign(alignment, size);
 }
 
 /**

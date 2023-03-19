@@ -23,19 +23,19 @@
 #define __SBSA_AVS_COMMON_H__
 
 #define AVS_PE_TEST_NUM_BASE         0
-#define AVS_GIC_TEST_NUM_BASE        100
-#define AVS_TIMER_TEST_NUM_BASE      200
-#define AVS_WD_TEST_NUM_BASE         300
-#define AVS_PCIE_TEST_NUM_BASE       400
+#define AVS_MEM_MAP_TEST_NUM_BASE    100
+#define AVS_GIC_TEST_NUM_BASE        200
+#define AVS_SMMU_TEST_NUM_BASE       300
+#define AVS_TIMER_TEST_NUM_BASE      400
 #define AVS_WAKEUP_TEST_NUM_BASE     500
 #define AVS_PER_TEST_NUM_BASE        600
-#define AVS_SMMU_TEST_NUM_BASE       700
-#define AVS_EXERCISER_TEST_NUM_BASE  800
-#define AVS_NIST_TEST_NUM_BASE       900
+#define AVS_WD_TEST_NUM_BASE         700
+#define AVS_PCIE_TEST_NUM_BASE       800
+#define AVS_EXERCISER_TEST_NUM_BASE  900
 #define AVS_MPAM_TEST_NUM_BASE       1000
 #define AVS_PMU_TEST_NUM_BASE        1100
 #define AVS_RAS_TEST_NUM_BASE        1200
-#define AVS_MEM_MAP_TEST_NUM_BASE    1300
+#define AVS_NIST_TEST_NUM_BASE       1300
 
 #define STATE_BIT   28
 #define STATE_MASK 0xF

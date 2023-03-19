@@ -21,6 +21,7 @@
 
 #include "val/include/sbsa_avs_pe.h"
 #include "val/include/sbsa_avs_smmu.h"
+#include "val/include/sbsa_avs_memory.h"
 
 #define TEST_NUM   (AVS_SMMU_TEST_NUM_BASE + 16)
 #define TEST_RULE  "S_L7SM_02"
@@ -42,7 +43,7 @@ payload(void)
   uint32_t j = 0;
 
   index = val_pe_get_index_mpid(val_pe_get_mpid());
-  memset(etr_path, 0, sizeof(etr_path));
+  val_memory_set(etr_path, sizeof(etr_path), 0);
 
   /*Check for ETR devices using ETR using unique HID (ARMHC501)*/
   status = val_get_device_path("ARMHC501", etr_path);

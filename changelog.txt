@@ -16,3 +16,12 @@ This version is used in SystemReady SR v2.0.0 images.
 * PE, SMMU, GIC L7 rules tests added.
 * pmu_app for PMU PE events added in linux_app.
 * Bug fixes on SBSA 6.1.0 release.
+
+v23.03_REL7.1.1_BETA-1
+
+* Baremetal support for SBSA7.1 specification including RAS, PMU and MPAM
+* Initialise SMMU eventq handler
+* Change of order of modules run to sync with the order of modules run for BSA
+* Better messaging and info details
+* Removal of Exerciser tests common to SBSA and BSA
+* Documentation

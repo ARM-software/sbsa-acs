@@ -33,7 +33,7 @@ CC = $(GCC49_AARCH64_PREFIX)gcc -march=armv8.2-a -DTARGET_EMULATION
 AR = $(GCC49_AARCH64_PREFIX)ar
 CC_FLAGS = -g -O0 -fshort-wchar -fno-builtin -fno-strict-aliasing -Wall -Werror -Wextra -Wmissing-declarations -Wstrict-prototypes -Wno-error=conversion -Wno-error=sign-conversion -Wno-error=strict-overflow -Wno-type-limits
 
-DEPS = $(SBSA_ROOT)/platform/pal_baremetal/FVP/include/platform_override_fvp.h
+DEPS = $(SBSA_ROOT)/platform/pal_baremetal/FVP/RDN2/include/platform_override_fvp.h
 
 OBJ_DIR := $(SBSA_ROOT)/build/obj
 LIB_DIR := $(SBSA_ROOT)/build/lib
