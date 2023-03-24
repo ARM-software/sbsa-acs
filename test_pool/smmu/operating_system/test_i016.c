@@ -44,8 +44,8 @@ payload(void)
   index = val_pe_get_index_mpid(val_pe_get_mpid());
   memset(etr_path, 0, sizeof(etr_path));
 
-  /*Check for ETR devices using ETR using unique HID (ARMHC501)*/
-  status = val_get_device_path("ARMHC501", etr_path);
+  /*Check for ETR devices using ETR using unique HID (ARMHC97C)*/
+  status = val_get_device_path("ARMHC97C", etr_path);
   if (status != 0) {
     val_print(AVS_PRINT_ERR, "\n       Unable to get ETR device info from ACPI namespace", 0);
     val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 1));
