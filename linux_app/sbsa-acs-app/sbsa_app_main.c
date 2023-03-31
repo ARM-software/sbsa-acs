@@ -26,7 +26,8 @@
 
 int  g_sbsa_level = 4;
 int  g_print_level = 3;
-int  g_skip_test_num[3] = {10000, 10000, 10000};
+unsigned int g_num_skip = 3;
+unsigned int *g_skip_test_num;
 unsigned long int  g_exception_ret_addr;
 unsigned int g_print_mmio;
 unsigned int g_curr_module;
@@ -52,7 +53,7 @@ void print_help(){
          "-v      Verbosity of the Prints\n"
          "        1 shows all prints, 5 shows Errors\n"
          "-l      Level of compliance to be tested for\n"
-         "        As per SBSA spec, 0 to 6\n"
+         "        As per SBSA spec, 0 to 7\n"
          "--skip  Test(s) to be skipped\n"
          "        Refer to section 4 of SBSA_ACS_User_Guide\n"
          "        To skip a module, use Model_ID as mentioned in user guide\n"
@@ -76,6 +77,8 @@ main (int argc, char **argv)
       {NULL, 0, NULL, 0}
     };
 
+    g_skip_test_num = (unsigned int *) malloc(g_num_skip * sizeof(unsigned int));
+
     /* Process Command Line arguments */
     while ((c = getopt_long(argc, argv, "hv:l:e:", long_opt, NULL)) != -1)
     {
@@ -93,7 +96,7 @@ main (int argc, char **argv)
          break;
        case 'n':/*SKIP tests */
          pt = strtok(optarg, ",");
-         while((pt!=NULL) && (i<3)){
+         while ((pt != NULL) && (i < g_num_skip)) {
            int a = atoi(pt);
            g_skip_test_num[i++] = a;
            pt = strtok(NULL, ",");

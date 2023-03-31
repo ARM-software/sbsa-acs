@@ -27,7 +27,7 @@
 #include "include/sbsa_drv_intf.h"
 
 
-extern int  g_skip_test_num[3];
+extern unsigned int *g_skip_test_num;
 
 /**
   This function calls the SBSA Kernel Module in a loop to execute all the SMMU tests

@@ -3,7 +3,7 @@
 
 
 ## Server Base System Architecture
-**Server Base System Architecture** (SBSA) specification specifies a hardware system architecture based on the Arm 64-bit architecture.  
+**Server Base System Architecture** (SBSA) specification specifies a hardware system architecture based on the Arm 64-bit architecture.
 Server system software such as operating systems, hypervisors, and firmware rely on this. It addresses processing element features and key aspects of system architecture.
 
 For more information, download the [SBSA specification](https://developer.arm.com/documentation/den0029/h/?lang=en)
@@ -11,16 +11,15 @@ For more information, download the [SBSA specification](https://developer.arm.co
 
 ## SBSA - Architecture Compliance Suite
 
-SBSA **Architecture Compliance Suite** (ACS) is a collection of self-checking, portable C-based tests.  
+SBSA **Architecture Compliance Suite** (ACS) is a collection of self-checking, portable C-based tests.
 This suite includes a set of examples of the invariant behaviors that are provided by the [SBSA specification](https://developer.arm.com/documentation/den0029/h/?lang=en), so that implementers can verify if these behaviours have been interpreted correctly.
-Most of the tests are executed from UEFI Shell by executing the SBSA UEFI shell application.  
-A few tests are executed by running the SBSA ACS Linux application which in turn depends on the SBSA ACS Linux kernel module.  
-
+Most of the tests are executed from UEFI Shell by executing the SBSA UEFI shell application.
+A few tests are executed by running the SBSA ACS Linux application which in turn depends on the SBSA ACS Linux kernel module.
 
 ## Release details
- - Code Quality: REL v7.1 BETA-0
+ - Code Quality: REL v7.1.1 BETA-1
  - The tests are written for version 7.1 of the SBSA specification.
- - The release includes test which are not verified due to platform dependency. Please refer to [testcase-checklist](docs/testcase-checklist.md) for these tests. 
+ - The release includes test which are not verified due to platform dependency. Please refer to [testcase-checklist](docs/testcase-checklist.md) for these tests.
  - The compliance suite is not a substitute for design verification.
  - To review the SBSA ACS logs, Arm licensees can contact Arm directly through their partner managers.
  - To know about the gaps in the test coverage, see [Test Scenario Document](docs/Arm_SBSA_Architecture_Compliance_Test_Scenario.pdf).
@@ -50,7 +49,7 @@ To enable the export of a few kernel APIs that are necessary for PCIe and IOMMU 
 ## ACS build steps - UEFI Shell application
 
 ### Prebuilt images
-Prebuilt images for v23_01_REL7.1.0_BETA-0 release is available in the prebuilt_images folder of the master branch. The prebuilt images of previous release are present in [release branch](https://github.com/chetan-rathore/sbsa-acs/tree/release/prebuilt_images). You can choose to use this images or build your own image by following the steps below. If you choose to use the prebuilt image, jump to the test suite execution section below for details on how to run the application.
+Prebuilt images for v23_03_REL7.1.1_BETA-1 release is available in the prebuilt_images folder of the master branch. The prebuilt images of previous release are present in [release branch](https://github.com/ARM-software/sbsa-acs/tree/release/prebuilt_images). You can choose to use this images or build your own image by following the steps below. If you choose to use the prebuilt image, jump to the test suite execution section below for details on how to run the application.
 
 ### Prerequisites
 Before starting the build, ensure that the following requirements are met.
@@ -105,7 +104,7 @@ For details about the SBSA ACS UEFI Shell application, see [SBSA ACS USER Guide]
 >          -mGicNumInterrupts      = ArmGicGetMaxNumInterrupts (mGicDistributorBase);
 >          +mGicNumInterrupts      = ARM_GIC_MAX_NUM_INTERRUPT;
 
-### Post-Silicon
+### On Silicon
 
 On a system where a USB port is available and functional, perform the following steps:
 
@@ -124,16 +123,16 @@ On an emulation environment with secondary storage, perform the following steps:
 
 1. Create an image file which contains the 'Sbsa.efi' file. For Example:
   - mkfs.vfat -C -n HD0 hda.img 2097152
-  - sudo mount -o rw,loop=/dev/loop0,uid=`whoami`,gid=`whoami` hda.img /mnt/sbsa.  
+  - sudo mount -o rw,loop=/dev/loop0,uid=`whoami`,gid=`whoami` hda.img /mnt/sbsa.
     If loop0 is busy, specify the loop that is free
   - cp  "<path to application>/Sbsa.efi" /mnt/sbsa/
   - sudo umount /mnt/sbsa
-2. Load the image file to the secondary storage using a backdoor.    
-   The steps followed to load the image file are emulation environment-specific and beyond the scope of this document. 
+2. Load the image file to the secondary storage using a backdoor.
+   The steps followed to load the image file are emulation environment-specific and beyond the scope of this document.
 3. Boot the system to UEFI shell.
 4. To determine the file system number of the secondary storage, execute 'map -r' command.
 5. Type 'fsx' where 'x' is replaced by the number determined in step 4.
-6. To start the compliance tests, run the executable Sbsa.efi with the appropriate parameters.    
+6. To start the compliance tests, run the executable Sbsa.efi with the appropriate parameters.
    For details on the parameters, see the [SBSA ACS User Guide](docs/Arm_SBSA_Architecture_Compliance_User_Guide.pdf)
 7. Copy the UART console output to a log file for analysis and certification.
 
@@ -145,7 +144,7 @@ On an emulation platform where secondary storage is not available, perform the f
 1. Add the path to 'Sbsa.efi' file in the UEFI FD file.
 2. Build UEFI image including the UEFI Shell.
 3. Boot the system to UEFI shell.
-4. Run the executable 'Sbsa.efi' to start the compliance tests.    
+4. Run the executable 'Sbsa.efi' to start the compliance tests.
    For details about the parameters, see the [SBSA ACS User Guide](docs/Arm_SBSA_Architecture_Compliance_User_Guide.pdf).
 > shell> Sbsa.efi
 5. Copy the UART console output to a log file for analysis and certification.
@@ -215,23 +214,23 @@ Validating the compliance of certain PCIe rules defined in the SBSA specificatio
 The details of the hardware or Verification IP which enable these exerciser tests are platform specific and are beyond the scope of this document.
 
 ### SBSA Level 7 tests dependencies
- - MPAM test will require EL3 firmware to enable access to MPAM registers from lower EL's. 
+ - MPAM test will require EL3 firmware to enable access to MPAM registers from lower EL's.
    If arm trusted firmware is used as EL3 fimrware, enable ENABLE_MPAM_FOR_LOWER_ELS=1 in tf build
- - RAS test will require EL3 firmware to enable access to RAS registers from lower EL's and forward RAS related exceptions to lower EL's. 
+ - RAS test will require EL3 firmware to enable access to RAS registers from lower EL's and forward RAS related exceptions to lower EL's.
    If arm trusted firmware is used as EL3 fimrware, enable EL3_EXCEPTION_HANDLING=1 RAS_EXTENSION=1 HANDLE_EA_EL3_FIRST=1 RAS_TRAP_LOWER_EL_ERR_ACCESS=0 in tf build
  - If the above flags are not enabled, MPAM and RAS test can lead to exception at EL3.
  - MPAM test will require system to implement MPAM, SRAT, HMAT, PPTT tables.
  - RAS test will require system to implement AEST, RAS2, SRAT, HMAT, PPTT tables.
  - PMU test will require system to implement APMT table.
  - Entrophy rule will require ACS to build with STS package
- 
+
 **Note:** To build the ACS with NIST Statistical Test Suite, see the [SBSA_NIST_User_Guide](docs/Arm_SBSA_NIST_User_Guide.md)
 
 |APIs                         |Description                                                                   |Affected tests          |
 |-----------------------------|------------------------------------------------------------------------------|------------------------|
-|pal_pcie_p2p_support         |Return 0 if the test system PCIe supports peer to peer transaction, else 1    |453, 454, 456, 812, 813 |
-|pal_pcie_is_cache_present    |Return 1 if the test system supports PCIe address translation cache, else 0   |452                     |
-|pal_pcie_get_legacy_irq_map  |Return 0 if system legacy irq map is filled, else 1                           |412, 450, 806           |
+|pal_pcie_p2p_support         |Return 0 if the test system PCIe supports peer to peer transaction, else 1    |853, 854, 856, 911      |
+|pal_pcie_is_cache_present    |Return 1 if the test system supports PCIe address translation cache, else 0   |852                     |
+|pal_pcie_get_legacy_irq_map  |Return 0 if system legacy irq map is filled, else 1                           |812, 850                |
 
    Below exerciser capabilities are required by exerciser test.
    - MSI-X interrupt generation.
@@ -239,7 +238,20 @@ The details of the hardware or Verification IP which enable these exerciser test
    - Initiating transactions from and to the exerciser.
    - Ability to check on BDF and register address seen for each configuration address along with access type.
 
- - SBSA Test 403 (Check ECAM Memory accessibility) execution time depends on the system PCIe hierarchy. For systems with multiple ECAMs the time taken to complete can be long which is normal. Please wait until the test completes.
+ - SBSA Test 803 (Check ECAM Memory accessibility) execution time depends on the system PCIe hierarchy. For systems with multiple ECAMs the time taken to complete can be long which is normal. Please wait until the test completes.
+
+### SBSA ACS version mapping
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+|   SBSA Spec Version   |   ACS Coverage Mapping   |   SBSA ACS Version   |        SBSA Tag ID         |   BSA ACS Version   |      BSA Tag ID     |    Pre-Si Support    |
+|-----------------------|:------------------------:|:--------------------:|:--------------------------:|:-------------------:|:-------------------:|:--------------------:|
+|       SBSA v7.1       |    BSA ACS + SBSA ACS    |      v7.1.1 BETA-1   |   v23.03_REL7.1.1_BETA-1   |        v1.0.4       |   v23.03_REL1.0.4   |       Yes            |
+|       SBSA v7.1       |    BSA ACS + SBSA ACS    |      v7.1.0 BETA-0   |   v23.01_REL7.1.0_BETA-0   |        v1.0.3       |   v23.01_REL1.0.3   |       Yes            |
+|       SBSA v6.1       |    BSA ACS + SBSA ACS    |      v6.1.0          |   v22.10_REL6.1.0          |        v1.0.2       |   v22.10_REL1.0.2   |       Yes            |
+|       SBSA v6.0       |    SBSA ACS              |      v3.2            |   v22.07_REL3.2            |          -          |          -          |       Yes            |
+|       SBSA v6.0       |    SBSA ACS              |      v3.1            |   v21.09_REL3.1            |          -          |          -          |       Yes            |
+|       SBSA v5.0       |    SBSA ACS              |      v2.5            |   v20.08_RELv2.5           |          -          |          -          |       Yes            |
+|       SBSA v3.0       |    SBSA ACS              |      v1.6            |   v18.12_REL1.7            |          -          |          -          |       No             |
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 ## License
 SBSA ACS is distributed under Apache v2.0 License.

@@ -171,8 +171,8 @@ static void payload(void)
                     buf_size = cache_size * CACHE_PERCENTAGE / 100 ;
 
                     /*Allocate memory for source and destination buffers */
-                    src_buf = (void *)val_memory_alloc(buf_size);
-                    dest_buf = (void *)val_memory_alloc(buf_size);
+                    src_buf = (void *)val_aligned_alloc(MEM_ALIGN_4K, buf_size);
+                    dest_buf = (void *)val_aligned_alloc(MEM_ALIGN_4K, buf_size);
 
                     val_print(AVS_PRINT_DEBUG, "\n       buf_size            = 0x%x", buf_size);
 
@@ -260,8 +260,8 @@ static void payload(void)
                         val_mpam_reg_write(MPAM2_EL2, mpam2_el2_temp);
 
                         /*Free the buffers */
-                        val_memory_free(src_buf);
-                        val_memory_free(dest_buf);
+                        val_memory_free_aligned(src_buf);
+                        val_memory_free_aligned(dest_buf);
 
                         return;
                     }
@@ -270,8 +270,8 @@ static void payload(void)
                     val_mpam_reg_write(MPAM2_EL2, mpam2_el2_temp);
 
                     /*Free the buffers */
-                    val_memory_free(src_buf);
-                    val_memory_free(dest_buf);
+                    val_memory_free_aligned(src_buf);
+                    val_memory_free_aligned(dest_buf);
                 }
             }
         }

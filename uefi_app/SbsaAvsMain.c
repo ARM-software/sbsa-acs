@@ -36,11 +36,11 @@ UINT32  g_sbsa_level;
 UINT32  g_enable_pcie_tests;
 UINT32  g_print_level;
 UINT32  g_execute_nist;
-UINT32 g_print_mmio = FALSE;
-UINT32 g_curr_module = 0;
-UINT32 g_enable_module = 0;
-UINT32  g_skip_test_num[MAX_TEST_SKIP_NUM] = { 10000, 10000, 10000, 10000, 10000,
-                                               10000, 10000, 10000, 10000 };
+UINT32  g_print_mmio = FALSE;
+UINT32  g_curr_module = 0;
+UINT32  g_enable_module = 0;
+UINT32  *g_skip_test_num;
+UINT32  g_num_skip = 0;
 UINT32  g_single_test = SINGLE_TEST_SENTINEL;
 UINT32  g_single_module = SINGLE_MODULE_SENTINEL;
 UINT32  g_sbsa_tests_total;
@@ -442,14 +442,14 @@ HelpMsg (
          "        Refer to section 4 of SBSA_ACS_User_Guide\n"
          "        To skip a module, use Model_ID as mentioned in user guide\n"
          "-l      Level of compliance to be tested for\n"
-         "        As per SBSA spec, 3 to 6\n"
+         "        As per SBSA spec, 3 to 7\n"
          "-f      Name of the log file to record the test results in\n"
          "-skip   Test(s) to be skipped\n"
          "        Refer to section 4 of SBSA_ACS_User_Guide\n"
          "        To skip a module, use Model_ID as mentioned in user guide\n"
          "        To skip a particular test within a module, use the exact testcase number\n"
          "-nist   Enable the NIST Statistical test suite\n"
-         "-p      Enable/disable PCIe SBSA 6.0 (RCiEP) compliance tests\n"
+         "-p      Enable/disable PCIe SBSA 7.1 (RCiEP) compliance tests\n"
          "        1 - enables PCIe tests, 0 - disables PCIe tests\n"
          "-t      If set, will only run the specified test, all others will be skipped.\n"
          "-m      If set, will only run the specified module, all others will be skipped.\n"
@@ -468,7 +468,7 @@ STATIC CONST SHELL_PARAM_ITEM ParamList[] = {
   {L"-help" , TypeFlag},     // -help # help : info about commands
   {L"-h"    , TypeFlag},     // -h    # help : info about commands
   {L"-nist" , TypeFlag},     // -nist # Binary Flag to enable the execution of NIST STS
-  {L"-p"    , TypeValue},    // -p    # Enable/disable PCIe SBSA 6.0 (RCiEP) compliance tests.
+  {L"-p"    , TypeValue},    // -p    # Enable/disable PCIe SBSA 7.1 (RCiEP) compliance tests.
   {L"-mmio" , TypeValue},    // -mmio # Enable pal_mmio prints
   {L"-t"    , TypeValue},    // -t    # Test to be run
   {L"-m"    , TypeValue},    // -m    # Module to be run
@@ -499,7 +499,7 @@ ShellAppMainsbsa (
   CHAR16             *ProbParam;
   UINT32             Status;
   UINT32             MmioVerbosity;
-  UINT32             i,j=0;
+  UINT32             i;
   VOID               *branch_label;
 
 
@@ -515,15 +515,34 @@ ShellAppMainsbsa (
     return SHELL_INVALID_PARAMETER;
   }
 
-  // Options with Values
   if (ShellCommandLineGetFlag (ParamPackage, L"-skip")) {
-      CmdLineArg  = ShellCommandLineGetValue (ParamPackage, L"-skip");
-      for (i=0 ; i < StrLen(CmdLineArg) ; i++){
-        g_skip_test_num[0] = StrDecimalToUintn((CONST CHAR16 *)(CmdLineArg+0));
-          if(*(CmdLineArg+i) == L','){
-              g_skip_test_num[++j] = StrDecimalToUintn((CONST CHAR16 *)(CmdLineArg+i+1));
-          }
+    CmdLineArg  = ShellCommandLineGetValue (ParamPackage, L"-skip");
+    if (CmdLineArg == NULL)
+    {
+      Print(L"Invalid parameter passed for -skip\n", 0);
+      HelpMsg();
+      return SHELL_INVALID_PARAMETER;
+    }
+    else
+    {
+      Status = gBS->AllocatePool(EfiBootServicesData,
+                                 StrLen(CmdLineArg),
+                                 (VOID **) &g_skip_test_num);
+      if (EFI_ERROR(Status))
+      {
+        Print(L"Allocate memory for -skip failed \n", 0);
+        return 0;
       }
+
+      g_skip_test_num[0] = StrDecimalToUintn((CONST CHAR16 *)(CmdLineArg+0));
+      for (i = 0; i < StrLen(CmdLineArg); i++) {
+      if(*(CmdLineArg+i) == L',') {
+          g_skip_test_num[++g_num_skip] = StrDecimalToUintn((CONST CHAR16 *)(CmdLineArg+i+1));
+        }
+      }
+
+      g_num_skip++;
+    }
   }
 
   // Options with Values
@@ -574,7 +593,7 @@ ShellAppMainsbsa (
              EFI_FILE_MODE_WRITE | EFI_FILE_MODE_READ | EFI_FILE_MODE_CREATE, 0x0);
     if(EFI_ERROR(Status)) {
          Print(L"Failed to open log file %s\n", CmdLineArg);
-	 g_sbsa_log_file_handle = NULL;
+     g_sbsa_log_file_handle = NULL;
     }
   }
 
@@ -624,7 +643,7 @@ ShellAppMainsbsa (
   } else {
       g_enable_pcie_tests = StrDecimalToUintn(CmdLineArg);
       if (g_enable_pcie_tests != 1 && g_enable_pcie_tests != 0) {
-          Print(L"Invalid PCIe option.\nEnter \"-p 1\" to enable or \"-p 0\" to disable PCIe SBSA 6.0 (RCiEP) tests\n", g_enable_pcie_tests);
+          Print(L"Invalid PCIe option.\nEnter \"-p 1\" to enable or \"-p 0\" to disable PCIe SBSA 7.1 (RCiEP) tests\n", g_enable_pcie_tests);
           return 0;
       }
   }
@@ -715,8 +734,16 @@ ShellAppMainsbsa (
   val_print(AVS_PRINT_TEST, "\n      ***  Starting PE tests ***  \n", 0);
   Status = val_pe_execute_tests(g_sbsa_level, val_pe_get_num());
 
+  val_print(AVS_PRINT_TEST, "\n      ***  Starting Memory tests ***  \n", 0);
+  Status |= val_memory_execute_tests(g_sbsa_level, val_pe_get_num());
+
   val_print(AVS_PRINT_TEST, "\n      ***  Starting GIC tests ***  \n", 0);
   Status |= val_gic_execute_tests(g_sbsa_level, val_pe_get_num());
+
+  if (g_sbsa_level > 3) {
+    val_print(AVS_PRINT_TEST, "\n      *** Starting SMMU  tests ***  \n", 0);
+    Status |= val_smmu_execute_tests(g_sbsa_level, val_pe_get_num());
+  }
 
   if (g_sbsa_level > 4)
   {
@@ -724,13 +751,22 @@ ShellAppMainsbsa (
     Status |= val_wd_execute_tests(g_sbsa_level, val_pe_get_num());
   }
 
-  if (g_sbsa_level > 3) {
-    val_print(AVS_PRINT_TEST, "\n      *** Starting SMMU  tests ***  \n", 0);
-    Status |= val_smmu_execute_tests(g_sbsa_level, val_pe_get_num());
+  if (g_sbsa_level > 5)
+  {
+    val_print(AVS_PRINT_TEST, "\n      *** Starting PCIe tests ***  \n", 0);
+    Status |= val_pcie_execute_tests(g_enable_pcie_tests, g_sbsa_level, val_pe_get_num());
   }
 
-  val_print(AVS_PRINT_TEST, "\n      ***  Starting Memory tests ***  \n", 0);
-  Status |= val_memory_execute_tests(g_sbsa_level, val_pe_get_num());
+  /*
+   * Configure Gic Redistributor and ITS to support
+   * Generation of LPIs.
+   */
+  configureGicIts();
+
+  if (g_sbsa_level > 2) {
+    val_print(AVS_PRINT_TEST, "\n      *** Starting PCIe Exerciser tests ***  \n", 0);
+    Status |= val_exerciser_execute_tests(g_sbsa_level);
+  }
 
   if (g_sbsa_level > 6) {
     val_print(AVS_PRINT_TEST, "\n      *** Starting MPAM tests ***  \n", 0);
@@ -746,24 +782,6 @@ ShellAppMainsbsa (
     val_print(AVS_PRINT_TEST, "\n      *** Starting RAS tests ***  \n", 0);
     Status |= val_ras_execute_tests(g_sbsa_level, val_pe_get_num());
   }
-
-  if (g_sbsa_level > 5)
-  {
-    val_print(AVS_PRINT_TEST, "\n      *** Starting PCIe tests ***  \n", 0);
-    Status |= val_pcie_execute_tests(g_enable_pcie_tests, g_sbsa_level, val_pe_get_num());
-  }
-
-  /*
-   * Configure Gic Redistributor and ITS to support
-   * Generation of LPIs.
-   */
-  configureGicIts();
-
-  if (g_sbsa_level > 3) {
-    val_print(AVS_PRINT_TEST, "\n      *** Starting PCIe Exerciser tests ***  \n", 0);
-    Status |= val_exerciser_execute_tests(g_sbsa_level);
-  }
-
 
 #ifdef ENABLE_NIST
   if (g_execute_nist == TRUE) {

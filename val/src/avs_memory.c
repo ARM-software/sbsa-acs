@@ -38,7 +38,7 @@ val_memory_execute_tests(uint32_t level, uint32_t num_pe)
   uint32_t status = 0;
   uint32_t i;
 
-  for (i = 0 ; i < MAX_TEST_SKIP_NUM ; i++) {
+  for (i = 0 ; i < g_num_skip ; i++) {
       if (g_skip_test_num[i] == AVS_MEM_MAP_TEST_NUM_BASE) {
           val_print(AVS_PRINT_TEST, "      USER Override - Skipping all memory tests \n", 0);
           return AVS_STATUS_SKIP;
@@ -301,6 +301,19 @@ void
 {
   return pal_aligned_alloc(alignment, size);
 
+}
+
+/**
+  @brief  Free Allocated buffer size by val_aligned_alloc.
+
+  @param  *addr   pointer to allocated memory
+
+  @return None
+**/
+void
+val_memory_free_aligned(void *addr)
+{
+  pal_mem_free_aligned(addr);
 }
 
 /**

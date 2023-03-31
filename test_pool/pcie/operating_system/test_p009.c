@@ -106,21 +106,25 @@ payload (void)
           mvec = dev_mvec;
           while(mvec) {
               if(mvec->vector.vector_irq_base < LPI_BASE) {
-                 val_print(AVS_PRINT_INFO, "     MSI vector irq %d is not an LPI\n", mvec->vector.vector_irq_base);
+                 val_print(AVS_PRINT_ERR,
+                    "       MSI vector irq %d is not an LPI\n", mvec->vector.vector_irq_base);
                  val_set_status (index, RESULT_FAIL (g_sbsa_level, TEST_NUM, mvec->vector.vector_irq_base));
                  status = 1;
               }
+
               mvec = mvec->next;
           }
+
           clean_msi_list (dev_mvec);
         }
       }
     }
+
     count--;
   }
 
   if (test_skip) {
-    val_print(AVS_PRINT_ERR, "\n       No MSI vectors found ", 0);
+    val_print(AVS_PRINT_DEBUG, "\n       No MSI vectors found ", 0);
     val_set_status (index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 0));
   } else if (!status) {
     val_set_status (index, RESULT_PASS(g_sbsa_level, TEST_NUM, 0));

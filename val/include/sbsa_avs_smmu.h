@@ -75,6 +75,9 @@ val_smmu_map(smmu_master_attributes_t master,
 void
 val_smmu_unmap(smmu_master_attributes_t master);
 
+void
+val_smmu_dump_eventq(void);
+
 uint32_t
 i001_entry(uint32_t num_pe);
 uint32_t

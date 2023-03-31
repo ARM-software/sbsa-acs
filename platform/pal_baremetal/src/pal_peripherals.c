@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2020-2022, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2023 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -45,11 +45,7 @@ pal_peripheral_create_info_table(PERIPHERAL_INFO_TABLE *peripheralInfoTable)
 
   uint32_t   DeviceBdf = 0;
   uint32_t   StartBdf  = 0;
-  uint32_t   reg_value;
-  uint32_t   pasid_cap_offset, max_pasid;
-  uint32_t   next_cap_offset;
-  uint32_t   curr_seg, curr_bus, curr_dev, curr_func;
-  uint32_t   i = 0;
+  uint32_t   bar_index;
   PERIPHERAL_INFO_BLOCK *per_info = NULL;
 
   if (peripheralInfoTable == NULL) {
@@ -63,6 +59,7 @@ pal_peripheral_create_info_table(PERIPHERAL_INFO_TABLE *peripheralInfoTable)
   peripheralInfoTable->header.num_sata = 0;
   peripheralInfoTable->header.num_uart = 0;
   peripheralInfoTable->header.num_all = 0;
+  per_info->base0 = 0;
 
   /* check for any USB Controllers */
   do {
@@ -71,47 +68,17 @@ pal_peripheral_create_info_table(PERIPHERAL_INFO_TABLE *peripheralInfoTable)
        DeviceBdf = pal_pcie_get_bdf(USB_CLASSCODE, StartBdf);
        if (DeviceBdf != 0) {
           per_info->type  = PERIPHERAL_TYPE_USB;
-          per_info->base0 = pal_pcie_get_base(DeviceBdf, BAR0);
-          per_info->bdf   = DeviceBdf;
-          per_info->max_pasids = 0;
-          per_info->flags = 0;
-          per_info->irq = 0;
-          curr_seg  = PCIE_EXTRACT_BDF_SEG(DeviceBdf);
-          curr_bus  = PCIE_EXTRACT_BDF_BUS(DeviceBdf);
-          curr_dev  = PCIE_EXTRACT_BDF_DEV(DeviceBdf);
-          curr_func = PCIE_EXTRACT_BDF_FUNC(DeviceBdf);
-          pal_pcie_read_cfg(curr_seg, curr_bus, curr_dev, curr_func, TYPE01_CPR, &reg_value);
-          next_cap_offset = (reg_value & TYPE01_CPR_MASK);
-          while (next_cap_offset)
+          for (bar_index = 0; bar_index < TYPE0_MAX_BARS; bar_index++)
           {
-             pal_pcie_read_cfg(curr_seg, curr_bus, curr_dev, curr_func, next_cap_offset, &reg_value);
-             if (((reg_value & PCIE_CIDR_MASK) == CID_MSI) || ((reg_value & PCIE_CIDR_MASK) == CID_MSIX))
-             {
-                per_info->flags = PER_FLAG_MSI_ENABLED;
-                break;
-              }
-              next_cap_offset = ((reg_value >> PCIE_NCPR_SHIFT) & PCIE_NCPR_MASK);
-           }
-
-          pasid_cap_offset = PCIE_ECAP_START;
-          while (pasid_cap_offset)
-          {
-             pal_pcie_read_cfg(curr_seg, curr_bus, curr_dev, curr_func, pasid_cap_offset, &reg_value);
-             if ((reg_value & PCIE_ECAP_CIDR_MASK) == ECID_PASID)
-             {
-                  pal_pcie_read_cfg(curr_seg, curr_bus, curr_dev, curr_func, pasid_cap_offset + PASID_OFFSET, &max_pasid);
-                  per_info->max_pasids = (max_pasid >> PASID_NUM_SHIFT) & PASID_NUM_MASK;
+              per_info->base0 = pal_pcie_get_base(DeviceBdf, bar_index);
+              if (per_info->base0 != 0)
                   break;
-             }
-             pasid_cap_offset = ((reg_value >> PCIE_ECAP_NCPR_SHIFT) & PCIE_ECAP_NCPR_MASK);
-
-           }
-
+          }
+          per_info->bdf   = DeviceBdf;
           print(AVS_PRINT_INFO, "Found a USB controller %4x \n", per_info->base0);
           peripheralInfoTable->header.num_usb++;
           peripheralInfoTable->header.num_all++;
           per_info++;
-          i++;
        }
        StartBdf = pal_increment_bus_dev(DeviceBdf);
 
@@ -125,48 +92,17 @@ pal_peripheral_create_info_table(PERIPHERAL_INFO_TABLE *peripheralInfoTable)
        DeviceBdf = pal_pcie_get_bdf(SATA_CLASSCODE, StartBdf);
        if (DeviceBdf != 0) {
           per_info->type  = PERIPHERAL_TYPE_SATA;
-          per_info->base0 = pal_pcie_get_base(DeviceBdf, BAR0);
-          per_info->base1 = pal_pcie_get_base(DeviceBdf, BAR5);
-          per_info->bdf   = DeviceBdf;
-          per_info->max_pasids = 0;
-          per_info->flags = 0;
-          per_info->irq = 0;
-          curr_seg  = PCIE_EXTRACT_BDF_SEG(DeviceBdf);
-          curr_bus  = PCIE_EXTRACT_BDF_BUS(DeviceBdf);
-          curr_dev  = PCIE_EXTRACT_BDF_DEV(DeviceBdf);
-          curr_func = PCIE_EXTRACT_BDF_FUNC(DeviceBdf);
-          pal_pcie_read_cfg(curr_seg, curr_bus, curr_dev, curr_func, TYPE01_CPR, &reg_value);
-          next_cap_offset = (reg_value & TYPE01_CPR_MASK);
-          while (next_cap_offset)
+          for (bar_index = 0; bar_index < TYPE0_MAX_BARS; bar_index++)
           {
-             pal_pcie_read_cfg(curr_seg, curr_bus, curr_dev, curr_func, next_cap_offset, &reg_value);
-             if (((reg_value & PCIE_CIDR_MASK) == CID_MSI) || ((reg_value & PCIE_CIDR_MASK) == CID_MSIX))
-             {
-                per_info->flags = PER_FLAG_MSI_ENABLED;
-                break;
-              }
-              next_cap_offset = ((reg_value >> PCIE_NCPR_SHIFT) & PCIE_NCPR_MASK);
-           }
-
-          pasid_cap_offset = PCIE_ECAP_START;
-          while (pasid_cap_offset)
-          {
-             pal_pcie_read_cfg(curr_seg, curr_bus, curr_dev, curr_func, pasid_cap_offset, &reg_value);
-             if ((reg_value & PCIE_ECAP_CIDR_MASK) == ECID_PASID)
-             {
-                  pal_pcie_read_cfg(curr_seg, curr_bus, curr_dev, curr_func, pasid_cap_offset + PASID_OFFSET, &max_pasid);
-                  per_info->max_pasids = (max_pasid >> PASID_NUM_SHIFT) & PASID_NUM_MASK;
+              per_info->base0 = pal_pcie_get_base(DeviceBdf, bar_index);
+              if (per_info->base0 != 0)
                   break;
-             }
-             pasid_cap_offset = ((reg_value >> PCIE_ECAP_NCPR_SHIFT) & PCIE_ECAP_NCPR_MASK);
-
-           }
-
+          }
+          per_info->bdf   = DeviceBdf;
           print(AVS_PRINT_INFO, "Found a SATA controller %4x \n", per_info->base0);
           peripheralInfoTable->header.num_sata++;
           peripheralInfoTable->header.num_all++;
           per_info++;
-          i++;
        }
        //Increment and check if we have more controllers
        StartBdf = pal_increment_bus_dev(DeviceBdf);
@@ -183,15 +119,7 @@ pal_peripheral_create_info_table(PERIPHERAL_INFO_TABLE *peripheralInfoTable)
     per_info->base0 = platform_uart_cfg.BaseAddress.Address;
     per_info->irq   = platform_uart_cfg.GlobalSystemInterrupt;
     per_info->type  = PERIPHERAL_TYPE_UART;
-    if(platform_uart_cfg.PciVendorId != 0xFFFF)
-    {
-       peripheralInfoTable->header.num_all++;
-       DeviceBdf = PCIE_CREATE_BDF(platform_uart_cfg.PciSegment, platform_uart_cfg.PciBusNumber,
-                                         platform_uart_cfg.PciDeviceNumber, platform_uart_cfg.PciFunctionNumber);
-       per_info->bdf = DeviceBdf;
-       per_info->flags = platform_uart_cfg.PciFlags;
-       per_info->max_pasids = 0;
-    }
+    peripheralInfoTable->header.num_all++;
     per_info++;
   }
 
@@ -261,19 +189,6 @@ pal_memory_create_info_table(MEMORY_INFO_TABLE *memoryInfoTable)
 
 }
 
-uint64_t
-pal_memory_ioremap(void *ptr, uint32_t size, uint32_t attr)
-{
-
-  return (uint64_t)ptr;
-}
-
-void
-pal_memory_unmap(void *ptr)
-{
-
-  return;
-}
 
 /**
   @brief  Return the address of unpopulated memory of requested

@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, 2022 Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018, 2022-2023 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -60,6 +60,10 @@
 #define PLATFORM_OVERRIDE_PCIE_MAX_BUS      256
 #define PLATFORM_OVERRIDE_PCIE_MAX_DEV      32
 #define PLATFORM_OVERRIDE_PCIE_MAX_FUNC     8
+
+/*Change PLATFORM_OVERRIDE_IRQ to non-zero value to use different MAX_IRQ_CNT*/
+#define PLATFORM_OVERRIDE_IRQ               0
+#define PLATFORM_OVERRIDE_MAX_IRQ_CNT       0xFFFF
 
 /* Change OVERRIDE_SMMU_BASE to non-zero value for this to take effect */
 #define PLATFORM_OVERRIDE_SMMU_BASE        0x0 //0x2B400000

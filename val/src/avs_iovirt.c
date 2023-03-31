@@ -438,7 +438,7 @@ val_iovirt_get_rc_smmu_index(uint32_t rc_seg_num, uint32_t rid)
   return AVS_INVALID_INDEX;
 }
 
-#ifdef TARGET_LINUX
+#if defined(TARGET_LINUX) || defined(TARGET_EMULATION)
 /**
   @brief   This API will call PAL layer to fill in the path of the hid passed in the
            hid parameter.

@@ -54,7 +54,7 @@ static uint32_t test_sequence_1B(uint8_t *addr)
       read_value = val_mmio_read8((addr_t)addr);
 
       if ((old_value != read_value && read_value == PCIE_UNKNOWN_RESPONSE)) {
-        val_print(AVS_PRINT_ERR, "\n Error in read and write 1B", 0);
+        val_print(AVS_PRINT_ERR, "\n       Error in read and write 1B", 0);
         val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
         return 1;
       }
@@ -78,7 +78,7 @@ uint32_t test_sequence_2B(uint16_t *addr)
       read_value = val_mmio_read16((addr_t)addr);
 
       if ((old_value != read_value && read_value == PCIE_UNKNOWN_RESPONSE)) {
-        val_print(AVS_PRINT_ERR, "\n Error in read and write 2B", 0);
+        val_print(AVS_PRINT_ERR, "\n       Error in read and write 2B", 0);
         val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 03));
         return 1;
       }
@@ -113,7 +113,7 @@ payload(void)
   status |= val_pe_install_esr(EXCEPT_AARCH64_SERROR, esr);
   if (status)
   {
-      val_print(AVS_PRINT_ERR, "\n      Failed in installing the exception handler", 0);
+      val_print(AVS_PRINT_ERR, "\n       Failed in installing the exception handler", 0);
       val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
       return;
   }
@@ -168,8 +168,10 @@ exception_return:
        bar_data = 0;
   }
 
-  if (test_skip == 1)
+  if (test_skip == 1) {
+      val_print(AVS_PRINT_DEBUG, "\n       No MMIO BARs detected. Skipping test", 0);
       val_set_status(pe_index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
+  }
   else if (test_fails)
       val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, test_fails));
   else

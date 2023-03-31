@@ -24,8 +24,8 @@ ACS_DIR ?= .
 TEST_POOL = $(ACS_DIR)/
 
 obj-m += sbsa_acs_test.o
-sbsa_acs_test-objs += $(TEST_POOL)/pcie/test_p001.o \
-    $(TEST_POOL)/pcie/test_p002.o $(TEST_POOL)/pcie/test_p005.o \
+sbsa_acs_test-objs += $(TEST_POOL)/pcie/operating_system/test_p001.o \
+    $(TEST_POOL)/pcie/operating_system/test_p002.o $(TEST_POOL)/pcie/operating_system/test_p005.o \
     $(TEST_POOL)/pcie/operating_system/test_p009.o \
     $(TEST_POOL)/smmu/operating_system/test_i016.o
 

@@ -249,7 +249,7 @@ void val_pcie_enumerate(void)
   @brief   This API executes all the PCIe tests sequentially
            1. Caller       -  Application layer.
            2. Prerequisite -  val_pcie_create_info_table()
-  @param   enable_pcie - Flag to enable PCIe SBSA 6.0 (RCiEP) compliance Test
+  @param   enable_pcie - Flag to enable PCIe SBSA 7.1 (RCiEP) compliance Test
   @param   level       - level of compliance being tested for.
   @param   num_pe      - the number of PE to run these tests on.
   @return  Consolidated status of all the tests run.
@@ -259,7 +259,7 @@ val_pcie_execute_tests(uint32_t enable_pcie, uint32_t level, uint32_t num_pe)
 {
   uint32_t status = AVS_STATUS_PASS, i;
 
-  for (i=0 ; i<MAX_TEST_SKIP_NUM ; i++){
+  for (i = 0; i < g_num_skip; i++) {
       if (g_skip_test_num[i] == AVS_PCIE_TEST_NUM_BASE) {
           val_print(AVS_PRINT_TEST, "\n USER Override - Skipping all PCIe tests \n", 0);
           return AVS_STATUS_SKIP;
@@ -283,7 +283,7 @@ val_pcie_execute_tests(uint32_t enable_pcie, uint32_t level, uint32_t num_pe)
 
   g_curr_module = 1 << PCIE_MODULE;
 
-#ifdef TARGET_LINUX
+#if defined(TARGET_LINUX) || defined(TARGET_EMULATION)
   status = p009_entry(num_pe);  /* This covers GIC rule */
 #endif
   if (level < 6) {
@@ -299,7 +299,7 @@ val_pcie_execute_tests(uint32_t enable_pcie, uint32_t level, uint32_t num_pe)
   }
 
 
-#ifdef TARGET_LINUX
+#if defined(TARGET_LINUX) || defined(TARGET_EMULATION)
   status |= p005_entry(num_pe);
 #else
 
@@ -351,6 +351,7 @@ val_pcie_execute_tests(uint32_t enable_pcie, uint32_t level, uint32_t num_pe)
     status |= p060_entry(num_pe);
     status |= p061_entry(num_pe);
     status |= p062_entry(num_pe);
+    status |= p063_entry(num_pe); /* iEP/RP only */
 
   }
 #endif
@@ -502,7 +503,8 @@ val_pcie_create_device_bdf_table()
       return PCIE_SUCCESS;
 
   /* Allocate memory to store BDFs for the valid pcie device functions */
-  g_pcie_bdf_table = (pcie_device_bdf_table *) pal_mem_alloc(PCIE_DEVICE_BDF_TABLE_SZ);
+  g_pcie_bdf_table = (pcie_device_bdf_table *) pal_aligned_alloc(MEM_ALIGN_8K,
+                                                                 PCIE_DEVICE_BDF_TABLE_SZ);
   if (!g_pcie_bdf_table)
   {
       val_print(AVS_PRINT_ERR, "\n       PCIe BDF table memory allocation failed          ", 0);
@@ -556,8 +558,9 @@ val_pcie_create_device_bdf_table()
 
                       dp_type = val_pcie_device_port_type(bdf);
                       val_print(AVS_PRINT_INFO, "\n       dp_type 0x%x ", dp_type);
-                      /* SBSA 6.1 have only rciep and iep/rp rules only */
-                      if ((dp_type != RCiEP) && (dp_type != iEP_EP) && (dp_type != iEP_RP))
+                      /* From SBSA 6.1 have rciep and iep/rp rules only */
+                      if ((dp_type != RCiEP) && (dp_type != iEP_EP) &&
+                          (dp_type != iEP_RP) && (dp_type != RCEC))
                           continue;
                       status = pal_pcie_check_device_valid(bdf);
                       if (status)
