@@ -15,7 +15,7 @@
  * limitations under the License.
 **/
 
-#include "FVP/include/platform_override_struct.h"
+#include "FVP/RDN2/include/platform_override_struct.h"
 #include "include/pal_common_support.h"
 
 extern PLATFORM_OVERRIDE_TIMER_INFO_TABLE platform_timer_cfg;

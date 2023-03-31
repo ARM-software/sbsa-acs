@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2020-2021 Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2023 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,19 +17,13 @@
 
 #include "include/pal_common_support.h"
 #include "include/pal_pcie_enum.h"
-#include "FVP/include/platform_override_struct.h"
-
-#ifdef ENABLE_OOB
-/* Below code is not applicable for Bare-metal
- * Only for FVP OOB experience
- */
-
-#include <Library/UefiBootServicesTableLib.h>
-#include <Protocol/Cpu.h>
-#endif
+#include "FVP/RDN2/include/platform_override_struct.h"
 
 extern PE_INFO_TABLE platform_pe_cfg;
+extern PLATFORM_OVERRIDE_CACHE_INFO_TABLE platform_cache_cfg;
+extern PLATFORM_OVERRIDE_PPTT_INFO_TABLE platform_pptt_cfg;
 extern PE_INFO_TABLE *g_pe_info_table;
+extern int32_t gPsciConduit;
 
 uint8_t   *gSecondaryPeStack;
 uint64_t  gMpidrMax;
@@ -37,12 +31,10 @@ uint64_t  gMpidrMax;
 #define SIZE_STACK_SECONDARY_PE  0x100          //256 bytes per core
 #define UPDATE_AFF_MAX(src,dest,mask)  ((dest & mask) > (src & mask) ? (dest & mask) : (src & mask))
 
-uint64_t
-pal_get_madt_ptr();
-
 void
 ArmCallSmc (
-  ARM_SMC_ARGS *Args
+   ARM_SMC_ARGS *Args,
+   int32_t Conduit
   );
 
 
@@ -133,6 +125,8 @@ pal_pe_create_info_table(PE_INFO_TABLE *PeTable)
       PeTable->pe_info[PeIndex].mpidr = platform_pe_cfg.pe_info[PeIndex].mpidr;
       PeTable->pe_info[PeIndex].pe_num = PeIndex;
       PeTable->pe_info[PeIndex].pmu_gsiv = platform_pe_cfg.pe_info[PeIndex].pmu_gsiv;
+      PeTable->pe_info[PeIndex].gmain_gsiv = platform_pe_cfg.pe_info[PeIndex].gmain_gsiv;
+      PeTable->pe_info[PeIndex].acpi_proc_uid = PeIndex;
       pal_pe_data_cache_ops_by_va((uint64_t)(&PeTable->pe_info[PeIndex]), CLEAN_AND_INVALIDATE);
 
       MpidrAff0Max = UPDATE_AFF_MAX(MpidrAff0Max, PeTable->pe_info[PeIndex].mpidr, 0x00000000ff);
@@ -151,53 +145,6 @@ pal_pe_create_info_table(PE_INFO_TABLE *PeTable)
 }
 
 /**
-  @brief  Install Exception Handler through BAREMETAL Interrupt registration
-
-  @param  ExceptionType  - AARCH64 Exception type
-  @param  esr            - Function pointer of the exception handler
-
-  @return status of the API
-**/
-uint32_t
-pal_pe_install_esr(uint32_t ExceptionType,  void (*esr)(uint64_t, void *))
-{
-
-#ifdef ENABLE_OOB
- /* Below code is not applicable for Bare-metal
- * Only for FVP OOB experience
- */
-
-   /*
-   *   1. Unregister the default exception handler
-   *   2. Register the handler to receive interrupts
-   */
-  EFI_STATUS  Status;
-  EFI_CPU_ARCH_PROTOCOL   *Cpu;
-
-  // Get the CPU protocol that this driver requires.
-  Status = gBS->LocateProtocol (&gEfiCpuArchProtocolGuid, NULL, (VOID **)&Cpu);
-  if (EFI_ERROR (Status)) {
-    return Status;
-  }
-
-  // Unregister the default exception handler.
-  Status = Cpu->RegisterInterruptHandler (Cpu, ExceptionType, NULL);
-  if (EFI_ERROR (Status)) {
-    return Status;
-  }
-
-  // Register to receive interrupts
-  Status = Cpu->RegisterInterruptHandler (Cpu, ExceptionType, (EFI_CPU_INTERRUPT_HANDLER)esr);
-  if (EFI_ERROR (Status)) {
-    return Status;
-  }
-
-  return EFI_SUCCESS;
-#endif
-  return 1;
-}
-
-/**
   @brief  Make the SMC call using AARCH64 Assembly code
           SMC calls can take up to 7 arguments and return up to 4 return values.
           Therefore, the 4 first fields in the ARM_SMC_ARGS structure are used
@@ -208,14 +155,14 @@ pal_pe_install_esr(uint32_t ExceptionType,  void (*esr)(uint64_t, void *))
   @return  None
 **/
 void
-pal_pe_call_smc(ARM_SMC_ARGS *ArmSmcArgs)
+pal_pe_call_smc(ARM_SMC_ARGS *ArmSmcArgs, int32_t Conduit)
 {
 
   if(ArmSmcArgs == NULL){
     return;
   }
 
-  ArmCallSmc (ArmSmcArgs);
+  ArmCallSmc (ArmSmcArgs, Conduit);
 }
 
 void
@@ -238,61 +185,9 @@ pal_pe_execute_payload(ARM_SMC_ARGS *ArmSmcArgs)
   }
 
   ArmSmcArgs->Arg2 = (uint64_t)ModuleEntryPoint;
-  pal_pe_call_smc(ArmSmcArgs);
+  pal_pe_call_smc(ArmSmcArgs, gPsciConduit);
 }
 
-/**
-  @brief Update the ELR to return from exception handler to a desired address
-
-  @param  context - exception context structure
-  @param  offset - address with which ELR should be updated
-
-  @return  None
-**/
-void
-pal_pe_update_elr(void *context, uint64_t offset)
-{
-#ifdef ENABLE_OOB
- /* Below code is not applicable for Bare-metal
- * Only for FVP OOB experience
- */
-
-  ((EFI_SYSTEM_CONTEXT_AARCH64*)context)->ELR = offset;
-#endif
-
-}
-
-/**
-  @brief Get the Exception syndrome from Baremetal exception handler
-
-  @param  context - exception context structure
-
-  @return  ESR
-**/
-uint64_t
-pal_pe_get_esr(void *context)
-{
-  /*TO DO - Baremetal
-   * Place holder to return ESR from context saving structure
-   */
-  return 0;
-}
-
-/**
-  @brief Get the FAR from Baremetal exception handler
-
-  @param  context - exception context structure
-
-  @return  FAR
-**/
-uint64_t
-pal_pe_get_far(void *context)
-{
-  /* TO DO - Baremetal
-   * Place holder to return FAR from context saving structure
-   */
-  return 0;
-}
 
 void
 DataCacheCleanInvalidateVA(uint64_t addr);
@@ -342,4 +237,121 @@ pal_pe_get_num()
       return 0;
   }
   return g_pe_info_table->header.num_of_pe;
+}
+
+/**
+  @brief  This API prints cache info table and cache entry indices for each pe.
+  @param  CacheTable Pointer to cache info table.
+  @param  PeTable Pointer to pe info table.
+  @return None
+**/
+void
+pal_cache_dump_info_table(CACHE_INFO_TABLE *CacheTable, PE_INFO_TABLE *PeTable)
+{
+  uint32_t i, j;
+  CACHE_INFO_ENTRY *curr_entry;
+  PE_INFO_ENTRY *pe_entry;
+  curr_entry = CacheTable->cache_info;
+  pe_entry = PeTable->pe_info;
+
+  /*Iterate cache info table and print cache info entries*/
+  for (i = 0 ; i < CacheTable->num_of_cache ; i++) {
+    print(AVS_PRINT_INFO, "\nCache info * Index %d *", i);
+    print(AVS_PRINT_INFO, "\n  Offset:                  0x%llx", curr_entry->my_offset);
+    print(AVS_PRINT_INFO, "\n  Type:                    0x%llx", curr_entry->cache_type);
+    print(AVS_PRINT_INFO, "\n  Cache ID:                0x%llx", curr_entry->cache_id);
+    print(AVS_PRINT_INFO, "\n  Size:                    0x%llx", curr_entry->size);
+    print(AVS_PRINT_INFO, "\n  Next level index:        %d", curr_entry->next_level_index);
+    print(AVS_PRINT_INFO, "\n  Private flag:            0x%llx\n", curr_entry->is_private);
+    curr_entry++;
+  }
+
+  print(AVS_PRINT_INFO, "\nPE level one cache index info");
+  /*Iterate PE info table and print level one cache index info*/
+  for (i = 0 ; i < PeTable->header.num_of_pe; i++) {
+    print(AVS_PRINT_INFO, "\nPE Index * %d *", i);
+    print(AVS_PRINT_INFO, "\n  Level 1 Cache index(s) :");
+
+    for (j = 0; pe_entry->level_1_res[j] != DEFAULT_CACHE_IDX && j < MAX_L1_CACHE_RES; j++) {
+      print(AVS_PRINT_INFO, " %d,", pe_entry->level_1_res[j]);
+    }
+    print(AVS_PRINT_INFO, "\n");
+    pe_entry++;
+  }
+}
+
+
+/**
+  @brief  This function stores level 1 cache info entry index(s) to pe info table.
+          Caller - pal_cache_create_info_table
+  @param  PeTable Pointer to pe info table.
+  @param  acpi_uid ACPI UID of the pe entry, to which index(s) to be stored.
+  @param  cache_index index of the level 1 cache entry.
+  @param  res_index private resource index of pe private cache.
+  @return None
+**/
+void
+pal_cache_store_pe_res(CACHE_INFO_TABLE *CacheTable, PE_INFO_TABLE *PeTable)
+{
+  PE_INFO_ENTRY *entry;
+  entry = PeTable->pe_info;
+
+  uint32_t i, j, res_index = 0;
+
+
+    for (i = 0; i < PeTable->header.num_of_pe; i++) {
+        for (j = 0 ; j < CacheTable->num_of_cache; j++) {
+          if (platform_pptt_cfg.pptt_info[i].cache_id[res_index] == CacheTable->cache_info[j].cache_id) {
+            entry->level_1_res[res_index] = j;
+            res_index++;
+            if(res_index >= 2)
+            {
+                res_index = 0;
+                break;
+            }
+          }
+        }
+      entry++;
+    }
+}
+
+
+/**
+  @brief  Parses ACPI PPTT table and populates the local cache info table.
+          Prerequisite - pal_pe_create_info_table
+  @param  CacheTable Pointer to pre-allocated memory for cache info table.
+  @return None
+**/
+void
+pal_cache_create_info_table(CACHE_INFO_TABLE *CacheTable, PE_INFO_TABLE *PeTable)
+{
+  uint32_t i;
+
+  if (CacheTable == NULL) {
+    print(AVS_PRINT_ERR, " Unable to create cache info table, input pointer is NULL \n");
+    return;
+  }
+
+  CACHE_INFO_ENTRY *curr_entry;
+  curr_entry = CacheTable->cache_info;
+
+  /* initialize cache info table entries */
+  CacheTable->num_of_cache =  platform_cache_cfg.num_of_cache;
+
+  for (i = 0; i < CacheTable->num_of_cache; i++)
+  {
+    curr_entry->my_offset = platform_cache_cfg.cache_info[i].offset;
+    curr_entry->flags.size_property_valid = platform_cache_cfg.cache_info[i].flags & SIZE_MASK;
+    curr_entry->flags.cache_type_valid = (platform_cache_cfg.cache_info[i].flags & CACHE_TYPE_MASK) >> CACHE_TYPE_SHIFT;
+    curr_entry->flags.cache_id_valid = (platform_cache_cfg.cache_info[i].flags & CACHE_ID_MASK) >> CACHE_ID_SHIFT;
+    curr_entry->size = platform_cache_cfg.cache_info[i].size;
+    curr_entry->cache_type = platform_cache_cfg.cache_info[i].cache_type;
+    curr_entry->cache_id = platform_cache_cfg.cache_info[i].cache_id;
+    curr_entry->is_private = platform_cache_cfg.cache_info[i].is_private;
+    curr_entry->next_level_index = platform_cache_cfg.cache_info[i].next_level_index;
+    curr_entry++;
+   }
+
+  pal_cache_store_pe_res(CacheTable, PeTable);
+  pal_cache_dump_info_table(CacheTable, PeTable);
 }

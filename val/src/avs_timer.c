@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2019, 2021-2022 Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2023, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,7 +20,7 @@
 #include "include/sbsa_avs_timer_support.h"
 #include "include/sbsa_avs_timer.h"
 #include "include/sbsa_avs_common.h"
-
+#include "include/sbsa_avs_mmu.h"
 
 TIMER_INFO_TABLE  *g_timer_info_table;
 
@@ -35,39 +35,24 @@ TIMER_INFO_TABLE  *g_timer_info_table;
 uint32_t
 val_timer_execute_tests(uint32_t level, uint32_t num_pe)
 {
-  uint32_t status, status_sys_timer, i;
+  uint32_t status = AVS_STATUS_SKIP, i;
 
-  for (i=0 ; i<MAX_TEST_SKIP_NUM ; i++){
+  for (i = 0; i < g_num_skip; i++) {
       if (g_skip_test_num[i] == AVS_TIMER_TEST_NUM_BASE) {
           val_print(AVS_PRINT_TEST, "      USER Override - Skipping all Timer tests \n", 0);
           return AVS_STATUS_SKIP;
       }
   }
 
-  g_curr_module = 1 << TIMER_MODULE;
-  status = t001_entry(num_pe);
-  status |= t002_entry(num_pe);
-  status |= t003_entry(num_pe);
-
-  /* Run this test if current exception level is EL2 */
-  if (val_pe_reg_read(CurrentEL) == AARCH64_EL2) {
-      status |= t004_entry(num_pe);
+  if (g_single_module != SINGLE_MODULE_SENTINEL && g_single_module != AVS_TIMER_TEST_NUM_BASE &&
+       (g_single_test == SINGLE_MODULE_SENTINEL ||
+         (g_single_test - AVS_TIMER_TEST_NUM_BASE > 100 ||
+          g_single_test - AVS_TIMER_TEST_NUM_BASE < 0))) {
+    val_print(AVS_PRINT_TEST, " USER Override - Skipping all Timer tests \n", 0);
+    val_print(AVS_PRINT_TEST, " (Running only a single module)\n", 0);
+    return AVS_STATUS_SKIP;
   }
 
-  status |= t005_entry(num_pe);
-  status |= t006_entry(num_pe);
-  status_sys_timer = t007_entry(num_pe);
-  if (status_sys_timer != AVS_STATUS_PASS)
-      val_print(AVS_PRINT_WARN, "\n     *** Skipping remaining System timer tests *** \n", 0);
-  else{
-      status_sys_timer |= t008_entry(num_pe);
-  }
-
-  status |= status_sys_timer;
-
-  g_timer_info_table->header.sys_timer_status = status_sys_timer;
-
-  val_print_test_end(status, "Timer");
 
   return status;
 }
@@ -293,6 +278,10 @@ void
 val_timer_create_info_table(uint64_t *timer_info_table)
 {
 
+  uint64_t timer_num;
+  uint64_t gt_entry;
+  uint64_t timer_entry;
+
   if (timer_info_table == NULL) {
       val_print(AVS_PRINT_ERR, "Input for Create Info table cannot be NULL \n", 0);
       return;
@@ -307,8 +296,28 @@ val_timer_create_info_table(uint64_t *timer_info_table)
 
   val_timer_set_phy_el1(0);
 
-  val_print(AVS_PRINT_TEST, " TIMER_INFO: Number of system timers  : %4d \n", g_timer_info_table->header.num_platform_timer);
+  val_print(AVS_PRINT_TEST, " TIMER_INFO: Number of system timers  : %4d \n",
+                                                  g_timer_info_table->header.num_platform_timer);
 
+  timer_num = val_timer_get_info(TIMER_INFO_NUM_PLATFORM_TIMERS, 0);
+
+  while (timer_num) {
+      --timer_num;
+
+      if (val_timer_get_info(TIMER_INFO_IS_PLATFORM_TIMER_SECURE, timer_num))
+          continue;    //Skip Secure Timer
+
+      gt_entry = val_timer_get_info(TIMER_INFO_SYS_CNTL_BASE, timer_num);
+      timer_entry = val_timer_get_info(TIMER_INFO_SYS_CNT_BASE_N, timer_num);
+
+      val_print(AVS_PRINT_DEBUG, "   Add entry %lx entry in memmap", gt_entry);
+      if (val_mmu_update_entry(gt_entry, 0x10000))
+          val_print(AVS_PRINT_WARN, "\n   Adding %lx entry failed", gt_entry);
+
+      val_print(AVS_PRINT_DEBUG, "\n   Add entry %lx entry in memmap", timer_entry);
+      if (val_mmu_update_entry(timer_entry, 0x10000))
+          val_print(AVS_PRINT_WARN, "\n   Adding %lx entry failed", timer_entry);
+  }
 }
 
 /**

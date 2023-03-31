@@ -1,5 +1,5 @@
 ## @file
-# Copyright (c) 2016-2020,2021 Arm Limited or its affiliates. All rights reserved.
+# Copyright (c) 2016-2020,2021,2023 Arm Limited or its affiliates. All rights reserved.
 #  SPDX-License-Identifier : Apache-2.0
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -39,6 +39,21 @@
   src/pal_peripherals.c
   src/pal_misc.c
   src/pal_dma.c
+  src/pal_ras.c
+  src/pal_pmu.c
+  src/pal_mpam.c
+  src/pal_hmat.c
+  FVP/src/pal_bm_dma.c
+  FVP/src/pal_bm_exerciser.c
+  FVP/src/pal_bm_gic.c
+  FVP/src/pal_bm_iovirt.c
+  FVP/src/pal_bm_misc.c
+  FVP/src/pal_bm_pcie.c
+  FVP/src/pal_bm_pe.c
+  FVP/src/pal_bm_peripherals.c
+  FVP/src/pal_bm_pmu.c
+  FVP/src/pal_bm_ras.c
+  FVP/src/pal_bm_smmu.c
 
 [Packages]
   StdLib/StdLib.dec

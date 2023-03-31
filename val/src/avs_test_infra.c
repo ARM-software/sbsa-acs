@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2020, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2023 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -78,7 +78,6 @@ val_print_raw(uint64_t uart_address, uint32_t level, char8_t *string,
 {
 
   if (level >= g_print_level){
-
       pal_print_raw(uart_address, string, data);
   }
 
@@ -225,7 +224,7 @@ val_mmio_write64(addr_t addr, uint64_t data)
 }
 
 /**
-  @brief  This API prinst the test number, description and
+  @brief  This API prints the test number, description and
           sets the test status to pending for the input number of PEs.
           1. Caller       - Application layer
           2. Prerequisite - val_allocate_shared_mem
@@ -238,7 +237,8 @@ val_mmio_write64(addr_t addr, uint64_t data)
   @return         Skip - if the user has overriden to skip the test.
  **/
 uint32_t
-val_initialize_test(uint32_t test_num, char8_t *desc, uint32_t num_pe, uint32_t level)
+val_initialize_test(uint32_t test_num, char8_t *desc, uint32_t num_pe, uint32_t level,
+                    char8_t *ruleid)
 {
 
   uint32_t i;
@@ -246,7 +246,7 @@ val_initialize_test(uint32_t test_num, char8_t *desc, uint32_t num_pe, uint32_t 
 
   val_print(AVS_PRINT_ERR, "%4d : ", test_num); //Always print this
   val_print(AVS_PRINT_TEST, desc, 0);
-  val_report_status(0, SBSA_AVS_START(level, test_num));
+  val_report_status(0, SBSA_AVS_START(level, test_num), ruleid);
   val_pe_initialize_default_exception_handler(val_pe_default_esr);
 
   g_sbsa_tests_total++;
@@ -254,12 +254,21 @@ val_initialize_test(uint32_t test_num, char8_t *desc, uint32_t num_pe, uint32_t 
   for (i = 0; i < num_pe; i++)
       val_set_status(i, RESULT_PENDING(level, test_num));
 
-  for (i=0 ; i<MAX_TEST_SKIP_NUM ; i++){
+  for (i = 0; i < g_num_skip ; i++) {
       if (g_skip_test_num[i] == test_num) {
           val_print(AVS_PRINT_TEST, "\n       USER OVERRIDE  - Skip Test        ", 0);
           val_set_status(index, RESULT_SKIP(g_sbsa_level, test_num, 0));
           return AVS_STATUS_SKIP;
       }
+  }
+
+  if ((g_single_test != SINGLE_TEST_SENTINEL && test_num != g_single_test) &&
+        (g_single_module == SINGLE_MODULE_SENTINEL ||
+          (test_num - g_single_module >= 100 ||
+           test_num - g_single_module < 0))) {
+    val_print(AVS_PRINT_TEST, "\n       USER OVERRIDE VIA SINGLE TEST - Skip Test        ", 0);
+    val_set_status(index, RESULT_SKIP(g_sbsa_level, test_num, 0));
+    return AVS_STATUS_SKIP;
   }
 
   return AVS_STATUS_PASS;
@@ -447,7 +456,7 @@ val_run_test_payload(uint32_t test_num, uint32_t num_pe, void (*payload)(void), 
   @return     Success or on failure - status of the last failed PE
  **/
 uint32_t
-val_check_for_error(uint32_t test_num, uint32_t num_pe)
+val_check_for_error(uint32_t test_num, uint32_t num_pe, char8_t *ruleid)
 {
   uint32_t i;
   uint32_t status = 0;
@@ -458,7 +467,7 @@ val_check_for_error(uint32_t test_num, uint32_t num_pe)
      of pe_info_table but num_pe is 1 for SOC tests */
   if (num_pe == 1) {
       status = val_get_status(my_index);
-      val_report_status(my_index, status);
+      val_report_status(my_index, status, ruleid);
       if (IS_TEST_PASS(status)) {
           g_sbsa_tests_pass++;
           return AVS_STATUS_PASS;
@@ -474,14 +483,14 @@ val_check_for_error(uint32_t test_num, uint32_t num_pe)
       status = val_get_status(i);
       //val_print(AVS_PRINT_ERR, "Status %4x \n", status);
       if (IS_TEST_FAIL_SKIP(status)) {
-          val_report_status(i, status);
+          val_report_status(i, status, ruleid);
           error_flag += 1;
           break;
       }
   }
 
   if (!error_flag)
-      val_report_status(my_index, status);
+      val_report_status(my_index, status, ruleid);
 
   if (IS_TEST_PASS(status)) {
       g_sbsa_tests_pass++;
@@ -578,7 +587,7 @@ val_memcpy(void *dst_buffer, void *src_buffer, uint32_t len)
 
   @param  MicroSeconds  The minimum number of microseconds to delay.
 
-  @return The value of MicroSeconds inputted.
+  @return zero for success
 
 **/
 uint64_t

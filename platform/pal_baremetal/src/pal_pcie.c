@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2020-2022, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2023, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,7 +17,7 @@
 
 #include "include/pal_pcie_enum.h"
 #include "include/pal_common_support.h"
-#include "FVP/include/platform_override_struct.h"
+#include "FVP/RDN2/include/platform_override_struct.h"
 
 extern pcie_device_bdf_table *g_pcie_bdf_table;
 extern PCIE_INFO_TABLE platform_pcie_cfg;
@@ -81,22 +81,16 @@ pal_pcie_ecam_base(uint32_t seg, uint32_t bus, uint32_t dev, uint32_t func)
 {
 
   uint8_t ecam_index;
-  uint8_t sec_bus;
-  uint8_t sub_bus;
-  uint32_t reg_value;
   uint64_t ecam_base;
 
   ecam_index = 0;
   ecam_base = 0;
 
-  pal_pci_cfg_read(bus, dev, func, BUS_NUM_REG_OFFSET, &reg_value);
-  sec_bus = ((reg_value >> SECBN_SHIFT) & SECBN_MASK);
-  sub_bus = ((reg_value >> SUBBN_SHIFT) & SUBBN_MASK);
 
   while (ecam_index < platform_pcie_cfg.num_entries)
   {
-      if ((sec_bus >= platform_pcie_cfg.block[ecam_index].start_bus_num) &&
-          (sub_bus <= platform_pcie_cfg.block[ecam_index].end_bus_num) &&
+      if ((bus >= platform_pcie_cfg.block[ecam_index].start_bus_num) &&
+          (bus <= platform_pcie_cfg.block[ecam_index].end_bus_num) &&
           (seg == platform_pcie_cfg.block[ecam_index].segment_num ))
       {
           ecam_base = platform_pcie_cfg.block[ecam_index].ecam_base;
@@ -220,14 +214,27 @@ uint32_t pal_pcie_scan_bridge_devices_and_check_memtype(uint32_t seg, uint32_t b
 
   uint32_t Bus, Dev, Func;
   uint32_t status = 0;
-  uint64_t ecam_base;
+  uint64_t ecam_base, ecam_index = 0;
   uint32_t reg_value, header_type;
   uint32_t data;
   uint8_t  mem_type;
+  uint32_t max_bus = 0;
 
+  while (ecam_index < platform_pcie_cfg.num_entries)
+  {
+       if ((bus >= platform_pcie_cfg.block[ecam_index].start_bus_num) &&
+           (bus <= platform_pcie_cfg.block[ecam_index].end_bus_num) &&
+           (seg == platform_pcie_cfg.block[ecam_index].segment_num ))
+       {
+           max_bus = platform_pcie_cfg.block[ecam_index].end_bus_num;
+           print(AVS_PRINT_INFO, "\n    max bus   BDF - 0x%x", max_bus);
+           break;
+       }
+       ecam_index++;
+  }
 
   pal_pcie_read_cfg(seg, bus, dev, fn, BUS_NUM_REG_OFFSET, &reg_value);
-  for (Bus = 0; Bus < PCIE_MAX_BUS; Bus++)
+  for (Bus = 0; Bus <= max_bus; Bus++)
   {
     for (Dev = 0; Dev < PCIE_MAX_DEV; Dev++)
     {
@@ -481,21 +488,6 @@ pal_pcie_get_dma_coherent(uint32_t seg, uint32_t bus, uint32_t dev, uint32_t fn)
 }
 
 /**
-  @brief   This API checks the PCIe hierarchy fo P2P support
-           1. Caller       -  Test Suite
-  @return  1 - P2P feature not supported 0 - P2P feature supported
-**/
-uint32_t
-pal_pcie_p2p_support(void)
-{
-  // This API checks the PCIe hierarchy for P2P support as defined
-  // in the PCIe platform configuration
-
-  return PLATFORM_PCIE_P2P_NOT_SUPPORTED;
-
-}
-
-/**
   @brief   This API checks the PCIe device P2P support
            1. Caller       -  Test Suite
   @param   bdf      - PCIe BUS/Device/Function
@@ -551,21 +543,6 @@ pal_pcie_is_devicedma_64bit(uint32_t seg, uint32_t bus, uint32_t dev, uint32_t f
 }
 
 /**
-    @brief   Return if driver present for pcie device
-    @param   bus        PCI bus address
-    @param   dev        PCI device address
-    @param   fn         PCI function number
-    @return  Driver present : 0 or 1
-**/
-uint32_t
-pal_pcie_device_driver_present(uint32_t seg, uint32_t bus, uint32_t dev, uint32_t fn)
-{
-
-  return 1;
-
-}
-
-/**
   @brief  This API checks if a PCIe device has an Address
           Translation Cache or not.
   @param   bdf      - PCIe BUS/Device/Function
@@ -587,24 +564,6 @@ pal_pcie_is_cache_present(uint32_t seg, uint32_t bus, uint32_t dev, uint32_t fn)
               return platform_pcie_device_hierarchy.device[i].atc_present;
         }
   }
-
-  return 0;
-}
-
-/**
-    @brief   Create a list of MSI(X) vectors for a device
-
-    @param   bus        PCI bus address
-    @param   dev        PCI device address
-    @param   fn         PCI function number
-    @param   mvector    pointer to a MSI(X) list address
-
-    @return  mvector    list of MSI(X) vectors
-    @return  number of MSI(X) vectors
-**/
-uint32_t
-pal_get_msi_vectors(uint32_t Seg, uint32_t Bus, uint32_t Dev, uint32_t Fn, PERIPHERAL_VECTOR_LIST **MVector)
-{
 
   return 0;
 }
@@ -712,36 +671,6 @@ pal_pcie_get_root_port_bdf(uint32_t *Seg, uint32_t *Bus, uint32_t *Dev, uint32_t
   }
 
   return 1;
-}
-
-/**
-    @brief   Gets RP support of transaction forwarding.
-
-    @param   bus        PCI bus address
-    @param   dev        PCI device address
-    @param   fn         PCI function number
-    @param   seg        PCI segment number
-
-    @return  0 if rp not involved in transaction forwarding
-             1 if rp is involved in transaction forwarding
-**/
-uint32_t
-pal_pcie_get_rp_transaction_frwd_support(uint32_t seg, uint32_t bus, uint32_t dev, uint32_t fn)
-{
-  return 1;
-}
-
-/**
-  @brief  Returns whether a PCIe Function is an on-chip peripheral or not
-
-  @param  bdf        - Segment/Bus/Dev/Func in the format of PCIE_CREATE_BDF
-  @return Returns TRUE if the Function is on-chip peripheral, FALSE if it is
-          not an on-chip peripheral
-**/
-uint32_t
-pal_pcie_is_onchip_peripheral(uint32_t bdf)
-{
-  return 0;
 }
 
 /**

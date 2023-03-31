@@ -1,5 +1,5 @@
 ## @file
- # Copyright (c) 2022, Arm Limited or its affiliates. All rights reserved.
+ # Copyright (c) 2022-2023, Arm Limited or its affiliates. All rights reserved.
  # SPDX-License-Identifier : Apache-2.0
  #
  # Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,13 +18,13 @@
 SBSA_ROOT:= $(SBSA_PATH)
 SBSA_DIR := $(SBSA_ROOT)/platform/pal_baremetal/src/
 SBSA_A64_DIR := $(SBSA_ROOT)/platform/pal_baremetal/src/AArch64/
-FVP_DIR  := $(SBSA_ROOT)/platform/pal_baremetal/FVP/src/
+FVP_DIR  := $(SBSA_ROOT)/platform/pal_baremetal/FVP/RDN2/src/
 
 CFLAGS    += -I$(SBSA_ROOT)/
 CFLAGS    += -I$(SBSA_ROOT)/val/include/
 CFLAGS    += -I$(SBSA_ROOT)/platform/pal_baremetal/
-CFLAGS    += -I$(SBSA_ROOT)/platform/pal_baremetal/FVP/
-CFLAGS    += -I$(SBSA_ROOT)/platform/pal_baremetal/FVP/include/
+CFLAGS    += -I$(SBSA_ROOT)/platform/pal_baremetal/FVP/RDN2/
+CFLAGS    += -I$(SBSA_ROOT)/platform/pal_baremetal/FVP/RDN2/include/
 ASFLAGS   += -I$(SBSA_ROOT)/platform/pal_baremetal/src/AArch64/
 
 OUT_DIR = $(SBSA_ROOT)/build/
@@ -35,7 +35,7 @@ CC = $(GCC49_AARCH64_PREFIX)gcc -march=armv8.2-a
 AR = $(GCC49_AARCH64_PREFIX)ar
 CC_FLAGS = -g -Os -fshort-wchar -fno-builtin -fno-strict-aliasing -Wall -Werror -Wextra -Wmissing-declarations -Wstrict-prototypes -Wconversion -Wsign-conversion -Wstrict-overflow
 
-DEPS = $(SBSA_ROOT)/platform/pal_baremetal/FVP/include/platform_override_fvp.h
+DEPS = $(SBSA_ROOT)/platform/pal_baremetal/FVP/RDN2/include/platform_override_fvp.h
 DEPS += $(SBSA_ROOT)/val/include/pal_interface.h
 
 FILES   += $(foreach files,$(SBSA_DIR)/,$(wildcard $(files)/*.S))

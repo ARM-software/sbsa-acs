@@ -1,5 +1,5 @@
 ## @file
-# Copyright (c) 2016-2021, Arm Limited or its affiliates. All rights reserved.
+# Copyright (c) 2016-2023, Arm Limited or its affiliates. All rights reserved.
 #  SPDX-License-Identifier : Apache-2.0
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -39,6 +39,10 @@
   src/pal_peripherals.c
   src/pal_exerciser.c
   src/pal_smmu.c
+  src/pal_hmat.c
+  src/pal_pmu.c
+  src/pal_mpam.c
+  src/pal_ras.c
 
 [Packages]
   ArmPkg/ArmPkg.dec

@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2022, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2023, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,7 +20,7 @@
 
 #include "pal_interface.h"
 
-/* set G_PRINT_LEVEL to one of the below values in your application entry 
+/* set G_PRINT_LEVEL to one of the below values in your application entry
   to control the verbosity of the prints */
 #define AVS_PRINT_ERR   5      /* Only Errors. use this to de-clutter the terminal and focus only on specifics */
 #define AVS_PRINT_WARN  4      /* Only warnings & errors. use this to de-clutter the terminal and focus only on specifics */
@@ -40,7 +40,7 @@
 
 #define VAL_EXTRACT_BITS(data, start, end) ((data >> start) & ((1ul << (end-start+1))-1))
 
-#ifndef TARGET_UEFI
+#ifndef TARGET_EMULATION
 #define TRUE 1
 #define FALSE 0
 #define BIT0 (1)
@@ -50,6 +50,9 @@
 #define BIT14 (1 << 14)
 #define BIT29 (1 << 29)
 #endif
+
+#define SINGLE_TEST_SENTINEL   10000
+#define SINGLE_MODULE_SENTINEL 10001
 
 /* GENERIC VAL APIs */
 void val_allocate_shared_mem(void);
@@ -66,6 +69,13 @@ void    *val_memcpy(void *dest_buffer, void *src_buffer, uint32_t len);
 uint64_t val_time_delay_ms(uint64_t time_ms);
 
 /* VAL PE APIs */
+
+typedef enum {
+  PE_FEAT_MPAM,
+  PE_FEAT_PMU,
+  PE_FEAT_RAS
+} PE_FEAT_NAME;
+
 uint32_t val_pe_execute_tests(uint32_t level, uint32_t num_pe);
 uint32_t val_pe_create_info_table(uint64_t *pe_info_table);
 void     val_pe_free_info_table(void);
@@ -74,7 +84,11 @@ uint64_t val_pe_get_mpid_index(uint32_t index);
 uint32_t val_pe_get_pmu_gsiv(uint32_t index);
 uint64_t val_pe_get_mpid(void);
 uint32_t val_pe_get_index_mpid(uint64_t mpid);
+uint32_t val_pe_get_index_uid(uint32_t uid);
+uint32_t val_pe_get_uid(uint64_t mpidr);
 uint32_t val_pe_install_esr(uint32_t exception_type, void (*esr)(uint64_t, void *));
+uint32_t val_pe_get_gmain_gsiv(uint32_t index);
+uint32_t val_pe_feat_check(PE_FEAT_NAME pe_feature);
 
 void     val_execute_on_pe(uint32_t index, void (*payload)(void), uint64_t args);
 void     val_suspend_pe(uint32_t power_state, uint64_t entry, uint32_t context_id);
@@ -167,7 +181,7 @@ typedef enum {
 void     val_wd_create_info_table(uint64_t *wd_info_table);
 void     val_wd_free_info_table(void);
 uint32_t val_wd_execute_tests(uint32_t level, uint32_t num_pe);
-uint64_t val_wd_get_info(uint32_t index, uint32_t info_type);
+uint64_t val_wd_get_info(uint32_t index, WD_INFO_TYPE_e info_type);
 uint32_t val_wd_set_ws0(uint32_t index, uint32_t timeout);
 uint64_t val_get_counter_frequency(void);
 
@@ -200,6 +214,7 @@ void val_pcie_enable_msa(uint32_t bdf);
 uint32_t val_pcie_is_msa_enabled(uint32_t bdf);
 void val_pcie_clear_urd(uint32_t bdf);
 uint32_t val_pcie_is_urd(uint32_t bdf);
+void val_pcie_enable_eru(uint32_t bdf);
 void val_pcie_disable_eru(uint32_t bdf);
 uint32_t val_pcie_bitfield_check(uint32_t bdf, uint64_t *bf_entry);
 uint32_t val_pcie_register_bitfields_check(uint64_t *bf_info_table, uint32_t table_size);
@@ -214,8 +229,11 @@ uint32_t val_pcie_is_device_status_error(uint32_t bdf);
 uint32_t val_pcie_is_sig_target_abort(uint32_t bdf);
 void val_pcie_clear_sig_target_abort(uint32_t bdf);
 uint32_t val_pcie_mem_get_offset(uint32_t type);
+uint32_t val_pcie_link_cap_support(uint32_t bdf);
 
 /* IO-VIRT APIs */
+#define INVALID_NAMED_COMP_INFO 0xFFFFFFFFFFFFFFFFULL
+
 typedef enum {
   SMMU_NUM_CTRL = 1,
   SMMU_CTRL_BASE,
@@ -244,8 +262,23 @@ typedef enum {
   RC_SEGMENT_NUM,
   RC_ATS_ATTRIBUTE,
   RC_MEM_ATTRIBUTE,
-  RC_IOVIRT_BLOCK
+  RC_IOVIRT_BLOCK,
+  RC_SMMU_BASE
 }PCIE_RC_INFO_e;
+
+typedef enum {
+  NUM_NAMED_COMP = 1,
+  NAMED_COMP_CCA_ATTR,
+  NAMED_COMP_DEV_OBJ_NAME,
+  NAMED_COMP_SMMU_BASE
+} NAMED_COMP_INFO_e;
+
+typedef enum {
+  PMCG_NUM_CTRL = 1,
+  PMCG_CTRL_BASE,
+  PMCG_IOVIRT_BLOCK,
+  PMCG_NODE_REF
+} PMCG_INFO_e;
 
 void     val_iovirt_create_info_table(uint64_t *iovirt_info_table);
 void     val_iovirt_free_info_table(void);
@@ -253,6 +286,11 @@ uint32_t val_iovirt_get_rc_smmu_index(uint32_t rc_seg_num, uint32_t rid);
 uint32_t val_smmu_execute_tests(uint32_t level, uint32_t num_pe);
 uint64_t val_smmu_get_info(SMMU_INFO_e, uint32_t index);
 uint64_t val_iovirt_get_smmu_info(SMMU_INFO_e type, uint32_t index);
+
+#if defined(TARGET_LINUX) || defined(TARGET_EMULATION)
+uint32_t val_get_device_path(const char *hid, char hid_path[][MAX_NAMED_COMP_LENGTH]);
+uint32_t val_smmu_is_etr_behind_catu(char *etr_path);
+#endif
 
 typedef enum {
     DMA_NUM_CTRL = 1,
@@ -310,6 +348,7 @@ typedef enum {
   UART_BASE0,
   UART_GSIV,
   UART_FLAGS,
+  ANY_BASE0,
   ANY_FLAGS,
   ANY_GSIV,
   ANY_BDF,
@@ -321,6 +360,7 @@ void     val_peripheral_free_info_table(void);
 uint32_t val_peripheral_execute_tests(uint32_t level, uint32_t num_pe);
 uint64_t val_peripheral_get_info(PERIPHERAL_INFO_e info_type, uint32_t index);
 uint32_t val_peripheral_is_pcie(uint32_t bdf);
+void     val_peripheral_dump_info(void);
 
 /* Memory Tests APIs */
 typedef enum {
@@ -328,11 +368,20 @@ typedef enum {
   MEM_TYPE_NORMAL,
   MEM_TYPE_RESERVED,
   MEM_TYPE_NOT_POPULATED,
+  MEM_TYPE_PERSISTENT,
   MEM_TYPE_LAST_ENTRY
 }MEMORY_INFO_e;
 
 #define MEM_ATTR_UNCACHED  0x2000
 #define MEM_ATTR_CACHED    0x1000
+#define MEM_ALIGN_4K       0x1000
+#define MEM_ALIGN_8K       0x2000
+#define MEM_ALIGN_16K      0x4000
+#define MEM_ALIGN_32K      0x8000
+#define MEM_ALIGN_64K      0x10000
+
+/* MMU entries APIs*/
+uint32_t val_mmu_update_entry(uint64_t address, uint32_t size);
 
 /* Identify memory type using MAIR attribute, refer to ARM ARM VMSA for details */
 
@@ -347,24 +396,113 @@ uint32_t val_memory_execute_tests(uint32_t level, uint32_t num_pe);
 uint64_t val_memory_get_info(addr_t addr, uint64_t *attr);
 uint64_t val_memory_get_unpopulated_addr(addr_t *addr, uint32_t instance);
 
-/* Secure mode EL3 Firmware tests */
-
-typedef struct {
-  uint64_t   test_index;
-  uint64_t   test_arg01;
-  uint64_t   test_arg02;
-  uint64_t   test_arg03;
-} SBSA_SMC_t;
-
-void     val_secure_call_smc(SBSA_SMC_t *smc);
-uint32_t val_secure_get_result(SBSA_SMC_t *smc, uint32_t timeout);
-uint32_t val_secure_execute_tests(uint32_t level, uint32_t num_pe);
-uint32_t val_secure_trusted_firmware_init(void);
-
 /* PCIe Exerciser tests */
 uint32_t val_exerciser_execute_tests(uint32_t level);
 
 /* NIST Statistical tests */
 uint32_t val_nist_execute_tests(uint32_t level, uint32_t num_pe);
 uint32_t val_nist_generate_rng(uint32_t *rng_buffer);
+
+/* PMU test related APIS*/
+void     val_pmu_create_info_table(uint64_t *pmu_info_table);
+void     val_pmu_free_info_table(void);
+uint32_t val_pmu_execute_tests(uint32_t level, uint32_t num_pe);
+
+/*Cache related info APIs*/
+#define INVALID_CACHE_INFO 0xFFFFFFFFFFFFFFFF
+#define CACHE_TABLE_EMPTY 0xFFFFFFFF
+
+typedef enum {
+  CACHE_TYPE,
+  CACHE_SIZE,
+  CACHE_ID,
+  CACHE_NEXT_LEVEL_IDX,
+  CACHE_PRIVATE_FLAG
+} CACHE_INFO_e;
+
+void val_cache_create_info_table(uint64_t *cache_info_table);
+void val_cache_free_info_table(void);
+uint64_t val_cache_get_info(CACHE_INFO_e type, uint32_t cache_index);
+uint32_t val_cache_get_llc_index(void);
+uint32_t val_cache_get_pe_l1_cache_res(uint32_t res_index);
+
+/* MPAM tests APIs */
+#define MPAM_INVALID_INFO 0xFFFFFFFF
+#define SRAT_INVALID_INFO 0xFFFFFFFF
+#define HMAT_INVALID_INFO 0xFFFFFFFF
+
+uint32_t val_mpam_execute_tests(uint32_t level, uint32_t num_pe);
+void val_mpam_create_info_table(uint64_t *mpam_info_table);
+void val_mpam_free_info_table(void);
+
+typedef enum {
+  MPAM_RSRC_TYPE_PE_CACHE,
+  MPAM_RSRC_TYPE_MEMORY,
+  MPAM_RSRC_TYPE_SMMU,
+  MPAM_RSRC_TYPE_MEM_SIDE_CACHE,
+  MPAM_RSRC_TYPE_ACPI_DEVICE,
+  MPAM_RSRC_TYPE_UNKNOWN = 0xFF  /* 0x05-0xFE Reserved for future use */
+} MPAM_RSRC_LOCATOR_TYPE;
+
+/* MPAM info request types*/
+typedef enum {
+  MPAM_MSC_RSRC_COUNT,
+  MPAM_MSC_RSRC_RIS,
+  MPAM_MSC_RSRC_TYPE,
+  MPAM_MSC_BASE_ADDR,
+  MPAM_MSC_ADDR_LEN,
+  MPAM_MSC_RSRC_DESC1,
+  MPAM_MSC_NRDY
+} MPAM_INFO_e;
+
+/* RAS APIs */
+#define INVALID_RAS2_INFO 0xFFFFFFFFFFFFFFFFULL
+#define INVALID_RAS_REG_VAL 0xDEADDEADDEADDEADULL
+#define RAS2_FEATURE_TYPE_MEMORY 0x0
+
+typedef enum {
+  RAS2_NUM_MEM_BLOCK,
+  RAS2_PROX_DOMAIN,
+  RAS2_SCRUB_SUPPORT
+} RAS2_MEM_INFO_e;
+
+uint32_t val_ras_execute_tests(uint32_t level, uint32_t num_pe);
+uint32_t val_ras_create_info_table(uint64_t *ras_info_table);
+uint32_t val_ras_get_info(uint32_t info_type, uint32_t param1, uint64_t *ret_data);
+void val_ras2_create_info_table(uint64_t *ras2_info_table);
+void val_ras2_free_info_table(void);
+uint64_t val_ras2_get_mem_info(RAS2_MEM_INFO_e type, uint32_t index);
+
+/* HMAT APIs */
+void val_hmat_create_info_table(uint64_t *hmat_info_table);
+void val_hmat_free_info_table(void);
+
+/* SRAT APIs */
+typedef enum {
+  SRAT_MEM_NUM_MEM_RANGE,
+  SRAT_MEM_BASE_ADDR,
+  SRAT_MEM_ADDR_LEN,
+  SRAT_GICC_PROX_DOMAIN,
+  SRAT_GICC_PROC_UID,
+  SRAT_GICC_REMOTE_PROX_DOMAIN
+} SRAT_INFO_e;
+
+void val_srat_create_info_table(uint64_t *srat_info_table);
+void val_srat_free_info_table(void);
+uint64_t val_srat_get_info(SRAT_INFO_e type, uint64_t prox_domain);
+
+#define PMU_INVALID_INFO 0xFFFFFFFFFFFFFFFF
+#define PMU_INVALID_INDEX 0xFFFFFFFF
+
+/* PMU info request types */
+typedef enum {
+  PMU_NODE_TYPE,       /* PMU Node type               */
+  PMU_NODE_BASE0,      /* Page 0 Base address         */
+  PMU_NODE_BASE1,      /* Page 1 Base address         */
+  PMU_NODE_PRI_INST,   /* Primary instance            */
+  PMU_NODE_SEC_INST,   /* Secondary instance          */
+  PMU_NODE_COUNT,      /* PMU Node count              */
+  PMU_NODE_DP_EXTN,    /* Dual page extension support */
+} PMU_INFO_e;
+
 #endif

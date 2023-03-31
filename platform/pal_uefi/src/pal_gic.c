@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2021, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2023, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,9 +19,6 @@
 #include <Library/BaseMemoryLib.h>
 #include <Library/UefiBootServicesTableLib.h>
 #include <Library/UefiLib.h>
-
-#include "Include/IndustryStandard/Acpi61.h"
-#include <Protocol/AcpiTable.h>
 #include <Protocol/HardwareInterrupt.h>
 #include <Protocol/HardwareInterrupt2.h>
 

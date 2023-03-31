@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2019, 2021-2022 Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2023, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -138,6 +138,8 @@ uint32_t log2_page_size(uint64_t size)
 
 /**
   @brief Create stage 1 or stage 2 page table, with given memory addresses and attributes
+         Note: This API updates existing translation table if pgt_desc->pgt_base is not NULL
+               else it created new table and updated pgt_desc->pgt_base with the address.
   @param mem_desc - Array of memory addresses and attributes needed for page table creation.
   @param pgt_desc - Data structure for output page table base and input translation attributes.
   @return status
@@ -157,15 +159,22 @@ uint32_t val_pgt_create(memory_region_descriptor_t *mem_desc, pgt_descriptor_t *
     val_print(PGT_DEBUG_LEVEL, "\n      val_pgt_create: nbits_per_level = %d    ", bits_per_level);
     val_print(PGT_DEBUG_LEVEL, "\n      val_pgt_create: page_size_log2 = %d     ", page_size_log2);
 
-    tt_base = (uint64_t*) val_memory_alloc_pages(1);
-    if (tt_base == NULL)
-    {
-        val_print(AVS_PRINT_ERR, "\n      val_pgt_create: page allocation failed     ", 0);
-        return AVS_STATUS_ERR;
+    /* check whether input page descriptor has base addr of translation table
+       to use. If the pgt_base member is NULL allocate a page to create a new
+       table, else update existing translation table */
+    if (pgt_desc->pgt_base == (uint64_t) NULL) {
+        tt_base = (uint64_t *) val_memory_alloc_pages(1);
+        if (tt_base == NULL) {
+            val_print(AVS_PRINT_ERR, "\n      val_pgt_create: page allocation failed     ", 0);
+            return AVS_STATUS_ERR;
+        }
+        val_memory_set(tt_base, page_size, 0);
     }
-    val_memory_set(tt_base, page_size, 0);
+    else
+        tt_base = (uint64_t *) pgt_desc->pgt_base;
+
     tt_desc.tt_base = tt_base;
-    pgt_addr_mask = ((0x1ull << (48 - page_size_log2)) - 1) << page_size_log2;
+    pgt_addr_mask = ((0x1ull << (pgt_desc->ias - page_size_log2)) - 1) << page_size_log2;
 
     for (mem_desc_iter = mem_desc; mem_desc_iter->length != 0; ++mem_desc_iter)
     {

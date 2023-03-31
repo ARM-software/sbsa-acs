@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018,2023 Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -43,8 +43,6 @@ call_drv_get_status(unsigned long int *arg0, unsigned long int *arg1, unsigned l
 
 
     fd = fopen("/proc/sbsa", "r");
-
-    fseek(fd, 0, SEEK_SET);
 
     if (NULL == fd)
     {
@@ -199,8 +197,6 @@ int read_from_proc_sbsa_msg() {
   sbsa_msg_parms_t msg_params;
 
   fd = fopen("/proc/sbsa_msg", "r");
-
-  fseek(fd, 0, SEEK_SET);
 
   if (NULL == fd) {
     printf("fopen failed \n");

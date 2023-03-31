@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2022, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2023, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -52,7 +52,7 @@ val_pcie_read_cfg(uint32_t bdf, uint32_t offset, uint32_t *data)
 
 
   if ((bus >= PCIE_MAX_BUS) || (dev >= PCIE_MAX_DEV) || (func >= PCIE_MAX_FUNC)) {
-     val_print(AVS_PRINT_ERR, "Invalid Bus/Dev/Func  %x \n", bdf);
+     val_print(AVS_PRINT_ERR, "\n       Invalid Bus/Dev/Func  %x", bdf);
      return PCIE_NO_MAPPING;
   }
 
@@ -74,15 +74,13 @@ val_pcie_read_cfg(uint32_t bdf, uint32_t offset, uint32_t *data)
   }
 
   if (ecam_base == 0) {
-      val_print(AVS_PRINT_ERR, "\n       Read PCIe_CFG: ECAM Base is zero ", 0);
+      val_print(AVS_PRINT_ERR, "\n       Read PCIe_CFG: ECAM Base is zero for bdf %x", bdf);
       return PCIE_NO_MAPPING;
   }
 
   /* There are 8 functions / device, 32 devices / Bus and each has a 4KB config space */
   cfg_addr = (bus * PCIE_MAX_DEV * PCIE_MAX_FUNC * 4096) + \
                (dev * PCIE_MAX_FUNC * 4096) + (func * 4096);
-
-  val_print(AVS_PRINT_INFO, "\n Calculated config address is %llx", ecam_base + cfg_addr + offset);
 
   *data = pal_mmio_read(ecam_base + cfg_addr + offset);
   return 0;
@@ -251,7 +249,7 @@ void val_pcie_enumerate(void)
   @brief   This API executes all the PCIe tests sequentially
            1. Caller       -  Application layer.
            2. Prerequisite -  val_pcie_create_info_table()
-  @param   enable_pcie - Flag to enable PCIe SBSA 6.0 (RCiEP) compliance Test
+  @param   enable_pcie - Flag to enable PCIe SBSA 7.1 (RCiEP) compliance Test
   @param   level       - level of compliance being tested for.
   @param   num_pe      - the number of PE to run these tests on.
   @return  Consolidated status of all the tests run.
@@ -259,21 +257,40 @@ void val_pcie_enumerate(void)
 uint32_t
 val_pcie_execute_tests(uint32_t enable_pcie, uint32_t level, uint32_t num_pe)
 {
-  uint32_t status, i;
+  uint32_t status = AVS_STATUS_PASS, i;
 
-  for (i=0 ; i<MAX_TEST_SKIP_NUM ; i++){
+  for (i = 0; i < g_num_skip; i++) {
       if (g_skip_test_num[i] == AVS_PCIE_TEST_NUM_BASE) {
           val_print(AVS_PRINT_TEST, "\n USER Override - Skipping all PCIe tests \n", 0);
           return AVS_STATUS_SKIP;
       }
   }
-   if (pcie_bdf_table_list_flag == 1) {
+
+  if (pcie_bdf_table_list_flag == 1) {
     val_print(AVS_PRINT_WARN, "\n     *** Created device list with valid bdf doesn't match \
                     with the platform pcie device hierarchy, Skipping PCIE tests *** \n", 0);
     return AVS_STATUS_SKIP;
   }
 
+  if (g_single_module != SINGLE_MODULE_SENTINEL && g_single_module != AVS_PCIE_TEST_NUM_BASE &&
+       (g_single_test == SINGLE_MODULE_SENTINEL ||
+         (g_single_test - AVS_PCIE_TEST_NUM_BASE > 100 ||
+          g_single_test - AVS_PCIE_TEST_NUM_BASE < 0))) {
+    val_print(AVS_PRINT_TEST, " USER Override - Skipping all PCIE tests \n", 0);
+    val_print(AVS_PRINT_TEST, " (Running only a single module)\n", 0);
+    return AVS_STATUS_SKIP;
+  }
+
   g_curr_module = 1 << PCIE_MODULE;
+
+
+  status = p009_entry(num_pe);  /* This covers GIC rule */
+
+  if (level < 6) {
+      val_print(AVS_PRINT_TEST, " RCiEP and iEP tests are for sbsa level 6+ \n", 0);
+      return AVS_STATUS_SKIP;
+  }
+
   status = p001_entry(num_pe);
 
   if (status != AVS_STATUS_PASS) {
@@ -281,34 +298,20 @@ val_pcie_execute_tests(uint32_t enable_pcie, uint32_t level, uint32_t num_pe)
     return status;
   }
 
-  status |= p002_entry(num_pe);
-  status |= p003_entry(num_pe);
-  status |= p006_entry(num_pe);
-  status |= p007_entry(num_pe);
-  status |= p008_entry(num_pe);
-  status |= p009_entry(num_pe);
-  status |= p011_entry(num_pe);
-  status |= p012_entry(num_pe);
-  status |= p010_entry(num_pe);
-  status |= p013_entry(num_pe);
-  status |= p014_entry(num_pe);
-  status |= p015_entry(num_pe);
 
-  if (level > 3) {
-    status |= p016_entry(num_pe);
-    status |= p017_entry(num_pe);
-    status |= p018_entry(num_pe);
-    status |= p019_entry(num_pe);
-  }
+  status |= p005_entry(num_pe);
+
   if (g_pcie_bdf_table->num_entries == 0) {
     val_print(AVS_PRINT_WARN, "\n     *** No Valid Devices Found, Skipping remaining PCIE tests *** \n", 0);
     return AVS_STATUS_SKIP;
   }
 
+  status |= p003_entry(num_pe);
+
   if (enable_pcie) {
     status |= p020_entry(num_pe);
     status |= p021_entry(num_pe);
-    status |= p022_entry(num_pe);
+    status |= p022_entry(num_pe); /* iEP/RP only */
     status |= p023_entry(num_pe);
     status |= p024_entry(num_pe);
     status |= p025_entry(num_pe);
@@ -322,28 +325,31 @@ val_pcie_execute_tests(uint32_t enable_pcie, uint32_t level, uint32_t num_pe)
     status |= p033_entry(num_pe);
     status |= p034_entry(num_pe);
     status |= p035_entry(num_pe);
-    status |= p036_entry(num_pe);
-    status |= p037_entry(num_pe);
-    status |= p038_entry(num_pe);
-    status |= p039_entry(num_pe);
-    status |= p040_entry(num_pe);
+    status |= p036_entry(num_pe); /* iEP/RP only */
+    status |= p037_entry(num_pe); /* iEP/RP only */
+    status |= p038_entry(num_pe); /* iEP/RP only */
+    status |= p039_entry(num_pe); /* iEP/RP only */
     status |= p041_entry(num_pe);
     status |= p042_entry(num_pe);
-    status |= p043_entry(num_pe);
-    status |= p044_entry(num_pe);
-    status |= p045_entry(num_pe);
+    status |= p043_entry(num_pe); /* iEP/RP only */
+    status |= p044_entry(num_pe); /* iEP/RP only */
+    status |= p045_entry(num_pe); /* iEP/RP only */
     status |= p046_entry(num_pe);
-    status |= p047_entry(num_pe);
-    status |= p048_entry(num_pe);
+    status |= p047_entry(num_pe); /* iEP/RP only */
+    status |= p048_entry(num_pe); /* iEP/RP only */
     status |= p049_entry(num_pe);
     status |= p050_entry(num_pe);
-    status |= p051_entry(num_pe);
+    status |= p051_entry(num_pe); /* iEP/RP only */
     status |= p052_entry(num_pe);
-    status |= p053_entry(num_pe);
-    status |= p054_entry(num_pe);
-    status |= p055_entry(num_pe);
-    status |= p056_entry(num_pe);
+    status |= p056_entry(num_pe); /* iEP/RP only */
     status |= p057_entry(num_pe);
+    status |= p058_entry(num_pe);
+    status |= p059_entry(num_pe);
+    status |= p060_entry(num_pe);
+    status |= p061_entry(num_pe);
+    status |= p062_entry(num_pe);
+    status |= p063_entry(num_pe); /* iEP/RP only */
+
   }
 
   val_print_test_end(status, "PCIe");
@@ -367,7 +373,7 @@ val_pcie_print_device_info(void)
 
   if (bdf_tbl_ptr->num_entries == 0)
   {
-    val_print(AVS_PRINT_ERR, " PCIE_INFO: BDF Table : No Devices Found\n", 0);
+    val_print(AVS_PRINT_DEBUG, "  BDF Table: No RCiEP or iEP found\n", 0);
     return;
   }
 
@@ -485,13 +491,15 @@ val_pcie_create_device_bdf_table()
   uint32_t reg_value;
   uint32_t cid_offset;
   uint32_t status;
+  uint32_t dp_type;
 
   /* if table is already present, return success */
   if (g_pcie_bdf_table)
       return PCIE_SUCCESS;
 
   /* Allocate memory to store BDFs for the valid pcie device functions */
-  g_pcie_bdf_table = (pcie_device_bdf_table *) pal_mem_alloc(PCIE_DEVICE_BDF_TABLE_SZ);
+  g_pcie_bdf_table = (pcie_device_bdf_table *) pal_aligned_alloc(MEM_ALIGN_8K,
+                                                            PCIE_DEVICE_BDF_TABLE_SZ);
   if (!g_pcie_bdf_table)
   {
       val_print(AVS_PRINT_ERR, "\n       PCIe BDF table memory allocation failed          ", 0);
@@ -543,28 +551,36 @@ val_pcie_create_device_bdf_table()
                       if (val_pcie_find_capability(bdf, PCIE_CAP, CID_PCIECS,  &cid_offset) != PCIE_SUCCESS)
                           continue;
 
+                      dp_type = val_pcie_device_port_type(bdf);
+                      val_print(AVS_PRINT_INFO, "\n       dp_type 0x%x ", dp_type);
+                      /* From SBSA 6.1 have rciep and iep/rp rules only */
+                      if ((dp_type != RCiEP) && (dp_type != iEP_EP) &&
+                          (dp_type != iEP_RP) && (dp_type != RCEC))
+                          continue;
                       status = pal_pcie_check_device_valid(bdf);
                       if (status)
                           continue;
 
                       g_pcie_bdf_table->device[g_pcie_bdf_table->num_entries++].bdf = bdf;
-
                   }
               }
           }
       }
   }
 
-  val_print(AVS_PRINT_INFO,
-            " PCIE_INFO: Number of valid BDFs is %x\n", g_pcie_bdf_table->num_entries);
-
   /* Sanity Check : Confirm all EP (normal, integrated) have a rootport */
   if (val_pcie_populate_device_rootport())
   {
       /* Discard the bdf table */
       g_pcie_bdf_table->num_entries = 0;
+      val_print(AVS_PRINT_TEST,
+            " PCIE_INFO: Number of BDFs found      :    %x\n", g_pcie_bdf_table->num_entries);
+
       return 1;
   }
+  val_print(AVS_PRINT_TEST,
+            " PCIE_INFO: Number of BDFs found      :    %x\n", g_pcie_bdf_table->num_entries);
+
   return 0;
 }
 
@@ -1446,6 +1462,43 @@ val_pcie_is_sig_target_abort(uint32_t bdf)
 }
 
 /**
+  @brief  Enable error reporting of the PCIe Function to the upstream
+  @param  bdf   - Segment/Bus/Dev/Func in the format of PCIE_CREATE_BDF
+  @return None
+**/
+void
+val_pcie_enable_eru(uint32_t bdf)
+{
+
+  uint32_t reg_value;
+  uint32_t dis_mask;
+  uint32_t pciecs_base;
+
+  /* Set SERR# Enable bit in the Command Register to enable reporting
+   * upstream of Non-fatal and Fatal errors detected by the Function.
+   */
+  val_pcie_read_cfg(bdf, TYPE01_CR, &reg_value);
+  dis_mask = (1 << CR_SERRE_SHIFT);
+  val_pcie_write_cfg(bdf, TYPE01_CR, reg_value | dis_mask);
+
+  /* Get the PCI Express Capability structure offset and
+   * use that offset to read the Device Control register
+   */
+  val_pcie_find_capability(bdf, PCIE_CAP, CID_PCIECS, &pciecs_base);
+  val_pcie_read_cfg(bdf, pciecs_base + DCTLR_OFFSET, &reg_value);
+
+  /* Set Correctable, Non-fatal, Fatal, UR Reporting Enable bits in the
+   * Device Control Register to enable reporting upstream of these errors
+   * detected by the Function.
+   */
+  dis_mask = (1 << DCTLR_CERE_SHIFT |
+              1 << DCTLR_NFERE_SHIFT |
+              1 << DCTLR_FERE_SHIFT |
+              1 << DCTLR_URRE_SHIFT);
+  val_pcie_write_cfg(bdf, pciecs_base + DCTLR_OFFSET, reg_value | dis_mask);
+}
+
+/**
   @brief  Disable error reporting of the PCIe Function to the upstream
   @param  bdf   - Segment/Bus/Dev/Func in the format of PCIE_CREATE_BDF
   @return None
@@ -1738,6 +1791,7 @@ val_pcie_get_mmio_bar(uint32_t bdf, void *base)
           val_print(AVS_PRINT_ERR, "\n       pal_exerciser_get_data() not implemented", 0);
       }
 
+      /* data.bar_space.base_addr will be zero if no MMIO bar are present for the function */
       *(uint64_t *)base = (uint64_t)data.bar_space.base_addr;
       return;
   }
@@ -1893,8 +1947,8 @@ val_pcie_get_rootport(uint32_t bdf, uint32_t *rp_bdf)
 
   val_print(AVS_PRINT_DEBUG, " DP type 0x%x ", dp_type);
 
-  /* If the device is RP, set its rootport value to same */
-  if (dp_type == RP)
+  /* If the device is RP or iEP_RP, set its rootport value to same */
+  if ((dp_type == RP) || (dp_type == iEP_RP))
   {
       *rp_bdf = bdf;
       return 0;
@@ -1957,7 +2011,7 @@ val_pcie_parent_is_rootport(uint32_t dsf_bdf, uint32_t *rp_bdf)
       dp_type = val_pcie_device_port_type(bdf);
 
       /* Check if this table entry is a Root Port */
-      if (dp_type == RP)
+      if ((dp_type == RP) || (dp_type == iEP_RP))
       {
          /* Check if device is a direct child of this root port */
           val_pcie_read_cfg(bdf, TYPE1_PBN, &reg_value);
@@ -2143,4 +2197,47 @@ uint32_t val_pcie_get_ecam_index(uint32_t bdf, uint32_t *ecam_index)
 uint32_t val_pcie_mem_get_offset(uint32_t type)
 {
   return pal_pcie_mem_get_offset(type);
+}
+
+/**
+  @brief  Checks if link Capabilities is supported
+  @param  bdf    -  Segment/Bus/Dev/Func in the format of PCIE_CREATE_BDF
+  @return 0 if link capability is not supported else 1.
+**/
+uint32_t
+val_pcie_link_cap_support(uint32_t bdf)
+{
+  uint32_t pciecs_base;
+  uint32_t reg_value = 0xFFFFFFFF;
+
+  val_pcie_find_capability(bdf, PCIE_CAP, CID_PCIECS, &pciecs_base);
+  val_pcie_read_cfg(bdf, pciecs_base + LCAPR_OFFSET, &reg_value);
+
+  if (reg_value != 0) {
+     val_print(AVS_PRINT_ERR, "\n       Link Capabilities reg check failed", 0);
+     return 1;
+  }
+
+  reg_value = 0xFFFFFFFF;
+  val_pcie_read_cfg(bdf, pciecs_base + LCTRLR_OFFSET, &reg_value);
+  if (reg_value != 0) {
+     val_print(AVS_PRINT_ERR, "\n       Link Capabilities control and status check failed", 0);
+     return 1;
+  }
+
+  reg_value = 0xFFFFFFFF;
+  val_pcie_read_cfg(bdf, pciecs_base + LCAP2R_OFFSET, &reg_value);
+  if (reg_value != 0) {
+     val_print(AVS_PRINT_ERR, "\n       Link Capabilities 2 reg check failed", 0);
+     return 1;
+  }
+
+  reg_value = 0xFFFFFFFF;
+  val_pcie_read_cfg(bdf, pciecs_base + LCTL2R_OFFSET, &reg_value);
+  if (reg_value != 0) {
+     val_print(AVS_PRINT_ERR, "\n       Link Capabilities 2 control and status check failed", 0);
+     return 1;
+  }
+
+  return 0;
 }

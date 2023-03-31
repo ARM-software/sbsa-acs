@@ -1,0 +1,40 @@
+The code for reading events is complicated.
+We have to cope with several cases:
+
+  - reading an event using a read() system call on an event descriptor
+  - reading a sample out of an mmap() buffer
+  - reading an event using userspace-readable hardware counters
+  - reading a group of events in a single action
+  - returning the difference between the current event values
+    and values taken at the last reset (see comment at event_reset)
+
+From the user point of view, the interface is as follows:
+
+ - Event::read() creates and returns a Reading or GroupReading object,
+   depending on whether the event was opened with PERF_FORMAT_GROUP
+
+ - Record::reading() creates and returns a Reading or GroupReading object
+   from a sample embedded in a Record of type PERF_RECORD_SAMPLE.
+
+Internally:
+
+ - event_read(e)
+   - take_reading(e,NULL)
+     - allocate reading object r (Reading or GroupReading)
+     - perf_read_count(r)
+       - perf_read_count_userspace if possible
+         - read metadata from mmap page and use rdpmc/mrs
+       - perf_read_count_using_read otherwise
+         - read(e->fd) to call the kernel
+           - for a group, this gets all the readings
+       - postprocess_reading
+
+
+ - data for a single event (a single counter, possibly with
+   time_enabled/time_running) is captured in event_sample_t
+
+
+--------------
+
+*Copyright (c) 2023, Arm Limited and Contributors. All rights reserved.*
+
