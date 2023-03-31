@@ -19,8 +19,11 @@ This version is used in SystemReady SR v2.0.0 images.
 
 v23.03_REL7.1.1_BETA-1
 
+* Addition of new PCIe tests - Slot capabilities
 * Baremetal support for SBSA7.1 specification including RAS, PMU and MPAM
 * Initialise SMMU eventq handler
+* Test enhancements and bug fixes
+* Removed the limitation on skipping limited tests
 * Change of order of modules run to sync with the order of modules run for BSA
 * Better messaging and info details
 * Removal of Exerciser tests common to SBSA and BSA
