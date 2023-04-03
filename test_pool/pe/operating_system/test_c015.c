@@ -67,9 +67,9 @@ static void payload(void)
     }
 
     /* Check support for minimum of 2 performance monitor groups (PMGs),
-    MPAMIDR_EL1.PMG_MAX must be >= 2 */
+    MPAMIDR_EL1.PMG_MAX must be >= 1 (value of PMG.MAX 1 means PMG 0 and 1 present */
     data = VAL_EXTRACT_BITS(val_mpam_reg_read(MPAMIDR_EL1), 32, 39);
-    if (data < 2) {
+    if (data < 1) {
         val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 04));
         return;
     }
