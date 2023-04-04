@@ -367,13 +367,19 @@ val_pcie_print_device_info(void)
   uint32_t bdf;
   uint32_t dp_type;
   uint32_t tbl_index;
+  uint32_t ecam_index;
+  uint64_t ecam_base;
+  uint32_t ecam_start_bus;
+  uint32_t ecam_end_bus;
   pcie_device_bdf_table *bdf_tbl_ptr;
   uint32_t num_rciep = 0, num_rcec = 0;
   uint32_t num_iep = 0, num_irp = 0;
   uint32_t num_ep = 0, num_rp = 0;
+  uint32_t bdf_counter;
 
   bdf_tbl_ptr = val_pcie_bdf_table_ptr();
   tbl_index = 0;
+  ecam_index = 0;
 
   if (bdf_tbl_ptr->num_entries == 0)
   {
@@ -403,6 +409,62 @@ val_pcie_print_device_info(void)
   val_print(AVS_PRINT_TEST, " PCIE_INFO: Number of RP              : %4d \n", num_rp);
   val_print(AVS_PRINT_TEST, " PCIE_INFO: Number of iEP_EP          : %4d \n", num_iep);
   val_print(AVS_PRINT_TEST, " PCIE_INFO: Number of iEP_RP          : %4d \n", num_irp);
+
+
+  while (ecam_index < val_pcie_get_info(PCIE_INFO_NUM_ECAM, 0))
+  {
+      ecam_base = val_pcie_get_info(PCIE_INFO_ECAM, ecam_index);
+      ecam_start_bus = val_pcie_get_info(PCIE_INFO_START_BUS, ecam_index);
+      ecam_end_bus = val_pcie_get_info(PCIE_INFO_END_BUS, ecam_index);
+      tbl_index = 0;
+      bdf_counter = 0;
+
+      val_print(AVS_PRINT_INFO, "\n  ECAM %d:", ecam_index);
+      val_print(AVS_PRINT_INFO, "  Base 0x%llx\n", ecam_base);
+
+      while (tbl_index < bdf_tbl_ptr->num_entries)
+      {
+          uint32_t seg_num;
+          uint32_t bus_num;
+          uint32_t dev_num;
+          uint32_t func_num;
+          uint32_t device_id;
+          uint32_t vendor_id;
+          uint32_t reg_value;
+          uint32_t bdf;
+          uint64_t dev_ecam_base;
+
+          bdf = bdf_tbl_ptr->device[tbl_index++].bdf;
+          seg_num  = PCIE_EXTRACT_BDF_SEG(bdf);
+          bus_num  = PCIE_EXTRACT_BDF_BUS(bdf);
+          dev_num  = PCIE_EXTRACT_BDF_DEV(bdf);
+          func_num = PCIE_EXTRACT_BDF_FUNC(bdf);
+
+          val_pcie_read_cfg(bdf, TYPE01_VIDR, &reg_value);
+          device_id = (reg_value >> TYPE01_DIDR_SHIFT) & TYPE01_DIDR_MASK;
+          vendor_id = (reg_value >> TYPE01_VIDR_SHIFT) & TYPE01_VIDR_MASK;
+
+          dev_ecam_base = val_pcie_get_ecam_base(bdf);
+
+          if ((ecam_base == dev_ecam_base) && (bus_num >= ecam_start_bus)
+              && (bus_num <= ecam_end_bus))
+          {
+              bdf_counter = 1;
+              bdf = PCIE_CREATE_BDF(seg_num, bus_num, dev_num, func_num);
+              val_print(AVS_PRINT_INFO, "  BDF: 0x%x\n", bdf);
+              val_print(AVS_PRINT_INFO, "  Seg: 0x%x, ", seg_num);
+              val_print(AVS_PRINT_INFO, "Bus: 0x%02x, ", bus_num);
+              val_print(AVS_PRINT_INFO, "Dev: 0x%02x, ", dev_num);
+              val_print(AVS_PRINT_INFO, "Func: 0x%x, ", func_num);
+              val_print(AVS_PRINT_INFO, "Dev ID: 0x%04x, ", device_id);
+              val_print(AVS_PRINT_INFO, "Vendor ID: 0x%04x\n", vendor_id);
+          }
+      }
+      if (bdf_counter == 0)
+          val_print(AVS_PRINT_INFO, "  No BDF devices in ECAM region index %d\n", ecam_index);
+
+      ecam_index++;
+  }
 }
 
 /**
@@ -467,7 +529,7 @@ static uint32_t val_pcie_populate_device_rootport(void)
   for (tbl_index = 0; tbl_index < bdf_tbl_ptr->num_entries; tbl_index++)
   {
       bdf = bdf_tbl_ptr->device[tbl_index].bdf;
-      val_print(AVS_PRINT_DEBUG, "   Dev bdf 0x%x", bdf);
+      val_print(AVS_PRINT_DEBUG, "   Dev bdf 0x%06x", bdf);
 
       /* Fn returns rp_bdf = 0 and status = 1, if RP not found */
       status = val_pcie_get_rootport(bdf, &rp_bdf);
@@ -475,7 +537,7 @@ static uint32_t val_pcie_populate_device_rootport(void)
         return 1;
 
       bdf_tbl_ptr->device[tbl_index].rp_bdf = rp_bdf;
-      val_print(AVS_PRINT_DEBUG, " RP bdf 0x%x\n", rp_bdf);
+      val_print(AVS_PRINT_DEBUG, "  RP bdf 0x%06x\n", rp_bdf);
   }
   return 0;
 }
@@ -557,7 +619,7 @@ val_pcie_create_device_bdf_table()
                           continue;
 
                       dp_type = val_pcie_device_port_type(bdf);
-                      val_print(AVS_PRINT_INFO, "\n       dp_type 0x%x ", dp_type);
+                      val_print(AVS_PRINT_INFO, "       dp_type 0x%03x\n", dp_type);
                       /* From SBSA 6.1 have rciep and iep/rp rules only */
                       if ((dp_type != RCiEP) && (dp_type != iEP_EP) &&
                           (dp_type != iEP_RP) && (dp_type != RCEC))
@@ -1950,7 +2012,7 @@ val_pcie_get_rootport(uint32_t bdf, uint32_t *rp_bdf)
 
   dp_type = val_pcie_device_port_type(bdf);
 
-  val_print(AVS_PRINT_DEBUG, " DP type 0x%x ", dp_type);
+  val_print(AVS_PRINT_DEBUG, " DP type 0x%03x ", dp_type);
 
   /* If the device is RP or iEP_RP, set its rootport value to same */
   if ((dp_type == RP) || (dp_type == iEP_RP))
