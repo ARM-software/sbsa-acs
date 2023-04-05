@@ -277,7 +277,8 @@ typedef enum {
   PMCG_NUM_CTRL = 1,
   PMCG_CTRL_BASE,
   PMCG_IOVIRT_BLOCK,
-  PMCG_NODE_REF
+  PMCG_NODE_REF,
+  PMCG_NODE_SMMU_BASE
 } PMCG_INFO_e;
 
 void     val_iovirt_create_info_table(uint64_t *iovirt_info_table);

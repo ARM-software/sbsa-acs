@@ -405,7 +405,8 @@ PLATFORM_OVERRIDE_PMCG_NODE_DATA platform_pmcg_node_data = {
     /* Place holder Fill this as below if PMCG is present
     .pmcg[0].base          = IOVIRT_PMCG_BASE_ADDRESS,
     .pmcg[0].overflow_gsiv = IOVIRT_PMCG_OVERFLOW_GSIV,
-    .pmcg[0].node_ref      = IOVIRT_PMCG_NODE_REFERENCE,*/
+    .pmcg[0].node_ref      = IOVIRT_PMCG_NODE_REFERENCE,
+    .pmcg[0].smmu_base     = IOVIRT_PMCG_SMMU_BASE,*/
 };
 
 PLATFORM_OVERRIDE_NAMED_NODE_DATA platform_named_node_data = {

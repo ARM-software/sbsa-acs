@@ -236,6 +236,8 @@ pal_iovirt_create_info_table(IOVIRT_INFO_TABLE *IoVirtTable)
           case IOVIRT_NODE_PMCG:
              block->data.pmcg.base = platform_pmcg_node_data.pmcg[i].base;
              block->data.pmcg.overflow_gsiv = platform_pmcg_node_data.pmcg[i].overflow_gsiv;
+             /* if the PMCG node is associated with a SMMU, store SMMU base */
+             block->data.pmcg.smmu_base = platform_pmcg_node_data.pmcg[i].smmu_base;
              block->num_data_map = platform_iovirt_cfg.num_map[i];
              IoVirtTable->num_pmcgs++;
              break;
