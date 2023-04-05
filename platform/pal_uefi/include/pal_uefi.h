@@ -274,7 +274,8 @@ typedef struct {
 typedef struct {
   UINT64 base;
   UINT32 overflow_gsiv;
-  UINT32 node_ref;
+  UINT32 node_ref;       /* offest to the IORT node in IORT ACPI table*/
+  UINT64 smmu_base;      /* SMMU base to which component is attached, else NULL */
 }IOVIRT_PMCG_INFO_BLOCK;
 
 typedef enum {

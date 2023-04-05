@@ -37,10 +37,11 @@ payload()
   uint32_t smmu_version;
   uint64_t smmu_base = 0;
   uint64_t pmcg_base = 0;
-  uint64_t pmcg_node_ref  = 0;
+  uint64_t pmcg_smmu_base  = 0;
   uint64_t num_pmcg_count = 0;
   uint64_t num_pmcg_found = 0;
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
+  uint32_t test_fail = 0;
 
   if (g_sbsa_level < 6) {
       val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
@@ -69,8 +70,8 @@ payload()
       num_pmcg_found = 0;
       /* Each SMMUv3 should contain atleast 1 PMCG*/
       for (i = 0; i < num_pmcg; i++) {
-          pmcg_node_ref = val_iovirt_get_pmcg_info(PMCG_NODE_REF, i);
-          if (smmu_base ==  pmcg_node_ref) {
+          pmcg_smmu_base = val_iovirt_get_pmcg_info(PMCG_NODE_SMMU_BASE, i);
+          if (smmu_base ==  pmcg_smmu_base) {
               pmcg_base = val_iovirt_get_pmcg_info(PMCG_CTRL_BASE, i);
               /*Check if SMMU_PMCG_CFGR.NCTR > 4*/
               num_pmcg_count = VAL_EXTRACT_BITS(val_mmio_read(pmcg_base + SMMU_PMCG_CFGR), 0, 5);
@@ -78,25 +79,29 @@ payload()
               num_pmcg_count++;
               /* Each PMCG should have atleast 4 counters*/
               if (num_pmcg_count < 4) {
-                  val_print(AVS_PRINT_ERR, "\n       PMCG has less then 4 counters", 0);
+                  val_print(AVS_PRINT_ERR,
+                            "\n       PMCG has less then 4 counters for SMMU index : %d",
+                            num_smmu);
                   val_print(AVS_PRINT_ERR,
                             "\n       No of PMCG counters :%d       ", num_pmcg_count);
-                  val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
-                  return;
+                  test_fail++;
               }
               num_pmcg_found++;
           }
       }
 
       if (num_pmcg_found == 0) {
-          val_print(AVS_PRINT_ERR, "\n       PMU Extension not implimented for SMMUv3", 0);
-          val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
-          return;
+          val_print(AVS_PRINT_ERR,
+                   "\n       PMU Extension not implemented for SMMU index : %d", num_smmu);
+          test_fail++;
       }
 
   }
 
-  val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
+  if (test_fail)
+      val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
+  else
+      val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
 }
 
 uint32_t

@@ -462,6 +462,7 @@ typedef struct {
   uint64_t base;
   uint32_t overflow_gsiv;
   uint32_t node_ref;
+  uint64_t smmu_base;
 } IOVIRT_PMCG_INFO_BLOCK;
 
 typedef enum {

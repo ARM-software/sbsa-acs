@@ -246,6 +246,8 @@ val_iovirt_get_pmcg_info(PMCG_INFO_e type, uint32_t index)
                       return (uint64_t)block;
                   case PMCG_NODE_REF:
                       return block->data.pmcg.node_ref;
+                  case PMCG_NODE_SMMU_BASE:
+                      return block->data.pmcg.smmu_base;
                   default:
                       val_print(AVS_PRINT_ERR, "This PMCG info option not supported %d \n", type);
                       return 0;

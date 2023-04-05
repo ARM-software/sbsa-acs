@@ -92,6 +92,7 @@ typedef struct {
   uint64_t base;
   uint32_t overflow_gsiv;
   uint32_t node_ref;
+  uint64_t smmu_base;
 } PLATFORM_OVERRIDE_IOVIRT_PMCG_INFO_BLOCK;
 
 #define MAX_NAMED_COMP_LENGTH 256
