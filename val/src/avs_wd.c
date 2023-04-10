@@ -54,8 +54,7 @@ val_wd_execute_tests(uint32_t level, uint32_t num_pe)
 
   g_curr_module = 1 << WD_MODULE;
 
-  if (level > 5)
-    status |= w001_entry(num_pe);
+  status |= w001_entry(num_pe);
 
   val_print_test_end(status, "Watchdog");
 

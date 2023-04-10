@@ -286,10 +286,6 @@ val_pcie_execute_tests(uint32_t enable_pcie, uint32_t level, uint32_t num_pe)
 #if defined(TARGET_LINUX) || defined(TARGET_EMULATION)
   status = p009_entry(num_pe);  /* This covers GIC rule */
 #endif
-  if (level < 6) {
-      val_print(AVS_PRINT_TEST, " RCiEP and iEP tests are for sbsa level 6+ \n", 0);
-      return AVS_STATUS_SKIP;
-  }
 
   status = p001_entry(num_pe);
 
