@@ -743,7 +743,7 @@ ShellAppMainsbsa (
   val_print(AVS_PRINT_TEST, "\n      *** Starting SMMU  tests ***  \n", 0);
   Status |= val_smmu_execute_tests(g_sbsa_level, val_pe_get_num());
 
-  if (g_sbsa_level > 4)
+  if (g_sbsa_level > 5)
   {
     val_print(AVS_PRINT_TEST, "\n      *** Starting Watchdog tests ***  \n", 0);
     Status |= val_wd_execute_tests(g_sbsa_level, val_pe_get_num());
@@ -761,10 +761,8 @@ ShellAppMainsbsa (
    */
   configureGicIts();
 
-  if (g_sbsa_level > 2) {
-    val_print(AVS_PRINT_TEST, "\n      *** Starting PCIe Exerciser tests ***  \n", 0);
-    Status |= val_exerciser_execute_tests(g_sbsa_level);
-  }
+  val_print(AVS_PRINT_TEST, "\n      *** Starting PCIe Exerciser tests ***  \n", 0);
+  Status |= val_exerciser_execute_tests(g_sbsa_level);
 
   if (g_sbsa_level > 6) {
     val_print(AVS_PRINT_TEST, "\n      *** Starting MPAM tests ***  \n", 0);
