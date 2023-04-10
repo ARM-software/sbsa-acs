@@ -83,7 +83,7 @@ payload(void)
           /* If test runs for atleast an endpoint */
           test_skip = 0;
 
-          /* if iEP is atomicop completer capable, RP should be routing or requester capable */
+          /* if iEP is atomicop completer capable, RP must be routing or requester capable */
           if ((atomicop_32_cap || atomicop_64_cap || atomicop_128_cap) &&
              ((rp_routing_cap == 0) && (rp_requester_cap == 0)))
           {
@@ -93,7 +93,7 @@ payload(void)
 
           ep_requester_cap = val_pcie_get_atomicop_requester_capable(bdf);
 
-          /* if iEP is atomicop requester capable, RP should be routing or completer capable */
+          /* if iEP is atomicop requester capable, RP must be routing or completer capable */
           if ((ep_requester_cap) &&
              ((rp_routing_cap == 0) && (rp_requester_cap == 0)))
           {

@@ -212,8 +212,8 @@ payload()
               if ((err_rec_impl_bitmap >> err_rec_index) & 0x1)
                   continue;
               /* since we have injected error in a memory location in current MC proximity domain
-                 space, one of the error record should have recorded address syndrome and
-                 ERR<n>STATUS AV, bit [31] & V, bit [30] should be valid for that error record */
+                 space, one of the error record must have recorded address syndrome and
+                 ERR<n>STATUS AV, bit [31] & V, bit [30] must be valid for that error record */
 
               /* if ERR<n>STATUS AV, bit [31] & V, bit [30] is invalid, continue with next
                  error record */

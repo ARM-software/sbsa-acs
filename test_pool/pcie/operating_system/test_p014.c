@@ -68,7 +68,7 @@ payload(void)
           {
             val_print(AVS_PRINT_ERR,
                       "\n       DMA controller %d: IO Coherent DMA mem", target_dev_index);
-            val_print(AVS_PRINT_ERR, " should be inner/outer writeback, inner shareable", 0);
+            val_print(AVS_PRINT_ERR, " must be inner/outer writeback, inner shareable", 0);
             val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
             status = 1;
           }
@@ -90,7 +90,7 @@ payload(void)
                 MEM_DEVICE(attr)))
           {
               val_print(AVS_PRINT_ERR, "\n       DMA controler %d: DMA memory", target_dev_index);
-              val_print(AVS_PRINT_ERR, " should be inner/outer writeback inner shareable, ", 0);
+              val_print(AVS_PRINT_ERR, " must be inner/outer writeback inner shareable, ", 0);
               val_print(AVS_PRINT_ERR, "inner/outer non-cacheable, or device type\n", 0);
               val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
               status = 1;

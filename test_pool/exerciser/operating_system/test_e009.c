@@ -223,7 +223,7 @@ inject_error(uint32_t e_bdf, uint32_t instance, uint32_t aer_offset)
         status = val_exerciser_set_param(ERROR_INJECT_TYPE, err_code, 0, instance);
         value = val_exerciser_ops(INJECT_ERROR, err_code, instance);
 
-        /*Interrupt should be generated on error detection if errors are not masked*/
+        /*Interrupt must be generated on error detection if errors are not masked*/
         if (mask_value == 0) {
             timeout = TIMEOUT_LARGE;
             while ((--timeout > 0) && irq_pending)

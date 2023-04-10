@@ -33,10 +33,10 @@ payload(void)
 
   /* PEs must support 4k, 64k granule for Stage 1 & Stage 2.
    * 1. Implementation before v8.5
-   *    ID_AA64MMFR0_EL1 [43:36] should be RES0.
+   *    ID_AA64MMFR0_EL1 [43:36] must be RES0.
    *    Check For TGran4[31:28] == 0 & TGran64[27:24] == 0.
    * 2. Implementation After v8.5
-   *    ID_AA64MMFR0_EL1 [43:36] should not be 0.
+   *    ID_AA64MMFR0_EL1 [43:36] must not be 0.
    *    Check For TGran4[31:28] == 0 or 0x1 & TGran64[27:24] == 0.
    *    Check For TGran4_2[43:40] == 0x2 or 0x3 & TGran64_2[39:36] == 0x2.
    */

@@ -133,7 +133,7 @@ payload(void)
               curr_bdf_failed++;
           }
 
-          /* If iEP_RP supports ACS then it should have AER Capability */
+          /* If iEP_RP supports ACS then it must have AER Capability */
           if (val_pcie_find_capability(iep_rp_bdf, PCIE_ECAP, ECID_AER, &cap_base) != PCIE_SUCCESS)
           {
               val_print(AVS_PRINT_DEBUG, "\n       AER Capability not supported, Bdf : 0x%x", iep_rp_bdf);

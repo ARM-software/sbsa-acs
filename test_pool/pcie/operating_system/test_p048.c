@@ -182,10 +182,10 @@ payload(void)
         test_skip = 0;
 
         /* Check_1: Accessing address in range of P memory
-         * should not cause any exception or data abort
+         * must not cause any exception or data abort
          *
          * Write known value to an address which is in range
-         * Base + offset should always be in the range.
+         * Base + offset must always be in the range.
          * Read the same
          */
 
@@ -213,7 +213,7 @@ payload(void)
             continue;
         }
 
-        /**Check_2: Accessing out of NP memory limit range should return 0xFFFFFFFF
+        /**Check_2: Accessing out of NP memory limit range must return 0xFFFFFFFF
          *
          * If the limit exceeds 1MB then modify the range to be 1MB
          * and access out of the limit set
