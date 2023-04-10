@@ -83,7 +83,7 @@ payload(void)
               /* If test runs for atleast an endpoint */
               test_skip = 0;
 
-              /* Check type[1:2] should be 32-bit or 64-bit */
+              /* Check type[1:2] must be 32-bit or 64-bit */
               addr_type = (reg_value >> BAR_MDT_SHIFT) & BAR_MDT_MASK;
               if ((addr_type != BITS_32) && (addr_type != BITS_64))
               {
@@ -97,7 +97,7 @@ payload(void)
               if (addr_type == BITS_64)
                   bar_index++;
 
-              /* Check BAR should be MMIO */
+              /* Check BAR must be MMIO */
               if (reg_value & BAR_MIT_MASK)
               {
                  val_print(AVS_PRINT_ERR, "\n       BDF 0x%x Not MMIO", 0);

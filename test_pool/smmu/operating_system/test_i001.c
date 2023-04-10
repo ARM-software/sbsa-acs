@@ -43,7 +43,7 @@ payload(void)
   while (num_smmu--) {
       if (val_smmu_get_info(SMMU_CTRL_ARCH_MAJOR_REV, num_smmu) == 2) {
           if (g_sbsa_level > 3) {
-              val_print(AVS_PRINT_ERR, "\n       SMMUv3 should be supported Level %x",
+              val_print(AVS_PRINT_ERR, "\n       SMMUv3 must be supported by level %x systems",
                                                                                   g_sbsa_level);
               val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
               return;
@@ -60,8 +60,10 @@ payload(void)
               }
           } else {
               if (data < 0x2) { /* Smmuv3.2 or higher not implemented */
-                  val_print(AVS_PRINT_ERR, "\n       Level %x should support Smmuv3.2 or higher  ",
-                                           g_sbsa_level);
+                  val_print(AVS_PRINT_ERR,
+                            "\n       Level %x systems must be compliant with the \
+                             Arm SMMUv3.2 or higher  ",
+                            g_sbsa_level);
                   val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
                   return;
               }

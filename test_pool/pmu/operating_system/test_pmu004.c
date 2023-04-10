@@ -125,7 +125,7 @@ static void payload(void)
         /* Check if the PMU supports atleast 3 counters */
         data = val_pmu_get_monitor_count(node_index);
         if (data < 3) {
-            val_print(AVS_PRINT_ERR, "\n       PMU should support atleast 3 counter", 0);
+            val_print(AVS_PRINT_ERR, "\n       PMU node must support atleast 3 counter", 0);
             fail_cnt++;
             continue;
         }

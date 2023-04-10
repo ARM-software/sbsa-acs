@@ -149,7 +149,7 @@ payload(void)
           /* If test runs for atleast an endpoint */
           test_skip = 0;
 
-          /* Vendor Id should not be 0xFF after max FLR period */
+          /* Vendor Id must not be 0xFF after max FLR period */
           val_pcie_read_cfg(bdf, 0, &reg_value);
           if ((reg_value & TYPE01_VIDR_MASK) == TYPE01_VIDR_MASK)
           {

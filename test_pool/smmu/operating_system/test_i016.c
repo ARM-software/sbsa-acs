@@ -69,7 +69,7 @@ payload(void)
   num_named_comp = val_iovirt_get_named_comp_info(NUM_NAMED_COMP, 0);
   val_print(AVS_PRINT_DEBUG, "\n       NUM Named component  : %d", num_named_comp);
 
-  /*ETR device should be behind SMMU or CATU*/
+  /*ETR device must be behind SMMU or CATU*/
   for (i = 0; i < etr_count; i++) {
     for (j = 0; j < num_named_comp; j++) {
       smmu_found = 0;

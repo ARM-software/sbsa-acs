@@ -68,7 +68,7 @@ payload(void)
 
          test_skip = 0;
 
-         /* If ATC Present, Check ATS Capability should be present. */
+         /* If ATC Present,  ATS Capability must be present. */
          if (val_pcie_find_capability(bdf, PCIE_ECAP, ECID_ATS, &cap_base) != PCIE_SUCCESS)
          {
              val_print(AVS_PRINT_ERR, "\n       ATS Capability Not Present, Bdf : 0x%x", bdf);

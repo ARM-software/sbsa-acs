@@ -68,7 +68,7 @@ payload()
       smmu_base = val_smmu_get_info(SMMU_CTRL_BASE, num_smmu);
 
       num_pmcg_found = 0;
-      /* Each SMMUv3 should contain atleast 1 PMCG*/
+      /* Each SMMUv3 must contain atleast 1 PMCG*/
       for (i = 0; i < num_pmcg; i++) {
           pmcg_smmu_base = val_iovirt_get_pmcg_info(PMCG_NODE_SMMU_BASE, i);
           if (smmu_base ==  pmcg_smmu_base) {
@@ -77,7 +77,7 @@ payload()
               num_pmcg_count = VAL_EXTRACT_BITS(val_mmio_read(pmcg_base + SMMU_PMCG_CFGR), 0, 5);
               /*No of counters in a group is SMMU_PMCG_CFGR.NCTR + 1*/
               num_pmcg_count++;
-              /* Each PMCG should have atleast 4 counters*/
+              /* Each PMCG must have atleast 4 counters*/
               if (num_pmcg_count < 4) {
                   val_print(AVS_PRINT_ERR,
                             "\n       PMCG has less then 4 counters for SMMU index : %d",

@@ -166,8 +166,8 @@ static void payload(void)
 
                 val_print(AVS_PRINT_DEBUG, "\n       byte_count = 0x%llx bytes", byte_count);
 
-                /* the monitor should count both read and write bandwidth,
-                   hence count should be twice of the buffer size */
+                /* the monitor must count both read and write bandwidth,
+                   hence count must be twice of the buffer size */
                 if ((byte_count != 2 * BUFFER_SIZE)) {
                     val_print(AVS_PRINT_ERR, "\n       Monitor count incorrect for MSC %d",
                                                                                        msc_index);

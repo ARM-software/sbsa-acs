@@ -48,7 +48,7 @@ payload(void)
 
             if (g_sbsa_level > 3) {
                 val_print(AVS_PRINT_ERR,
-                          "\n       SMMUv3 should be supported at level %x", g_sbsa_level);
+                          "\n       SMMUv3 must be supported by level %x systems", g_sbsa_level);
                 val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
                 return;
             }

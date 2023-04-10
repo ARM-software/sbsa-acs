@@ -75,7 +75,7 @@ static void payload(void)
     /* Get number of monitor to the interface pmu node */
     num_mon = val_pmu_get_monitor_count(pmu_node_index);
     if (num_mon == 0) {
-        val_print(AVS_PRINT_ERR, "\n       PMU should support atleast 1 counter", 0);
+        val_print(AVS_PRINT_ERR, "\n       PMU node must support atleast 1 counter", 0);
         val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 5));
         return;
     }
