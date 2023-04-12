@@ -61,8 +61,8 @@ payload(void)
           } else {
               if (data < 0x2) { /* Smmuv3.2 or higher not implemented */
                   val_print(AVS_PRINT_ERR,
-                            "\n       Level %x systems must be compliant with the \
-                             Arm SMMUv3.2 or higher  ",
+                            "\n       Level %x systems must be compliant with the "
+                            "Arm SMMUv3.2 or higher  ",
                             g_sbsa_level);
                   val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
                   return;
