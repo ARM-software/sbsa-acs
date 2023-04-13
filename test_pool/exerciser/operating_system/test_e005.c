@@ -124,7 +124,7 @@ payload(void)
        * When this bit is 0b, Memory Requests received at a Root Port
        * must be handled as Unsupported Requests (UR).
        */
-      if (!val_exerciser_get_rootport(e_bdf, &erp_bdf))
+      if (!val_pcie_get_rootport(e_bdf, &erp_bdf))
           val_pcie_disable_bme(erp_bdf);
       else
           continue;

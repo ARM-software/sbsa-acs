@@ -107,7 +107,7 @@ typedef struct {
   device_attr device[];         ///< in the format of Segment/Bus/Dev/Func
 } exerciser_device_bdf_table;
 
-uint32_t val_exerciser_create_info_table(void);
+void val_exerciser_create_info_table(void);
 uint32_t val_exerciser_init(uint32_t instance);
 uint32_t val_exerciser_get_info(EXERCISER_INFO_TYPE type, uint32_t instance);
 uint32_t val_exerciser_set_param(EXERCISER_PARAM_TYPE type, uint64_t value1, uint64_t value2, uint32_t instance);
@@ -119,8 +119,6 @@ uint32_t val_exerciser_get_data(EXERCISER_DATA_TYPE type, exerciser_data_t *data
 uint32_t val_exerciser_execute_tests(uint32_t level);
 uint32_t val_exerciser_get_bdf(uint32_t instance);
 uint32_t val_get_exerciser_err_info(uint32_t type);
-uint32_t val_exerciser_get_rootport(uint32_t bdf, uint32_t *rp_bdf);
-uint32_t val_exerciser_create_device_bdf_table(void);
 
 uint32_t e001_entry(void);
 uint32_t e002_entry(void);

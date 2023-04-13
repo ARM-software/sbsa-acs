@@ -22,7 +22,7 @@
 
 #define TEST_NUM   (AVS_PCIE_TEST_NUM_BASE + 21)
 #define TEST_DESC  "Check Type 0 config header rules  "
-#define TEST_RULE  "RE_REG_1, RE_REC_1, RE_REC_2"
+#define TEST_RULE  "RE_REG_1, IE_REG_1"
 
 static
 void

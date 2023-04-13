@@ -25,113 +25,51 @@ exerciser_device_bdf_table *g_exerciser_bdf_table;
 
 extern uint32_t pcie_bdf_table_list_flag;
 
-uint32_t val_exerciser_create_device_bdf_table(void)
-{
-  uint32_t num_ecam;
-  uint32_t seg_num;
-  uint32_t start_bus;
-  uint32_t end_bus;
-  uint32_t bus_index;
-  uint32_t dev_index;
-  uint32_t func_index;
-  uint32_t ecam_index;
-  uint32_t bdf;
-  uint32_t reg_value;
-  uint32_t cid_offset;
-
-  g_exerciser_bdf_table = (exerciser_device_bdf_table *) pal_aligned_alloc(MEM_ALIGN_8K,
-                                                               PCIE_DEVICE_BDF_TABLE_SZ);
-  g_exerciser_bdf_table->num_entries = 0;
-  num_ecam = val_pcie_get_info(PCIE_INFO_NUM_ECAM, 0);
-  if (num_ecam == 0)
-  {
-      val_print(AVS_PRINT_ERR, "\n       No ECAMs discovered              ", 0);
-      return 1;
-  }
-
-  for (ecam_index = 0; ecam_index < num_ecam; ecam_index++)
-  {
-      /* Derive ecam specific information */
-      seg_num = val_pcie_get_info(PCIE_INFO_SEGMENT, ecam_index);
-      start_bus = val_pcie_get_info(PCIE_INFO_START_BUS, ecam_index);
-      end_bus = val_pcie_get_info(PCIE_INFO_END_BUS, ecam_index);
-
-      /* Iterate over all buses, devices and functions in this ecam */
-      for (bus_index = start_bus; bus_index <= end_bus; bus_index++)
-      {
-          for (dev_index = 0; dev_index < PCIE_MAX_DEV; dev_index++)
-          {
-              for (func_index = 0; func_index < PCIE_MAX_FUNC; func_index++)
-              {
-                  /* Form bdf using seg, bus, device, function numbers */
-                  bdf = PCIE_CREATE_BDF(seg_num, bus_index, dev_index, func_index);
-
-                  /* Probe pcie device Function with this bdf */
-                  if (val_pcie_read_cfg(bdf, TYPE01_VIDR, &reg_value) == PCIE_NO_MAPPING)
-                  {
-                      /* Return if there is a bdf mapping issue */
-                      val_print(AVS_PRINT_ERR, "\n       BDF 0x%x mapping issue", bdf);
-                      return 1;
-                  }
-
-                  /* Store the Function's BDF if there was a valid response */
-                  if (reg_value != PCIE_UNKNOWN_RESPONSE)
-                  {
-                      /* Skip if the device is a host bridge */
-                      if (val_pcie_is_host_bridge(bdf))
-                          continue;
-
-                      /* Skip if the device is a PCI legacy device */
-                      if (val_pcie_find_capability(bdf, PCIE_CAP, CID_PCIECS,  &cid_offset)
-                                                                           != PCIE_SUCCESS)
-                          continue;
-
-                      g_exerciser_bdf_table->device[g_exerciser_bdf_table->num_entries++].bdf = bdf;
-
-                  }
-              }
-          }
-      }
-  }
-
-  return 0;
-}
-
 /**
   @brief   This API popultaes information from all the PCIe stimulus generation IP available
            in the system into exerciser_info_table structure
   @param   exerciser_info_table - Table pointer to be filled by this API
   @return  exerciser_info_table - Contains info to communicate with stimulus generation hardware
 **/
-uint32_t val_exerciser_create_info_table(void)
+void val_exerciser_create_info_table(void)
 {
-  uint32_t bdf;
-  uint32_t tbl_index;
+  uint32_t Bdf;
+  uint32_t reg_value;
+  uint32_t num_bdf;
+  pcie_device_bdf_table *bdf_table;
 
-  val_exerciser_create_device_bdf_table();
-
-  if ((val_exerciser_create_device_bdf_table()) || (g_exerciser_bdf_table->num_entries == 0))
+  bdf_table = val_pcie_bdf_table_ptr();
+  /* if no bdf table ptr return error */
+  if (bdf_table->num_entries == 0)
   {
-    val_print(AVS_PRINT_DEBUG, " No PCIe devices found\n", 0);
-    return 1;
+      val_print(AVS_PRINT_DEBUG, "\n       No BDFs discovered            ", 0);
+      return;
   }
 
-  for (tbl_index = 0; tbl_index < g_exerciser_bdf_table->num_entries; tbl_index++)
+  num_bdf = bdf_table->num_entries;
+  while (num_bdf-- != 0)
   {
-    bdf = g_exerciser_bdf_table->device[tbl_index].bdf;
-    /* Store the Function's BDF if there was a valid response */
-    if (pal_is_bdf_exerciser(bdf))
-    {
-        g_exerciser_info_table.e_info[g_exerciser_info_table.num_exerciser].bdf = bdf;
-        g_exerciser_info_table.e_info[g_exerciser_info_table.num_exerciser].initialized = 0;
-        g_exerciser_info_table.num_exerciser++;
-    }
 
+      Bdf = bdf_table->device[num_bdf].bdf;
+      /* Probe pcie device Function with this bdf */
+      if (val_pcie_read_cfg(Bdf, TYPE01_VIDR, &reg_value) == PCIE_NO_MAPPING)
+      {
+          /* Return if there is a bdf mapping issue */
+          val_print(AVS_PRINT_ERR, "\n      BDF 0x%x mapping issue", Bdf);
+          return;
+      }
+
+      /* Store the Function's BDF if there was a valid response */
+      if (pal_is_bdf_exerciser(Bdf))
+      {
+          g_exerciser_info_table.e_info[g_exerciser_info_table.num_exerciser].bdf = Bdf;
+          g_exerciser_info_table.e_info[g_exerciser_info_table.num_exerciser++].initialized = 0;
+          val_print(AVS_PRINT_DEBUG, "    exerciser Bdf %x\n", Bdf);
+      }
   }
-
-  val_print(AVS_PRINT_ERR, " PCIE_INFO: Number of exerciser cards : %4d \n",
+  val_print(AVS_PRINT_TEST, " PCIE_INFO: Number of exerciser cards : %4d \n",
                                                              g_exerciser_info_table.num_exerciser);
-  return 0;
+  return;
 }
 
 uint32_t val_get_exerciser_err_info(EXERCISER_ERROR_CODE type)
@@ -333,73 +271,6 @@ uint32_t val_exerciser_get_data(EXERCISER_DATA_TYPE type, exerciser_data_t *data
 }
 
 /**
-  @brief  Returns BDF of the upstream Root Port of a pcie device function.
-
-  @param  bdf       - Function's Segment/Bus/Dev/Func in PCIE_CREATE_BDF format
-  @param  usrp_bdf  - Upstream Rootport bdf in PCIE_CREATE_BDF format
-  @return 0 for success, 1 for failure.
-**/
-uint32_t
-val_exerciser_get_rootport(uint32_t bdf, uint32_t *rp_bdf)
-{
-
-  uint32_t index;
-  uint32_t seg_num;
-  uint32_t sec_bus;
-  uint32_t sub_bus;
-  uint32_t reg_value;
-  uint32_t dp_type;
-
-  index = 0;
-
-  dp_type = val_pcie_device_port_type(bdf);
-
-  val_print(AVS_PRINT_DEBUG, " DP type 0x%x ", dp_type);
-
-  /* If the device is RP or iEP_RP, set its rootport value to same */
-  if ((dp_type == RP) || (dp_type == iEP_RP))
-  {
-      *rp_bdf = bdf;
-      return 0;
-  }
-
-  /* If the device is RCiEP and RCEC, set RP as 0xff */
-  if ((dp_type == RCiEP) || (dp_type == RCEC))
-  {
-      *rp_bdf = 0xffffffff;
-      return 1;
-  }
-
-  while (index < g_exerciser_bdf_table->num_entries)
-  {
-      *rp_bdf = g_exerciser_bdf_table->device[index++].bdf;
-
-      /*
-       * Extract Secondary and Subordinate Bus numbers of the
-       * upstream Root port and check if the input function's
-       * bus number falls within that range.
-       */
-      val_pcie_read_cfg(*rp_bdf, TYPE1_PBN, &reg_value);
-      seg_num = PCIE_EXTRACT_BDF_SEG(*rp_bdf);
-      sec_bus = ((reg_value >> SECBN_SHIFT) & SECBN_MASK);
-      sub_bus = ((reg_value >> SUBBN_SHIFT) & SUBBN_MASK);
-      dp_type = val_pcie_device_port_type(*rp_bdf);
-
-      if (((dp_type == RP) || (dp_type == iEP_RP)) &&
-          (sec_bus <= PCIE_EXTRACT_BDF_BUS(bdf)) &&
-          (sub_bus >= PCIE_EXTRACT_BDF_BUS(bdf)) &&
-          (seg_num == PCIE_EXTRACT_BDF_SEG(bdf)))
-          return 0;
-  }
-
-  /* Return failure */
-  val_print(AVS_PRINT_ERR, "\n       PCIe Hierarchy fail: RP of bdf 0x%x not found", bdf);
-  *rp_bdf = 0;
-  return 1;
-
-}
-
-/**
   @brief   This API executes all the Exerciser tests sequentially
            1. Caller       -  Application layer.
   @param   level  - level of compliance being tested for.
@@ -434,11 +305,18 @@ val_exerciser_execute_tests(uint32_t level)
     return AVS_STATUS_SKIP;
   }
 
-  if (val_exerciser_create_info_table()) {
+  if (val_pcie_create_device_bdf_table()) {
       val_print(AVS_PRINT_WARN, "\n     Create BDF Table Failed, Skipping Exerciser tests...\n", 0);
       return AVS_STATUS_SKIP;
   }
 
+   if (pcie_bdf_table_list_flag == 1) {
+    val_print(AVS_PRINT_WARN, "\n     *** Created device list with valid bdf doesn't match \
+                with the platform pcie device hierarchy, Skipping exerciser tests *** \n", 0);
+    return AVS_STATUS_SKIP;
+  }
+
+  val_exerciser_create_info_table();
   num_instances = val_exerciser_get_info(EXERCISER_NUM_CARDS, 0);
 
   if (num_instances == 0) {

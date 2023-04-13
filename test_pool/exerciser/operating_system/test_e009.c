@@ -81,7 +81,7 @@ correctable_err_status_chk(uint32_t e_bdf, uint32_t aer_offset, uint32_t err_cod
     uint32_t pciecs_base, reg_value;
     uint32_t fail_cnt = 0;
 
-    val_exerciser_get_rootport(e_bdf, &erp_bdf);
+    val_pcie_get_rootport(e_bdf, &erp_bdf);
     val_pcie_find_capability(erp_bdf, PCIE_ECAP, ECID_AER, &rp_aer_offset);
     err_bit = val_get_exerciser_err_info(err_code);
 
@@ -148,7 +148,7 @@ uncorrectable_error_chk(uint32_t e_bdf, uint32_t aer_offset, uint32_t err_code)
     uint32_t pciecs_base, reg_value;
     uint32_t fail_cnt = 0;
 
-    val_exerciser_get_rootport(e_bdf, &erp_bdf);
+    val_pcie_get_rootport(e_bdf, &erp_bdf);
     val_pcie_find_capability(erp_bdf, PCIE_ECAP, ECID_AER, &rp_aer_offset);
     err_bit = val_get_exerciser_err_info(err_code);
 
@@ -300,7 +300,7 @@ payload(void)
      val_print(AVS_PRINT_DEBUG, "\n       Exerciser BDF - 0x%x", e_bdf);
 
      val_pcie_enable_eru(e_bdf);
-     if (val_exerciser_get_rootport(e_bdf, &erp_bdf))
+     if (val_pcie_get_rootport(e_bdf, &erp_bdf))
          continue;
 
      val_pcie_enable_eru(erp_bdf);
