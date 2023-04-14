@@ -22,7 +22,7 @@
 
 #define TEST_NUM   (AVS_PCIE_TEST_NUM_BASE + 24)
 #define TEST_DESC  "Check Device capabilites reg rules"
-#define TEST_RULE  "RE_REG_3, RE_REC_1, RE_REC_2"
+#define TEST_RULE  "RE_REG_3, RE_REC_1, IE_REG_2, IE_REG_4"
 
 static
 void

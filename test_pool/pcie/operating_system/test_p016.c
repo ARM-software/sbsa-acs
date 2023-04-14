@@ -35,6 +35,7 @@ static void payload(void)
     uint32_t data;
     uint32_t dev_type;
     uint64_t dev_bdf;
+    uint32_t dp_type;
     pcie_device_bdf_table *bdf_tbl_ptr;
 
     bdf_tbl_ptr = val_pcie_bdf_table_ptr();
@@ -51,6 +52,13 @@ static void payload(void)
     while (tbl_index < bdf_tbl_ptr->num_entries)
     {
         dev_bdf = bdf_tbl_ptr->device[tbl_index++].bdf;
+        dp_type = val_pcie_device_port_type(dev_bdf);
+
+        /* Check entry is RCiEP/ RCEC/ iEP. Else move to next BDF. */
+        if ((dp_type != iEP_EP) && (dp_type != iEP_RP)
+            && (dp_type != RCEC) && (dp_type != RCiEP))
+            continue;
+
         val_print(AVS_PRINT_DEBUG, "\n       BDF - 0x%x", dev_bdf);
 
         dev_type = val_pcie_get_device_type(dev_bdf);

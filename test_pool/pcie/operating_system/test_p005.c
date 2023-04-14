@@ -65,6 +65,7 @@ payload(void)
   uint32_t tbl_index = 0;
   uint32_t status;
   uint32_t dev_type;
+  uint32_t dp_type;
   uint32_t max_bar_offset;
   uint32_t msa_en = 0;
 
@@ -86,6 +87,13 @@ next_bdf:
   for (;tbl_index < bdf_tbl_ptr->num_entries; tbl_index++) {
       msa_en = 0;
       bdf = bdf_tbl_ptr->device[tbl_index].bdf;
+      dp_type = val_pcie_device_port_type(bdf);
+
+     /* Check entry is RCiEP/ RCEC/ iEP. Else move to next BDF. */
+      if ((dp_type != iEP_EP) && (dp_type != iEP_RP)
+          && (dp_type != RCEC) && (dp_type != RCiEP))
+          continue;
+
       val_print(AVS_PRINT_DEBUG, "\n       BDF - 0x%x", bdf);
 
       /* Configure the max BAR offset */

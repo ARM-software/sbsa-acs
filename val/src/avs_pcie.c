@@ -249,13 +249,12 @@ void val_pcie_enumerate(void)
   @brief   This API executes all the PCIe tests sequentially
            1. Caller       -  Application layer.
            2. Prerequisite -  val_pcie_create_info_table()
-  @param   enable_pcie - Flag to enable PCIe SBSA 7.1 (RCiEP) compliance Test
   @param   level       - level of compliance being tested for.
   @param   num_pe      - the number of PE to run these tests on.
   @return  Consolidated status of all the tests run.
 **/
 uint32_t
-val_pcie_execute_tests(uint32_t enable_pcie, uint32_t level, uint32_t num_pe)
+val_pcie_execute_tests(uint32_t level, uint32_t num_pe)
 {
   uint32_t status = AVS_STATUS_PASS, i;
 
@@ -283,31 +282,36 @@ val_pcie_execute_tests(uint32_t enable_pcie, uint32_t level, uint32_t num_pe)
 
   g_curr_module = 1 << PCIE_MODULE;
 
-#if defined(TARGET_LINUX) || defined(TARGET_EMULATION)
-  status = p009_entry(num_pe);  /* This covers GIC rule */
-#endif
-
-  status = p001_entry(num_pe);
-
-  if (status != AVS_STATUS_PASS) {
-    val_print(AVS_PRINT_WARN, "\n     *** Skipping remaining PCIE tests *** \n", 0);
-    return status;
+  /* Only the test p062 will be run at L4+ with the test number (AVS_PER_TEST_NUM_BASE + 1) */
+  if (level  > 3) {
+    status = p062_entry(num_pe);
   }
 
+  if (level > 5) {
 
-#if defined(TARGET_LINUX) || defined(TARGET_EMULATION)
-  status |= p005_entry(num_pe);
-#else
+    #if defined(TARGET_LINUX) || defined(TARGET_EMULATION)
+      status |= p009_entry(num_pe);  /* This covers GIC rule */
+    #endif
 
-  if (g_pcie_bdf_table->num_entries == 0) {
-    val_print(AVS_PRINT_WARN, "\n     *** No Valid Devices Found, \
-                                                Skipping remaining PCIE tests *** \n", 0);
-    return AVS_STATUS_SKIP;
-  }
+    status |= p001_entry(num_pe);
 
-  status |= p003_entry(num_pe);
+    if (status != AVS_STATUS_PASS) {
+      val_print(AVS_PRINT_WARN, "\n     *** Skipping remaining PCIE tests *** \n", 0);
+      return status;
+    }
 
-  if (enable_pcie) {
+
+    #if defined(TARGET_LINUX) || defined(TARGET_EMULATION)
+      status |= p005_entry(num_pe);
+    #else
+
+    if (g_pcie_bdf_table->num_entries == 0) {
+      val_print(AVS_PRINT_WARN, "\n     *** No Valid Devices Found, \
+                Skipping remaining PCIE tests *** \n", 0);
+      return AVS_STATUS_SKIP;
+    }
+
+    status |= p003_entry(num_pe);
     status |= p020_entry(num_pe);
     status |= p021_entry(num_pe);
     status |= p022_entry(num_pe); /* iEP/RP only */
@@ -345,12 +349,13 @@ val_pcie_execute_tests(uint32_t enable_pcie, uint32_t level, uint32_t num_pe)
     status |= p058_entry(num_pe);
     status |= p059_entry(num_pe);
     status |= p060_entry(num_pe);
-    status |= p061_entry(num_pe);
-    status |= p062_entry(num_pe);
     status |= p063_entry(num_pe); /* iEP/RP only */
-
+    #endif
   }
-#endif
+
+  if (level > 6) {
+    status |= p061_entry(num_pe);
+  }
 
   val_print_test_end(status, "PCIe");
 
@@ -554,7 +559,6 @@ val_pcie_create_device_bdf_table()
   uint32_t reg_value;
   uint32_t cid_offset;
   uint32_t status;
-  uint32_t dp_type;
 
   /* if table is already present, return success */
   if (g_pcie_bdf_table)
@@ -614,12 +618,6 @@ val_pcie_create_device_bdf_table()
                       if (val_pcie_find_capability(bdf, PCIE_CAP, CID_PCIECS,  &cid_offset) != PCIE_SUCCESS)
                           continue;
 
-                      dp_type = val_pcie_device_port_type(bdf);
-                      val_print(AVS_PRINT_INFO, "       dp_type 0x%03x\n", dp_type);
-                      /* From SBSA 6.1 have rciep and iep/rp rules only */
-                      if ((dp_type != RCiEP) && (dp_type != iEP_EP) &&
-                          (dp_type != iEP_RP) && (dp_type != RCEC))
-                          continue;
                       status = pal_pcie_check_device_valid(bdf);
                       if (status)
                           continue;
@@ -1711,7 +1709,7 @@ uint32_t val_pcie_bitfield_check(uint32_t bdf, uint64_t *bitfield_entry)
                                        REG_SHIFT(alignment_byte_cnt, bf_entry->start));
           val_pcie_write_cfg(bdf, cap_base + reg_offset, reg_overwrite_value);
           val_pcie_read_cfg(bdf, cap_base + reg_offset, &reg_value);
-	  /* Restore the original register value */
+          /* Restore the original register value */
           val_pcie_write_cfg(bdf, cap_base + reg_offset, temp_reg_value);
           break;
       default:

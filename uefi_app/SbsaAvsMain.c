@@ -33,7 +33,6 @@ UINT32 g_pcie_p2p;
 UINT32 g_pcie_cache_present;
 
 UINT32  g_sbsa_level;
-UINT32  g_enable_pcie_tests;
 UINT32  g_print_level;
 UINT32  g_execute_nist;
 UINT32  g_print_mmio = FALSE;
@@ -434,7 +433,7 @@ HelpMsg (
   )
 {
    Print (L"\nUsage: Sbsa.efi [-v <n>] | [-l <n>] | [-f <filename>] | "
-         "[-skip <n>] | [-nist] | [-p <n>] | [-t <n>] | [-m <n>]\n"
+         "[-skip <n>] | [-nist] | [-t <n>] | [-m <n>]\n"
          "Options:\n"
          "-v      Verbosity of the Prints\n"
          "        1 shows all prints, 5 shows Errors\n"
@@ -449,14 +448,13 @@ HelpMsg (
          "        To skip a module, use Model_ID as mentioned in user guide\n"
          "        To skip a particular test within a module, use the exact testcase number\n"
          "-nist   Enable the NIST Statistical test suite\n"
-         "-p      Enable/disable PCIe SBSA 7.1 (RCiEP) compliance tests\n"
-         "        1 - enables PCIe tests, 0 - disables PCIe tests\n"
          "-t      If set, will only run the specified test, all others will be skipped.\n"
          "-m      If set, will only run the specified module, all others will be skipped.\n"
          "-p2p    Pass this flag to indicate that PCIe Hierarchy Supports Peer-to-Peer\n"
          "-cache  Pass this flag to indicate that if the test system supports PCIe address translation cache\n"
          "-timeout  Set timeout multiple for wakeup tests\n"
          "        1 - min value  5 - max value\n"
+         "-p      Option deprecated. PCIe SBSA 7.1(RCiEP) compliance tests are run from SBSA L6+\n"
   );
 }
 
@@ -468,7 +466,6 @@ STATIC CONST SHELL_PARAM_ITEM ParamList[] = {
   {L"-help" , TypeFlag},     // -help # help : info about commands
   {L"-h"    , TypeFlag},     // -h    # help : info about commands
   {L"-nist" , TypeFlag},     // -nist # Binary Flag to enable the execution of NIST STS
-  {L"-p"    , TypeValue},    // -p    # Enable/disable PCIe SBSA 7.1 (RCiEP) compliance tests.
   {L"-mmio" , TypeValue},    // -mmio # Enable pal_mmio prints
   {L"-t"    , TypeValue},    // -t    # Test to be run
   {L"-m"    , TypeValue},    // -m    # Module to be run
@@ -633,21 +630,6 @@ ShellAppMainsbsa (
     g_pcie_cache_present = FALSE;
   }
 
-  // Options with Values
-  CmdLineArg  = ShellCommandLineGetValue (ParamPackage, L"-p");
-  if (CmdLineArg == NULL) {
-      if (g_sbsa_level >= 4)
-          g_enable_pcie_tests = 1;
-      else
-          g_enable_pcie_tests = 0;
-  } else {
-      g_enable_pcie_tests = StrDecimalToUintn(CmdLineArg);
-      if (g_enable_pcie_tests != 1 && g_enable_pcie_tests != 0) {
-          Print(L"Invalid PCIe option.\nEnter \"-p 1\" to enable or \"-p 0\" to disable PCIe SBSA 7.1 (RCiEP) tests\n", g_enable_pcie_tests);
-          return 0;
-      }
-  }
-
   // Options with Flags
   if (ShellCommandLineGetFlag (ParamPackage, L"-nist")) {
     g_execute_nist = TRUE;
@@ -749,10 +731,10 @@ ShellAppMainsbsa (
     Status |= val_wd_execute_tests(g_sbsa_level, val_pe_get_num());
   }
 
-  if (g_sbsa_level > 5)
+  if (g_sbsa_level > 3)
   {
     val_print(AVS_PRINT_TEST, "\n      *** Starting PCIe tests ***  \n", 0);
-    Status |= val_pcie_execute_tests(g_enable_pcie_tests, g_sbsa_level, val_pe_get_num());
+    Status |= val_pcie_execute_tests(g_sbsa_level, val_pe_get_num());
   }
 
   /*

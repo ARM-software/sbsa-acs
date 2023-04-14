@@ -24,7 +24,7 @@
 
 #define TEST_NUM   (AVS_PCIE_TEST_NUM_BASE + 37)
 #define TEST_DESC  "Check OBFF supported rule         "
-#define TEST_RULE  "RE_REG_3, RE_REC_1, RE_REC_2"
+#define TEST_RULE  "IE_REG_2"
 
 static
 void

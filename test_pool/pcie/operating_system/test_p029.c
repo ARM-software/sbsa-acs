@@ -22,7 +22,7 @@
 
 #define TEST_NUM   (AVS_PCIE_TEST_NUM_BASE + 29)
 #define TEST_DESC  "Check Power management/status rule"
-#define TEST_RULE  "RE_REG_2, RE_REC_1, RE_REC_2"
+#define TEST_RULE  "RE_REG_2, IE_REG_5"
 
 static
 void

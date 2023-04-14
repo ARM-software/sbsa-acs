@@ -97,7 +97,7 @@ payload(void)
 
       val_pcie_enable_eru(e_bdf);
 
-      if (val_exerciser_get_rootport(e_bdf, &erp_bdf))
+      if (val_pcie_get_rootport(e_bdf, &erp_bdf))
           continue;
 
       val_pcie_enable_eru(erp_bdf);
