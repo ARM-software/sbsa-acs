@@ -284,7 +284,9 @@ val_pcie_execute_tests(uint32_t level, uint32_t num_pe)
 
   /* Only the test p062 will be run at L4+ with the test number (AVS_PER_TEST_NUM_BASE + 1) */
   if (level  > 3) {
+  #ifndef TARGET_LINUX
     status = p062_entry(num_pe);
+  #endif
   }
 
   if (level > 5) {
@@ -293,7 +295,7 @@ val_pcie_execute_tests(uint32_t level, uint32_t num_pe)
       status |= p009_entry(num_pe);  /* This covers GIC rule */
     #endif
 
-    status |= p001_entry(num_pe);
+    status = p001_entry(num_pe);
 
     if (status != AVS_STATUS_PASS) {
       val_print(AVS_PRINT_WARN, "\n     *** Skipping remaining PCIE tests *** \n", 0);
@@ -303,7 +305,7 @@ val_pcie_execute_tests(uint32_t level, uint32_t num_pe)
 
     #if defined(TARGET_LINUX) || defined(TARGET_EMULATION)
       status |= p005_entry(num_pe);
-    #else
+    #endif
 
     if (g_pcie_bdf_table->num_entries == 0) {
       val_print(AVS_PRINT_WARN, "\n     *** No Valid Devices Found, \
@@ -311,50 +313,53 @@ val_pcie_execute_tests(uint32_t level, uint32_t num_pe)
       return AVS_STATUS_SKIP;
     }
 
-    status |= p003_entry(num_pe);
-    status |= p020_entry(num_pe);
-    status |= p021_entry(num_pe);
-    status |= p022_entry(num_pe); /* iEP/RP only */
-    status |= p023_entry(num_pe);
-    status |= p024_entry(num_pe);
-    status |= p025_entry(num_pe);
-    status |= p026_entry(num_pe);
-    status |= p027_entry(num_pe);
-    status |= p028_entry(num_pe);
-    status |= p029_entry(num_pe);
-    status |= p030_entry(num_pe);
-    status |= p031_entry(num_pe);
-    status |= p032_entry(num_pe);
-    status |= p033_entry(num_pe);
-    status |= p034_entry(num_pe);
-    status |= p035_entry(num_pe);
-    status |= p036_entry(num_pe); /* iEP/RP only */
-    status |= p037_entry(num_pe); /* iEP/RP only */
-    status |= p038_entry(num_pe); /* iEP/RP only */
-    status |= p039_entry(num_pe); /* iEP/RP only */
-    status |= p041_entry(num_pe);
-    status |= p042_entry(num_pe);
-    status |= p043_entry(num_pe); /* iEP/RP only */
-    status |= p044_entry(num_pe); /* iEP/RP only */
-    status |= p045_entry(num_pe); /* iEP/RP only */
-    status |= p046_entry(num_pe);
-    status |= p047_entry(num_pe); /* iEP/RP only */
-    status |= p048_entry(num_pe); /* iEP/RP only */
-    status |= p049_entry(num_pe);
-    status |= p050_entry(num_pe);
-    status |= p051_entry(num_pe); /* iEP/RP only */
-    status |= p052_entry(num_pe);
-    status |= p056_entry(num_pe); /* iEP/RP only */
-    status |= p057_entry(num_pe);
-    status |= p058_entry(num_pe);
-    status |= p059_entry(num_pe);
-    status |= p060_entry(num_pe);
-    status |= p063_entry(num_pe); /* iEP/RP only */
+    #ifndef TARGET_LINUX
+      status |= p003_entry(num_pe);
+      status |= p020_entry(num_pe);
+      status |= p021_entry(num_pe);
+      status |= p022_entry(num_pe); /* iEP/RP only */
+      status |= p023_entry(num_pe);
+      status |= p024_entry(num_pe);
+      status |= p025_entry(num_pe);
+      status |= p026_entry(num_pe);
+      status |= p027_entry(num_pe);
+      status |= p028_entry(num_pe);
+      status |= p029_entry(num_pe);
+      status |= p030_entry(num_pe);
+      status |= p031_entry(num_pe);
+      status |= p032_entry(num_pe);
+      status |= p033_entry(num_pe);
+      status |= p034_entry(num_pe);
+      status |= p035_entry(num_pe);
+      status |= p036_entry(num_pe); /* iEP/RP only */
+      status |= p037_entry(num_pe); /* iEP/RP only */
+      status |= p038_entry(num_pe); /* iEP/RP only */
+      status |= p039_entry(num_pe); /* iEP/RP only */
+      status |= p041_entry(num_pe);
+      status |= p042_entry(num_pe);
+      status |= p043_entry(num_pe); /* iEP/RP only */
+      status |= p044_entry(num_pe); /* iEP/RP only */
+      status |= p045_entry(num_pe); /* iEP/RP only */
+      status |= p046_entry(num_pe);
+      status |= p047_entry(num_pe); /* iEP/RP only */
+      status |= p048_entry(num_pe); /* iEP/RP only */
+      status |= p049_entry(num_pe);
+      status |= p050_entry(num_pe);
+      status |= p051_entry(num_pe); /* iEP/RP only */
+      status |= p052_entry(num_pe);
+      status |= p056_entry(num_pe); /* iEP/RP only */
+      status |= p057_entry(num_pe);
+      status |= p058_entry(num_pe);
+      status |= p059_entry(num_pe);
+      status |= p060_entry(num_pe);
+      status |= p063_entry(num_pe); /* iEP/RP only */
     #endif
   }
 
   if (level > 6) {
+  #ifndef TARGET_LINUX
     status |= p061_entry(num_pe);
+  #endif
   }
 
   val_print_test_end(status, "PCIe");
