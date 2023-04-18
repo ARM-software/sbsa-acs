@@ -633,7 +633,7 @@ val_mpam_memory_mbwumon_read_count(uint32_t msc_index)
         }
         else {
             // (44 bits)
-            if (BITFIELD_READ(MSMON_MBWU_L_NRDY, val_mmio_read64(base + REG_MSMON_MBWU_L) == 0))
+            if (BITFIELD_READ(MSMON_MBWU_L_NRDY, val_mmio_read64(base + REG_MSMON_MBWU_L)) == 0)
                 count = BITFIELD_READ(MSMON_MBWU_L_44BIT_VALUE,
                                       val_mmio_read64(base + REG_MSMON_MBWU_L));
         }
