@@ -349,7 +349,7 @@ val_mpam_msc_supports_mon(uint32_t msc_index)
     addr_t base;
 
     base = val_mpam_get_info(MPAM_MSC_BASE_ADDR, msc_index, 0);
-    return BITFIELD_READ(IDR_HAS_MSMON, val_mmio_read(base + REG_MPAMF_IDR));
+    return BITFIELD_READ(IDR_HAS_MSMON, val_mmio_read64(base + REG_MPAMF_IDR));
 }
 
 /**
@@ -363,7 +363,7 @@ val_mpam_supports_cpor(uint32_t msc_index)
     addr_t base;
 
     base = val_mpam_get_info(MPAM_MSC_BASE_ADDR, msc_index, 0);
-    return BITFIELD_READ(IDR_HAS_CPOR_PART, val_mmio_read(base + REG_MPAMF_IDR));
+    return BITFIELD_READ(IDR_HAS_CPOR_PART, val_mmio_read64(base + REG_MPAMF_IDR));
 }
 
 /**
@@ -378,7 +378,7 @@ val_mpam_msc_supports_ris(uint32_t msc_index)
     addr_t base;
 
     base = val_mpam_get_info(MPAM_MSC_BASE_ADDR, msc_index, 0);
-    return BITFIELD_READ(IDR_HAS_RIS, val_mmio_read(base + REG_MPAMF_IDR));
+    return BITFIELD_READ(IDR_HAS_RIS, val_mmio_read64(base + REG_MPAMF_IDR));
 }
 
 /**
@@ -862,7 +862,7 @@ val_mpam_get_max_pmg(uint32_t msc_index)
     addr_t base;
 
     base = val_mpam_get_info(MPAM_MSC_BASE_ADDR, msc_index, 0);
-    return BITFIELD_READ(IDR_PMG_MAX, val_mmio_read(base + REG_MPAMF_IDR));
+    return BITFIELD_READ(IDR_PMG_MAX, val_mmio_read64(base + REG_MPAMF_IDR));
 }
 
 /**
@@ -876,7 +876,7 @@ val_mpam_get_max_partid(uint32_t msc_index)
     addr_t base;
 
     base = val_mpam_get_info(MPAM_MSC_BASE_ADDR, msc_index, 0);
-    return BITFIELD_READ(IDR_PARTID_MAX, val_mmio_read(base + REG_MPAMF_IDR));
+    return BITFIELD_READ(IDR_PARTID_MAX, val_mmio_read64(base + REG_MPAMF_IDR));
 }
 
 /**
