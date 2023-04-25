@@ -22,6 +22,10 @@
 
 extern uint32_t g_skip_array[];
 extern uint32_t g_num_skip;
+extern uint32_t g_test_array[];
+extern uint32_t g_num_tests;
+extern uint32_t g_module_array[];
+extern uint32_t g_num_modules;
 
 /* Settings */
 #define PLATFORM_OVERRIDE_SBSA_LEVEL   0x7     //The permissible levels are 3,4,5,6 and 7

@@ -40,8 +40,10 @@ UINT32  g_curr_module = 0;
 UINT32  g_enable_module = 0;
 UINT32  *g_skip_test_num;
 UINT32  g_num_skip = 0;
-UINT32  g_single_test = SINGLE_TEST_SENTINEL;
-UINT32  g_single_module = SINGLE_MODULE_SENTINEL;
+UINT32  *g_execute_tests;
+UINT32  g_num_tests = 0;
+UINT32  *g_execute_modules;
+UINT32  g_num_modules = 0;
 UINT32  g_sbsa_tests_total;
 UINT32  g_sbsa_tests_pass;
 UINT32  g_sbsa_tests_fail;
@@ -641,15 +643,81 @@ ShellAppMainsbsa (
       g_execute_nist = TRUE;
 
   // Options with Values
-  CmdLineArg  = ShellCommandLineGetValue (ParamPackage, L"-t");
-  if (CmdLineArg != NULL) {
-    g_single_test = StrDecimalToUintn(CmdLineArg);
+  if (ShellCommandLineGetFlag (ParamPackage, L"-t")) {
+      CmdLineArg  = ShellCommandLineGetValue (ParamPackage, L"-t");
+      if (CmdLineArg == NULL)
+      {
+          Print(L"Invalid parameter passed for -t\n", 0);
+          HelpMsg();
+          return SHELL_INVALID_PARAMETER;
+      }
+      else
+      {
+          Status = gBS->AllocatePool(EfiBootServicesData,
+                                     StrLen(CmdLineArg),
+                                     (VOID **) &g_execute_tests);
+          if (EFI_ERROR(Status))
+          {
+              Print(L"Allocate memory for -t failed \n", 0);
+              return 0;
+          }
+
+          /* Check if the first value to -t is a decimal character. */
+          if (!ShellIsDecimalDigitCharacter(*CmdLineArg)) {
+              Print(L"Invalid parameter passed for -t\n", 0);
+              HelpMsg();
+              return SHELL_INVALID_PARAMETER;
+          }
+
+          g_execute_tests[0] = StrDecimalToUintn((CONST CHAR16 *)(CmdLineArg + 0));
+          for (i = 0; i < StrLen(CmdLineArg); i++) {
+              if (*(CmdLineArg + i) == L',') {
+                  g_execute_tests[++g_num_tests] = StrDecimalToUintn(
+                                                          (CONST CHAR16 *)(CmdLineArg + i + 1));
+              }
+          }
+
+          g_num_tests++;
+        }
   }
 
   // Options with Values
-  CmdLineArg  = ShellCommandLineGetValue (ParamPackage, L"-m");
-  if (CmdLineArg != NULL) {
-    g_single_module = StrDecimalToUintn(CmdLineArg);
+  if (ShellCommandLineGetFlag (ParamPackage, L"-m")) {
+      CmdLineArg  = ShellCommandLineGetValue (ParamPackage, L"-m");
+      if (CmdLineArg == NULL)
+      {
+          Print(L"Invalid parameter passed for -m\n", 0);
+          HelpMsg();
+          return SHELL_INVALID_PARAMETER;
+      }
+      else
+      {
+          Status = gBS->AllocatePool(EfiBootServicesData,
+                                     StrLen(CmdLineArg),
+                                     (VOID **) &g_execute_modules);
+          if (EFI_ERROR(Status))
+          {
+              Print(L"Allocate memory for -m failed \n", 0);
+              return 0;
+          }
+
+          /* Check if the first value to -m is a decimal character. */
+          if (!ShellIsDecimalDigitCharacter(*CmdLineArg)) {
+              Print(L"Invalid parameter passed for -m\n", 0);
+              HelpMsg();
+              return SHELL_INVALID_PARAMETER;
+          }
+
+          g_execute_modules[0] = StrDecimalToUintn((CONST CHAR16 *)(CmdLineArg + 0));
+          for (i = 0; i < StrLen(CmdLineArg); i++) {
+              if (*(CmdLineArg + i) == L',') {
+                  g_execute_modules[++g_num_modules] = StrDecimalToUintn(
+                                                          (CONST CHAR16 *)(CmdLineArg + i + 1));
+              }
+          }
+
+          g_num_modules++;
+      }
   }
 
   //

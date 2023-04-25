@@ -114,6 +114,9 @@ void
 val_mmio_write64(addr_t addr, uint64_t data);
 
 uint32_t
+val_check_skip_module(uint32_t module_base);
+
+uint32_t
 val_initialize_test(uint32_t test_num, char8_t *desc, uint32_t num_pe, uint32_t level,
                     char8_t *ruleid);
 

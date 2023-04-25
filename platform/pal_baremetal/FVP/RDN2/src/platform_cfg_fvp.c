@@ -18,8 +18,32 @@
 #include "include/pal_common_support.h"
 #include "include/platform_override_struct.h"
 
-uint32_t g_skip_array[] = {10000, 10000};
-uint32_t g_num_skip = sizeof(g_skip_array)/sizeof(g_skip_array[0]);
+/*
+    To run a specific modules:
+      - Give the module base numbers in the g_module_array.
+      - All module base numbers can be found in val/include/bsa_acs_common.h
+      - Example - if g_module_array = {0}, only PE tests will be run while skipping other modules
+
+    To run a specific tests:
+      - Give the test numbers in the g_test_array.
+      - Test numbers can be found in test_pool/<module>/test.c.
+      - For example, if g_test_array = {801}, only first test in PCIe will be run.
+        All other tests in all other modules will be skipped.
+      - If g_single_module is also given, then single test + tests under single module will be run.
+
+    To skip tests/modules:
+      - Give test numbers or module test bases as the entries of g_skip_array.
+      - This will only skip the tests or modules given in the array and runs all other tests.
+
+    Tests run = g_test_array + g_module_array - Tests under skip array
+*/
+uint32_t  g_skip_array[]   = {10000, 10000, 10000, 10000};
+uint32_t  g_test_array[]   = {};
+uint32_t  g_module_array[] = {};
+
+uint32_t  g_num_skip         = sizeof(g_skip_array)/sizeof(g_skip_array[0]);
+uint32_t  g_num_tests        = sizeof(g_test_array)/sizeof(g_test_array[0]);
+uint32_t  g_num_modules      = sizeof(g_module_array)/sizeof(g_module_array[0]);
 
 PE_INFO_TABLE platform_pe_cfg = {
 
