@@ -35,6 +35,7 @@ uint32_t
 val_ras_execute_tests(uint32_t level, uint32_t num_pe)
 {
   uint32_t status, i;
+  uint32_t skip_module;
   uint64_t num_ras_nodes = 0;
 
   for (i = 0; i < g_num_skip; i++) {
@@ -44,12 +45,11 @@ val_ras_execute_tests(uint32_t level, uint32_t num_pe)
       }
   }
 
-  if (g_single_module != SINGLE_MODULE_SENTINEL && g_single_module != AVS_RAS_TEST_NUM_BASE &&
-    (g_single_test == SINGLE_MODULE_SENTINEL ||
-      (g_single_test - AVS_RAS_TEST_NUM_BASE > 100 ||
-        g_single_test - AVS_RAS_TEST_NUM_BASE < 0))) {
+  /* Check if there are any tests to be executed in current module with user override options*/
+  skip_module = val_check_skip_module(AVS_RAS_TEST_NUM_BASE);
+  if (skip_module) {
       val_print(AVS_PRINT_TEST, " USER Override - Skipping all RAS tests \n", 0);
-      val_print(AVS_PRINT_TEST, " (Running only a single module)\n", 0);
+      val_print(AVS_PRINT_TEST, " (Running only specific modules)\n", 0);
       return AVS_STATUS_SKIP;
   }
 

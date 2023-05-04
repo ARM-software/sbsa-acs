@@ -37,9 +37,9 @@ uint64_t  g_stack_pointer;
 uint64_t  g_exception_ret_addr;
 uint64_t  g_ret_addr;
 uint32_t  g_wakeup_timeout;
-uint32_t  g_single_test = SINGLE_TEST_SENTINEL;
-uint32_t  g_single_module = SINGLE_MODULE_SENTINEL;
 uint32_t  *g_skip_test_num;
+uint32_t  *g_execute_tests;
+uint32_t  *g_execute_modules;
 
 uint32_t
 createPeInfoTable(
@@ -291,7 +291,15 @@ ShellAppMainsbsa(
   uint32_t             Status;
   void                 *branch_label;
 
-  g_skip_test_num = &g_skip_array[0];
+  g_skip_test_num   = &g_skip_array[0];
+  if (g_num_tests) {
+      g_execute_tests   = &g_test_array[0];
+  }
+
+  if (g_num_modules) {
+      g_execute_modules = &g_module_array[0];
+  }
+
   g_print_level = PLATFORM_OVERRIDE_PRINT_LEVEL;
   if (g_print_level < AVS_PRINT_INFO)
   {

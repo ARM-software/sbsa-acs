@@ -51,12 +51,12 @@ val_pe_execute_tests(uint32_t level, uint32_t num_pe)
       }
   }
 
-  if (g_single_module != SINGLE_MODULE_SENTINEL && g_single_module != AVS_PE_TEST_NUM_BASE &&
-       (g_single_test == SINGLE_MODULE_SENTINEL ||
-       (g_single_test - AVS_PE_TEST_NUM_BASE > 100))) {
-    val_print(AVS_PRINT_TEST, " USER Override - Skipping all PE tests \n", 0);
-    val_print(AVS_PRINT_TEST, " (Running only a single module)\n", 0);
-    return AVS_STATUS_SKIP;
+  /* Check if there are any tests to be executed in current module with user override options*/
+  status = val_check_skip_module(AVS_PE_TEST_NUM_BASE);
+  if (status) {
+      val_print(AVS_PRINT_TEST, " USER Override - Skipping all PE tests \n", 0);
+      val_print(AVS_PRINT_TEST, " (Running only specific modules)\n", 0);
+      return AVS_STATUS_SKIP;
   }
 
   g_curr_module = 1 << PE_MODULE;
