@@ -82,19 +82,14 @@ val_smmu_execute_tests(uint32_t level, uint32_t num_pe)
   g_curr_module = 1 << SMMU_MODULE;
 
 #ifndef TARGET_LINUX
-  status |= i001_entry(num_pe);
-  if (status != AVS_STATUS_PASS) {
-      val_print(AVS_PRINT_ERR, "\n      SMMU Version Not Compliant, "
-                               "Skipping Remaining SMMU Tests\n", 0);
-      return AVS_STATUS_SKIP;
+  if (g_sbsa_level > 3) {
+      status = i001_entry(num_pe) ;
   }
 
-  if (g_sbsa_level > 3)
-      status |= i002_entry(num_pe);
-
   if (g_sbsa_level > 4) {
-      status = i003_entry(num_pe);
-      status = i004_entry(num_pe);
+      status |= i002_entry(num_pe);
+      status |= i003_entry(num_pe);
+      status |= i004_entry(num_pe);
   }
 
   if (g_sbsa_level > 5) {

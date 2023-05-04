@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2023 Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2023, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -722,8 +722,11 @@ ShellAppMainsbsa (
   val_print(AVS_PRINT_TEST, "\n      ***  Starting GIC tests ***  \n", 0);
   Status |= val_gic_execute_tests(g_sbsa_level, val_pe_get_num());
 
-  val_print(AVS_PRINT_TEST, "\n      *** Starting SMMU  tests ***  \n", 0);
-  Status |= val_smmu_execute_tests(g_sbsa_level, val_pe_get_num());
+  if (g_sbsa_level > 3)
+  {
+    val_print(AVS_PRINT_TEST, "\n      *** Starting SMMU  tests ***  \n", 0);
+    Status |= val_smmu_execute_tests(g_sbsa_level, val_pe_get_num());
+  }
 
   if (g_sbsa_level > 5)
   {
