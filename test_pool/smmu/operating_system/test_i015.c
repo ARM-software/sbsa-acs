@@ -23,7 +23,7 @@
 
 #define TEST_NUM   (AVS_SMMU_TEST_NUM_BASE + 15)
 #define TEST_RULE  "B_SMMU_11, B_SMMU_22"
-#define TEST_DESC  "Check system for MPAM support     "
+#define TEST_DESC  "Check SMMU for MPAM support       "
 
 static
 void
