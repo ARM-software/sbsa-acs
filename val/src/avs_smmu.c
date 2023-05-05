@@ -89,10 +89,10 @@ val_smmu_execute_tests(uint32_t level, uint32_t num_pe)
       status |= i002_entry(num_pe);
       status |= i003_entry(num_pe);
       status |= i004_entry(num_pe);
+      status |= i005_entry(num_pe);
   }
 
   if (g_sbsa_level > 5) {
-      status |= i005_entry(num_pe);
       status |= i006_entry(num_pe);
       status |= i007_entry(num_pe);
       status |= i008_entry(num_pe);
@@ -100,12 +100,12 @@ val_smmu_execute_tests(uint32_t level, uint32_t num_pe)
       status |= i010_entry(num_pe);
       status |= i011_entry(num_pe);
       status |= i012_entry(num_pe);
-      status |= i015_entry(num_pe);
+      status |= i013_entry(num_pe);
   }
 
   if (g_sbsa_level > 6) {
-     status |= i013_entry(num_pe);
      status |= i014_entry(num_pe);
+     status |= i015_entry(num_pe);
   }
 #endif
 #if defined(TARGET_LINUX) || defined(TARGET_EMULATION)
