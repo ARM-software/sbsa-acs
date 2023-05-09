@@ -111,7 +111,8 @@ static void payload(void)
     }
 
     if (!valid_cnt) {
-        val_print(AVS_PRINT_DEBUG, "\n       No RP with P2P support detected. Skipping test.", 0);
+        val_print(AVS_PRINT_DEBUG,
+                 "\n       No RCiEP/ RCEC/ iEPs with P2P support detected. Skipping test.", 0);
         val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 3));
         return;
     }

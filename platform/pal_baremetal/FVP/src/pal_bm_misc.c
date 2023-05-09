@@ -34,8 +34,6 @@ pal_print(char *string, uint64_t data)
 
 }
 
-}
-
 /**
   @brief   Creates a buffer with length equal to size within the
            address range (mem_base, mem_base + mem_size)
