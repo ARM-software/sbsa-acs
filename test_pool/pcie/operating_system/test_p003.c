@@ -119,7 +119,7 @@ payload(void)
                   if (val_pcie_find_capability(bdf, PCIE_CAP, CID_PCIECS,  &data) != PCIE_SUCCESS)
                   {
                     val_print(AVS_PRINT_DEBUG,
-                              "\n       PCIe Cap Structure not found for BDF 0x%x", bdf);
+                              "\n       Skipping legacy PCI device with BDF 0x%x", bdf);
                     continue;
                   }
 
