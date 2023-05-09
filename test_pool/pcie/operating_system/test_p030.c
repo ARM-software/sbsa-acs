@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2019-2023 Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2019-2023, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -163,7 +163,8 @@ exception_return:
   }
 
   if (test_skip == 1) {
-      val_print(AVS_PRINT_DEBUG, "\n       Found no PCIe Device with MMIO Bar. Skipping test.", 0);
+      val_print(AVS_PRINT_DEBUG,
+               "\n       Found no RCiEP/ RCEC/ iEP type device with MMIO Bar. Skipping test.", 0);
       val_set_status(pe_index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
   }
   else if (test_fails)
