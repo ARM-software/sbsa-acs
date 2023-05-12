@@ -24,7 +24,6 @@
 #include "SbsaAvs.h"
 
 uint32_t  g_sbsa_level;
-uint32_t  g_enable_pcie_tests;
 uint32_t  g_print_level;
 uint32_t  g_execute_nist;
 uint32_t  g_print_mmio;
@@ -326,7 +325,6 @@ ShellAppMainsbsa(
 
   g_execute_nist = FALSE;
   g_print_mmio = FALSE;
-  g_enable_pcie_tests = 1;
   g_wakeup_timeout = PLATFORM_OVERRIDE_TIMEOUT;
 
   //
@@ -402,8 +400,8 @@ ShellAppMainsbsa(
     Status |= val_wd_execute_tests(g_sbsa_level, val_pe_get_num());
 
   /***         Starting PCIe tests                   ***/
-  if (g_sbsa_level > 5)
-    Status |= val_pcie_execute_tests(g_enable_pcie_tests, g_sbsa_level, val_pe_get_num());
+  if (g_sbsa_level > 3)
+    Status |= val_pcie_execute_tests(g_sbsa_level, val_pe_get_num());
 
   /*
    * Configure Gic Redistributor and ITS to support
@@ -412,7 +410,8 @@ ShellAppMainsbsa(
   configureGicIts();
 
   /***         Starting Exerciser tests              ***/
-  Status |= val_exerciser_execute_tests(g_sbsa_level);
+  if (g_sbsa_level > 3)
+    Status |= val_exerciser_execute_tests(g_sbsa_level);
 
   /***         Starting MPAM tests                   ***/
   if (g_sbsa_level > 6)

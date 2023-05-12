@@ -70,22 +70,21 @@ val_ras_execute_tests(uint32_t level, uint32_t num_pe)
   /* set default status to AVS_STATUS_FAIL */
   status = AVS_STATUS_FAIL;
 
-  val_print(AVS_PRINT_TEST, "\n      *** Starting RAS tests ***  \n", 0);
+  val_print_test_start("RAS");
 
-  if (g_sbsa_level > 6) {
-      status = ras001_entry(num_pe);
-      status |= ras002_entry(num_pe);
-      status |= ras003_entry(num_pe);
-      status |= ras004_entry(num_pe);
-      status |= ras005_entry(num_pe);
-      status |= ras006_entry(num_pe);
-      status |= ras007_entry(num_pe);
-      status |= ras008_entry(num_pe);
-      status |= ras009_entry(num_pe);
-      status |= ras010_entry(num_pe);
-      status |= ras011_entry(num_pe);
-      status |= ras012_entry(num_pe);
-  }
+  status = ras001_entry(num_pe);
+  status |= ras002_entry(num_pe);
+  status |= ras003_entry(num_pe);
+  status |= ras004_entry(num_pe);
+  status |= ras005_entry(num_pe);
+  status |= ras006_entry(num_pe);
+  status |= ras007_entry(num_pe);
+  status |= ras008_entry(num_pe);
+  status |= ras009_entry(num_pe);
+  status |= ras010_entry(num_pe);
+  status |= ras011_entry(num_pe);
+  status |= ras012_entry(num_pe);
+
   val_print_test_end(status, "RAS");
 
   return status;

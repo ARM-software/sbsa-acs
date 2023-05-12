@@ -60,12 +60,11 @@ val_mpam_execute_tests(uint32_t level, uint32_t num_pe)
       return AVS_STATUS_SKIP;
   }
 
-  val_print(AVS_PRINT_TEST, "\n      *** Starting MPAM tests ***  \n", 0);
+  val_print_test_start("MPAM");
   g_curr_module = 1 << MPAM_MODULE;
 
   /* run tests which don't check MPAM MSCs */
-  if (g_sbsa_level > 6)
-      status = mpam001_entry(num_pe);
+  status = mpam001_entry(num_pe);
 
   msc_node_cnt = val_mpam_get_msc_count();
   if (msc_node_cnt == 0) {
@@ -74,14 +73,12 @@ val_mpam_execute_tests(uint32_t level, uint32_t num_pe)
       return AVS_STATUS_SKIP;
   }
 
-  if (g_sbsa_level > 6) {
-      status |= mpam002_entry(num_pe);
-      status |= mpam003_entry(num_pe);
-      status |= mpam004_entry(num_pe);
-      status |= mpam005_entry(num_pe);
-      status |= mpam006_entry(num_pe);
-      val_print_test_end(status, "MPAM");
-  }
+  status |= mpam002_entry(num_pe);
+  status |= mpam003_entry(num_pe);
+  status |= mpam004_entry(num_pe);
+  status |= mpam005_entry(num_pe);
+  status |= mpam006_entry(num_pe);
+  val_print_test_end(status, "MPAM");
 
   return status;
 }

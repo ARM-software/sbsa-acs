@@ -278,15 +278,13 @@ val_pcie_execute_tests(uint32_t level, uint32_t num_pe)
       return AVS_STATUS_SKIP;
   }
 
-  val_print(AVS_PRINT_TEST, "\n      *** Starting PCIe tests ***  \n", 0);
+  val_print_test_start("PCIe");
   g_curr_module = 1 << PCIE_MODULE;
 
   /* Only the test p062 will be run at L4+ with the test number (AVS_PER_TEST_NUM_BASE + 1) */
-  if (level  > 3) {
   #ifndef TARGET_LINUX
     status = p062_entry(num_pe);
   #endif
-  }
 
   if (level > 5) {
 
