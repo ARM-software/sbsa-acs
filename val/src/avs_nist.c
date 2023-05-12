@@ -42,11 +42,11 @@ val_nist_execute_tests(uint32_t level, uint32_t num_pe)
   /* Check if there are any tests to be executed in current module with user override options*/
   status = val_check_skip_module(AVS_NIST_TEST_NUM_BASE);
   if (status) {
-      val_print(AVS_PRINT_TEST, " USER Override - Skipping all NIST tests \n", 0);
-      val_print(AVS_PRINT_TEST, " (Running only specific modules)\n", 0);
+      val_print(AVS_PRINT_TEST, "\n USER Override - Skipping all NIST tests \n", 0);
       return AVS_STATUS_SKIP;
   }
 
+  val_print(AVS_PRINT_TEST, "\n      *** Starting NIST tests ***  \n", 0);
   status = n001_entry(num_pe);
 
   val_print_test_end(status, "NIST");

@@ -274,11 +274,11 @@ val_pcie_execute_tests(uint32_t level, uint32_t num_pe)
   /* Check if there are any tests to be executed in current module with user override options*/
   status = val_check_skip_module(AVS_PCIE_TEST_NUM_BASE);
   if (status) {
-      val_print(AVS_PRINT_TEST, " USER Override - Skipping all PCIe tests \n", 0);
-      val_print(AVS_PRINT_TEST, " (Running only specific modules)\n", 0);
+      val_print(AVS_PRINT_TEST, "\n USER Override - Skipping all PCIe tests \n", 0);
       return AVS_STATUS_SKIP;
   }
 
+  val_print(AVS_PRINT_TEST, "\n      *** Starting PCIe tests ***  \n", 0);
   g_curr_module = 1 << PCIE_MODULE;
 
   /* Only the test p062 will be run at L4+ with the test number (AVS_PER_TEST_NUM_BASE + 1) */
