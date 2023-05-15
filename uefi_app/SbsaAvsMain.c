@@ -781,32 +781,26 @@ ShellAppMainsbsa (
   val_pe_initialize_default_exception_handler(val_pe_default_esr);
   FlushImage();
 
-  val_print(AVS_PRINT_TEST, "\n      ***  Starting PE tests ***  \n", 0);
+  /***         Starting PE tests                     ***/
   Status = val_pe_execute_tests(g_sbsa_level, val_pe_get_num());
 
-  val_print(AVS_PRINT_TEST, "\n      ***  Starting Memory tests ***  \n", 0);
+  /***         Starting Memory tests                 ***/
   Status |= val_memory_execute_tests(g_sbsa_level, val_pe_get_num());
 
-  val_print(AVS_PRINT_TEST, "\n      ***  Starting GIC tests ***  \n", 0);
+  /***         Starting GIC tests                    ***/
   Status |= val_gic_execute_tests(g_sbsa_level, val_pe_get_num());
 
+  /***         Starting SMMU tests                   ***/
   if (g_sbsa_level > 3)
-  {
-    val_print(AVS_PRINT_TEST, "\n      *** Starting SMMU  tests ***  \n", 0);
     Status |= val_smmu_execute_tests(g_sbsa_level, val_pe_get_num());
-  }
 
+  /***         Starting Watchdog tests               ***/
   if (g_sbsa_level > 5)
-  {
-    val_print(AVS_PRINT_TEST, "\n      *** Starting Watchdog tests ***  \n", 0);
     Status |= val_wd_execute_tests(g_sbsa_level, val_pe_get_num());
-  }
 
+  /***         Starting PCIe tests                   ***/
   if (g_sbsa_level > 3)
-  {
-    val_print(AVS_PRINT_TEST, "\n      *** Starting PCIe tests ***  \n", 0);
     Status |= val_pcie_execute_tests(g_sbsa_level, val_pe_get_num());
-  }
 
   /*
    * Configure Gic Redistributor and ITS to support
@@ -814,27 +808,24 @@ ShellAppMainsbsa (
    */
   configureGicIts();
 
-  val_print(AVS_PRINT_TEST, "\n      *** Starting PCIe Exerciser tests ***  \n", 0);
+  /***         Starting Exerciser tests              ***/
   Status |= val_exerciser_execute_tests(g_sbsa_level);
 
-  if (g_sbsa_level > 6) {
-    val_print(AVS_PRINT_TEST, "\n      *** Starting MPAM tests ***  \n", 0);
+  /***         Starting MPAM tests                   ***/
+  if (g_sbsa_level > 6)
     Status |= val_mpam_execute_tests(g_sbsa_level, val_pe_get_num());
-  }
 
-  if (g_sbsa_level > 6) {
-    val_print(AVS_PRINT_TEST, "\n      *** Starting PMU tests ***  \n",  0);
+  /***         Starting PMU tests                    ***/
+  if (g_sbsa_level > 6)
     Status |= val_pmu_execute_tests(g_sbsa_level, val_pe_get_num());
-  }
 
-  if (g_sbsa_level > 6) {
-    val_print(AVS_PRINT_TEST, "\n      *** Starting RAS tests ***  \n", 0);
+  /***         Starting RAS tests                    ***/
+  if (g_sbsa_level > 6)
     Status |= val_ras_execute_tests(g_sbsa_level, val_pe_get_num());
-  }
 
 #ifdef ENABLE_NIST
+  /***         Starting NIST tests                   ***/
   if (g_execute_nist == TRUE) {
-    val_print(AVS_PRINT_TEST, "\n      *** Starting NIST statistical tests ***  \n", 0);
     Status |= val_nist_execute_tests(g_sbsa_level, val_pe_get_num());
   }
 #endif
