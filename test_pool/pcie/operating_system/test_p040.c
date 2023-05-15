@@ -74,7 +74,7 @@ payload(void)
   }
 
   if (test_skip == 1) {
-      val_print(AVS_PRINT_DEBUG, "\n       No iEP_RP/ RP type device found. Skipping test", 0);
+      val_print(AVS_PRINT_DEBUG, "\n       No iEP_RP type device found. Skipping test", 0);
       val_set_status(pe_index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
   }
   else if (test_fails)

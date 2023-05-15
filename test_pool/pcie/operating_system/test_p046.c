@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2020-2023 Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2023, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -133,10 +133,10 @@ payload(void)
   }
 
   if (test_skip) {
-      val_print(AVS_PRINT_DEBUG, "\n       No RP/ iEP_RP type device found. Skipping test", 0);
+      val_print(AVS_PRINT_DEBUG, "\n       No iEP_RP type device found. Skipping test", 0);
       val_set_status(pe_index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
   }
-  if (test_fail)
+  else if (test_fail)
       val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
   else
       val_set_status(pe_index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
