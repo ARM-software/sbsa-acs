@@ -809,7 +809,8 @@ ShellAppMainsbsa (
   configureGicIts();
 
   /***         Starting Exerciser tests              ***/
-  Status |= val_exerciser_execute_tests(g_sbsa_level);
+  if (g_sbsa_level > 3)
+    Status |= val_exerciser_execute_tests(g_sbsa_level);
 
   /***         Starting MPAM tests                   ***/
   if (g_sbsa_level > 6)

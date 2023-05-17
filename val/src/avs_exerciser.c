@@ -64,10 +64,10 @@ void val_exerciser_create_info_table(void)
       {
           g_exerciser_info_table.e_info[g_exerciser_info_table.num_exerciser].bdf = Bdf;
           g_exerciser_info_table.e_info[g_exerciser_info_table.num_exerciser++].initialized = 0;
-          val_print(AVS_PRINT_DEBUG, "    exerciser Bdf %x\n", Bdf);
+          val_print(AVS_PRINT_DEBUG, "      exerciser Bdf %x\n", Bdf);
       }
   }
-  val_print(AVS_PRINT_TEST, " PCIE_INFO: Number of exerciser cards : %4d \n",
+  val_print(AVS_PRINT_TEST, "      PCIE_INFO: Number of exerciser cards : %4d \n",
                                                              g_exerciser_info_table.num_exerciser);
   return;
 }
@@ -284,11 +284,6 @@ val_exerciser_execute_tests(uint32_t level)
   uint32_t instance;
   uint32_t num_smmu;
 
-  if (level == 3) {
-    val_print(AVS_PRINT_WARN, "Exerciser Sbsa compliance is only from Level %d \n", 4);
-    return AVS_STATUS_SKIP;
-  }
-
   for (i = 0; i < g_num_skip; i++) {
       if (g_skip_test_num[i] == AVS_EXERCISER_TEST_NUM_BASE) {
           val_print(AVS_PRINT_TEST, "\n USER Override - Skipping the Exerciser tests \n", 0);
@@ -313,6 +308,8 @@ val_exerciser_execute_tests(uint32_t level)
                 with the platform pcie device hierarchy, Skipping exerciser tests *** \n", 0);
     return AVS_STATUS_SKIP;
   }
+
+  val_print(AVS_PRINT_INFO, "\n      Starting Exerciser Setup\n", 0);
 
   val_exerciser_create_info_table();
   num_instances = val_exerciser_get_info(EXERCISER_NUM_CARDS, 0);

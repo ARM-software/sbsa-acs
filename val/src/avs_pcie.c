@@ -282,11 +282,9 @@ val_pcie_execute_tests(uint32_t level, uint32_t num_pe)
   g_curr_module = 1 << PCIE_MODULE;
 
   /* Only the test p062 will be run at L4+ with the test number (AVS_PER_TEST_NUM_BASE + 1) */
-  if (level  > 3) {
   #ifndef TARGET_LINUX
     status = p062_entry(num_pe);
   #endif
-  }
 
   if (level > 5) {
 
