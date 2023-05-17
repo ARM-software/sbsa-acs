@@ -52,7 +52,7 @@ val_timer_execute_tests(uint32_t level, uint32_t num_pe)
       return AVS_STATUS_SKIP;
   }
 
-  val_print(AVS_PRINT_TEST, "\n      *** Starting Timer tests ***  \n", 0);
+  val_print_test_start("Timer");
 
   return status;
 }

@@ -77,7 +77,7 @@ val_smmu_execute_tests(uint32_t level, uint32_t num_pe)
     return AVS_STATUS_SKIP;
   }
 
-  val_print(AVS_PRINT_TEST, "\n      *** Starting SMMU tests ***  \n", 0);
+  val_print_test_start("SMMU");
   g_curr_module = 1 << SMMU_MODULE;
 
 #ifndef TARGET_LINUX

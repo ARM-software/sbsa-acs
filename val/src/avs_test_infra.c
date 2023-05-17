@@ -40,6 +40,23 @@ val_print(uint32_t level, char8_t *string, uint64_t data)
 
 }
 
+/**
+  @brief  This API prints out module header to the output console.
+          1. Caller       - Application layer
+          2. Prerequisite - None.
+
+  @param string  formatted ASCII string
+
+  @return        None
+ **/
+void
+val_print_test_start(char8_t *string)
+{
+  pal_print("\n      *** Starting ", 0);
+  pal_print(string, 0);
+  pal_print(" tests ***  \n", 0);
+}
+
 void
 val_print_test_end(uint32_t status, char8_t *string)
 {

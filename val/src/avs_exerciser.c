@@ -330,7 +330,7 @@ val_exerciser_execute_tests(uint32_t level)
   for (instance = 0; instance < num_smmu; ++instance)
       val_smmu_disable(instance);
 
-  val_print(AVS_PRINT_TEST, "\n      *** Starting PCIe Exerciser tests ***  \n", 0);
+  val_print_test_start("PCIe Exerciser");
 
   g_curr_module = 1 << EXERCISER_MODULE;
   status = e001_entry();

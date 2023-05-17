@@ -70,7 +70,7 @@ val_ras_execute_tests(uint32_t level, uint32_t num_pe)
   /* set default status to AVS_STATUS_FAIL */
   status = AVS_STATUS_FAIL;
 
-  val_print(AVS_PRINT_TEST, "\n      *** Starting RAS tests ***  \n", 0);
+  val_print_test_start("RAS");
 
   if (g_sbsa_level > 6) {
       status = ras001_entry(num_pe);
