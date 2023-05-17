@@ -52,7 +52,7 @@ val_memory_execute_tests(uint32_t level, uint32_t num_pe)
       return AVS_STATUS_SKIP;
   }
 
-  val_print(AVS_PRINT_TEST, "\n      *** Starting Memory tests ***  \n", 0);
+  val_print_test_start("Memory");
   g_curr_module = 1 << MEM_MAP_MODULE;
 
   status = m001_entry(num_pe);
