@@ -63,12 +63,10 @@ val_pmu_execute_tests(uint32_t level, uint32_t num_pe)
   g_curr_module = 1 << PMU_MODULE;
 
   /* run tests which don't check PMU nodes */
-  if (g_sbsa_level > 6) {
-      status  = pmu001_entry(num_pe);
-      status |= pmu002_entry(num_pe);
-      status |= pmu003_entry(num_pe);
-      status |= pmu006_entry(num_pe);
-  }
+  status  = pmu001_entry(num_pe);
+  status |= pmu002_entry(num_pe);
+  status |= pmu003_entry(num_pe);
+  status |= pmu006_entry(num_pe);
 
   pmu_node_count = val_pmu_get_info(PMU_NODE_COUNT, 0);
   if (pmu_node_count == 0) {
@@ -77,13 +75,11 @@ val_pmu_execute_tests(uint32_t level, uint32_t num_pe)
       return AVS_STATUS_SKIP;
   }
 
-  if (g_sbsa_level > 6) {
-      status |= pmu004_entry(num_pe);
-      status |= pmu005_entry(num_pe);
-      status |= pmu007_entry(num_pe);
-      status |= pmu008_entry(num_pe);
-      status |= pmu009_entry(num_pe);
-  }
+  status |= pmu004_entry(num_pe);
+  status |= pmu005_entry(num_pe);
+  status |= pmu007_entry(num_pe);
+  status |= pmu008_entry(num_pe);
+  status |= pmu009_entry(num_pe);
 
   val_print_test_end(status, "PMU");
 

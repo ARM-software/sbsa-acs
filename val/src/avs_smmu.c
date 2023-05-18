@@ -81,9 +81,7 @@ val_smmu_execute_tests(uint32_t level, uint32_t num_pe)
   g_curr_module = 1 << SMMU_MODULE;
 
 #ifndef TARGET_LINUX
-  if (g_sbsa_level > 3) {
-      status = i001_entry(num_pe) ;
-  }
+  status = i001_entry(num_pe) ;
 
   if (g_sbsa_level > 4) {
       status |= i002_entry(num_pe);
