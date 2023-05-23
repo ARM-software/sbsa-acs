@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2023 Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2023, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -228,6 +228,9 @@ pal_ras_create_info_table(RAS_INFO_TABLE *RasInfoTable)
                      RAS_MAX_NUM_NODES);
           break;
       }
+
+      /* Move to next RAS node */
+      curr_node++;
   }
 
   pal_ras_dump_info_table(RasInfoTable);
