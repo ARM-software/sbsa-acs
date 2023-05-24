@@ -291,10 +291,11 @@ val_timer_create_info_table(uint64_t *timer_info_table)
 
   pal_timer_create_info_table(g_timer_info_table);
 
-  /* UEFI or other EL1 software may have enabled the el1 physical timer.
-     Disable the timer to prevent interrupts at un-expected times */
+  /* UEFI or other EL1 software may have enabled the EL1 physical/virtual timer.
+     Disable the timers to prevent interrupts at un-expected times */
 
   val_timer_set_phy_el1(0);
+  val_timer_set_vir_el1(0);
 
   val_print(AVS_PRINT_TEST, " TIMER_INFO: Number of system timers  : %4d \n",
                                                   g_timer_info_table->header.num_platform_timer);
