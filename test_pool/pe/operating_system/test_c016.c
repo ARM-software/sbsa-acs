@@ -39,6 +39,13 @@ static void payload(void)
         return;
     }
 
+    /* Check if PE implements FEAT_MPAM */
+    if (!((VAL_EXTRACT_BITS(val_pe_reg_read(ID_AA64PFR0_EL1), 40, 43) > 0) ||
+        (VAL_EXTRACT_BITS(val_pe_reg_read(ID_AA64PFR1_EL1), 16, 19) > 0))) {
+            val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
+            return;
+    }
+
     /* Find the LLC cache identifier */
     llc_index = val_cache_get_llc_index();
     if (llc_index == CACHE_TABLE_EMPTY) {
@@ -57,13 +64,6 @@ static void payload(void)
     /* Check in the MPAM table which MSC is attached to the LLC */
     msc_node_cnt = val_mpam_get_msc_count();
     val_print(AVS_PRINT_DEBUG, "\n       MSC count = %d", msc_node_cnt);
-
-    /* Check if PE implements FEAT_MPAM */
-    if (!((VAL_EXTRACT_BITS(val_pe_reg_read(ID_AA64PFR0_EL1), 40, 43) > 0) ||
-        (VAL_EXTRACT_BITS(val_pe_reg_read(ID_AA64PFR1_EL1), 16, 19) > 0))) {
-            val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 02));
-            return;
-    }
 
     if (msc_node_cnt == 0) {
         val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 03));
