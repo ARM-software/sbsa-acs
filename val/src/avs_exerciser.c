@@ -319,13 +319,16 @@ val_exerciser_execute_tests(uint32_t level)
       return AVS_STATUS_SKIP;
   }
 
-
+  val_print(AVS_PRINT_INFO, "\n      Initializing SMMU\n", 0);
   num_smmu = val_iovirt_get_smmu_info(SMMU_NUM_CTRL, 0);
   val_smmu_init();
 
   /* Disable All SMMU's */
   for (instance = 0; instance < num_smmu; ++instance)
       val_smmu_disable(instance);
+
+  val_print(AVS_PRINT_INFO, "\n      Initializing ITS\n", 0);
+  val_gic_its_configure();
 
   val_print_test_start("PCIe Exerciser");
 
