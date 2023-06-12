@@ -117,17 +117,6 @@ createGicInfoTable (
 }
 
 EFI_STATUS
-configureGicIts (
-)
-{
-  EFI_STATUS Status;
-
-  Status = val_gic_its_configure();
-
-  return Status;
-}
-
-EFI_STATUS
 createTimerInfoTable(
 )
 {
@@ -801,12 +790,6 @@ ShellAppMainsbsa (
   /***         Starting PCIe tests                   ***/
   if (g_sbsa_level > 3)
     Status |= val_pcie_execute_tests(g_sbsa_level, val_pe_get_num());
-
-  /*
-   * Configure Gic Redistributor and ITS to support
-   * Generation of LPIs.
-   */
-  configureGicIts();
 
   /***         Starting Exerciser tests              ***/
   if (g_sbsa_level > 3)
