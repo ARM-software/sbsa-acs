@@ -334,21 +334,18 @@ val_exerciser_execute_tests(uint32_t level)
 
   g_curr_module = 1 << EXERCISER_MODULE;
   status = e001_entry();
-  status |= e002_entry();
-  status |= e004_entry();
-  status |= e005_entry();
 
   if (level > 5) {
+      status |= e002_entry();
       status |= e003_entry();
-      status |= e006_entry();
-      status |= e007_entry();
+      status |= e004_entry();
   }
 
   if (level > 6) {
-      status = e008_entry();
-      status |= e009_entry();
-      status |= e010_entry();
-      status |= e011_entry();
+      status |= e005_entry();
+      status |= e006_entry();
+      status |= e007_entry();
+      status |= e008_entry();
   }
   val_print_test_end(status, "Exerciser");
 

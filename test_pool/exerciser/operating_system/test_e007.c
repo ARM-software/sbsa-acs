@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2020-2023 Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2023, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,386 +20,324 @@
 
 #include "val/include/sbsa_avs_pcie_enumeration.h"
 #include "val/include/sbsa_avs_pcie.h"
+#include "val/include/sbsa_avs_pcie_spec.h"
 #include "val/include/sbsa_avs_pe.h"
 #include "val/include/sbsa_avs_smmu.h"
+#include "val/include/sbsa_avs_iovirt.h"
 #include "val/include/sbsa_avs_memory.h"
 #include "val/include/sbsa_avs_exerciser.h"
 
 #define TEST_NUM   (AVS_EXERCISER_TEST_NUM_BASE + 7)
-#define TEST_DESC  "Arrival order & Gathering Check   "
-#define TEST_RULE  "RE_ORD_1, RE_ORD_2"
+#define TEST_DESC  "RP's must support DPC                  "
+#define TEST_RULE  "PCI_ER_05, PCI_ER_06"
 
-/* 0 means read transction, 1 means write transaction */
-static uint32_t transaction_order[] = {1, 1, 0, 1, 0, 0, 0, 0};
-static uint32_t pattern[16] = {0};
-static uint32_t run_flag;
-static uint32_t fail_cnt;
+#define ERR_FATAL 1
+#define ERR_FATAL_NONFATAL 2
+#define ERR_UNCORR   0x3
 
-static uint32_t read_config_space(uint32_t *addr)
-{
-  uint32_t idx;
-
-  for(idx = 0; idx < 16; idx++) {
-    addr = addr + idx;
-    pattern[idx] = val_mmio_read((addr_t)addr);
-  }
-
-  return 0;
-}
-
-/* num of transactions captured and thier attributes is checked */
-static uint32_t test_sequence_check(uint32_t instance)
-{
-  uint64_t idx;
-  uint64_t num_transactions;
-  uint64_t transaction_type;
-
-  num_transactions = sizeof(transaction_order)/sizeof(transaction_order[0]);
-
-  /* Check transactions arrival order */
-  for (idx = 0; idx < sizeof(transaction_order)/sizeof(transaction_order[0]); idx++) {
-      val_exerciser_get_param(TRANSACTION_TYPE, &idx, &transaction_type, instance);
-      if (transaction_type !=  transaction_order[idx]) {
-          val_print(AVS_PRINT_ERR, "\n       Exerciser %d arrival order check failed", instance);
-          return 1;
-      }
-  }
-
-  /* Get number of transactions captured from exerciser */
-  if (num_transactions != idx) {
-      val_print(AVS_PRINT_ERR, "\n       Exerciser %d gathering check failed", instance);
-      return 1;
-  }
-
-  return 0;
-}
-
-/* Performs reads/write on 1B data */
-static uint32_t test_sequence_1B(uint8_t *addr, uint8_t increment_addr, uint32_t instance)
-{
-  uint64_t idx;
-  uint8_t write_val;
-  uint32_t pidx;
-  uint32_t e_bdf;
-  uint8_t *pattern_ptr;
-
-  e_bdf = val_exerciser_get_bdf(instance);
-
-  /* Start monitoring exerciser transactions */
-  if (val_exerciser_ops(START_TXN_MONITOR, CFG_READ, instance)) {
-      val_print(AVS_PRINT_DEBUG,
-               "\n       Exerciser BDF 0x%x - Unable to start transaction monitoring", e_bdf);
-      return AVS_STATUS_SKIP;
-  }
-
-
-  run_flag = 1;
-
-  /* Send the transaction on incrementalt addresses */
-  for (idx = 0; idx < sizeof(transaction_order)/sizeof(transaction_order[0]); idx++) {
-      pidx = ((uint64_t)addr & 0xFF);
-      pattern_ptr = (uint8_t *)&pattern;
-      write_val = pattern_ptr[pidx];
-      /* Write transaction */
-      if (transaction_order[idx])
-          val_mmio_write8((addr_t)addr, write_val);
-      else
-          val_mmio_read8((addr_t)addr);
-      if (increment_addr)
-          addr++;
-  }
-
-  /* Stop monitoring exerciser transactions */
-  val_exerciser_ops(STOP_TXN_MONITOR, CFG_READ, instance);
-
-  return test_sequence_check(instance);
-}
-
-/* Performs reads/write on 2B data */
-static uint32_t test_sequence_2B(uint16_t *addr, uint8_t increment_addr, uint32_t instance)
-{
-  uint64_t idx;
-  uint16_t write_val;
-  uint32_t pidx;
-  uint32_t e_bdf;
-  uint16_t *pattern_ptr;
-
-  e_bdf = val_exerciser_get_bdf(instance);
-
-  /* Start monitoring exerciser transactions */
-  if (val_exerciser_ops(START_TXN_MONITOR, CFG_READ, instance)) {
-      val_print(AVS_PRINT_DEBUG,
-               "\n       Exerciser BDF 0x%x - Unable to start transaction monitoring", e_bdf);
-      return AVS_STATUS_SKIP;
-  }
-
-  run_flag = 1;
-
-  /* Send the transaction on incrementalt addresses */
-  for (idx = 0; idx < sizeof(transaction_order)/sizeof(transaction_order[0]); idx++) {
-      pidx = ((uint64_t)addr & 0xFF)/2;
-      pattern_ptr = (uint16_t *)&pattern;
-      write_val = pattern_ptr[pidx];
-      /* Write transaction */
-      if (transaction_order[idx])
-          val_mmio_write16((addr_t)addr, write_val);
-      else
-          val_mmio_read16((addr_t)addr);
-      if (increment_addr)
-          addr++;
-  }
-
-  /* Stop monitoring exerciser transactions */
-  val_exerciser_ops(STOP_TXN_MONITOR, CFG_READ, instance);
-
-  return test_sequence_check(instance);
-}
-
-/* Performs reads/write on 4B data */
-static uint32_t test_sequence_4B(uint32_t *addr, uint8_t increment_addr, uint32_t instance)
-{
-  uint64_t idx;
-  uint32_t write_val, pidx;
-  uint32_t *pattern_ptr;
-  uint32_t e_bdf;
-
-  e_bdf = val_exerciser_get_bdf(instance);
-
-  /* Start monitoring exerciser transactions */
-  if (val_exerciser_ops(START_TXN_MONITOR, CFG_READ, instance)) {
-      val_print(AVS_PRINT_DEBUG,
-               "\n       Exerciser BDF 0x%x - Unable to start transaction monitoring", e_bdf);
-      return AVS_STATUS_SKIP;
-  }
-
-  run_flag = 1;
-
-  /* Send the transaction on incrementalt addresses */
-  for (idx = 0; idx < sizeof(transaction_order)/sizeof(transaction_order[0]); idx++) {
-      pidx = ((uint64_t)addr & 0xFF)/4;
-      pattern_ptr = (uint32_t *)&pattern;
-      write_val = pattern_ptr[pidx];
-      /* Write transaction */
-      if (transaction_order[idx])
-          val_mmio_write((addr_t)addr, write_val);
-      else
-          val_mmio_read((addr_t)addr);
-      if (increment_addr)
-          addr++;
-  }
-
-  /* Stop monitoring exerciser transactions */
-  val_exerciser_ops(STOP_TXN_MONITOR, CFG_READ, instance);
-
-  return test_sequence_check(instance);
-}
-
-/* Performs reads/write on 8B data */
-static uint32_t test_sequence_8B(uint64_t *addr, uint8_t increment_addr, uint32_t instance)
-{
-  uint64_t idx;
-  uint64_t write_val;
-  uint32_t pidx;
-  uint32_t e_bdf;
-  uint64_t *pattern_ptr;
-
-  e_bdf = val_exerciser_get_bdf(instance);
-
-  /* Start monitoring exerciser transactions */
-  if (val_exerciser_ops(START_TXN_MONITOR, CFG_READ, instance)) {
-      val_print(AVS_PRINT_DEBUG,
-               "\n       Exerciser BDF 0x%x - Unable to start transaction monitoring", e_bdf);
-      return AVS_STATUS_SKIP;
-  }
-
-  run_flag = 1;
-
-  /* Send the transaction on incrementalt addresses */
-  for (idx = 0; idx < sizeof(transaction_order)/sizeof(transaction_order[0]); idx++) {
-      pidx = ((uint64_t)addr & 0xFF)/8;
-      pattern_ptr = (uint64_t *)&pattern;
-      write_val = pattern_ptr[pidx];
-      /* Write transaction */
-      if (transaction_order[idx])
-          val_mmio_write64((addr_t)addr, write_val);
-      else
-          val_mmio_read64((addr_t)addr);
-      if (increment_addr)
-          addr++;
-  }
-
-  /* Stop monitoring exerciser transactions */
-  val_exerciser_ops(STOP_TXN_MONITOR, CFG_READ, instance);
-
-  return test_sequence_check(instance);
-}
-
-static void cfgspace_test_sequence(uint32_t *baseptr, uint32_t instance)
-{
-
-    /* Test Scenario 1 : Transactions on incremental aligned address */
-    fail_cnt += test_sequence_1B((uint8_t *)baseptr, 1, instance);
-    fail_cnt += test_sequence_2B((uint16_t *)baseptr, 1, instance);
-    fail_cnt += test_sequence_4B((uint32_t *)baseptr, 1, instance);
-
-    /* Test Scenario 2 : Transactions on same address */
-    fail_cnt += test_sequence_1B((uint8_t *)baseptr, 0, instance);
-    fail_cnt += test_sequence_2B((uint16_t *)baseptr, 0, instance);
-    fail_cnt += test_sequence_4B((uint32_t *)baseptr, 0, instance);
-
-}
-
-static void barspace_test_sequence(uint64_t *baseptr, uint32_t instance)
-{
-
-    /* Test Scenario 1 : Transactions on incremental aligned address */
-    fail_cnt += test_sequence_1B((uint8_t *)baseptr, 1, instance);
-    fail_cnt += test_sequence_2B((uint16_t *)baseptr, 1, instance);
-    fail_cnt += test_sequence_4B((uint32_t *)baseptr, 1, instance);
-    fail_cnt += test_sequence_8B((uint64_t *)baseptr, 1, instance);
-
-    /* Test Scenario 2 : Transactions on same address */
-    fail_cnt += test_sequence_1B((uint8_t *)baseptr, 0, instance);
-    fail_cnt += test_sequence_2B((uint16_t *)baseptr, 0, instance);
-    fail_cnt += test_sequence_4B((uint32_t *)baseptr, 0, instance);
-    fail_cnt += test_sequence_8B((uint64_t *)baseptr, 0, instance);
-
-}
-
-/* Read and Write on config space mapped to Device memory */
+static uint32_t msg_type[] = {ERR_FATAL_NONFATAL, ERR_FATAL};
+static uint32_t irq_pending;
+static uint32_t lpi_int_id = 0x204C;
 
 static
 void
-cfgspace_transactions_order_check(void)
+intr_handler(void)
 {
-  uint32_t instance;
-  uint32_t bdf;
-  char *baseptr;
-  uint32_t cid_offset;
-  uint64_t bdf_addr;
+  /* Clear the interrupt pending state */
+  irq_pending = 0;
 
-  /* Read the number of excerciser cards */
-  instance = val_exerciser_get_info(EXERCISER_NUM_CARDS, 0);
-
-  while (instance-- != 0) {
-
-    /* if init fail moves to next exerciser */
-    if (val_exerciser_init(instance))
-        continue;
-
-    /* Get exerciser bdf */
-    bdf = val_exerciser_get_bdf(instance);
-
-    /* If exerciser doesn't have PCI_CAP skip the bdf */
-    if (val_pcie_find_capability(bdf, PCIE_CAP, CID_PCIECS, &cid_offset) == PCIE_CAP_NOT_FOUND)
-        continue;
-
-    bdf_addr = val_pcie_get_bdf_config_addr(bdf);
-
-    /* Map config space to ARM device(nGnRnE) memory in MMU page tables */
-    baseptr = (char *)val_memory_ioremap((void *)bdf_addr, 512, DEVICE_nGnRnE);
-
-    if (!baseptr) {
-        val_print(AVS_PRINT_ERR, "\n       Failed in config ioremap for instance %x", instance);
-        continue;
-    }
-
-    read_config_space((uint32_t *)baseptr);
-
-    /* Perform Transactions on incremental aligned address and on same address */
-    cfgspace_test_sequence((uint32_t *)baseptr, instance);
-
-    /* Map config space to ARM device(nGnRE) memory in MMU page tables */
-    baseptr = (char *)val_memory_ioremap((void *)bdf_addr, 512, DEVICE_nGnRE);
-
-    if (!baseptr) {
-        val_print(AVS_PRINT_ERR, "\n       Failed in config ioremap for instance %x", instance);
-        continue;
-    }
-
-    read_config_space((uint32_t *)baseptr);
-    /* Perform Transactions on incremental aligned address and on same address */
-    cfgspace_test_sequence((uint32_t *)baseptr, instance);
-  }
-}
-
-/* Read and Write on BAR space mapped to Device memory */
-
-static
-void
-barspace_transactions_order_check(void)
-{
-  uint32_t instance;
-  exerciser_data_t e_data;
-  char *baseptr;
-  uint32_t status;
-
-  /* Read the number of excerciser cards */
-  instance = val_exerciser_get_info(EXERCISER_NUM_CARDS, 0);
-
-  while (instance-- != 0) {
-
-    /* if init fail moves to next exerciser */
-    if (val_exerciser_init(instance))
-        continue;
-
-    /* Get BAR 0 details for this instance */
-    status = val_exerciser_get_data(EXERCISER_DATA_MMIO_SPACE, &e_data, instance);
-    if (status == NOT_IMPLEMENTED) {
-        val_print(AVS_PRINT_ERR, "\n       pal_exerciser_get_data() for MMIO not implemented", 0);
-        continue;
-    } else if (status) {
-        val_print(AVS_PRINT_ERR, "\n       Exerciser %d data read error     ", instance);
-        continue;
-    }
-
-    /* If BAR region is not Prefetchable, skip the exerciser */
-    if (e_data.bar_space.type != MMIO_PREFETCHABLE)
-        continue;
-
-    /* Map mmio space to ARM device(nGnRnE) memory in MMU page tables */
-    baseptr = (char *)val_memory_ioremap((void *)e_data.bar_space.base_addr, 512, DEVICE_nGnRnE);
-    if (!baseptr) {
-        val_print(AVS_PRINT_ERR, "\n       Failed in BAR ioremap for instance %x", instance);
-        continue;
-    }
-
-    /* Perform Transactions on incremental aligned address and on same address */
-    barspace_test_sequence((uint64_t *)baseptr, instance);
-
-    /* Map mmio space to ARM device(nGnRE) memory in MMU page tables */
-    baseptr = (char *)val_memory_ioremap((void *)e_data.bar_space.base_addr, 512, DEVICE_nGnRE);
-    if (!baseptr) {
-        val_print(AVS_PRINT_ERR, "\n       Failed in BAR ioremap for instance %x", instance);
-        continue;
-    }
-
-    /* Perform Transactions on incremental aligned address and on same address */
-    barspace_test_sequence((uint64_t *)baseptr, instance);
-
-  }
+  val_print(AVS_PRINT_INFO, "\n       Received MSI interrupt %x       ", lpi_int_id);
+  val_gic_end_of_interrupt(lpi_int_id);
+  return;
 }
 
 static
 void
 payload(void)
 {
+
   uint32_t pe_index;
+  uint32_t e_bdf;
+  uint32_t erp_bdf;
+  uint32_t reg_value;
+  uint32_t instance;
+  uint32_t fail_cnt;
+  uint32_t test_skip = 1;
+  uint32_t status;
+  uint32_t rp_dpc_cap_base;
+  uint32_t aer_offset;
+  uint32_t rp_aer_offset;
+  uint32_t error_source_id;
+  uint32_t source_id;
+  uint32_t dpc_trigger_reason;
+  uint32_t timeout;
 
-  pe_index = val_pe_get_index_mpid (val_pe_get_mpid());
+  uint32_t device_id = 0;
+  uint32_t stream_id = 0;
+  uint32_t its_id = 0;
+  uint32_t msi_index = 0;
+  uint32_t msi_cap_offset = 0;
 
-  cfgspace_transactions_order_check();
-  barspace_transactions_order_check();
+  void     *cfg_space_buf;
+  addr_t   cfg_space_addr;
+  uint32_t idx;
+  cfg_space_buf = NULL;
 
-  if(!run_flag) {
-      val_set_status(pe_index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
-      return;
+  fail_cnt = 0;
+  pe_index = val_pe_get_index_mpid(val_pe_get_mpid());
+  instance = val_exerciser_get_info(EXERCISER_NUM_CARDS, 0);
+
+  while (instance-- != 0)
+  {
+      if (val_exerciser_init(instance))
+          continue;
+
+      e_bdf = val_exerciser_get_bdf(instance);
+      val_print(AVS_PRINT_DEBUG, "\n       Exerciser BDF - 0x%x", e_bdf);
+
+      val_pcie_enable_eru(e_bdf);
+
+      if (val_pcie_get_rootport(e_bdf, &erp_bdf))
+          continue;
+
+      val_pcie_enable_eru(erp_bdf);
+
+      /* Check DPC capability */
+      status = val_pcie_find_capability(erp_bdf, PCIE_ECAP, ECID_DPC, &rp_dpc_cap_base);
+      if (status == PCIE_CAP_NOT_FOUND)
+      {
+          val_print(AVS_PRINT_ERR, "\n       ECID_DPC not found", 0);
+          continue;
+      }
+
+      test_skip = 0;
+
+      /* Check AER capability for both exerciser and RP */
+      if (val_pcie_find_capability(e_bdf, PCIE_ECAP, ECID_AER, &aer_offset) != PCIE_SUCCESS) {
+          val_print(AVS_PRINT_ERR, "\n       AER Capability not supported, Bdf : 0x%x", e_bdf);
+          continue;
+      }
+
+      if (val_pcie_find_capability(erp_bdf, PCIE_ECAP, ECID_AER, &rp_aer_offset) != PCIE_SUCCESS) {
+          val_print(AVS_PRINT_ERR, "\n       AER Capability not supported for RP : 0x%x", erp_bdf);
+          fail_cnt++;
+      }
+
+      /* Search for MSI-X Capability */
+      if (val_pcie_find_capability(e_bdf, PCIE_CAP, CID_MSIX, &msi_cap_offset)) {
+        val_print(AVS_PRINT_ERR, "\n       No MSI-X Capability, Skipping for Bdf 0x%x", e_bdf);
+        continue;
+      }
+
+      /* Get DeviceID & ITS_ID for this device */
+      status = val_iovirt_get_device_info(PCIE_CREATE_BDF_PACKED(erp_bdf),
+                                        PCIE_EXTRACT_BDF_SEG(erp_bdf), &device_id,
+                                        &stream_id, &its_id);
+
+      if (status) {
+          val_print(AVS_PRINT_ERR, "\n       iovirt_get_device failed for bdf 0x%x", e_bdf);
+          val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
+          return;
+      }
+
+       /* Get DeviceID & ITS_ID for this device */
+      status = val_gic_request_msi(erp_bdf, device_id, its_id, lpi_int_id + instance, msi_index);
+      if (status) {
+          val_print(AVS_PRINT_ERR, "\n       MSI Assignment failed for bdf : 0x%x", erp_bdf);
+          val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 2));
+          return;
+      }
+
+      status = val_gic_install_isr(lpi_int_id + instance, intr_handler);
+
+      if (status) {
+          val_print(AVS_PRINT_ERR, "\n       Intr handler registration failed: 0x%x", lpi_int_id);
+          val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
+          return;
+      }
+
+      status = val_exerciser_set_param(ERROR_INJECT_TYPE, UNCORR_CMPT_TO, 1, instance);
+      if (status != ERR_UNCORR) {
+          val_print(AVS_PRINT_ERR, "\n       Error Injection failed, Bdf : 0x%x", e_bdf);
+          continue;
+      }
+
+      /* check for both fatal and non-fatal error */
+      for (int i = 0; i < 2; i++)
+      {
+          val_pcie_data_link_layer_status(erp_bdf);
+          cfg_space_buf = val_aligned_alloc(MEM_ALIGN_4K, PCIE_CFG_SIZE);
+          if (cfg_space_buf == NULL)
+          {
+              val_print(AVS_PRINT_ERR, "\n       Memory allocation failed.", 0);
+              val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
+              return;
+          }
+
+          /* Get configuration space address for EP */
+          cfg_space_addr = val_pcie_get_bdf_config_addr(e_bdf);
+          val_print(AVS_PRINT_INFO, "\n       EP BDF 0x%x : ", e_bdf);
+          val_print(AVS_PRINT_INFO, "Config space addr 0x%x", cfg_space_addr);
+
+          /* Save the EP config space to restore after Secondary Bus Reset */
+          for (idx = 0; idx < PCIE_CFG_SIZE/4; idx++) {
+              *((uint32_t *)cfg_space_buf + idx) = *((uint32_t *)cfg_space_addr + idx);
+          }
+
+          irq_pending = 1;
+          val_pcie_read_cfg(erp_bdf, rp_dpc_cap_base + DPC_CTRL_OFFSET, &reg_value);
+          reg_value &= DPC_DISABLE_MASK;
+          reg_value |= DPC_INTR_ENABLE;
+          reg_value = reg_value | (msg_type[i] << DPC_CTRL_TRG_EN_SHIFT);
+          val_pcie_write_cfg(erp_bdf, rp_dpc_cap_base + DPC_CTRL_OFFSET, reg_value);
+
+          val_pcie_read_cfg(erp_bdf, rp_dpc_cap_base + DPC_CTRL_OFFSET, &reg_value);
+
+          if (msg_type[i] == ERR_FATAL)
+          {
+              val_pcie_write_cfg(e_bdf, aer_offset + AER_UNCORR_SEVR_OFFSET, AER_UNCORR_SEVR_FATAL);
+              val_pcie_write_cfg(e_bdf, aer_offset + AER_UNCORR_MASK_OFFSET, 0x0);
+          }
+          else
+          {
+              val_pcie_write_cfg(e_bdf, aer_offset + AER_UNCORR_SEVR_OFFSET, 0x0);
+          }
+
+          /*Inject error immediately*/
+          val_exerciser_ops(INJECT_ERROR, CFG_READ, instance);
+
+          val_pcie_read_cfg(e_bdf, CFG_READ, &reg_value);
+          if (reg_value != PCIE_UNKNOWN_RESPONSE)
+          {
+              val_print(AVS_PRINT_ERR, "\n       EP not contained due to DPC", 0);
+              fail_cnt++;
+          }
+
+          val_pcie_read_cfg(erp_bdf, rp_dpc_cap_base + DPC_STATUS_OFFSET, &reg_value);
+
+          /* Check DPC Trigger status */
+          if ((reg_value & 1) == 0)
+          {
+              val_print(AVS_PRINT_ERR, "\n       DPC Trigger status bit not set %x", reg_value);
+              fail_cnt++;
+          }
+
+          dpc_trigger_reason = (reg_value & DPC_TRIGGER_MASK) >> 1;
+          if (msg_type[i] == ERR_FATAL)
+          {
+              if (dpc_trigger_reason != 2)
+              {
+                  val_print(AVS_PRINT_ERR, "\n       DPC Trigger reason incorrect", 0);
+                  fail_cnt++;
+              }
+          } else {
+              if (dpc_trigger_reason != 1)
+              {
+                  val_print(AVS_PRINT_ERR, "\n       DPC Trigger reason incorrect", 0);
+                  fail_cnt++;
+              }
+          }
+
+          source_id = PCIE_CREATE_BDF_PACKED(e_bdf);
+          error_source_id = (reg_value >> DPC_SOURCE_ID_SHIFT);
+          if (source_id != error_source_id)
+          {
+              val_print(AVS_PRINT_ERR, "\n       DPC Error source Identification failed", 0);
+              fail_cnt++;
+          }
+
+          timeout = TIMEOUT_LARGE;
+          while ((--timeout > 0) && irq_pending)
+          {};
+
+          if (timeout == 0) {
+              val_gic_free_irq(irq_pending, 0);
+              val_print(AVS_PRINT_ERR, "\n       Interrupt trigger failed for bdf 0x%lx", e_bdf);
+              fail_cnt++;
+              continue;
+          }
+
+          val_pcie_read_cfg(erp_bdf, rp_dpc_cap_base + DPC_STATUS_OFFSET, &reg_value);
+          while (reg_value & 0x10)
+          {};
+          val_pcie_write_cfg(erp_bdf, rp_dpc_cap_base + DPC_STATUS_OFFSET, 1);
+
+          val_pcie_read_cfg(erp_bdf, TYPE01_ILR, &reg_value);
+          reg_value = reg_value | BRIDGE_CTRL_SBR_SET;
+          val_pcie_write_cfg(erp_bdf, TYPE01_ILR, reg_value);
+
+          /* Wait for Timeout */
+          val_time_delay_ms(2 * ONE_MILLISECOND);
+
+          val_pcie_read_cfg(erp_bdf, TYPE01_ILR, &reg_value);
+          reg_value = reg_value & ~BRIDGE_CTRL_SBR_SET;
+          val_pcie_write_cfg(erp_bdf, TYPE01_ILR, reg_value);
+
+          timeout = TIMEOUT_LARGE;
+          while (--timeout)
+          {};
+
+          status = val_pcie_data_link_layer_status(erp_bdf);
+          if (status != PCIE_DLL_LINK_ACTIVE_NOT_SUPPORTED)
+          {
+              if (!status)
+              {
+                  /* Wait for for additional Timeout and check the status*/
+                  uint32_t delay_status = val_time_delay_ms(100 * ONE_MILLISECOND);
+                  if (!delay_status)
+                  {
+                      val_print(AVS_PRINT_ERR,
+                               "\n       Failed to time delay for BDF 0x%x ", erp_bdf);
+                      val_memory_free_aligned(cfg_space_buf);
+                      val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
+                      return;
+                  }
+
+                  status = val_pcie_data_link_layer_status(erp_bdf);
+              }
+          }
+
+          if (status == PCIE_DLL_LINK_STATUS_NOT_ACTIVE)
+          {
+              val_print(AVS_PRINT_ERR,
+                       "\n       The link not active after reset for BDF 0x%x: ", erp_bdf);
+              return ;
+          }
+
+          /*Disable the DPC*/
+
+          val_pcie_read_cfg(erp_bdf, rp_dpc_cap_base + DPC_STATUS_OFFSET, &reg_value);
+          val_pcie_write_cfg(erp_bdf, rp_dpc_cap_base + DPC_STATUS_OFFSET, reg_value | 0x1);
+
+          val_pcie_read_cfg(erp_bdf, rp_dpc_cap_base + DPC_CTRL_OFFSET, &reg_value);
+          val_pcie_write_cfg(erp_bdf, rp_dpc_cap_base + DPC_CTRL_OFFSET, reg_value & 0xFFFCFFFF);
+
+          val_pcie_read_cfg(e_bdf, aer_offset + AER_UNCORR_STATUS_OFFSET, &reg_value);
+          val_pcie_write_cfg(e_bdf, aer_offset + AER_UNCORR_STATUS_OFFSET, reg_value & 0xFFFFFFFF);
+
+          val_pcie_read_cfg(e_bdf, CFG_READ, &reg_value);
+          if (reg_value == PCIE_UNKNOWN_RESPONSE)
+          {
+              val_print(AVS_PRINT_ERR, "\n       EP not recovered from DPC %x", e_bdf);
+              fail_cnt++;
+          }
+
+          /* Restore EP Config Space */
+          for (idx = 0; idx < PCIE_CFG_SIZE/4; idx++) {
+              *((uint32_t *)cfg_space_addr + idx) = *((uint32_t *)cfg_space_buf + idx);
+          }
+      }
+
   }
-
-  if (fail_cnt)
+  if (test_skip)
+      val_set_status(pe_index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
+  else if (fail_cnt)
       val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, fail_cnt));
   else
       val_set_status(pe_index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
+
+  return;
+
 }
 
 uint32_t
