@@ -393,8 +393,7 @@ ShellAppMainsbsa(
     Status |= val_pcie_execute_tests(g_sbsa_level, val_pe_get_num());
 
   /***         Starting Exerciser tests              ***/
-  if (g_sbsa_level > 3)
-    Status |= val_exerciser_execute_tests(g_sbsa_level);
+  Status |= val_exerciser_execute_tests(g_sbsa_level);
 
   /***         Starting MPAM tests                   ***/
   if (g_sbsa_level > 6)
