@@ -582,7 +582,6 @@ static uint32_t val_pcie_populate_device_rootport(void)
   uint32_t bdf;
   uint32_t rp_bdf;
   uint32_t tbl_index;
-  uint32_t status;
   pcie_device_bdf_table *bdf_tbl_ptr;
 
   bdf_tbl_ptr = val_pcie_bdf_table_ptr();
@@ -593,10 +592,8 @@ static uint32_t val_pcie_populate_device_rootport(void)
       bdf = bdf_tbl_ptr->device[tbl_index].bdf;
       val_print(AVS_PRINT_DEBUG, "   Dev bdf 0x%06x", bdf);
 
-      /* Fn returns rp_bdf = 0 and status = 1, if RP not found */
-      status = val_pcie_get_rootport(bdf, &rp_bdf);
-      if ((rp_bdf == 0) && status)
-        return 1;
+      /* Checks if the BDF has RootPort */
+      val_pcie_get_rootport(bdf, &rp_bdf);
 
       bdf_tbl_ptr->device[tbl_index].rp_bdf = rp_bdf;
       val_print(AVS_PRINT_DEBUG, "  RP bdf 0x%06x\n", rp_bdf);
@@ -691,15 +688,8 @@ val_pcie_create_device_bdf_table()
   }
 
   /* Sanity Check : Confirm all EP (normal, integrated) have a rootport */
-  if (val_pcie_populate_device_rootport())
-  {
-      /* Discard the bdf table */
-      g_pcie_bdf_table->num_entries = 0;
-      val_print(AVS_PRINT_TEST,
-            " PCIE_INFO: Number of BDFs found      :    %d\n", g_pcie_bdf_table->num_entries);
+  val_pcie_populate_device_rootport();
 
-      return 1;
-  }
   val_print(AVS_PRINT_TEST,
             " PCIE_INFO: Number of BDFs found      :    %d\n", g_pcie_bdf_table->num_entries);
 
