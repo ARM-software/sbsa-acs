@@ -198,9 +198,9 @@ payload(void)
             return;
         }
 
-        old_value = (*(volatile addr_t *)(mem_base + mem_offset));
-        *(volatile addr_t *)(mem_base + mem_offset) = KNOWN_DATA;
-        read_value = (*(volatile addr_t *)(mem_base + mem_offset));
+        val_pcie_bar_mem_read(bdf, mem_base + mem_offset, &old_value);
+        val_pcie_bar_mem_write(bdf, mem_base + mem_offset, KNOWN_DATA);
+        val_pcie_bar_mem_read(bdf, mem_base + mem_offset, &read_value);
 
         if ((old_value != read_value && read_value == PCIE_UNKNOWN_RESPONSE) ||
              val_pcie_is_urd(bdf)) {
@@ -257,7 +257,7 @@ payload(void)
            updated_mem_base |= (mem_base_upper << P_MEM_BU_SHIFT);
            updated_mem_lim |= (mem_lim_upper << P_MEM_LU_SHIFT);
 
-           value = (*(volatile uint32_t *)(new_mem_lim + MEM_OFFSET_SMALL));
+           val_pcie_bar_mem_read(bdf, new_mem_lim + MEM_OFFSET_SMALL, &value);
            val_print(AVS_PRINT_DEBUG, "       Value read is 0x%llx", value);
            if (value != PCIE_UNKNOWN_RESPONSE)
            {
