@@ -469,7 +469,8 @@ VOID    *pal_mem_virt_to_phys(VOID *va);
 VOID    *pal_mem_phys_to_virt(UINT64 pa);
 UINT64  pal_memory_get_unpopulated_addr(UINT64 *addr, UINT32 instance);
 
-UINT32 pal_pe_get_num();
+VOID    pal_mem_free(VOID *buffer);
+UINT32  pal_pe_get_num();
 
 /**
   @brief  Instance of system pmu info

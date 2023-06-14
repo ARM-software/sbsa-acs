@@ -155,6 +155,7 @@ pal_pcie_io_read_cfg(UINT32 Bdf, UINT32 offset, UINT32 *data)
       Pci->GetLocation (Pci, &Seg, &Bus, &Dev, &Func);
       if (InputSeg == Seg && InputBus == Bus && InputDev == Dev && InputFunc == Func) {
           Status = Pci->Pci.Read (Pci, EfiPciIoWidthUint32, offset, 1, data);
+          pal_mem_free(HandleBuffer);
           if (!EFI_ERROR (Status))
             return 0;
           else
@@ -162,6 +163,8 @@ pal_pcie_io_read_cfg(UINT32 Bdf, UINT32 offset, UINT32 *data)
       }
     }
   }
+
+  pal_mem_free(HandleBuffer);
   return PCIE_NO_MAPPING;
 }
 
@@ -207,6 +210,8 @@ pal_pcie_io_write_cfg(UINT32 Bdf, UINT32 offset, UINT32 data)
       }
     }
   }
+
+  pal_mem_free(HandleBuffer);
 }
 
 /**
@@ -243,6 +248,7 @@ pal_pcie_bar_mem_read(UINT32 Bdf, UINT64 address, UINT32 *data)
     if (!EFI_ERROR (Status)) {
       if (Pci->SegmentNumber == InputSeg) {
           Status = Pci->Mem.Read (Pci, EfiPciIoWidthUint32, address, 1, data);
+          pal_mem_free(HandleBuffer);
           if (!EFI_ERROR (Status))
             return 0;
           else
@@ -250,6 +256,8 @@ pal_pcie_bar_mem_read(UINT32 Bdf, UINT64 address, UINT32 *data)
       }
     }
   }
+
+  pal_mem_free(HandleBuffer);
   return PCIE_NO_MAPPING;
 }
 
@@ -288,6 +296,7 @@ pal_pcie_bar_mem_write(UINT32 Bdf, UINT64 address, UINT32 data)
     if (!EFI_ERROR (Status)) {
       if (Pci->SegmentNumber == InputSeg) {
           Status = Pci->Mem.Write (Pci, EfiPciIoWidthUint32, address, 1, &data);
+          pal_mem_free(HandleBuffer);
           if (!EFI_ERROR (Status))
             return 0;
           else
@@ -295,6 +304,8 @@ pal_pcie_bar_mem_write(UINT32 Bdf, UINT64 address, UINT32 data)
       }
     }
   }
+
+  pal_mem_free(HandleBuffer);
   return PCIE_NO_MAPPING;
 }
 
