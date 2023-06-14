@@ -179,6 +179,36 @@ val_pcie_io_write_cfg(uint32_t bdf, uint32_t offset, uint32_t data)
 }
 
 /**
+    @brief   Write 32-bit data to BAR space pointed by Bus,
+             Device, Function and register offset using UEFI PciIoProtocol interface.
+
+    @param   Bdf     - BDF value for the device
+    @param   address - BAR memory address
+    @param   data    - 32 bit value to writw BAR address
+    @return  success/failure
+**/
+uint32_t
+val_pcie_bar_mem_write(uint32_t bdf, uint64_t offset, uint32_t data)
+{
+    return pal_pcie_bar_mem_write(bdf, offset, data);
+}
+
+/**
+    @brief   Reads 32-bit data from BAR space pointed by Bus,
+             Device, Function and register offset using UEFI PciIoProtocol interface.
+
+    @param   Bdf     - BDF value for the device
+    @param   address - BAR memory address
+    @param   *data   - 32 bit value at BAR address
+    @return  success/failure
+**/
+uint32_t
+val_pcie_bar_mem_read(uint32_t bdf, uint64_t offset, uint32_t *data)
+{
+    return pal_pcie_bar_mem_read(bdf, offset, data);
+}
+
+/**
   @brief   This API  returns function config space addr.
            1. Caller       -  Test Suite
            2. Prerequisite -  val_pcie_create_info_table

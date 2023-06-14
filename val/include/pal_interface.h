@@ -363,6 +363,8 @@ uint32_t pal_pcie_check_device_list(void);
 uint32_t pal_pcie_check_device_valid(uint32_t bdf);
 uint32_t pal_pcie_mem_get_offset(uint32_t type);
 
+uint32_t pal_pcie_bar_mem_read(uint32_t bdf, uint64_t address, uint32_t *data);
+uint32_t pal_pcie_bar_mem_write(uint32_t bdf, uint64_t address, uint32_t data);
 /**
   @brief  Instance of SMMU INFO block
 **/
