@@ -23,7 +23,7 @@
 #include "val/include/sbsa_avs_memory.h"
 
 #define TEST_NUM   (AVS_PCIE_TEST_NUM_BASE + 57)
-#define TEST_RULE  "IE_ACS_1"
+#define TEST_RULE  "IE_ACS_1, RE_ACS_1"
 #define TEST_DESC  "Check RCiEP, iEP_EP P2P Supp      "
 
 static

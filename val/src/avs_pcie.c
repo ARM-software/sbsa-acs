@@ -342,6 +342,7 @@ val_pcie_execute_tests(uint32_t level, uint32_t num_pe)
 
     #ifndef TARGET_LINUX
       status |= p003_entry(num_pe);
+      status |= p016_entry(num_pe);
       status |= p020_entry(num_pe);
       status |= p021_entry(num_pe);
       status |= p022_entry(num_pe); /* iEP/RP only */
@@ -906,12 +907,40 @@ val_pcie_device_driver_present(uint32_t bdf)
 **/
 uint32_t val_pcie_scan_bridge_devices_and_check_memtype(uint32_t bdf)
 {
-    uint32_t seg  = PCIE_EXTRACT_BDF_SEG (bdf);
-    uint32_t bus  = PCIE_EXTRACT_BDF_BUS (bdf);
-    uint32_t dev  = PCIE_EXTRACT_BDF_DEV (bdf);
-    uint32_t func = PCIE_EXTRACT_BDF_FUNC (bdf);
+  uint32_t Bus, Dev, Func;
+  uint32_t sec_bus, sub_bus;
+  uint32_t status = 0;
+  uint32_t reg_value;
+  uint32_t data;
+  uint8_t  mem_type;
 
-    return pal_pcie_scan_bridge_devices_and_check_memtype(seg, bus, dev, func);
+  val_pcie_read_cfg(bdf, TYPE1_PBN, &reg_value);
+  sec_bus = ((reg_value >> SECBN_SHIFT) & SECBN_MASK);
+  sub_bus = ((reg_value >> SUBBN_SHIFT) & SUBBN_MASK);
+
+  for (Bus = sec_bus; Bus <= sub_bus; Bus++)
+  {
+      for (Dev = 0; Dev < PCIE_MAX_DEV; Dev++)
+      {
+          for (Func = 0; Func < PCIE_MAX_FUNC; Func++)
+          {
+              if (val_pcie_function_header_type(bdf) == TYPE0_HEADER)
+              {
+                  val_pcie_read_cfg(bdf, TYPE01_BAR, &data);
+                  if (data)
+                  {
+                      mem_type = ((data >> BAR_MDT_SHIFT) & BAR_MDT_MASK);
+                      if (mem_type != 0) {
+                          status = 1;
+                          break;
+                      }
+                  }
+              }
+          }
+      }
+  }
+
+  return status;
 }
 
 /**
@@ -946,10 +975,21 @@ val_pcie_get_root_port_bdf(uint32_t *bdf)
 uint32_t
 val_pcie_get_device_type(uint32_t bdf)
 {
-  return pal_pcie_get_device_type(PCIE_EXTRACT_BDF_SEG (bdf),
-                                  PCIE_EXTRACT_BDF_BUS (bdf),
-                                  PCIE_EXTRACT_BDF_DEV (bdf),
-                                  PCIE_EXTRACT_BDF_FUNC (bdf));
+
+  uint32_t header_type, class_code;
+
+  header_type = val_pcie_function_header_type(bdf);
+  if (header_type != TYPE0_HEADER)
+  {
+      val_pcie_read_cfg(bdf, TYPE01_RIDR, &class_code);
+      if ((((class_code >> CC_BASE_SHIFT) & CC_BASE_MASK) == HB_BASE_CLASS) &&
+           (((class_code >> CC_SUB_SHIFT) & CC_SUB_MASK)) == HB_SUB_CLASS)
+          return 2;
+      else
+          return 3;
+  }
+  else
+      return 1;
 }
 
 /**
