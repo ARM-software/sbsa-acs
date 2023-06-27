@@ -295,17 +295,17 @@ val_pcie_execute_tests(uint32_t level, uint32_t num_pe)
       }
   }
 
-  if (pcie_bdf_table_list_flag == 1) {
-    val_print(AVS_PRINT_WARN, "\n     *** Created device list with valid bdf doesn't match \
-                    with the platform pcie device hierarchy, Skipping PCIE tests *** \n", 0);
-    return AVS_STATUS_SKIP;
-  }
-
   /* Check if there are any tests to be executed in current module with user override options*/
   status = val_check_skip_module(AVS_PCIE_TEST_NUM_BASE);
   if (status) {
       val_print(AVS_PRINT_TEST, "\n USER Override - Skipping all PCIe tests \n", 0);
       return AVS_STATUS_SKIP;
+  }
+
+  if (pcie_bdf_table_list_flag == 1) {
+    val_print(AVS_PRINT_WARN, "\n     *** Created device list with valid bdf doesn't match \
+                    with the platform pcie device hierarchy, Skipping PCIE tests *** \n", 0);
+    return AVS_STATUS_SKIP;
   }
 
   val_print_test_start("PCIe");
