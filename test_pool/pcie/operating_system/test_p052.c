@@ -24,7 +24,7 @@
 
 #define TEST_NUM   (AVS_PCIE_TEST_NUM_BASE + 52)
 #define TEST_DESC  "Check ATS Support Rule            "
-#define TEST_RULE  "RE_SMU_2"
+#define TEST_RULE  "IE_SMU_1, RE_SMU_2"
 
 static
 void
