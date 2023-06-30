@@ -427,17 +427,24 @@ PLATFORM_OVERRIDE_SMMU_NODE_DATA platform_smmu_node_data = {
 
 PLATFORM_OVERRIDE_PMCG_NODE_DATA platform_pmcg_node_data = {
     /* Place holder Fill this as below if PMCG is present
-    .pmcg[0].base          = IOVIRT_PMCG_BASE_ADDRESS,
-    .pmcg[0].overflow_gsiv = IOVIRT_PMCG_OVERFLOW_GSIV,
-    .pmcg[0].node_ref      = IOVIRT_PMCG_NODE_REFERENCE,
-    .pmcg[0].smmu_base     = IOVIRT_PMCG_SMMU_BASE,*/
+    .pmcg[0].base          = IOVIRT_PMCG_0_BASE_ADDRESS,
+    .pmcg[0].overflow_gsiv = IOVIRT_PMCG_0_OVERFLOW_GSIV,
+    .pmcg[0].node_ref      = IOVIRT_PMCG_0_NODE_REFERENCE,
+    .pmcg[0].smmu_base     = IOVIRT_PMCG_0_SMMU_BASE,*/
 };
 
 PLATFORM_OVERRIDE_NAMED_NODE_DATA platform_named_node_data = {
     .named[0].smmu_base         = IOVIRT_NAMED_0_SMMU_BASE,
     .named[0].memory_properties = IOVIRT_NAMED_0_MEM_PROP,
+    .named[0].name              = IOVIRT_NAMED_0_DEVICE_NAME,
     .named[1].smmu_base         = IOVIRT_NAMED_1_SMMU_BASE,
     .named[1].memory_properties = IOVIRT_NAMED_1_MEM_PROP,
+    .named[1].name              = IOVIRT_NAMED_1_DEVICE_NAME,
+};
+
+PLATFORM_OVERRIDE_CS_COMP_NODE_DATA platform_cs_comp_node_data = {
+    .component[0].identifier    = CS_COMPONENT_0_IDENTIFIER,
+    .component[0].dev_name      = CS_COMPONENT_0_DEVICE_NAME,
 };
 
 PLATFORM_OVERRIDE_UART_INFO_TABLE platform_uart_cfg = {
