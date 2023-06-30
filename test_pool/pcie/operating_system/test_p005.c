@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2023 Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2023, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -24,7 +24,7 @@
 /* SBSA-checklist 63 & 64 */
 #define TEST_NUM   (AVS_PCIE_TEST_NUM_BASE + 5)
 #define TEST_DESC  "PCIe Unaligned access, Norm mem   "
-#define TEST_RULE  "PCI_MM_01, PCI_MM_02, PCI_MM_03, RE_BAR_2"
+#define TEST_RULE  "PCI_MM_01, PCI_MM_02, PCI_MM_03, RE_BAR_2, IE_BAR_2"
 
 #define DATA 0xC0DECAFE
 

@@ -788,8 +788,7 @@ ShellAppMainsbsa (
     Status |= val_wd_execute_tests(g_sbsa_level, val_pe_get_num());
 
   /***         Starting PCIe tests                   ***/
-  if (g_sbsa_level > 3)
-    Status |= val_pcie_execute_tests(g_sbsa_level, val_pe_get_num());
+  Status |= val_pcie_execute_tests(g_sbsa_level, val_pe_get_num());
 
   /***         Starting Exerciser tests              ***/
   Status |= val_exerciser_execute_tests(g_sbsa_level);

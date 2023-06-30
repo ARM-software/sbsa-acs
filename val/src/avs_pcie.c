@@ -311,16 +311,20 @@ val_pcie_execute_tests(uint32_t level, uint32_t num_pe)
   val_print_test_start("PCIe");
   g_curr_module = 1 << PCIE_MODULE;
 
+
+  #if defined(TARGET_LINUX) || defined(TARGET_EMULATION)
+    status |= p009_entry(num_pe);  /* This covers GIC rule */
+  #endif
+
+  if (level > 3) {
   /* Only the test p062 will be run at L4+ with the test number (AVS_PER_TEST_NUM_BASE + 1) */
   #ifndef TARGET_LINUX
     status = p062_entry(num_pe);
   #endif
+  }
+
 
   if (level > 5) {
-
-    #if defined(TARGET_LINUX) || defined(TARGET_EMULATION)
-      status |= p009_entry(num_pe);  /* This covers GIC rule */
-    #endif
 
     status = p001_entry(num_pe);
 
@@ -328,7 +332,6 @@ val_pcie_execute_tests(uint32_t level, uint32_t num_pe)
       val_print(AVS_PRINT_WARN, "\n     *** Skipping remaining PCIE tests *** \n", 0);
       return status;
     }
-
 
     #if defined(TARGET_LINUX) || defined(TARGET_EMULATION)
       status |= p005_entry(num_pe);
