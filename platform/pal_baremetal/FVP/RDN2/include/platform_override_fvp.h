@@ -218,6 +218,8 @@ extern uint32_t g_num_modules;
 #define PLATFORM_OVERRIDE_IRQ               1
 #define PLATFORM_OVERRIDE_MAX_IRQ_CNT       0xFFFF
 
+#define PLATFORM_OVERRIDE_MAX_SID           20
+
 /* PCIE platform config parameters */
 #define PLATFORM_OVERRIDE_NUM_ECAM                1
 
