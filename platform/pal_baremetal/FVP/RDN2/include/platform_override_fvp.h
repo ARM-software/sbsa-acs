@@ -478,14 +478,17 @@ extern uint32_t g_num_modules;
 #define NAMED_COMP1_MAP8_OUTPUT_BASE  0x30008
 #define NAMED_COMP1_MAP8_OUTPUT_REF   0xA54
 
-#define IOVIRT_PMCG_BASE_ADDRESS      0x0
-#define IOVIRT_PMCG_OVERFLOW_GSIV     0x0
-#define IOVIRT_PMCG_NODE_REFERENCE    0x0
+#define IOVIRT_PMCG_0_BASE_ADDRESS      0x0
+#define IOVIRT_PMCG_0_OVERFLOW_GSIV     0x0
+#define IOVIRT_PMCG_0_NODE_REFERENCE    0x0
+#define IOVIRT_PMCG_0_SMMU_BASE         0x0
 
 #define IOVIRT_NAMED_0_SMMU_BASE      0x48000000
 #define IOVIRT_NAMED_0_MEM_PROP       0x1
+#define IOVIRT_NAMED_0_DEVICE_NAME    "\\_SB_.ETR0"
 #define IOVIRT_NAMED_1_SMMU_BASE      0x48000000
 #define IOVIRT_NAMED_1_MEM_PROP       0x1
+#define IOVIRT_NAMED_1_DEVICE_NAME    "\\_SB_.DMA0"
 
 #define IOVIRT_RC_NUM_MAP             4
 #define IOVIRT_SMMUV3_0_NUM_MAP       2
@@ -496,6 +499,12 @@ extern uint32_t g_num_modules;
 #define IOVIRT_NAMED_COMP0_NUM_MAP    9
 #define IOVIRT_NAMED_COMP1_NUM_MAP    9
 #define IOVIRT_MAX_NUM_MAP            33
+
+/* Coresight components config parameters*/
+#define CS_COMPONENT_COUNT         1
+
+#define CS_COMPONENT_0_IDENTIFIER    "ARMHC97C"
+#define CS_COMPONENT_0_DEVICE_NAME   "\\_SB_.ETR0"
 
 /* DMA platform config parameters */
 #define PLATFORM_OVERRIDE_DMA_CNT   0

@@ -18,20 +18,6 @@
 #include "include/pal_common_support.h"
 
 /**
-  @brief  Check the hid and copy the full path of hid
-
-  @param  hid      hardware ID to get the path for
-  @param  hid_path 2D array in which the path is copied
-
-  @return 1 if test fails, 0 if test passes
-**/
-uint32_t
-pal_get_device_path(const char *hid, char hid_path[][MAX_NAMED_COMP_LENGTH])
-{
-    return 1;
-}
-
-/**
   @brief  Platform defined method to check if CATU is behind an ETR device
 
   @param  etr_path  full path of ETR device
