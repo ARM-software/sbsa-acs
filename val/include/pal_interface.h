@@ -34,6 +34,8 @@
 #define PCIE_MAX_DEV    32
 #define PCIE_MAX_FUNC    8
 
+#define MAX_SID        32
+
 #elif TARGET_EMULATION
 #include <stdlib.h>
 #include <stdint.h>
@@ -50,6 +52,8 @@
 #define PCIE_MAX_DEV    PLATFORM_OVERRIDE_PCIE_MAX_DEV
 #define PCIE_MAX_FUNC   PLATFORM_OVERRIDE_PCIE_MAX_FUNC
 
+#define MAX_SID  PLATFORM_OVERRIDE_MAX_SID
+
 #else
   typedef INT8   int8_t;
   typedef INT32  int32_t;
@@ -61,6 +65,10 @@
   typedef UINT64 uint64_t;
   typedef UINT64 addr_t;
   typedef UINT64 dma_addr_t;
+
+/* Max SID Size in SMMU is 32 */
+#define MAX_SID  32
+
 #if PLATFORM_OVERRIDE_TIMEOUT
     #define TIMEOUT_LARGE    PLATFORM_OVERRIDE_TIMEOUT_LARGE
     #define TIMEOUT_MEDIUM   PLATFORM_OVERRIDE_TIMEOUT_MEDIUM

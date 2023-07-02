@@ -826,7 +826,8 @@ static uint32_t smmu_probe(smmu_dev_t *smmu)
     smmu->evntq.queue.log2nent = BITFIELD_GET(IDR1_EVNTQS, data);
 
     /* SID/SSID sizes */
-    smmu->sid_bits = BITFIELD_GET(IDR1_SIDSIZE, data);
+    smmu->sid_bits = (BITFIELD_GET(IDR1_SIDSIZE, data) < MAX_SID) ?
+                     (BITFIELD_GET(IDR1_SIDSIZE, data)) : MAX_SID;
     smmu->ssid_bits = BITFIELD_GET(IDR1_SSIDSIZE, data);
 
     val_print(AVS_PRINT_INFO, "      ssid_bits = %d", smmu->ssid_bits);
