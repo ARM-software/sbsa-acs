@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, 2021-2023 Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018, 2021-2023, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -38,18 +38,11 @@ payload()
 
   index = val_pe_get_index_mpid(val_pe_get_mpid());
 
-  data = val_pcie_get_info(PCIE_INFO_NUM_ECAM, 0);
-  if (data == 0) {
-    val_print(AVS_PRINT_WARN, "\n       PCIe Subsystem not discovered                       ", 0);
-    val_set_status(index, RESULT_SKIP(6, TEST_NUM, 2));
-    return;
-  }
-
   num_smmu = val_smmu_get_info(SMMU_NUM_CTRL, 0);
 
   if (num_smmu == 0) {
     val_print(AVS_PRINT_ERR, "\n       No SMMU Controllers are discovered                  ", 0);
-    val_set_status(index, RESULT_SKIP(6, TEST_NUM, 3));
+    val_set_status(index, RESULT_SKIP(6, TEST_NUM, 1));
     return;
   }
 
@@ -63,7 +56,7 @@ payload()
   while (num_smmu--) {
       if (val_smmu_get_info(SMMU_CTRL_ARCH_MAJOR_REV, num_smmu) == 2) {
           val_print(AVS_PRINT_WARN, "\n       Not valid for SMMU v2           ", 0);
-          val_set_status(index, RESULT_SKIP(6, TEST_NUM, 4));
+          val_set_status(index, RESULT_SKIP(6, TEST_NUM, 2));
           return;
       }
 

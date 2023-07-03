@@ -36,6 +36,7 @@ uint32_t
 val_timer_execute_tests(uint32_t level, uint32_t num_pe)
 {
   uint32_t status = AVS_STATUS_SKIP, i;
+  uint32_t skip_module;
 
   for (i = 0; i < g_num_skip; i++) {
       if (g_skip_test_num[i] == AVS_TIMER_TEST_NUM_BASE) {
@@ -44,15 +45,14 @@ val_timer_execute_tests(uint32_t level, uint32_t num_pe)
       }
   }
 
-  if (g_single_module != SINGLE_MODULE_SENTINEL && g_single_module != AVS_TIMER_TEST_NUM_BASE &&
-       (g_single_test == SINGLE_MODULE_SENTINEL ||
-         (g_single_test - AVS_TIMER_TEST_NUM_BASE > 100 ||
-          g_single_test - AVS_TIMER_TEST_NUM_BASE < 0))) {
-    val_print(AVS_PRINT_TEST, " USER Override - Skipping all Timer tests \n", 0);
-    val_print(AVS_PRINT_TEST, " (Running only a single module)\n", 0);
-    return AVS_STATUS_SKIP;
+  /* Check if there are any tests to be executed in current module with user override options*/
+  skip_module = val_check_skip_module(AVS_TIMER_TEST_NUM_BASE);
+  if (skip_module) {
+      val_print(AVS_PRINT_TEST, "\n USER Override - Skipping all Timer tests \n", 0);
+      return AVS_STATUS_SKIP;
   }
 
+  val_print_test_start("Timer");
 
   return status;
 }
@@ -291,10 +291,11 @@ val_timer_create_info_table(uint64_t *timer_info_table)
 
   pal_timer_create_info_table(g_timer_info_table);
 
-  /* UEFI or other EL1 software may have enabled the el1 physical timer.
-     Disable the timer to prevent interrupts at un-expected times */
+  /* UEFI or other EL1 software may have enabled the EL1 physical/virtual timer.
+     Disable the timers to prevent interrupts at un-expected times */
 
   val_timer_set_phy_el1(0);
+  val_timer_set_vir_el1(0);
 
   val_print(AVS_PRINT_TEST, " TIMER_INFO: Number of system timers  : %4d \n",
                                                   g_timer_info_table->header.num_platform_timer);

@@ -23,7 +23,7 @@
 #include "val/include/sbsa_avs_memory.h"
 
 #define TEST_NUM   (AVS_PCIE_TEST_NUM_BASE + 57)
-#define TEST_RULE  "IE_ACS_1"
+#define TEST_RULE  "IE_ACS_1, RE_ACS_1, RE_ACS_2"
 #define TEST_DESC  "Check RCiEP, iEP_EP P2P Supp      "
 
 static
@@ -104,6 +104,12 @@ payload(void)
           if (p2p_support_flag > 0) {
               val_print(AVS_PRINT_ERR, "\n       P2P not supported for bdf: %d", bdf);
               p2p_support_flag = 0;
+              test_fails++;
+          }
+          /* If device supports ACS then it must have AER Capability */
+          if (val_pcie_find_capability(bdf, PCIE_ECAP, ECID_AER, &cap_base) != PCIE_SUCCESS)
+          {
+              val_print(AVS_PRINT_ERR, "\n       AER Capability not supported, Bdf : 0x%x", bdf);
               test_fails++;
           }
       }

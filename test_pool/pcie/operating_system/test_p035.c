@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2019-2023 Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2019-2023, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -24,7 +24,7 @@
 
 #define TEST_NUM   (AVS_PCIE_TEST_NUM_BASE + 35)
 #define TEST_DESC  "Check Function level reset rule   "
-#define TEST_RULE  "RE_RST_1, PCI_SM_02"
+#define TEST_RULE  "RE_RST_1, IE_RST_1, PCI_SM_02"
 
 static
 uint32_t is_flr_failed(uint32_t bdf)
@@ -149,7 +149,7 @@ payload(void)
           /* If test runs for atleast an endpoint */
           test_skip = 0;
 
-          /* Vendor Id should not be 0xFF after max FLR period */
+          /* Vendor Id must not be 0xFF after max FLR period */
           val_pcie_read_cfg(bdf, 0, &reg_value);
           if ((reg_value & TYPE01_VIDR_MASK) == TYPE01_VIDR_MASK)
           {
@@ -173,7 +173,7 @@ payload(void)
 
   if (test_skip == 1) {
       val_print(AVS_PRINT_DEBUG,
-               "\n       No RCiEP/iEP_EP/ EP with FLR Cap found. Skipping test", 0);
+               "\n       No RCiEP/iEP_EP with FLR Cap found. Skipping test", 0);
       val_set_status(pe_index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
   }
   else if (test_fails)

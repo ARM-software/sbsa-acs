@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2023 Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2023, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -38,6 +38,23 @@ val_print(uint32_t level, char8_t *string, uint64_t data)
   if (level >= g_print_level)
       pal_print(string, data);
 
+}
+
+/**
+  @brief  This API prints out module header to the output console.
+          1. Caller       - Application layer
+          2. Prerequisite - None.
+
+  @param string  formatted ASCII string
+
+  @return        None
+ **/
+void
+val_print_test_start(char8_t *string)
+{
+  pal_print("\n      *** Starting ", 0);
+  pal_print(string, 0);
+  pal_print(" tests ***  \n", 0);
 }
 
 void
@@ -204,7 +221,6 @@ val_mmio_write(addr_t addr, uint32_t data)
 
   pal_mmio_write(addr, data);
 }
-
 /**
   @brief  This function will call PAL layer to write 64-bit data to
           a Memory address.
@@ -221,6 +237,43 @@ val_mmio_write64(addr_t addr, uint64_t data)
 {
 
   pal_mmio_write64(addr, data);
+}
+
+/**
+  @brief  This API checks if all the tests in the current module needs to be skipped.
+          Skip if no tests are to be executed with user override options.
+          1. Caller       - Test suite
+          2. Prerequisite - None.
+
+  @param module_base Base number of the module
+
+  @return         Skip - if the user override has no tests to run in the current module.
+ **/
+uint32_t
+val_check_skip_module(uint32_t module_base)
+{
+  uint32_t i, skip_module = 0;
+
+  /* Case 1 - Don't skip the module if the module number is mentioned in -m option parameters */
+  for (i = 0; i < g_num_modules; i++) {
+      if (g_execute_modules[i] == module_base) {
+          skip_module++;
+      }
+  }
+
+  /* Case 2 - Don't skip the module if any of module's tests are in -t option parameters  */
+  for (i = 0; i < g_num_tests; i++) {
+      if ((g_execute_tests[i] - module_base) < 100) {
+          skip_module++;
+      }
+  }
+
+  /* Skip the module if neither of above 2 cases are true */
+  if ((!skip_module) && (g_num_tests || g_num_modules)) {
+      return AVS_STATUS_SKIP;
+  }
+
+  return AVS_STATUS_PASS;
 }
 
 /**
@@ -242,6 +295,7 @@ val_initialize_test(uint32_t test_num, char8_t *desc, uint32_t num_pe, uint32_t 
 {
 
   uint32_t i;
+  uint32_t override_skip = 0;
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
 
   val_print(AVS_PRINT_ERR, "%4d : ", test_num); //Always print this
@@ -262,13 +316,26 @@ val_initialize_test(uint32_t test_num, char8_t *desc, uint32_t num_pe, uint32_t 
       }
   }
 
-  if ((g_single_test != SINGLE_TEST_SENTINEL && test_num != g_single_test) &&
-        (g_single_module == SINGLE_MODULE_SENTINEL ||
-          (test_num - g_single_module >= 100 ||
-           test_num - g_single_module < 0))) {
-    val_print(AVS_PRINT_TEST, "\n       USER OVERRIDE VIA SINGLE TEST - Skip Test        ", 0);
-    val_set_status(index, RESULT_SKIP(g_sbsa_level, test_num, 0));
-    return AVS_STATUS_SKIP;
+  /* Don't skip if test_num is one of the -t option parameters */
+  for (i = 0; i < g_num_tests; i++) {
+      if (test_num == g_execute_tests[i]) {
+          override_skip++;
+      }
+  }
+
+  /* Don't skip if the test belongs to one of the modules in -m option parameters */
+  for (i = 0; i < g_num_modules; i++) {
+      if ((test_num - g_execute_modules[i]) > 0 &&
+          (test_num - g_execute_modules[i]) < 100)
+      {
+          override_skip++;
+      }
+  }
+
+  if ((!override_skip) && (g_num_tests || g_num_modules)) {
+      val_print(AVS_PRINT_TEST, "\n       USER OVERRIDE VIA SPECIFIC TESTS - Skip Test      ", 0);
+      val_set_status(index, RESULT_SKIP(g_sbsa_level, test_num, 0));
+      return AVS_STATUS_SKIP;
   }
 
   return AVS_STATUS_PASS;

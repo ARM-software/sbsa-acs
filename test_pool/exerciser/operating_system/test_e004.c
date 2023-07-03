@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2018-2023, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2023, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,405 +18,388 @@
 #include "val/include/sbsa_avs_val.h"
 #include "val/include/val_interface.h"
 
-#include "val/include/sbsa_avs_pe.h"
-#include "val/include/sbsa_avs_smmu.h"
-#include "val/include/sbsa_avs_pgt.h"
-#include "val/include/sbsa_avs_iovirt.h"
 #include "val/include/sbsa_avs_pcie_enumeration.h"
 #include "val/include/sbsa_avs_pcie.h"
+#include "val/include/sbsa_avs_pe.h"
+#include "val/include/sbsa_avs_smmu.h"
 #include "val/include/sbsa_avs_memory.h"
 #include "val/include/sbsa_avs_exerciser.h"
 
 #define TEST_NUM   (AVS_EXERCISER_TEST_NUM_BASE + 4)
-#define TEST_DESC  "Generate PASID PCIe transactions  "
-#define TEST_RULE  "PCI_PAS_1, RE_SMU_4"
+#define TEST_DESC  "Arrival order & Gathering Check   "
+#define TEST_RULE  "RE_ORD_1, RE_ORD_2, IE_ORD_1, IE_ORD_2"
 
-#define TEST_DATA_NUM_PAGES  2
-#define TEST_DATA 0xDE
+/* 0 means read transction, 1 means write transaction */
+static uint32_t transaction_order[] = {1, 1, 0, 1, 0, 0, 0, 0};
+static uint32_t pattern[16] = {0};
+static uint32_t run_flag;
+static uint32_t fail_cnt;
 
-#define MIN_PASID_BITS 16
-#define MAX_PASID_BITS 20
-#define TEST_PASID1 (0x1ul << (MIN_PASID_BITS - 1)) + (0x1ull << 8)
-#define TEST_PASID2 (0x1ul << (MIN_PASID_BITS - 1)) + (0x2ull << 8)
+static uint32_t read_config_space(uint32_t *addr)
+{
+  uint32_t idx;
+
+  for (idx = 0; idx < 16; idx++) {
+    addr = addr + idx;
+    pattern[idx] = val_mmio_read((addr_t)addr);
+  }
+
+  return 0;
+}
+
+/* num of transactions captured and thier attributes is checked */
+static uint32_t test_sequence_check(uint32_t instance)
+{
+  uint64_t idx;
+  uint64_t num_transactions;
+  uint64_t transaction_type;
+
+  num_transactions = sizeof(transaction_order)/sizeof(transaction_order[0]);
+
+  /* Check transactions arrival order */
+  for (idx = 0; idx < sizeof(transaction_order)/sizeof(transaction_order[0]); idx++) {
+      val_exerciser_get_param(TRANSACTION_TYPE, &idx, &transaction_type, instance);
+      if (transaction_type !=  transaction_order[idx]) {
+          val_print(AVS_PRINT_ERR, "\n       Exerciser %d arrival order check failed", instance);
+          return 1;
+      }
+  }
+
+  /* Get number of transactions captured from exerciser */
+  if (num_transactions != idx) {
+      val_print(AVS_PRINT_ERR, "\n       Exerciser %d gathering check failed", instance);
+      return 1;
+  }
+
+  return 0;
+}
+
+/* Performs reads/write on 1B data */
+static uint32_t test_sequence_1B(uint8_t *addr, uint8_t increment_addr, uint32_t instance)
+{
+  uint64_t idx;
+  uint8_t write_val;
+  uint32_t pidx;
+  uint32_t e_bdf;
+  uint8_t *pattern_ptr;
+
+  e_bdf = val_exerciser_get_bdf(instance);
+
+  /* Start monitoring exerciser transactions */
+  if (val_exerciser_ops(START_TXN_MONITOR, CFG_READ, instance)) {
+      val_print(AVS_PRINT_DEBUG,
+               "\n       Exerciser BDF 0x%x - Unable to start transaction monitoring", e_bdf);
+      return AVS_STATUS_SKIP;
+  }
+
+
+  run_flag = 1;
+
+  /* Send the transaction on incrementalt addresses */
+  for (idx = 0; idx < sizeof(transaction_order)/sizeof(transaction_order[0]); idx++) {
+      pidx = ((uint64_t)addr & 0xFF);
+      pattern_ptr = (uint8_t *)&pattern;
+      write_val = pattern_ptr[pidx];
+      /* Write transaction */
+      if (transaction_order[idx])
+          val_mmio_write8((addr_t)addr, write_val);
+      else
+          val_mmio_read8((addr_t)addr);
+      if (increment_addr)
+          addr++;
+  }
+
+  /* Stop monitoring exerciser transactions */
+  val_exerciser_ops(STOP_TXN_MONITOR, CFG_READ, instance);
+
+  return test_sequence_check(instance);
+}
+
+/* Performs reads/write on 2B data */
+static uint32_t test_sequence_2B(uint16_t *addr, uint8_t increment_addr, uint32_t instance)
+{
+  uint64_t idx;
+  uint16_t write_val;
+  uint32_t pidx;
+  uint32_t e_bdf;
+  uint16_t *pattern_ptr;
+
+  e_bdf = val_exerciser_get_bdf(instance);
+
+  /* Start monitoring exerciser transactions */
+  if (val_exerciser_ops(START_TXN_MONITOR, CFG_READ, instance)) {
+      val_print(AVS_PRINT_DEBUG,
+               "\n       Exerciser BDF 0x%x - Unable to start transaction monitoring", e_bdf);
+      return AVS_STATUS_SKIP;
+  }
+
+  run_flag = 1;
+
+  /* Send the transaction on incrementalt addresses */
+  for (idx = 0; idx < sizeof(transaction_order)/sizeof(transaction_order[0]); idx++) {
+      pidx = ((uint64_t)addr & 0xFF)/2;
+      pattern_ptr = (uint16_t *)&pattern;
+      write_val = pattern_ptr[pidx];
+      /* Write transaction */
+      if (transaction_order[idx])
+          val_mmio_write16((addr_t)addr, write_val);
+      else
+          val_mmio_read16((addr_t)addr);
+      if (increment_addr)
+          addr++;
+  }
+
+  /* Stop monitoring exerciser transactions */
+  val_exerciser_ops(STOP_TXN_MONITOR, CFG_READ, instance);
+
+  return test_sequence_check(instance);
+}
+
+/* Performs reads/write on 4B data */
+static uint32_t test_sequence_4B(uint32_t *addr, uint8_t increment_addr, uint32_t instance)
+{
+  uint64_t idx;
+  uint32_t write_val, pidx;
+  uint32_t *pattern_ptr;
+  uint32_t e_bdf;
+
+  e_bdf = val_exerciser_get_bdf(instance);
+
+  /* Start monitoring exerciser transactions */
+  if (val_exerciser_ops(START_TXN_MONITOR, CFG_READ, instance)) {
+      val_print(AVS_PRINT_DEBUG,
+               "\n       Exerciser BDF 0x%x - Unable to start transaction monitoring", e_bdf);
+      return AVS_STATUS_SKIP;
+  }
+
+  run_flag = 1;
+
+  /* Send the transaction on incrementalt addresses */
+  for (idx = 0; idx < sizeof(transaction_order)/sizeof(transaction_order[0]); idx++) {
+      pidx = ((uint64_t)addr & 0xFF)/4;
+      pattern_ptr = (uint32_t *)&pattern;
+      write_val = pattern_ptr[pidx];
+      /* Write transaction */
+      if (transaction_order[idx])
+          val_mmio_write((addr_t)addr, write_val);
+      else
+          val_mmio_read((addr_t)addr);
+      if (increment_addr)
+          addr++;
+  }
+
+  /* Stop monitoring exerciser transactions */
+  val_exerciser_ops(STOP_TXN_MONITOR, CFG_READ, instance);
+
+  return test_sequence_check(instance);
+}
+
+/* Performs reads/write on 8B data */
+static uint32_t test_sequence_8B(uint64_t *addr, uint8_t increment_addr, uint32_t instance)
+{
+  uint64_t idx;
+  uint64_t write_val;
+  uint32_t pidx;
+  uint32_t e_bdf;
+  uint64_t *pattern_ptr;
+
+  e_bdf = val_exerciser_get_bdf(instance);
+
+  /* Start monitoring exerciser transactions */
+  if (val_exerciser_ops(START_TXN_MONITOR, CFG_READ, instance)) {
+      val_print(AVS_PRINT_DEBUG,
+               "\n       Exerciser BDF 0x%x - Unable to start transaction monitoring", e_bdf);
+      return AVS_STATUS_SKIP;
+  }
+
+  run_flag = 1;
+
+  /* Send the transaction on incrementalt addresses */
+  for (idx = 0; idx < sizeof(transaction_order)/sizeof(transaction_order[0]); idx++) {
+      pidx = ((uint64_t)addr & 0xFF)/8;
+      pattern_ptr = (uint64_t *)&pattern;
+      write_val = pattern_ptr[pidx];
+      /* Write transaction */
+      if (transaction_order[idx])
+          val_mmio_write64((addr_t)addr, write_val);
+      else
+          val_mmio_read64((addr_t)addr);
+      if (increment_addr)
+          addr++;
+  }
+
+  /* Stop monitoring exerciser transactions */
+  val_exerciser_ops(STOP_TXN_MONITOR, CFG_READ, instance);
+
+  return test_sequence_check(instance);
+}
+
+static void cfgspace_test_sequence(uint32_t *baseptr, uint32_t instance)
+{
+
+    /* Test Scenario 1 : Transactions on incremental aligned address */
+    fail_cnt += test_sequence_1B((uint8_t *)baseptr, 1, instance);
+    fail_cnt += test_sequence_2B((uint16_t *)baseptr, 1, instance);
+    fail_cnt += test_sequence_4B((uint32_t *)baseptr, 1, instance);
+
+    /* Test Scenario 2 : Transactions on same address */
+    fail_cnt += test_sequence_1B((uint8_t *)baseptr, 0, instance);
+    fail_cnt += test_sequence_2B((uint16_t *)baseptr, 0, instance);
+    fail_cnt += test_sequence_4B((uint32_t *)baseptr, 0, instance);
+
+}
+
+static void barspace_test_sequence(uint64_t *baseptr, uint32_t instance)
+{
+
+    /* Test Scenario 1 : Transactions on incremental aligned address */
+    fail_cnt += test_sequence_1B((uint8_t *)baseptr, 1, instance);
+    fail_cnt += test_sequence_2B((uint16_t *)baseptr, 1, instance);
+    fail_cnt += test_sequence_4B((uint32_t *)baseptr, 1, instance);
+    fail_cnt += test_sequence_8B((uint64_t *)baseptr, 1, instance);
+
+    /* Test Scenario 2 : Transactions on same address */
+    fail_cnt += test_sequence_1B((uint8_t *)baseptr, 0, instance);
+    fail_cnt += test_sequence_2B((uint16_t *)baseptr, 0, instance);
+    fail_cnt += test_sequence_4B((uint32_t *)baseptr, 0, instance);
+    fail_cnt += test_sequence_8B((uint64_t *)baseptr, 0, instance);
+
+}
+
+/* Read and Write on config space mapped to Device memory */
 
 static
 void
-write_test_data(void *buf, uint32_t size)
+cfgspace_transactions_order_check(void)
 {
-
-  uint32_t index;
-
-  for (index = 0; index < size; index++) {
-    *((char8_t *)buf + index) = TEST_DATA;
-  }
-
-  val_data_cache_ops_by_va((addr_t)buf, CLEAN_AND_INVALIDATE);
-}
-
-static
-void
-clear_dram_buf(void *buf, uint32_t size)
-{
-
-  uint32_t index;
-
-  for (index = 0; index < size; index++) {
-    *((char8_t *)buf + index) = 0;
-  }
-
-  val_data_cache_ops_by_va((addr_t)buf, CLEAN_AND_INVALIDATE);
-}
-
-/*
- * For each exerciser behind an SMMU,
- * Create a mapping of 1 IOVA region to 2 PA regions, via SMMU
- * Each of the 2 mappings is identified by a distinct PASID
- * Confiugure exerciser DMA engine to access IOVA region base.
- * Configure exerciser to execute DMA with TEST_PASID1 in transactions, Accesses must PA region 1.
- * Configure exerciser to execute DMA with TEST_PASID2 in transactions, Accesses must PA region 2.
- */
-static void
-payload(void)
-{
-  uint32_t pe_index;
   uint32_t instance;
-  uint64_t e_bdf;
-  uint32_t e_valid_cnt;
-  uint32_t dma_len;
-  uint32_t smmu_ssid_bits;
-  void *dram_buf_base_virt;
-  void *dram_buf_pasid1_in_virt;
-  void *dram_buf_pasid2_in_virt;
-  void *dram_buf_pasid1_out_virt;
-  void *dram_buf_pasid2_out_virt;
-  uint64_t dram_buf_pasid1_base_phys;
-  uint64_t dram_buf_pasid2_base_phys;
-  uint64_t dram_buf_in_iova = 0;
-  uint64_t dram_buf_out_iova = 0;
-  uint32_t device_id, its_id;
-  uint32_t page_size = val_memory_page_size();
-  uint32_t test_data_blk_size = page_size * TEST_DATA_NUM_PAGES;
-  memory_region_descriptor_t mem_desc_array[2], *mem_desc;
-  smmu_master_attributes_t master = {0, 0, 0, 0, 0};
-  pgt_descriptor_t pgt_desc;
-  uint64_t ttbr;
-  uint32_t exerciser_ssid_bits, status;
-  uint64_t pgt_base_pasid1 = 0;
-  uint64_t pgt_base_pasid2 = 0;
+  uint32_t bdf;
+  char *baseptr;
+  uint32_t cid_offset;
+  uint64_t bdf_addr;
 
-  /* Initialize DMA master and memory descriptors */
-  val_memory_set(&master, sizeof(master), 0);
-  val_memory_set(mem_desc_array, sizeof(mem_desc_array), 0);
-  mem_desc = &mem_desc_array[0];
-  e_valid_cnt = 0;
-  pe_index = val_pe_get_index_mpid (val_pe_get_mpid());
-
-  /* Allocate 2 test buffers, one for each pasid */
-  dram_buf_base_virt = val_memory_alloc_pages(TEST_DATA_NUM_PAGES * 2);
-  if (!dram_buf_base_virt) {
-      val_print(AVS_PRINT_ERR, "\n       Cacheable mem alloc failure %x", 02);
-      val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
-      return;
-  }
-
-  /* Setup virtual and physical addresses for test buffers for each pasid */
-  dram_buf_pasid1_in_virt = dram_buf_base_virt;
-  dram_buf_pasid2_in_virt = dram_buf_base_virt + test_data_blk_size;
-  dram_buf_pasid1_out_virt = dram_buf_pasid1_in_virt + test_data_blk_size/2;
-  dram_buf_pasid2_out_virt = dram_buf_pasid2_in_virt + test_data_blk_size/2;
-
-  dram_buf_pasid1_base_phys = (uint64_t)val_memory_virt_to_phys(dram_buf_pasid1_in_virt);
-  dram_buf_pasid2_base_phys = (uint64_t)val_memory_virt_to_phys(dram_buf_pasid2_in_virt);
-
-  dma_len = test_data_blk_size/2;
-
-  /* Get translation attributes via TCR and translation table base via TTBR */
-  if (val_pe_reg_read_tcr(0 /*for TTBR0*/, &pgt_desc.tcr))
-  {
-    val_print(AVS_PRINT_ERR, "\n       TCR read failure %x", 03);
-    val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 03));
-    return;
-  }
-
-  if (val_pe_reg_read_ttbr(0 /*TTBR0*/, &ttbr))
-  {
-    val_print(AVS_PRINT_ERR, "\n       TTBR0 read failure %x", 04);
-    val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 04));
-    return;
-  }
-
-  pgt_desc.pgt_base = (ttbr & AARCH64_TTBR_ADDR_MASK);
-  pgt_desc.mair = val_pe_reg_read(MAIR_ELx);
-  pgt_desc.stage = PGT_STAGE1;
-
-  /* Get memory attributes of the test buffer, we'll use the same attibutes to create
-   * our own page table later.
-   */
-  if (val_pgt_get_attributes(pgt_desc, (uint64_t)dram_buf_base_virt, &mem_desc->attributes)) {
-    val_print(AVS_PRINT_ERR, "\n       Unable to get memory attributes of the test buffer", 0);
-    goto test_fail;
-  }
-
+  /* Read the number of excerciser cards */
   instance = val_exerciser_get_info(EXERCISER_NUM_CARDS, 0);
+
   while (instance-- != 0) {
-    clear_dram_buf(dram_buf_base_virt, test_data_blk_size * 2);
 
     /* if init fail moves to next exerciser */
     if (val_exerciser_init(instance))
         continue;
 
     /* Get exerciser bdf */
-    e_bdf = val_exerciser_get_bdf(instance);
-    val_print(AVS_PRINT_DEBUG, "\n       Exerciser BDF - 0x%x", e_bdf);
+    bdf = val_exerciser_get_bdf(instance);
 
-    /* Find SMMU node index for this pcie endpoint */
-    master.smmu_index = val_iovirt_get_rc_smmu_index(PCIE_EXTRACT_BDF_SEG(e_bdf), PCIE_CREATE_BDF_PACKED(e_bdf));
-    if (master.smmu_index == AVS_INVALID_INDEX) {
+    /* If exerciser doesn't have PCI_CAP skip the bdf */
+    if (val_pcie_find_capability(bdf, PCIE_CAP, CID_PCIECS, &cid_offset) == PCIE_CAP_NOT_FOUND)
+        continue;
+
+    bdf_addr = val_pcie_get_bdf_config_addr(bdf);
+
+    /* Map config space to ARM device(nGnRnE) memory in MMU page tables */
+    baseptr = (char *)val_memory_ioremap((void *)bdf_addr, 512, DEVICE_nGnRnE);
+
+    if (!baseptr) {
+        val_print(AVS_PRINT_ERR, "\n       Failed in config ioremap for instance %x", instance);
         continue;
     }
 
-    /* Check if SMMU supports substreamid (ssid), and number of ssid bits supported*/
-    smmu_ssid_bits = val_smmu_get_info(SMMU_SSID_BITS, master.smmu_index);
+    read_config_space((uint32_t *)baseptr);
 
-    if (smmu_ssid_bits < MIN_PASID_BITS || smmu_ssid_bits > MAX_PASID_BITS)
-    {
-        val_print(AVS_PRINT_ERR, "\n       SMMU substreamid support error %d", smmu_ssid_bits);
-        goto test_fail;
+    /* Perform Transactions on incremental aligned address and on same address */
+    cfgspace_test_sequence((uint32_t *)baseptr, instance);
+
+    /* Map config space to ARM device(nGnRE) memory in MMU page tables */
+    baseptr = (char *)val_memory_ioremap((void *)bdf_addr, 512, DEVICE_nGnRE);
+
+    if (!baseptr) {
+        val_print(AVS_PRINT_ERR, "\n       Failed in config ioremap for instance %x", instance);
+        continue;
     }
 
-    /* We just want to test minimum pasid size (16-bits) functionality.
-     * Make sure exerciser supports at least that
-     */
-    status = val_pcie_get_max_pasid_width(e_bdf, &exerciser_ssid_bits);
-    if (status == PCIE_CAP_NOT_FOUND)
-    {
-        val_print(AVS_PRINT_ERR,
-                 "\n       PASID extended capability not found for BDF: %x", e_bdf);
-        goto test_fail;
+    read_config_space((uint32_t *)baseptr);
+    /* Perform Transactions on incremental aligned address and on same address */
+    cfgspace_test_sequence((uint32_t *)baseptr, instance);
+  }
+}
+
+/* Read and Write on BAR space mapped to Device memory */
+
+static
+void
+barspace_transactions_order_check(void)
+{
+  uint32_t instance;
+  exerciser_data_t e_data;
+  char *baseptr;
+  uint32_t status;
+
+  /* Read the number of excerciser cards */
+  instance = val_exerciser_get_info(EXERCISER_NUM_CARDS, 0);
+
+  while (instance-- != 0) {
+
+    /* if init fail moves to next exerciser */
+    if (val_exerciser_init(instance))
+        continue;
+
+    /* Get BAR 0 details for this instance */
+    status = val_exerciser_get_data(EXERCISER_DATA_MMIO_SPACE, &e_data, instance);
+    if (status == NOT_IMPLEMENTED) {
+        val_print(AVS_PRINT_ERR, "\n       pal_exerciser_get_data() for MMIO not implemented", 0);
+        continue;
+    } else if (status) {
+        val_print(AVS_PRINT_ERR, "\n       Exerciser %d data read error     ", instance);
+        continue;
     }
 
-    else if (status)
-    {
-        val_print(AVS_PRINT_ERR,
-                 "\n       Error in obtaining the PASID max width for BDF: %x", e_bdf);
-        goto test_fail;
+    /* If BAR region is not Prefetchable, skip the exerciser */
+    if (e_data.bar_space.type != MMIO_PREFETCHABLE)
+        continue;
+
+    /* Map mmio space to ARM device(nGnRnE) memory in MMU page tables */
+    baseptr = (char *)val_memory_ioremap((void *)e_data.bar_space.base_addr, 512, DEVICE_nGnRnE);
+    if (!baseptr) {
+        val_print(AVS_PRINT_ERR, "\n       Failed in BAR ioremap for instance %x", instance);
+        continue;
     }
 
-    if (exerciser_ssid_bits < MIN_PASID_BITS)
-    {
-        val_print(AVS_PRINT_ERR,
-                 "\n       exerciser substreamid support error %d", exerciser_ssid_bits);
-        goto test_fail;
+    /* Perform Transactions on incremental aligned address and on same address */
+    barspace_test_sequence((uint64_t *)baseptr, instance);
+
+    /* Map mmio space to ARM device(nGnRE) memory in MMU page tables */
+    baseptr = (char *)val_memory_ioremap((void *)e_data.bar_space.base_addr, 512, DEVICE_nGnRE);
+    if (!baseptr) {
+        val_print(AVS_PRINT_ERR, "\n       Failed in BAR ioremap for instance %x", instance);
+        continue;
     }
 
-    master.ssid_bits = MIN_PASID_BITS;
+    /* Perform Transactions on incremental aligned address and on same address */
+    barspace_test_sequence((uint64_t *)baseptr, instance);
 
-    val_smmu_enable(master.smmu_index);
+  }
+}
 
-    /* Increment the exerciser count with pasid support */
-    e_valid_cnt++;
+static
+void
+payload(void)
+{
+  uint32_t pe_index;
 
-    if (master.smmu_index != AVS_INVALID_INDEX &&
-        val_iovirt_get_smmu_info(SMMU_CTRL_ARCH_MAJOR_REV, master.smmu_index) == 3) {
+  pe_index = val_pe_get_index_mpid (val_pe_get_mpid());
 
-        if (val_iovirt_get_device_info(PCIE_CREATE_BDF_PACKED(e_bdf),
-                                       PCIE_EXTRACT_BDF_SEG(e_bdf),
-                                       &device_id, &master.streamid,
-                                       &its_id))
-            continue;
+  cfgspace_transactions_order_check();
+  barspace_transactions_order_check();
 
-        /* Intent is to do DMA with PASID1 and PASID2 sequentially, with same IOVA.
-         * SMMU does virtual to physical address translation using
-         * tables configured for each pasid.
-         * Here we setup memory descriptor for creating page tables for pasid1.
-         */
-        mem_desc->virtual_address = (uint64_t)dram_buf_base_virt;
-        mem_desc->physical_address = dram_buf_pasid1_base_phys;
-        mem_desc->length = test_data_blk_size;
-        mem_desc->attributes |= PGT_STAGE1_AP_RW;
-
-        /* Need to know input and output address sizes before creating page table */
-        pgt_desc.ias = val_smmu_get_info(SMMU_IN_ADDR_SIZE, master.smmu_index);
-        if ((pgt_desc.ias) == 0) {
-            val_print(AVS_PRINT_ERR,
-                      "\n       Input address size of SMMU %d is 0", master.smmu_index);
-            goto test_fail;
-        }
-
-        pgt_desc.oas = val_smmu_get_info(SMMU_OUT_ADDR_SIZE, master.smmu_index);
-        if ((pgt_desc.oas) == 0) {
-            val_print(AVS_PRINT_ERR,
-                       "\n       Output address size of SMMU %d is 0", master.smmu_index);
-            goto test_fail;
-        }
-
-        /* set pgt_desc.pgt_base to NULL to create new translation table, val_pgt_create
-           will update pgt_desc.pgt_base to point to created translation table */
-        pgt_desc.pgt_base = (uint64_t) NULL;
-        if (val_pgt_create(mem_desc, &pgt_desc)) {
-            val_print(AVS_PRINT_ERR,
-                     "\n       Unable to create page table with given attributes", 0);
-            goto test_fail;
-        }
-
-        pgt_base_pasid1 = pgt_desc.pgt_base;
-
-        master.substreamid = TEST_PASID1;
-        if (val_smmu_map(master, pgt_desc))
-        {
-            val_print(AVS_PRINT_ERR, "\n       SMMU mapping failed (%d)     ", master.substreamid);
-            goto test_fail;
-        }
-
-        dram_buf_in_iova = mem_desc->virtual_address;
-        dram_buf_out_iova = dram_buf_in_iova + (test_data_blk_size / 2);
-    }
-
-    write_test_data(dram_buf_pasid1_in_virt, dma_len);
-
-    /* Program exerciser to start sending TLPs
-     * with PASID TLP Prefixes. This includes setting PASID Enable bit
-     * in exerciser PASID Control register and the implementation specific
-     * PASID Enable bit of the Root Port.
-     */
-    if (val_exerciser_ops(PASID_TLP_START, (uint64_t)master.substreamid, instance)) {
-        val_print(AVS_PRINT_ERR, "\n       Exerciser %x PASID TLP Prefix enable error", instance);
-        goto test_fail;
-    }
-
-    if (val_exerciser_set_param(DMA_ATTRIBUTES, dram_buf_in_iova, dma_len, instance)) {
-        val_print(AVS_PRINT_ERR, "\n       DMA attributes setting failure %4x", instance);
-        goto test_fail;
-    }
-
-    /* Trigger DMA from input buffer to exerciser memory */
-    if (val_exerciser_ops(START_DMA, EDMA_TO_DEVICE, instance)) {
-        val_print(AVS_PRINT_ERR, "\n       DMA write failure to exerciser %4x", instance);
-        goto test_fail;
-    }
-
-    if (val_exerciser_set_param(DMA_ATTRIBUTES, dram_buf_out_iova, dma_len, instance)) {
-        val_print(AVS_PRINT_ERR, "\n       DMA attributes setting failure %4x", instance);
-        goto test_fail;
-    }
-
-    /* Trigger DMA from exerciser memory to output buffer*/
-    if (val_exerciser_ops(START_DMA, EDMA_FROM_DEVICE, instance)) {
-        val_print(AVS_PRINT_ERR, "\n       DMA read failure from exerciser %4x", instance);
-        goto test_fail;
-    }
-
-    if (val_memory_compare(dram_buf_pasid1_in_virt, dram_buf_pasid1_out_virt, dma_len)) {
-        val_print(AVS_PRINT_ERR, "\n       Data Comparision failure for Exerciser %4x", instance);
-        goto test_fail;
-    }
-
-    if (val_exerciser_set_param(DMA_ATTRIBUTES, dram_buf_in_iova, dma_len, instance)) {
-        val_print(AVS_PRINT_ERR, "\n       DMA attributes setting failure %4x", instance);
-        goto test_fail;
-    }
-
-    /*
-     * Disable exerciser to stop sending TLPs
-     * with PASID TLP Prefixes. This includes re-setting PASID Enable bit
-     * in exerciser PASID Control register.
-     */
-    if(val_exerciser_ops(PASID_TLP_STOP, (uint64_t)master.substreamid, instance)) {
-        val_print(AVS_PRINT_ERR, "\n       Exerciser %x PASID TLP Prefix disable error", instance);
-        goto test_fail;
-    }
-
-    /* Now setup memory descriptor for creating page tables for pasid2. */
-    mem_desc->virtual_address = (uint64_t)dram_buf_base_virt;
-    mem_desc->physical_address = dram_buf_pasid2_base_phys;
-    mem_desc->length = test_data_blk_size;
-    mem_desc->attributes |= PGT_STAGE1_AP_RW;
-
-    /* set pgt_desc.pgt_base to NULL to create new translation table, val_pgt_create
-       will update pgt_desc.pgt_base to point to created translation table */
-    pgt_desc.pgt_base = (uint64_t) NULL;
-    if (val_pgt_create(mem_desc, &pgt_desc)) {
-        val_print(AVS_PRINT_ERR, "\n       Unable to create page table with given attributes", 0);
-        goto test_fail;
-    }
-
-    pgt_base_pasid2 = pgt_desc.pgt_base;
-
-    master.substreamid = TEST_PASID2;
-    if (val_smmu_map(master, pgt_desc))
-    {
-        val_print(AVS_PRINT_ERR, "\n       SMMU mapping failed (%d)     ", master.substreamid);
-        goto test_fail;
-    }
-
-    dram_buf_in_iova = mem_desc->virtual_address;
-    dram_buf_out_iova = dram_buf_in_iova + (test_data_blk_size / 2);
-
-    write_test_data(dram_buf_pasid2_in_virt, dma_len);
-
-    /* Program exerciser and it's root port to start sending TLPs
-     * with PASID TLP Prefixes. This includes setting PASID Enable bit
-     * in exerciser PASID Control register and the implementation specific
-     * PASID Enable bit of the Root Port.
-     */
-    if(val_exerciser_ops(PASID_TLP_START, (uint64_t)master.substreamid, instance)) {
-        val_print(AVS_PRINT_ERR, "\n       Exerciser %x PASID TLP Prefix enable error", instance);
-        goto test_fail;
-    }
-
-    if (val_exerciser_set_param(DMA_ATTRIBUTES, dram_buf_in_iova, dma_len, instance)) {
-        val_print(AVS_PRINT_ERR, "\n       DMA attributes setting failure %4x", instance);
-        goto test_fail;
-    }
-
-    /* Trigger DMA from input buffer to exerciser memory */
-    if (val_exerciser_ops(START_DMA, EDMA_TO_DEVICE, instance)) {
-        val_print(AVS_PRINT_ERR, "\n       DMA write failure to exerciser %4x", instance);
-        goto test_fail;
-    }
-
-    if (val_exerciser_set_param(DMA_ATTRIBUTES, dram_buf_out_iova, dma_len, instance)) {
-        val_print(AVS_PRINT_ERR, "\n       DMA attributes setting failure %4x", instance);
-        goto test_fail;
-    }
-
-    /* Trigger DMA from exerciser memory to output buffer */
-    if (val_exerciser_ops(START_DMA, EDMA_FROM_DEVICE, instance)) {
-        val_print(AVS_PRINT_ERR, "\n       DMA read failure from exerciser %4x", instance);
-        goto test_fail;
-    }
-
-    if(val_exerciser_ops(PASID_TLP_STOP, (uint64_t)master.substreamid, instance)) {
-        val_print(AVS_PRINT_ERR, "\n       Exerciser %x PASID TLP Prefix disable error", instance);
-        goto test_fail;
-    }
-
-    if (val_memory_compare(dram_buf_pasid2_in_virt, dram_buf_pasid2_out_virt, dma_len)) {
-        val_print(AVS_PRINT_ERR, "\n       Data Comparasion failure for Exerciser %4x", instance);
-        goto test_fail;
-    }
-
-    val_smmu_unmap(master);
-    val_smmu_disable(master.smmu_index);
+  if (!run_flag) {
+      val_set_status(pe_index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
+      return;
   }
 
-  if (e_valid_cnt) {
-    val_set_status (pe_index, RESULT_PASS (g_sbsa_level, TEST_NUM, 01));
-  } else {
-    val_set_status(pe_index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 00));
-  }
-
-  goto test_clean;
-
-test_fail:
-  val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));;
-
-test_clean:
-  val_memory_free_pages(dram_buf_base_virt, TEST_DATA_NUM_PAGES * 2);
-  if ((pgt_base_pasid1 != 0) || (pgt_base_pasid2 != 0))
-  {
-    val_pgt_destroy(pgt_desc);
-  }
+  if (fail_cnt)
+      val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, fail_cnt));
+  else
+      val_set_status(pe_index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
 }
 
 uint32_t
@@ -436,4 +419,3 @@ e004_entry(void)
 
   return status;
 }
-

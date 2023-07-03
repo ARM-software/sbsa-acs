@@ -21,8 +21,8 @@
 #include "val/include/sbsa_avs_pe.h"
 
 #define TEST_NUM   (AVS_PCIE_TEST_NUM_BASE + 58)
-#define TEST_RULE  "RE_BAR_1"
-#define TEST_DESC  "Read and write to RCiEP BAR reg   "
+#define TEST_RULE  "RE_BAR_1, IE_BAR_1"
+#define TEST_DESC  "Read and write to BAR reg         "
 
 #define TEST_DATA_1  0xDEADDAED
 #define TEST_DATA_2  0xABABABAB
@@ -57,7 +57,7 @@ payload(void)
   {
       bdf = bdf_tbl_ptr->device[tbl_index++].bdf;
       dp_type = val_pcie_device_port_type(bdf);
-      if (dp_type == RCiEP) {
+      if (dp_type == RCiEP || dp_type == iEP_EP || dp_type == iEP_RP) {
           /* If test runs for atleast an endpoint */
           test_skip = 0;
           offset = BAR0_OFFSET;

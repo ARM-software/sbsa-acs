@@ -199,112 +199,6 @@ pal_pcie_io_write_cfg(uint32_t bdf, uint32_t offset, uint32_t data)
 }
 
 /**
-    @brief   This API scans bridge devices and checks memory type
-
-    @param   bus        PCI bus address
-    @param   dev        PCI device address
-    @param   fn         PCI function number
-    @param   seg        PCI segment number
-
-    @return  0 -> 32-bit mem type, 1 -> 64-bit mem type
-**/
-uint32_t pal_pcie_scan_bridge_devices_and_check_memtype(uint32_t seg, uint32_t bus,
-                                                        uint32_t dev,uint32_t fn)
-{
-
-  uint32_t Bus, Dev, Func;
-  uint32_t status = 0;
-  uint64_t ecam_base, ecam_index = 0;
-  uint32_t reg_value, header_type;
-  uint32_t data;
-  uint8_t  mem_type;
-  uint32_t max_bus = 0;
-
-  while (ecam_index < platform_pcie_cfg.num_entries)
-  {
-       if ((bus >= platform_pcie_cfg.block[ecam_index].start_bus_num) &&
-           (bus <= platform_pcie_cfg.block[ecam_index].end_bus_num) &&
-           (seg == platform_pcie_cfg.block[ecam_index].segment_num ))
-       {
-           max_bus = platform_pcie_cfg.block[ecam_index].end_bus_num;
-           print(AVS_PRINT_INFO, "\n    max bus   BDF - 0x%x", max_bus);
-           break;
-       }
-       ecam_index++;
-  }
-
-  pal_pcie_read_cfg(seg, bus, dev, fn, BUS_NUM_REG_OFFSET, &reg_value);
-  for (Bus = 0; Bus <= max_bus; Bus++)
-  {
-    for (Dev = 0; Dev < PCIE_MAX_DEV; Dev++)
-    {
-      for (Func = 0; Func < PCIE_MAX_FUNC; Func++)
-      {
-        ecam_base = pal_pcie_ecam_base(seg, Bus, Dev, Func);
-        header_type = pal_mmio_read(ecam_base +
-                        Bus * PCIE_MAX_DEV * PCIE_MAX_FUNC * PCIE_CFG_SIZE +
-                        Dev * PCIE_MAX_FUNC * PCIE_CFG_SIZE +
-                        Func * PCIE_CFG_SIZE +
-                        HEADER_OFFSET);
-
-        if(PCIE_HEADER_TYPE(header_type) == TYPE0_HEADER)
-        {
-          if ((Bus >= ((reg_value >> SECBN_SHIFT) & SECBN_MASK)) &&
-              ((Bus <= ((reg_value >> SUBBN_SHIFT) & SUBBN_MASK))))
-          {
-            pal_pcie_read_cfg(seg, Bus, Dev, Func, BAR0_OFFSET, &data);
-            if (data)
-            {
-              mem_type = data & 0x6;
-              if (mem_type != 0) {
-                status = 1;
-                break;
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-  return status;
-}
-
-/**
-    @brief   Get the PCIe device type
-
-    @param   bus        PCI bus address
-    @param   dev        PCI device address
-    @param   fn         PCI function number
-    @param   seg        PCI segment number
-
-    @return  status code:
-             1: Normal PCIe device, 2: PCIe Host bridge,
-             3: PCIe bridge device, else: INVALID
-**/
-
-uint32_t
-pal_pcie_get_device_type(uint32_t seg, uint32_t bus, uint32_t dev, uint32_t fn)
-{
-
-  uint32_t header_type, class_code;
-
-  pal_pcie_read_cfg(seg, bus, dev, fn, HEADER_OFFSET, &header_type);
-  if(PCIE_HEADER_TYPE(header_type) != TYPE0_HEADER)
-  {
-      pal_pcie_read_cfg(seg, bus, dev, fn, TYPE01_RIDR, &class_code);
-      if ((((class_code >> CC_BASE_SHIFT) & CC_BASE_MASK) == HB_BASE_CLASS) &&
-           (((class_code >> CC_SUB_SHIFT) & CC_SUB_MASK)) == HB_SUB_CLASS)
-              return 2;
-      else
-              return 3;
-   }
-  else
-          return 1;
-
-}
-
-
-/**
     @brief   Get the PCIe device/port type
 
     @param   bus        PCI bus address
@@ -775,3 +669,37 @@ pal_pcie_mem_get_offset(uint32_t type)
   }
 
 }
+
+/**
+    @brief   Reads 32-bit data from BAR space pointed by Bus,
+             Device, Function and register offset.
+
+    @param   Bdf     - BDF value for the device
+    @param   address - BAR memory address
+    @param   *data   - 32 bit value at BAR address
+    @return  success/failure
+**/
+uint32_t
+pal_pcie_bar_mem_read(uint32_t Bdf, uint64_t address, uint32_t *data)
+{
+  *data = pal_mmio_read(address);
+   return 0;
+}
+
+/**
+    @brief   Write 32-bit data to BAR space pointed by Bus,
+             Device, Function and register offset.
+
+    @param   Bdf     - BDF value for the device
+    @param   address - BAR memory address
+    @param   data    - 32 bit value to writw BAR address
+    @return  success/failure
+**/
+
+uint32_t
+pal_pcie_bar_mem_write(uint32_t Bdf, uint64_t address, uint32_t data)
+{
+   pal_mmio_write(address, data);
+   return 0;
+}
+

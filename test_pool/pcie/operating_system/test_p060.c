@@ -57,7 +57,7 @@ payload(void)
 
           /* Extract Hdr Type */
           hdr_type = val_pcie_function_header_type(bdf);
-          /* Type should be 0 for RCiEP*/
+          /* Type must be 0 for RCiEP*/
           if (hdr_type != TYPE0_HEADER) {
               val_print(AVS_PRINT_ERR, "\n       Invalid HDR TYPE 0x%x", hdr_type);
               fail_cnt++;

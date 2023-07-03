@@ -89,7 +89,7 @@ ArmArchTimerWriteReg (
   )
 {
 
-    switch(Reg) {
+    switch (Reg) {
 
     case CntPct:
       pal_print("Can't write to Read Only Register: CNTPCT \n", 0);

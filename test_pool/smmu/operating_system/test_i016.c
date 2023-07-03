@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2023 Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2023, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -45,8 +45,8 @@ payload(void)
   index = val_pe_get_index_mpid(val_pe_get_mpid());
   val_memory_set(etr_path, sizeof(etr_path), 0);
 
-  /*Check for ETR devices using ETR using unique HID (ARMHC501)*/
-  status = val_get_device_path("ARMHC501", etr_path);
+  /*Check for ETR devices using ETR using unique HID (ARMHC97C)*/
+  status = val_get_device_path("ARMHC97C", etr_path);
   if (status != 0) {
     val_print(AVS_PRINT_ERR, "\n       Unable to get ETR device info from ACPI namespace", 0);
     val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 1));
@@ -69,7 +69,7 @@ payload(void)
   num_named_comp = val_iovirt_get_named_comp_info(NUM_NAMED_COMP, 0);
   val_print(AVS_PRINT_DEBUG, "\n       NUM Named component  : %d", num_named_comp);
 
-  /*ETR device should be behind SMMU or CATU*/
+  /*ETR device must be behind SMMU or CATU*/
   for (i = 0; i < etr_count; i++) {
     for (j = 0; j < num_named_comp; j++) {
       smmu_found = 0;

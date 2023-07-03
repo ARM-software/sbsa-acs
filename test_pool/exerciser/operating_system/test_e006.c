@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2018-2023, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2023, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,334 +18,411 @@
 #include "val/include/sbsa_avs_val.h"
 #include "val/include/val_interface.h"
 
-#include "val/include/sbsa_avs_pe.h"
-#include "val/include/sbsa_avs_smmu.h"
-#include "val/include/sbsa_avs_pgt.h"
-#include "val/include/sbsa_avs_iovirt.h"
-#include "val/include/sbsa_avs_memory.h"
 #include "val/include/sbsa_avs_pcie_enumeration.h"
 #include "val/include/sbsa_avs_pcie.h"
+#include "val/include/sbsa_avs_pe.h"
+#include "val/include/sbsa_avs_gic.h"
+#include "val/include/sbsa_avs_iovirt.h"
+#include "val/include/sbsa_avs_smmu.h"
+#include "val/include/sbsa_avs_memory.h"
 #include "val/include/sbsa_avs_exerciser.h"
 
 #define TEST_NUM   (AVS_EXERCISER_TEST_NUM_BASE + 6)
-#define TEST_DESC  "ATS Functionality Check           "
-#define TEST_RULE  "RE_SMU_2"
+#define TEST_DESC  "RP's must support AER feature          "
+#define TEST_RULE  "PCI_ER_01, PCI_ER_02, PCI_ER_03, PCI_ER_04"
 
-#define TEST_DATA_NUM_PAGES  1
-#define TEST_DATA 0xDE
+#define ERR_CORR     0x2
+#define ERR_UNCORR   0x3
+#define CLEAR_STATUS 0xFFFFFFFF
 
-static
-void
-write_test_data(void *buf, uint32_t size)
-{
-
-  uint32_t index;
-
-  for (index = 0; index < size; index++) {
-    *((char8_t *)buf + index) = TEST_DATA;
-  }
-
-  val_data_cache_ops_by_va((addr_t)buf, CLEAN_AND_INVALIDATE);
-}
+static uint32_t irq_pending;
+static uint32_t lpi_int_id = 0x204C;
+static uint32_t mask_value;
 
 static
 void
-clear_dram_buf(void *buf, uint32_t size)
+intr_handler(void)
+{
+  /* Clear the interrupt pending state */
+  irq_pending = 0;
+
+  val_print(AVS_PRINT_INFO, "\n       Received MSI interrupt %x       ", lpi_int_id);
+  val_gic_end_of_interrupt(lpi_int_id);
+  return;
+}
+
+/* Clear all the status bits and set the mask and severity
+ * @param e_bdf   - Exerciser bdf
+ *        aer_offset - AER capability offset of bdf
+ *        mask       - Whether error to be masked or not
+ *                     0 - no mask 0xFFFFFFFF - mask all errors
+ *        severity   - Whether error is fatal or non-fatal
+ *                     0 - non-fatal 0xFFFFFFFF - fatal
+ **/
+static void
+clear_status_bits(uint32_t e_bdf, uint32_t aer_offset, uint32_t mask, uint32_t severity)
 {
 
-  uint32_t index;
+    /* Clear all status bits of Correctable and Unconrrectable errors */
+     val_pcie_write_cfg(e_bdf, aer_offset + AER_UNCORR_STATUS_OFFSET, CLEAR_STATUS);
+     val_pcie_write_cfg(e_bdf, aer_offset + AER_CORR_STATUS_OFFSET, CLEAR_STATUS);
 
-  for (index = 0; index < size; index++) {
-    *((char8_t *)buf + index) = 0;
-  }
-
-  val_data_cache_ops_by_va((addr_t)buf, CLEAN_AND_INVALIDATE);
+     /* Mask or UnMask all errors */
+     val_pcie_write_cfg(e_bdf, aer_offset + AER_UNCORR_MASK_OFFSET, mask);
+     val_pcie_write_cfg(e_bdf, aer_offset + AER_CORR_MASK_OFFSET, mask);
+     val_pcie_write_cfg(e_bdf, aer_offset + AER_UNCORR_SEVR_OFFSET, severity);
 }
+
+static uint32_t
+correctable_err_status_chk(uint32_t e_bdf, uint32_t aer_offset, uint32_t err_code)
+{
+    uint32_t erp_bdf, reg_bdf, rp_aer_offset;
+    uint32_t value, err_bit;
+    uint32_t pciecs_base, reg_value;
+    uint32_t fail_cnt = 0;
+
+    val_pcie_get_rootport(e_bdf, &erp_bdf);
+    val_pcie_find_capability(erp_bdf, PCIE_ECAP, ECID_AER, &rp_aer_offset);
+    err_bit = val_get_exerciser_err_info(err_code);
+
+    /* Check if corresponding error bit is set */
+    val_pcie_read_cfg(e_bdf, aer_offset + AER_CORR_STATUS_OFFSET, &value);
+    if (!((value >> err_bit) & 0x1))
+    {
+        val_print(AVS_PRINT_ERR, "\n       Err bit for error not set", 0);
+        fail_cnt++;
+    }
+
+    /* Check if the RP has received the corresponding error type if error is not masked */
+    val_pcie_read_cfg(erp_bdf, rp_aer_offset + AER_ROOT_ERR_OFFSET, &value);
+    if ((mask_value == 0) && ((value & 0x1) == 0))
+    {
+        val_print(AVS_PRINT_ERR, "\n       Root error status not set", 0);
+        fail_cnt++;
+    }
+
+    if ((mask_value == 1) && ((value & 0x1) == 1))
+    {
+        val_print(AVS_PRINT_ERR, "\n       Root error status set when error is masked", 0);
+        fail_cnt++;
+    }
+
+    /* Check if the Reg ID matches with the error source ID */
+    val_pcie_read_cfg(erp_bdf, rp_aer_offset + AER_ROOT_ERR_SOURCE_ID, &value);
+    reg_bdf = PCIE_CREATE_BDF_PACKED(e_bdf);
+    if ((mask_value == 0) && ((value & AER_SOURCE_ID_MASK) != reg_bdf))
+    {
+        val_print(AVS_PRINT_ERR, "\n       Error source Identification failed", 0);
+        fail_cnt++;
+    }
+
+    /* Check if the appropriate status bit is set in Device status register */
+    val_pcie_find_capability(e_bdf, PCIE_CAP, CID_PCIECS, &pciecs_base);
+    val_pcie_read_cfg(e_bdf, pciecs_base + DCTLR_OFFSET, &reg_value);
+    if (!((reg_value >> DSTS_SHIFT) & 0x1))
+    {
+        val_print(AVS_PRINT_ERR, "\n       Device reg of EP not set %x ", reg_value);
+        fail_cnt++;
+    }
+
+    /* Clear the Error status bit in the RP */
+    val_pcie_write_cfg(erp_bdf, rp_aer_offset + AER_ROOT_ERR_OFFSET, 0x1);
+    val_pcie_read_cfg(erp_bdf, rp_aer_offset + AER_ROOT_ERR_OFFSET, &value);
+    if ((value & 0x1))
+    {
+        val_print(AVS_PRINT_ERR, "\n       Err bit is not cleared %x ", value);
+        fail_cnt++;
+    }
+
+    if (fail_cnt)
+        return 1;
+
+    return 0;
+}
+
+static uint32_t
+uncorrectable_error_chk(uint32_t e_bdf, uint32_t aer_offset, uint32_t err_code)
+{
+    uint32_t erp_bdf, reg_bdf, rp_aer_offset;
+    uint32_t value, err_bit;
+    uint32_t pciecs_base, reg_value;
+    uint32_t fail_cnt = 0;
+
+    val_pcie_get_rootport(e_bdf, &erp_bdf);
+    val_pcie_find_capability(erp_bdf, PCIE_ECAP, ECID_AER, &rp_aer_offset);
+    err_bit = val_get_exerciser_err_info(err_code);
+
+    /* Check if corresponding error bit is set */
+    val_pcie_read_cfg(e_bdf, aer_offset + AER_UNCORR_STATUS_OFFSET, &value);
+    if (!((value >> err_bit) & 0x1))
+    {
+        val_print(AVS_PRINT_ERR, "\n       Err bit not set %x", value);
+        fail_cnt++;
+    }
+
+    /* Check if the RP has received the corresponding error type if error is not masked */
+    val_pcie_read_cfg(erp_bdf, rp_aer_offset + AER_ROOT_ERR_OFFSET, &value);
+    if ((mask_value == 0) && ((value & 0x4) == 0))
+    {
+        val_print(AVS_PRINT_ERR, "\n       Root Error status not set", 0);
+        fail_cnt++;
+    }
+
+    if ((mask_value == 1) && ((value & 0x4) == 0x4))
+    {
+        val_print(AVS_PRINT_ERR, "\n       Root error status set when error is masked", 0);
+        fail_cnt++;
+    }
+
+    /* Check if the Reg ID matches with the error source ID */
+    val_pcie_read_cfg(erp_bdf, rp_aer_offset + AER_ROOT_ERR_SOURCE_ID, &value);
+    reg_bdf = PCIE_CREATE_BDF_PACKED(e_bdf);
+    if ((mask_value == 0) && (((value >> AER_SOURCE_ID_SHIFT) & AER_SOURCE_ID_MASK) != reg_bdf))
+    {
+        val_print(AVS_PRINT_ERR, "\n       Error source Identification failed", 0);
+        fail_cnt++;
+    }
+
+    /* Check if the appropriate status bit is set in Device status register */
+    val_pcie_find_capability(e_bdf, PCIE_CAP, CID_PCIECS, &pciecs_base);
+    val_pcie_read_cfg(e_bdf, pciecs_base + DCTLR_OFFSET, &reg_value);
+    if (!((reg_value >> DSTS_SHIFT) & DS_UNCORR_MASK))
+    {
+        val_print(AVS_PRINT_ERR, "\n       Device reg of EP not set", 0);
+        fail_cnt++;
+    }
+
+    /* Clear the Error status bit in the RP */
+    val_pcie_write_cfg(erp_bdf, rp_aer_offset + AER_ROOT_ERR_OFFSET, 0x7F);
+    val_pcie_read_cfg(erp_bdf, rp_aer_offset + AER_ROOT_ERR_OFFSET, &value);
+    if ((value & 0x7F))
+    {
+        val_print(AVS_PRINT_ERR, "\n       Err bit is not cleared %x", value);
+        fail_cnt++;
+    }
+
+    if (fail_cnt)
+        return 1;
+
+    return 0;
+
+}
+
+static
+uint32_t
+inject_error(uint32_t e_bdf, uint32_t instance, uint32_t aer_offset)
+{
+    uint32_t err_code;
+    uint32_t status, value;
+    uint32_t res, timeout;
+
+    for (err_code = 0; err_code <= ERR_CNT; err_code++)
+    {
+        irq_pending = 1;
+
+        status = val_exerciser_set_param(ERROR_INJECT_TYPE, err_code, 0, instance);
+        value = val_exerciser_ops(INJECT_ERROR, err_code, instance);
+
+        /*Interrupt must be generated on error detection if errors are not masked*/
+        if (mask_value == 0) {
+            timeout = TIMEOUT_LARGE;
+            while ((--timeout > 0) && irq_pending)
+            {};
+
+            if (timeout == 0)
+            {
+                val_gic_free_irq(irq_pending, 0);
+                val_print(AVS_PRINT_ERR,
+                          "\n       Intr not trigerred on err injection bdf 0x%x", e_bdf);
+                return 1;
+            }
+        }
+
+        /* Check if error injected is correctable or uncorrectable*/
+        if (status == ERR_CORR) {
+            val_print(AVS_PRINT_INFO, "\n       Correctable error recieved", 0);
+            res = correctable_err_status_chk(e_bdf, aer_offset, value);
+            if (res) {
+                val_print(AVS_PRINT_ERR,
+                          "\n       Correctable error check failed for bdf %x", e_bdf);
+                return 1;
+            }
+        }
+
+        else if (status == ERR_UNCORR) {
+            val_print(AVS_PRINT_INFO, "\n       UnCorrectable error recieved", 0);
+            res = uncorrectable_error_chk(e_bdf, aer_offset, value);
+            if (res) {
+                val_print(AVS_PRINT_ERR,
+                          "\n       Uncorrectable error check failed for bdf %x", e_bdf);
+                return 1;
+            }
+        }
+    }
+
+    return 0;
+}
+
 
 static
 void
 payload(void)
 {
-  uint32_t pe_index;
-  uint32_t dma_len;
-  uint32_t instance;
-  uint32_t e_bdf;
-  uint32_t cap_base;
-  void *dram_buf_in_virt;
-  void *dram_buf_out_virt;
-  uint64_t dram_buf_in_phys;
-  uint64_t dram_buf_out_phys;
-  uint64_t dram_buf_in_iova;
-  uint64_t dram_buf_out_iova;
-  uint64_t m_vir_addr;
-  uint32_t num_exercisers, num_smmus;
-  uint32_t device_id, its_id;
-  uint32_t page_size = val_memory_page_size();
-  memory_region_descriptor_t mem_desc_array[2], *mem_desc;
-  pgt_descriptor_t pgt_desc;
-  smmu_master_attributes_t master;
-  uint64_t ttbr;
-  uint32_t test_data_blk_size = page_size * TEST_DATA_NUM_PAGES;
-  uint64_t *pgt_base_array;
-  uint64_t translated_addr;
-  uint32_t test_skip = 1;
-  uint32_t reg_value = 0;
 
-  /* Initialize DMA master and memory descriptors */
-  val_memory_set(&master, sizeof(master), 0);
-  val_memory_set(mem_desc_array, sizeof(mem_desc_array), 0);
-  mem_desc = &mem_desc_array[0];
-  dram_buf_in_phys = 0;
+  uint32_t instance;
+  uint32_t pe_index;
+  uint32_t e_bdf;
+  uint32_t erp_bdf;
+  uint32_t aer_offset;
+  uint32_t rp_aer_offset;
+  uint32_t value = 0;
+  uint32_t reg_value = 0;
+  uint32_t test_skip = 1;
+
+  uint32_t status;
+  uint32_t device_id = 0;
+  uint32_t stream_id = 0;
+  uint32_t its_id = 0;
+  uint32_t msi_index = 0;
+  uint32_t msi_cap_offset = 0;
+  uint32_t dpc_cap_base = 0;
 
   pe_index = val_pe_get_index_mpid(val_pe_get_mpid());
-  num_exercisers = val_exerciser_get_info(EXERCISER_NUM_CARDS, 0);
-  num_smmus = val_iovirt_get_smmu_info(SMMU_NUM_CTRL, 0);
+  instance = val_exerciser_get_info(EXERCISER_NUM_CARDS, 0);
 
-  /* Allocate an array to store base addresses of page tables allocated for
-   * all exercisers
-   */
-  pgt_base_array = val_aligned_alloc(MEM_ALIGN_4K, sizeof(uint64_t) * num_exercisers);
-  if (!pgt_base_array) {
-      val_print(AVS_PRINT_ERR, "\n       mem alloc failure", 0);
-      val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
-      return;
+  while (instance-- != 0) {
+
+      /* if init fail moves to next exerciser */
+      if (val_exerciser_init(instance))
+          continue;
+
+     e_bdf = val_exerciser_get_bdf(instance);
+     val_print(AVS_PRINT_DEBUG, "\n       Exerciser BDF - 0x%x", e_bdf);
+
+     val_pcie_enable_eru(e_bdf);
+     if (val_pcie_get_rootport(e_bdf, &erp_bdf))
+         continue;
+
+     val_pcie_enable_eru(erp_bdf);
+
+     /*Check AER capability for exerciser and its RP */
+      if (val_pcie_find_capability(e_bdf, PCIE_ECAP, ECID_AER, &aer_offset) != PCIE_SUCCESS) {
+          val_print(AVS_PRINT_ERR, "\n       No AER Capability, Skipping for Bdf : 0x%x", e_bdf);
+          continue;
+      }
+
+      if (val_pcie_find_capability(erp_bdf, PCIE_ECAP, ECID_AER, &rp_aer_offset) != PCIE_SUCCESS) {
+          val_print(AVS_PRINT_ERR, "\n       AER Capability not supported for RP : 0x%x", erp_bdf);
+          val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
+          return;
+      }
+
+      /* Check DPC capability */
+      status = val_pcie_find_capability(erp_bdf, PCIE_ECAP, ECID_DPC, &dpc_cap_base);
+      if (status == PCIE_CAP_NOT_FOUND)
+      {
+          val_print(AVS_PRINT_ERR, "\n       ECID_DPC not found", 0);
+          val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
+          return;
+      }
+
+      /* Warn if DPC enabled */
+      val_pcie_read_cfg(erp_bdf, dpc_cap_base + DPC_CTRL_OFFSET, &reg_value);
+      if ((reg_value & 0x3) != 0)
+          val_print(AVS_PRINT_WARN, "\n       DPC enabled for bdf : 0x%x", erp_bdf);
+
+
+      /* Search for MSI-X Capability */
+      if (val_pcie_find_capability(e_bdf, PCIE_CAP, CID_MSIX, &msi_cap_offset)) {
+          val_print(AVS_PRINT_ERR, "\n       No MSI-X Capability, Skipping for Bdf 0x%x", e_bdf);
+          continue;
+      }
+
+      if (val_pcie_find_capability(erp_bdf, PCIE_CAP, CID_MSIX, &msi_cap_offset)) {
+          val_print(AVS_PRINT_ERR, "\n       No MSI-X Capability for RP Bdf 0x%x", erp_bdf);
+          val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
+          return;
+      }
+
+      /* Get DeviceID & ITS_ID for this device */
+      status = val_iovirt_get_device_info(PCIE_CREATE_BDF_PACKED(erp_bdf),
+                                        PCIE_EXTRACT_BDF_SEG(erp_bdf), &device_id,
+                                        &stream_id, &its_id);
+
+      if (status) {
+          val_print(AVS_PRINT_ERR, "\n       iovirt_get_device failed for bdf 0x%x", e_bdf);
+          val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
+          return;
+      }
+
+      /* MSI assignment */
+      status = val_gic_request_msi(erp_bdf, device_id, its_id, lpi_int_id + instance, msi_index);
+      if (status) {
+          val_print(AVS_PRINT_ERR, "\n       MSI Assignment failed for bdf : 0x%x", erp_bdf);
+          val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
+          return;
+      }
+
+      status = val_gic_install_isr(lpi_int_id + instance, intr_handler);
+
+      if (status) {
+          val_print(AVS_PRINT_ERR, "\n       Intr handler registration failed: 0x%x", lpi_int_id);
+          val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
+          return;
+      }
+
+      test_skip = 0;
+      val_pcie_find_capability(erp_bdf, PCIE_ECAP, ECID_AER, &rp_aer_offset);
+      val_pcie_read_cfg(erp_bdf, rp_aer_offset + AER_ROOT_ERR_CMD_OFFSET, &value);
+      val_pcie_write_cfg(erp_bdf, rp_aer_offset + AER_ROOT_ERR_CMD_OFFSET, (value | 0x7));
+
+      /* Errors not masked and severity is non-fatal */
+      mask_value = 0;
+      clear_status_bits(e_bdf, aer_offset, 0, 0);
+      if (inject_error(e_bdf, instance, aer_offset))
+      {
+          val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 03));
+          return;
+      }
+
+      /* Errors masked and severity is non-fatal */
+      mask_value = 1;
+      clear_status_bits(e_bdf, aer_offset, AER_ERROR_MASK, 0);
+      if (inject_error(e_bdf, instance, aer_offset))
+      {
+          val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 04));
+          return;
+      }
+      mask_value = 0;
+
+      /* Errors not masked and severity is fatal */
+      clear_status_bits(e_bdf, aer_offset, 0, AER_UNCORR_SEVR_FATAL);
+      if (inject_error(e_bdf, instance, aer_offset))
+      {
+          val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 05));
+          return;
+      }
+
+      /* Disable error reporting of Exerciser and upstream Root Port */
+      val_pcie_disable_eru(e_bdf);
+      val_pcie_disable_eru(erp_bdf);
+
+      /*
+       * Clear unsupported request detected bit in Exerciser upstream
+       * Rootport's Device Status Register to clear any pending urd status.
+       */
+      val_pcie_clear_urd(erp_bdf);
+      val_gic_free_msi(erp_bdf, device_id, its_id, lpi_int_id + instance, msi_index);
   }
 
-  val_memory_set(pgt_base_array, sizeof(uint64_t) * num_exercisers, 0);
-
-  /* Allocate a buffer to perform DMA tests on */
-  dram_buf_in_virt = val_memory_alloc_pages(TEST_DATA_NUM_PAGES);
-  if (!dram_buf_in_virt) {
-      val_print(AVS_PRINT_ERR, "\n       Cacheable mem alloc failure", 0);
-      val_memory_free_aligned(pgt_base_array);
-      val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 03));
-      return;
-  }
-
-  /* Set the virtual and physical addresses for test buffers */
-  dram_buf_in_phys = (uint64_t)val_memory_virt_to_phys(dram_buf_in_virt);
-  dram_buf_out_virt = dram_buf_in_virt + (test_data_blk_size / 2);
-  dram_buf_out_phys = dram_buf_in_phys + (test_data_blk_size / 2);
-  dma_len = test_data_blk_size / 2;
-
-  /* Get translation attributes via TCR and translation table base via TTBR */
-  if (val_pe_reg_read_tcr(0 /*for TTBR0*/,
-                          &pgt_desc.tcr)) {
-    val_print(AVS_PRINT_ERR, "\n       TCR read failure", 0);
-    goto test_fail;
-  }
-
-  if (val_pe_reg_read_ttbr(0 /*for TTBR0*/,
-                           &ttbr)) {
-    val_print(AVS_PRINT_ERR, "\n       TTBR0 read failure", 0);
-    goto test_fail;
-  }
-
-  /* Enable all SMMUs */
-  for (instance = 0; instance < num_smmus; ++instance)
-     val_smmu_enable(instance);
-
-  for (instance = 0; instance < num_exercisers; ++instance) {
-
-    /* if init fail moves to next exerciser */
-    if (val_exerciser_init(instance))
-        continue;
-
-    /* Get exerciser bdf */
-    e_bdf = val_exerciser_get_bdf(instance);
-    val_print(AVS_PRINT_DEBUG, "\n       Exerciser BDF - 0x%x", e_bdf);
-
-    /* If ATS Capability Not Present, Skip. */
-    if (val_pcie_find_capability(e_bdf, PCIE_ECAP, ECID_ATS, &cap_base) != PCIE_SUCCESS)
-        continue;
-
-    val_pcie_read_cfg(e_bdf, cap_base + ATS_CTRL, &reg_value);
-    reg_value |= ATS_CACHING_EN;
-    val_pcie_write_cfg(e_bdf, cap_base + ATS_CTRL, reg_value);
-
-    pgt_desc.pgt_base = (ttbr & AARCH64_TTBR_ADDR_MASK);
-    pgt_desc.mair = val_pe_reg_read(MAIR_ELx);
-    pgt_desc.stage = PGT_STAGE1;
-
-    /* Get memory attributes of the test buffer, we'll use the same attibutes to create
-     * our own page table later.
-     */
-    if (val_pgt_get_attributes(pgt_desc, (uint64_t)dram_buf_in_virt, &mem_desc->attributes)) {
-        val_print(AVS_PRINT_ERR, "\n       Unable to get memory attributes of the test buffer", 0);
-        goto test_fail;
-    }
-
-    /* Get SMMU node index for this exerciser instance */
-    master.smmu_index = val_iovirt_get_rc_smmu_index(PCIE_EXTRACT_BDF_SEG(e_bdf), PCIE_CREATE_BDF_PACKED(e_bdf));
-
-    clear_dram_buf(dram_buf_in_virt, test_data_blk_size);
-
-    dram_buf_in_iova = dram_buf_in_phys;
-    dram_buf_out_iova = dram_buf_out_phys;
-    if (master.smmu_index != AVS_INVALID_INDEX &&
-        val_iovirt_get_smmu_info(SMMU_CTRL_ARCH_MAJOR_REV, master.smmu_index) == 3) {
-        if (val_iovirt_get_device_info(PCIE_CREATE_BDF_PACKED(e_bdf),
-                                       PCIE_EXTRACT_BDF_SEG(e_bdf),
-                                       &device_id, &master.streamid,
-                                       &its_id))
-            continue;
-
-        /* Each exerciser instance accesses a unique IOVA, which, because of SMMU translations,
-         * will point to the same physical address. We create the requisite page tables and
-         * configure the SMMU for each exerciser as such.
-         */
-
-        mem_desc->virtual_address = (uint64_t)dram_buf_in_virt + instance * test_data_blk_size;
-        mem_desc->physical_address = dram_buf_in_phys;
-        mem_desc->length = test_data_blk_size;
-        mem_desc->attributes |= PGT_STAGE1_AP_RW;
-
-        /* Need to know input and output address sizes before creating page table */
-        pgt_desc.ias = val_smmu_get_info(SMMU_IN_ADDR_SIZE, master.smmu_index);
-        if ((pgt_desc.ias) == 0) {
-            val_print(AVS_PRINT_ERR,
-                          "\n       Input address size of SMMU %d is 0", master.smmu_index);
-            goto test_fail;
-        }
-
-        pgt_desc.oas = val_smmu_get_info(SMMU_OUT_ADDR_SIZE, master.smmu_index);
-        if ((pgt_desc.oas) == 0) {
-            val_print(AVS_PRINT_ERR,
-                          "\n       Output address size of SMMU %d is 0", master.smmu_index);
-            goto test_fail;
-        }
-
-        /* set pgt_desc.pgt_base to NULL to create new translation table, val_pgt_create
-           will update pgt_desc.pgt_base to point to created translation table */
-        pgt_desc.pgt_base = (uint64_t) NULL;
-        if (val_pgt_create(mem_desc, &pgt_desc)) {
-            val_print(AVS_PRINT_ERR,
-                      "\n       Unable to create page table with given attributes", 0);
-            goto test_fail;
-        }
-
-        pgt_base_array[instance] = pgt_desc.pgt_base;
-
-        /* Configure the SMMU tables for this exerciser to use this page table for VA to PA translations*/
-        if (val_smmu_map(master, pgt_desc))
-        {
-            val_print(AVS_PRINT_ERR, "\n       SMMU mapping failed (%x)     ", e_bdf);
-            goto test_fail;
-        }
-
-        dram_buf_in_iova = mem_desc->virtual_address;
-        dram_buf_out_iova = dram_buf_in_iova + (test_data_blk_size / 2);
-    }
-
-    test_skip = 0;
-
-    val_exerciser_set_param(DMA_ATTRIBUTES, (uint64_t)dram_buf_in_virt + instance * test_data_blk_size, dma_len, instance);
-
-    /* Send an ATS Translation Request for the VA */
-    if (val_exerciser_ops(ATS_TXN_REQ, (uint64_t)dram_buf_in_virt + instance * test_data_blk_size, instance)) {
-        val_print(AVS_PRINT_ERR, "\n       ATS Translation Req Failed exerciser %4x", instance);
-        goto test_fail;
-    }
-
-    /* Get ATS Translation Response */
-    m_vir_addr = (uint64_t)dram_buf_in_virt + instance * test_data_blk_size;
-    if (val_exerciser_get_param(ATS_RES_ATTRIBUTES, &translated_addr, &m_vir_addr, instance)) {
-        val_print(AVS_PRINT_ERR, "\n       ATS Response failure %4x", instance);
-        goto test_fail;
-    }
-
-    /* Compare Translated Addr with Physical Address from the Mappings */
-    if (translated_addr != dram_buf_in_phys) {
-        val_print(AVS_PRINT_ERR, "\n       ATS Translation failure %4x", instance);
-        goto test_fail;
-    }
-
-    /* Initialize the sender buffer with test specific data */
-    write_test_data(dram_buf_in_virt, dma_len);
-
-    /* Configure Exerciser to issue subsequent DMA transactions with AT(Address Translated) bit Set */
-    val_exerciser_set_param(CFG_TXN_ATTRIBUTES, TXN_ADDR_TYPE, AT_TRANSLATED, instance);
-
-    if (val_exerciser_set_param(DMA_ATTRIBUTES, dram_buf_in_phys, dma_len, instance)) {
-        val_print(AVS_PRINT_ERR, "\n       DMA attributes setting failure %4x", instance);
-        goto test_fail;
-    }
-
-    /* Trigger DMA from input buffer to exerciser memory */
-    if (val_exerciser_ops(START_DMA, EDMA_TO_DEVICE, instance)) {
-        val_print(AVS_PRINT_ERR, "\n       DMA write failure to exerciser %4x", instance);
-        goto test_fail;
-    }
-
-    if (val_exerciser_set_param(DMA_ATTRIBUTES, dram_buf_out_iova, dma_len, instance)) {
-        val_print(AVS_PRINT_ERR, "\n       DMA attributes setting failure %4x", instance);
-        goto test_fail;
-    }
-
-    /* Trigger DMA from exerciser memory to output buffer*/
-    if (val_exerciser_ops(START_DMA, EDMA_FROM_DEVICE, instance)) {
-        val_print(AVS_PRINT_ERR, "\n       DMA read failure from exerciser %4x", instance);
-        goto test_fail;
-    }
-
-    if (val_memory_compare(dram_buf_in_virt, dram_buf_out_virt, dma_len)) {
-        val_print(AVS_PRINT_ERR, "\n       Data Comparasion failure for Exerciser %4x", instance);
-        goto test_fail;
-    }
-
-
-    clear_dram_buf(dram_buf_in_virt, test_data_blk_size);
-
-  }
-
-  if (test_skip)
-    val_set_status(pe_index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
+  if (test_skip == 1)
+      val_set_status(pe_index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
   else
-    val_set_status(pe_index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
+      val_set_status(pe_index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
 
-  goto test_clean;
+  return;
 
-test_fail:
-  val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
-
-test_clean:
-  /* Return the pages to the heap manager */
-  val_memory_free_pages(dram_buf_in_virt, TEST_DATA_NUM_PAGES);
-
-  /* Remove all address mappings for each exerciser */
-  for (instance = 0; instance < num_exercisers; ++instance)
-  {
-    e_bdf = val_exerciser_get_bdf(instance);
-    master.smmu_index = val_iovirt_get_rc_smmu_index(PCIE_EXTRACT_BDF_SEG(e_bdf), PCIE_CREATE_BDF_PACKED(e_bdf));
-    if (val_iovirt_get_device_info(PCIE_CREATE_BDF_PACKED(e_bdf),
-                                   PCIE_EXTRACT_BDF_SEG(e_bdf),
-                                   &device_id, &master.streamid,
-                                   &its_id))
-        continue;
-
-    val_smmu_unmap(master);
-
-    if (pgt_base_array[instance] != 0) {
-      pgt_desc.pgt_base = pgt_base_array[instance];
-      val_pgt_destroy(pgt_desc);
-    }
-
-    if (val_pcie_find_capability(e_bdf, PCIE_ECAP, ECID_ATS, &cap_base) == PCIE_SUCCESS)
-    {
-        val_pcie_read_cfg(e_bdf, cap_base + ATS_CTRL, &reg_value);
-        reg_value &= ATS_CACHING_DIS;
-        val_pcie_write_cfg(e_bdf, cap_base + ATS_CTRL, reg_value);
-    }
-
-  }
-
-  /* Disable all SMMUs */
-  for (instance = 0; instance < num_smmus; ++instance)
-     val_smmu_disable(instance);
-
-  val_memory_free_aligned(pgt_base_array);
 }
-
 
 uint32_t
 e006_entry(void)

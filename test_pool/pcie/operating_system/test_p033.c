@@ -23,7 +23,7 @@
 
 #define TEST_NUM   (AVS_PCIE_TEST_NUM_BASE + 33)
 #define TEST_DESC  "Check Max payload size supported  "
-#define TEST_RULE  "RE_REC_1, RE_REC_2"
+#define TEST_RULE  "RE_REC_1, IE_REG_2, IE_REG_4"
 
 static
 void
@@ -35,6 +35,7 @@ payload(void)
   uint32_t tbl_index;
   uint32_t reg_value;
   uint32_t max_payload_value;
+  uint32_t dp_type;
   uint32_t test_fails;
   uint32_t test_skip = 1;
   uint32_t cap_base;
@@ -49,6 +50,13 @@ payload(void)
   while (tbl_index < bdf_tbl_ptr->num_entries)
   {
       bdf = bdf_tbl_ptr->device[tbl_index++].bdf;
+      dp_type = val_pcie_device_port_type(bdf);
+
+      /* Check entry is RCiEP/ RCEC/ iEP. Else move to next BDF. */
+      if ((dp_type != iEP_EP) && (dp_type != iEP_RP)
+           && (dp_type != RCEC) && (dp_type != RCiEP))
+          continue;
+
       val_print(AVS_PRINT_DEBUG, "\n       BDF - 0x%x", bdf);
 
       /* Retrieve the addr of PCI express capability (10h) */

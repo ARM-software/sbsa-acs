@@ -23,6 +23,7 @@ extern PLATFORM_OVERRIDE_NODE_DATA platform_node_type;
 extern PLATFORM_OVERRIDE_SMMU_NODE_DATA platform_smmu_node_data;
 extern PLATFORM_OVERRIDE_PMCG_NODE_DATA platform_pmcg_node_data;
 extern PLATFORM_OVERRIDE_NAMED_NODE_DATA platform_named_node_data;
+extern PLATFORM_OVERRIDE_CS_COMP_NODE_DATA platform_cs_comp_node_data;
 
 uint64_t
 pal_iovirt_get_rc_smmu_base (
@@ -128,7 +129,7 @@ dump_block(IOVIRT_BLOCK *block) {
       return;
       case IOVIRT_NODE_NAMED_COMPONENT:
       print(AVS_PRINT_INFO,
-                 " Named Component:\n Device Name:%a", block->data.named_comp.name);
+                 " Named Component:\n Device Name:%s", block->data.named_comp.name);
       print(AVS_PRINT_INFO, "\n CCA Attribute: 0x%lx\n", block->data.named_comp.cca);
       break;
       case IOVIRT_NODE_PCI_ROOT_COMPLEX:
@@ -167,8 +168,7 @@ pal_iovirt_create_info_table(IOVIRT_INFO_TABLE *IoVirtTable)
   NODE_DATA_MAP *data_map;
   uint32_t node[IORT_NODE_COUNT];
   uint32_t identifier[5][1] ={{0}, {1}, {2}, {3}, {4}};
-  char device_name[1][5] = {"DMA"};
-  uint32_t j, k = 0, m = 0, i = 0, z = 0, n = 0;
+  uint32_t j, k = 0, m = 0, i = 0, z = 0, n = 0, p = 0;
 
   if (IoVirtTable == NULL)
     return;
@@ -201,11 +201,14 @@ pal_iovirt_create_info_table(IOVIRT_INFO_TABLE *IoVirtTable)
              IoVirtTable->num_its_groups++;
              break;
           case IOVIRT_NODE_NAMED_COMPONENT:
-             strncpy(block->data.named_comp.name, device_name[0], MAX_NAMED_COMP_LENGTH);
-             block->data.named_comp.cca = (platform_named_node_data.named[n].memory_properties) & IOVIRT_CCA_MASK;
+             strncpy(block->data.named_comp.name, platform_named_node_data.named[n].name,
+                        MAX_NAMED_COMP_LENGTH);
+             block->data.named_comp.cca =
+                    (platform_named_node_data.named[n].memory_properties) & IOVIRT_CCA_MASK;
              block->data.named_comp.smmu_base = platform_named_node_data.named[n].smmu_base;
              block->num_data_map = platform_iovirt_cfg.num_map[i];
              IoVirtTable->num_named_components++;
+             n++;
              break;
           case IOVIRT_NODE_PCI_ROOT_COMPLEX:
              block->data.rc.segment = platform_node_type.rc.segment;
@@ -234,10 +237,13 @@ pal_iovirt_create_info_table(IOVIRT_INFO_TABLE *IoVirtTable)
              k++;
              break;
           case IOVIRT_NODE_PMCG:
-             block->data.pmcg.base = platform_pmcg_node_data.pmcg[i].base;
-             block->data.pmcg.overflow_gsiv = platform_pmcg_node_data.pmcg[i].overflow_gsiv;
+             block->data.pmcg.base = platform_pmcg_node_data.pmcg[p].base;
+             block->data.pmcg.overflow_gsiv = platform_pmcg_node_data.pmcg[p].overflow_gsiv;
+             /* if the PMCG node is associated with a SMMU, store SMMU base */
+             block->data.pmcg.smmu_base = platform_pmcg_node_data.pmcg[p].smmu_base;
              block->num_data_map = platform_iovirt_cfg.num_map[i];
              IoVirtTable->num_pmcgs++;
+             p++;
              break;
           default:
              print(AVS_PRINT_ERR, "Invalid IORT node type\n");
@@ -313,4 +319,35 @@ pal_iovirt_unique_rid_strid_map(uint64_t rc_block)
   if(block->flags & (1 << IOVIRT_FLAG_STRID_OVERLAP_SHIFT))
     return 0;
   return 1;
+}
+
+/**
+  @brief  Check the hid and copy the full path of hid
+
+  @param  hid      hardware ID to get the path for
+  @param  hid_path 2D array in which the path is copied
+
+  @return 1 if test fails, 0 if test passes
+**/
+uint32_t
+pal_get_device_path(const char *hid, char hid_path[][MAX_NAMED_COMP_LENGTH])
+{
+  uint32_t i, cmp;
+  uint32_t status = 1;
+
+  /* Iterate through components and add device name of the component to the array
+     if hid of the component is matched */
+  for (i = 0; i < CS_COMPONENT_COUNT; i++) {
+      cmp = strncmp(hid, platform_cs_comp_node_data.component[i].identifier, MAX_CS_COMP_LENGTH);
+      if (!cmp) {
+          status = 0;
+          strncpy(hid_path[i],
+                  platform_cs_comp_node_data.component[i].dev_name, MAX_CS_COMP_LENGTH);
+      }
+  }
+
+  if (status)
+      return 1;  // return 1 if there's no entry in hid_path
+
+  return 0;
 }

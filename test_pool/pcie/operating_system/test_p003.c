@@ -119,7 +119,7 @@ payload(void)
                   if (val_pcie_find_capability(bdf, PCIE_CAP, CID_PCIECS,  &data) != PCIE_SUCCESS)
                   {
                     val_print(AVS_PRINT_DEBUG,
-                              "\n       PCIe Cap Structure not found for BDF 0x%x", bdf);
+                              "\n       Skipping legacy PCI device with BDF 0x%x", bdf);
                     continue;
                   }
 
@@ -142,7 +142,7 @@ payload(void)
                else{
                   val_pcie_read_cfg(bdf, PCIE_ECAP_START, &data);
 
-                  /* Returned data should be FF's, otherwise the test should fail */
+                  /* Returned data must be FF's, otherwise the test must fail */
                   if (data != PCIE_UNKNOWN_RESPONSE) {
                      val_print(AVS_PRINT_ERR, "\n       Incorrect data for Bdf 0x%x    ", bdf);
                      val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM,
@@ -152,7 +152,7 @@ payload(void)
 
                   val_pcie_read_cfg(bdf, PCIE_ECAP_END, &data);
 
-                  /* Returned data should be FF's, otherwise the test should fail */
+                  /* Returned data must be FF's, otherwise the test must fail */
                   if (data != PCIE_UNKNOWN_RESPONSE) {
                      val_print(AVS_PRINT_ERR, "\n       Incorrect data for Bdf 0x%x    ", bdf);
                      val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM,

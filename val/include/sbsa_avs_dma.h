@@ -37,7 +37,8 @@
 
 addr_t val_dma_mem_alloc(void **buffer, uint32_t size, uint32_t dev_index, uint32_t flags);
 
-void val_dma_mem_free(void *buffer, dma_addr_t mem_dma, uint32_t size, uint32_t dev_index, uint32_t flags);
+void val_dma_mem_free(void *buffer, dma_addr_t mem_dma, uint32_t size, uint32_t dev_index,
+                                                                                  uint32_t flags);
 
 void val_dma_free_info_table(void);
 

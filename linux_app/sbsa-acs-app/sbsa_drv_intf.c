@@ -83,6 +83,7 @@ call_drv_init_test_env(unsigned int print_level)
 {
     FILE             *fd = NULL;
     sbsa_drv_parms_t test_params;
+    int status = 0;
 
     fd = fopen("/proc/sbsa", "rw+");
 
@@ -100,8 +101,9 @@ call_drv_init_test_env(unsigned int print_level)
 
     fclose(fd);
 
-    call_drv_wait_for_completion();
+    status = call_drv_wait_for_completion();
 
+    return status;
 }
 
 int

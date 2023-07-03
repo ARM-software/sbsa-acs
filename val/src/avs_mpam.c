@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2023 Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2023, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -36,6 +36,7 @@ uint32_t
 val_mpam_execute_tests(uint32_t level, uint32_t num_pe)
 {
   uint32_t status = AVS_STATUS_FAIL, i;
+  uint32_t skip_module;
   uint32_t msc_node_cnt;
 
   for (i = 0; i < g_num_skip; i++) {
@@ -45,12 +46,10 @@ val_mpam_execute_tests(uint32_t level, uint32_t num_pe)
       }
   }
 
-  if (g_single_module != SINGLE_MODULE_SENTINEL && g_single_module != AVS_MPAM_TEST_NUM_BASE &&
-    (g_single_test == SINGLE_MODULE_SENTINEL ||
-      (g_single_test - AVS_MPAM_TEST_NUM_BASE > 100 ||
-        g_single_test - AVS_MPAM_TEST_NUM_BASE < 0))) {
-      val_print(AVS_PRINT_TEST, " USER Override - Skipping all MPAM tests \n", 0);
-      val_print(AVS_PRINT_TEST, " (Running only a single module)\n", 0);
+  /* Check if there are any tests to be executed in the current module with user override*/
+  skip_module = val_check_skip_module(AVS_MPAM_TEST_NUM_BASE);
+  if (skip_module) {
+      val_print(AVS_PRINT_TEST, "\n USER Override - Skipping all MPAM tests \n", 0);
       return AVS_STATUS_SKIP;
   }
 
@@ -61,11 +60,11 @@ val_mpam_execute_tests(uint32_t level, uint32_t num_pe)
       return AVS_STATUS_SKIP;
   }
 
+  val_print_test_start("MPAM");
   g_curr_module = 1 << MPAM_MODULE;
 
   /* run tests which don't check MPAM MSCs */
-  if (g_sbsa_level > 6)
-      status = mpam001_entry(num_pe);
+  status = mpam001_entry(num_pe);
 
   msc_node_cnt = val_mpam_get_msc_count();
   if (msc_node_cnt == 0) {
@@ -74,14 +73,12 @@ val_mpam_execute_tests(uint32_t level, uint32_t num_pe)
       return AVS_STATUS_SKIP;
   }
 
-  if (g_sbsa_level > 6) {
-      status |= mpam002_entry(num_pe);
-      status |= mpam003_entry(num_pe);
-      status |= mpam004_entry(num_pe);
-      status |= mpam005_entry(num_pe);
-      status |= mpam006_entry(num_pe);
-      val_print_test_end(status, "MPAM");
-  }
+  status |= mpam002_entry(num_pe);
+  status |= mpam003_entry(num_pe);
+  status |= mpam004_entry(num_pe);
+  status |= mpam005_entry(num_pe);
+  status |= mpam006_entry(num_pe);
+  val_print_test_end(status, "MPAM");
 
   return status;
 }
@@ -349,7 +346,7 @@ val_mpam_msc_supports_mon(uint32_t msc_index)
     addr_t base;
 
     base = val_mpam_get_info(MPAM_MSC_BASE_ADDR, msc_index, 0);
-    return BITFIELD_READ(IDR_HAS_MSMON, val_mmio_read(base + REG_MPAMF_IDR));
+    return BITFIELD_READ(IDR_HAS_MSMON, val_mmio_read64(base + REG_MPAMF_IDR));
 }
 
 /**
@@ -363,7 +360,7 @@ val_mpam_supports_cpor(uint32_t msc_index)
     addr_t base;
 
     base = val_mpam_get_info(MPAM_MSC_BASE_ADDR, msc_index, 0);
-    return BITFIELD_READ(IDR_HAS_CPOR_PART, val_mmio_read(base + REG_MPAMF_IDR));
+    return BITFIELD_READ(IDR_HAS_CPOR_PART, val_mmio_read64(base + REG_MPAMF_IDR));
 }
 
 /**
@@ -378,7 +375,7 @@ val_mpam_msc_supports_ris(uint32_t msc_index)
     addr_t base;
 
     base = val_mpam_get_info(MPAM_MSC_BASE_ADDR, msc_index, 0);
-    return BITFIELD_READ(IDR_HAS_RIS, val_mmio_read(base + REG_MPAMF_IDR));
+    return BITFIELD_READ(IDR_HAS_RIS, val_mmio_read64(base + REG_MPAMF_IDR));
 }
 
 /**
@@ -633,7 +630,7 @@ val_mpam_memory_mbwumon_read_count(uint32_t msc_index)
         }
         else {
             // (44 bits)
-            if (BITFIELD_READ(MSMON_MBWU_L_NRDY, val_mmio_read64(base + REG_MSMON_MBWU_L) == 0))
+            if (BITFIELD_READ(MSMON_MBWU_L_NRDY, val_mmio_read64(base + REG_MSMON_MBWU_L)) == 0)
                 count = BITFIELD_READ(MSMON_MBWU_L_44BIT_VALUE,
                                       val_mmio_read64(base + REG_MSMON_MBWU_L));
         }
@@ -862,7 +859,7 @@ val_mpam_get_max_pmg(uint32_t msc_index)
     addr_t base;
 
     base = val_mpam_get_info(MPAM_MSC_BASE_ADDR, msc_index, 0);
-    return BITFIELD_READ(IDR_PMG_MAX, val_mmio_read(base + REG_MPAMF_IDR));
+    return BITFIELD_READ(IDR_PMG_MAX, val_mmio_read64(base + REG_MPAMF_IDR));
 }
 
 /**
@@ -876,7 +873,7 @@ val_mpam_get_max_partid(uint32_t msc_index)
     addr_t base;
 
     base = val_mpam_get_info(MPAM_MSC_BASE_ADDR, msc_index, 0);
-    return BITFIELD_READ(IDR_PARTID_MAX, val_mmio_read(base + REG_MPAMF_IDR));
+    return BITFIELD_READ(IDR_PARTID_MAX, val_mmio_read64(base + REG_MPAMF_IDR));
 }
 
 /**

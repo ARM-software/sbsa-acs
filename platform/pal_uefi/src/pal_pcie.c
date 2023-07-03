@@ -25,6 +25,7 @@
 #include "Include/IndustryStandard/Pci.h"
 #include "Include/IndustryStandard/Pci22.h"
 #include <Protocol/PciIo.h>
+#include <Protocol/PciRootBridgeIo.h>
 
 #include "include/platform_override.h"
 #include "include/pal_uefi.h"
@@ -154,6 +155,7 @@ pal_pcie_io_read_cfg(UINT32 Bdf, UINT32 offset, UINT32 *data)
       Pci->GetLocation (Pci, &Seg, &Bus, &Dev, &Func);
       if (InputSeg == Seg && InputBus == Bus && InputDev == Dev && InputFunc == Func) {
           Status = Pci->Pci.Read (Pci, EfiPciIoWidthUint32, offset, 1, data);
+          pal_mem_free(HandleBuffer);
           if (!EFI_ERROR (Status))
             return 0;
           else
@@ -161,6 +163,8 @@ pal_pcie_io_read_cfg(UINT32 Bdf, UINT32 offset, UINT32 *data)
       }
     }
   }
+
+  pal_mem_free(HandleBuffer);
   return PCIE_NO_MAPPING;
 }
 
@@ -206,6 +210,103 @@ pal_pcie_io_write_cfg(UINT32 Bdf, UINT32 offset, UINT32 data)
       }
     }
   }
+
+  pal_mem_free(HandleBuffer);
+}
+
+/**
+    @brief   Reads 32-bit data from BAR space pointed by Bus,
+             Device, Function and register offset, using UEFI PciRootBridgeIoProtocol
+
+    @param   Bdf     - BDF value for the device
+    @param   address - BAR memory address
+    @param   *data   - 32 bit value at BAR address
+    @return  success/failure
+**/
+UINT32
+pal_pcie_bar_mem_read(UINT32 Bdf, UINT64 address, UINT32 *data)
+{
+
+  EFI_STATUS                       Status;
+  EFI_PCI_ROOT_BRIDGE_IO_PROTOCOL  *Pci;
+  UINTN                            HandleCount;
+  EFI_HANDLE                       *HandleBuffer;
+  UINT32                           Index;
+  UINT32                           InputSeg;
+
+
+  Status = gBS->LocateHandleBuffer (ByProtocol, &gEfiPciRootBridgeIoProtocolGuid, NULL, &HandleCount, &HandleBuffer);
+  if (EFI_ERROR (Status)) {
+    sbsa_print(AVS_PRINT_INFO,L" No Root Bridge found in the system\n");
+    return PCIE_NO_MAPPING;
+  }
+
+  InputSeg = PCIE_EXTRACT_BDF_SEG(Bdf);
+
+  for (Index = 0; Index < HandleCount; Index++) {
+    Status = gBS->HandleProtocol (HandleBuffer[Index], &gEfiPciRootBridgeIoProtocolGuid, (VOID **)&Pci);
+    if (!EFI_ERROR (Status)) {
+      if (Pci->SegmentNumber == InputSeg) {
+          Status = Pci->Mem.Read (Pci, EfiPciIoWidthUint32, address, 1, data);
+          pal_mem_free(HandleBuffer);
+          if (!EFI_ERROR (Status))
+            return 0;
+          else
+            return PCIE_NO_MAPPING;
+      }
+    }
+  }
+
+  pal_mem_free(HandleBuffer);
+  return PCIE_NO_MAPPING;
+}
+
+/**
+    @brief   Write 32-bit data to BAR space pointed by Bus,
+             Device, Function and register offset, using UEFI PciRootBridgeIoProtocol
+
+    @param   Bdf     - BDF value for the device
+    @param   address - BAR memory address
+    @param   data    - 32 bit value to writw BAR address
+    @return  success/failure
+**/
+
+UINT32
+pal_pcie_bar_mem_write(UINT32 Bdf, UINT64 address, UINT32 data)
+{
+
+  EFI_STATUS                       Status;
+  EFI_PCI_ROOT_BRIDGE_IO_PROTOCOL  *Pci;
+  UINTN                            HandleCount;
+  EFI_HANDLE                       *HandleBuffer;
+  UINT32                           Index;
+  UINT32                           InputSeg;
+
+
+  Status = gBS->LocateHandleBuffer (ByProtocol, &gEfiPciRootBridgeIoProtocolGuid, NULL, &HandleCount, &HandleBuffer);
+  if (EFI_ERROR (Status)) {
+    sbsa_print(AVS_PRINT_INFO,L" No Root Bridge found in the system\n");
+    return PCIE_NO_MAPPING;
+  }
+
+  InputSeg = PCIE_EXTRACT_BDF_SEG(Bdf);
+
+  for (Index = 0; Index < HandleCount; Index++) {
+    Status = gBS->HandleProtocol (HandleBuffer[Index], &gEfiPciRootBridgeIoProtocolGuid, (VOID **)&Pci);
+    if (!EFI_ERROR (Status)) {
+      if (Pci->SegmentNumber == InputSeg) {
+          Status = Pci->Mem.Write (Pci, EfiPciIoWidthUint32, address, 1, &data);
+          pal_mem_free(HandleBuffer);
+          if (!EFI_ERROR (Status))
+            return 0;
+          else
+            return PCIE_NO_MAPPING;
+      }
+    }
+  }
+
+  pal_mem_free(HandleBuffer);
+  return PCIE_NO_MAPPING;
 }
 
 /**

@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2019-2023, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2023, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -26,175 +26,183 @@
 #include "val/include/sbsa_avs_exerciser.h"
 
 #define TEST_NUM   (AVS_EXERCISER_TEST_NUM_BASE + 5)
-#define TEST_DESC  "Check BME functionality of RP     "
-#define TEST_RULE  "IE_REG_3, PCI_IN_05"
+#define TEST_DESC  "PE 2/4/8B writes tp PCIe as 2/4/8B"
+#define TEST_RULE  "S_PCIe_03"
 
-#define TEST_DATA_NUM_PAGES  1
+static uint32_t transaction_size = 4;
+static uint32_t run_flag;
+static uint32_t fail_cnt;
 
-static void *branch_to_test;
-
-/*
- * Execption is not expected in this test scenario.
- * The handler is present just as a fail-safe mechanism.
- */
-static
-void
-esr(uint64_t interrupt_type, void *context)
+static uint32_t test_sequence_check(uint32_t instance, uint64_t write_value)
 {
+  uint64_t idx;
+  uint64_t transaction_data;
 
-  /* Update the ELR to return to test specified address */
-  val_pe_update_elr(context, (uint64_t)branch_to_test);
+  for (idx = 0; idx < transaction_size; idx++) {
+      val_exerciser_get_param(DATA_ATTRIBUTES, &transaction_data, &idx, instance);
+      if (transaction_data !=  write_value) {
+          val_print(AVS_PRINT_ERR, "\n       Exerciser %d arrival order check failed", instance);
+          return 1;
+      }
+  }
 
-  val_print(AVS_PRINT_INFO, "\n       Received exception of type: %d", interrupt_type);
+  return 0;
 }
 
+/* Performs write on 2B data */
+static uint32_t test_sequence_2B(uint16_t *addr, uint32_t instance)
+{
+  uint32_t e_bdf;
+  uint64_t idx;
+  uint64_t write_val = 0xABCD;
 
+  e_bdf = val_exerciser_get_bdf(instance);
+
+  /* Start monitoring exerciser transactions */
+  if (val_exerciser_ops(START_TXN_MONITOR, CFG_READ, instance)) {
+      val_print(AVS_PRINT_DEBUG,
+               "\n       Exerciser BDF 0x%x - Unable to start transaction monitoring", e_bdf);
+      return AVS_STATUS_SKIP;
+  }
+
+  run_flag = 1;
+
+  /* Send the transaction on incremental addresses */
+  for (idx = 0; idx < transaction_size; idx++) {
+      /* Write transaction */
+      val_mmio_write16((addr_t)addr, write_val);
+      addr++;
+  }
+
+  /* Stop monitoring exerciser transactions */
+  val_exerciser_ops(STOP_TXN_MONITOR, CFG_READ, instance);
+
+  return test_sequence_check(instance, write_val);
+}
+
+/* Performs write on 4B data */
+static uint32_t test_sequence_4B(uint32_t *addr, uint32_t instance)
+{
+  uint32_t e_bdf;
+  uint64_t idx;
+  uint64_t write_val = 0xC0DEC0DE;
+
+  e_bdf = val_exerciser_get_bdf(instance);
+
+  /* Start monitoring exerciser transactions */
+  if (val_exerciser_ops(START_TXN_MONITOR, CFG_READ, instance)) {
+      val_print(AVS_PRINT_DEBUG,
+               "\n       Exerciser BDF 0x%x - Unable to start transaction monitoring", e_bdf);
+      return AVS_STATUS_SKIP;
+  }
+
+  run_flag = 1;
+
+  /* Send the transaction on incremental addresses */
+  for (idx = 0; idx < transaction_size; idx++) {
+      val_mmio_write((addr_t)addr, write_val);
+      addr++;
+  }
+
+  /* Stop monitoring exerciser transactions */
+  val_exerciser_ops(STOP_TXN_MONITOR, CFG_READ, instance);
+
+  return test_sequence_check(instance, write_val);
+}
+
+/* Performs write on 8B data */
+static uint32_t test_sequence_8B(uint64_t *addr, uint32_t instance)
+{
+  uint32_t e_bdf;
+  uint64_t idx;
+  uint64_t write_val = 0xCAFECAFECAFECAFE;
+
+  e_bdf = val_exerciser_get_bdf(instance);
+
+  /* Start monitoring exerciser transactions */
+  if (val_exerciser_ops(START_TXN_MONITOR, CFG_READ, instance)) {
+      val_print(AVS_PRINT_DEBUG,
+               "\n       Exerciser BDF 0x%x - Unable to start transaction monitoring", e_bdf);
+      return AVS_STATUS_SKIP;
+  }
+
+  run_flag = 1;
+
+  /* Send the transaction on incremental addresses */
+  for (idx = 0; idx < transaction_size; idx++) {
+      /* Write transaction */
+      val_mmio_write64((addr_t)addr, write_val);
+      addr++;
+  }
+
+  /* Stop monitoring exerciser transactions */
+  val_exerciser_ops(STOP_TXN_MONITOR, CFG_READ, instance);
+
+  return test_sequence_check(instance, write_val);
+}
+
+/* Read and Write on BAR space mapped to Device memory */
+static
+void
+barspace_transactions_order_check(void)
+{
+  uint32_t instance;
+  exerciser_data_t e_data;
+  char *baseptr;
+  uint32_t status;
+
+  /* Read the number of excerciser cards */
+  instance = val_exerciser_get_info(EXERCISER_NUM_CARDS, 0);
+
+  while (instance-- != 0) {
+
+    /* if init fail moves to next exerciser */
+    if (val_exerciser_init(instance))
+        continue;
+
+    /* Get BAR 0 details for this instance */
+    status = val_exerciser_get_data(EXERCISER_DATA_MMIO_SPACE, &e_data, instance);
+    if (status == NOT_IMPLEMENTED) {
+        val_print(AVS_PRINT_ERR, "\n       pal_exerciser_get_data() for MMIO not implemented", 0);
+        continue;
+    } else if (status) {
+        val_print(AVS_PRINT_ERR, "\n       Exerciser %d data read error     ", instance);
+        continue;
+    }
+
+    /* Map mmio space to ARM device memory in MMU page tables */
+    baseptr = (char *)e_data.bar_space.base_addr;
+    if (!baseptr) {
+        val_print(AVS_PRINT_ERR, "\n       Failed in BAR ioremap for instance %x", instance);
+        continue;
+    }
+
+    /* Test Scenario 1 : Transactions on incremental aligned address */
+    fail_cnt += test_sequence_2B((uint16_t *)baseptr, instance);
+    fail_cnt += test_sequence_4B((uint32_t *)baseptr, instance);
+    fail_cnt += test_sequence_8B((uint64_t *)baseptr, instance);
+  }
+}
 
 static
 void
 payload(void)
 {
-
   uint32_t pe_index;
-  uint32_t e_bdf;
-  uint32_t erp_bdf;
-  uint32_t instance;
-  uint64_t bar_base;
-  uint32_t fail_cnt;
-  uint32_t smmu_index;
-  uint32_t dma_len;
-  uint32_t status;
-  uint32_t reg_value;
-  void *dram_buf_virt;
-  void *dram_buf_phys;
-  void *dram_buf_iova;
-  uint32_t page_size = val_memory_page_size();
 
-  fail_cnt = 0;
-  pe_index = val_pe_get_index_mpid(val_pe_get_mpid());
-  instance = val_exerciser_get_info(EXERCISER_NUM_CARDS, 0);
+  pe_index = val_pe_get_index_mpid (val_pe_get_mpid());
 
-  /* Install sync and async handlers to handle exceptions.*/
-  status = val_pe_install_esr(EXCEPT_AARCH64_SYNCHRONOUS_EXCEPTIONS, esr);
-  status |= val_pe_install_esr(EXCEPT_AARCH64_SERROR, esr);
-  if (status)
-  {
-      val_print(AVS_PRINT_ERR, "\n       Failed in installing the exception handler", 0);
-      val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
+  barspace_transactions_order_check();
+
+  if (!run_flag) {
+      val_set_status(pe_index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
       return;
   }
-
-  branch_to_test = &&exception_return;
-
-  /* Create a buffer of size TEST_DMA_SIZE in DRAM */
-  dram_buf_virt = val_memory_alloc_pages(TEST_DATA_NUM_PAGES);
-
-  if (!dram_buf_virt)
-  {
-      val_print(AVS_PRINT_ERR,
-            "\n       Unable to allocate memory for buffer of %x pages", TEST_DATA_NUM_PAGES);
-      val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
-      return;
-  }
-
-  dram_buf_phys = val_memory_virt_to_phys(dram_buf_virt);
-  dma_len = page_size * TEST_DATA_NUM_PAGES;;
-
-  while (instance-- != 0) {
-
-      /* if init fail moves to next exerciser */
-      if (val_exerciser_init(instance))
-          continue;
-
-     e_bdf = val_exerciser_get_bdf(instance);
-     val_print(AVS_PRINT_DEBUG, "\n       Exerciser BDF - 0x%x", e_bdf);
-
-      /* Skip this exerciser if it doesn't have mmio BAR */
-      val_pcie_get_mmio_bar(e_bdf, &bar_base);
-      if (!bar_base) {
-        val_print(AVS_PRINT_DEBUG,
-                 "\n       Exerciser 0x%x does not have MMIO BAR. Skipping exerciser.", e_bdf);
-        continue;
-      }
-
-      /*
-       * Disable Bus Master Enable bit in Exierciser upstream Root
-       * Port Command Register. This bit controls forwarding of
-       * Memory Requests by a Root Port in the Upstream direction.
-       * When this bit is 0b, Memory Requests received at a Root Port
-       * must be handled as Unsupported Requests (UR).
-       */
-      if (!val_exerciser_get_rootport(e_bdf, &erp_bdf))
-          val_pcie_disable_bme(erp_bdf);
-      else
-          continue;
-
-      /* Disable error reporting of Exerciser upstream Root Port */
-      val_pcie_disable_eru(erp_bdf);
-
-      /*
-       * Clear unsupported request detected bit in Exerciser upstream
-       * Rootport's Device Status Register to clear any pending urd status.
-       */
-      val_pcie_clear_urd(erp_bdf);
-
-      /*
-       * Get SMMU node index for this exerciser instance to convert
-       * the dram physical addresses to IOVA addresses for DMA purposes.
-       */
-      smmu_index = val_iovirt_get_rc_smmu_index(PCIE_EXTRACT_BDF_SEG(e_bdf), PCIE_CREATE_BDF_PACKED(e_bdf));
-      if (smmu_index == AVS_INVALID_INDEX)
-          dram_buf_iova = dram_buf_phys;
-      else
-          dram_buf_iova = (void *) val_smmu_pa2iova(smmu_index, (uint64_t)dram_buf_phys);
-
-      /*
-       * Issue a Memory Read request from exerciser to cause unsupported
-       * request detected bit set in exercise's Device Status Register.
-       * Based on platform configuration, this may even cause a
-       * sync/async exception.
-       */
-      val_exerciser_set_param(DMA_ATTRIBUTES, (uint64_t)dram_buf_iova, dma_len, instance);
-      val_exerciser_ops(START_DMA, EDMA_TO_DEVICE, instance);
-
-exception_return:
-      /* Check if UR detected bit isn't set in the Root Port */
-      if (val_pcie_is_urd(erp_bdf))
-      {
-          /* Clear urd bit in Device Status Register */
-          val_pcie_clear_urd(erp_bdf);
-      } else
-      {
-          val_print(AVS_PRINT_ERR,
-                   "\n       Root Port BDF 0x%x BME functionality failure", erp_bdf);
-          fail_cnt++;
-      }
-
-      /* Restore Rootport Bus Master Enable */
-      val_pcie_enable_bme(erp_bdf);
-
-
-      /* Check if Received Master Abort bit is set in the Exerciser */
-      val_pcie_read_cfg(e_bdf, COMMAND_REG_OFFSET, &reg_value);
-      if (!((reg_value & MASTER_ABORT_MASK) >> MASTER_ABORT_SHIFT))
-      {
-          val_print(AVS_PRINT_ERR, "\n       Exerciser BDF 0x%x BME functionality failure", e_bdf);
-          fail_cnt++;
-      }
-
-
-  }
-
-  /* Return the buffer to the heap manager */
-  val_memory_free_pages(dram_buf_virt, TEST_DATA_NUM_PAGES);
 
   if (fail_cnt)
       val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, fail_cnt));
   else
       val_set_status(pe_index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
-
-  return;
-
 }
 
 uint32_t

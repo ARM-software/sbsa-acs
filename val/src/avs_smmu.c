@@ -64,13 +64,11 @@ val_smmu_execute_tests(uint32_t level, uint32_t num_pe)
       }
   }
 
-  if (g_single_module != SINGLE_MODULE_SENTINEL && g_single_module != AVS_SMMU_TEST_NUM_BASE &&
-       (g_single_test == SINGLE_MODULE_SENTINEL ||
-         (g_single_test - AVS_SMMU_TEST_NUM_BASE > 100 ||
-          g_single_test - AVS_SMMU_TEST_NUM_BASE < 0))) {
-    val_print(AVS_PRINT_TEST, " USER Override - Skipping all SMMU tests \n", 0);
-    val_print(AVS_PRINT_TEST, " (Running only a single module)\n", 0);
-    return AVS_STATUS_SKIP;
+  /* Check if there are any tests to be executed in current module with user override options*/
+  status = val_check_skip_module(AVS_SMMU_TEST_NUM_BASE);
+  if (status) {
+      val_print(AVS_PRINT_TEST, "\n USER Override - Skipping all SMMU tests \n", 0);
+      return AVS_STATUS_SKIP;
   }
 
   num_smmu = val_iovirt_get_smmu_info(SMMU_NUM_CTRL, 0);
@@ -79,26 +77,20 @@ val_smmu_execute_tests(uint32_t level, uint32_t num_pe)
     return AVS_STATUS_SKIP;
   }
 
+  val_print_test_start("SMMU");
   g_curr_module = 1 << SMMU_MODULE;
 
-
-  status |= i001_entry(num_pe);
-  if (status != AVS_STATUS_PASS) {
-      val_print(AVS_PRINT_ERR, "\n      SMMU Version Not Compliant, \
-                         Skipping Remaining SMMU Tests\n", 0);
-      return AVS_STATUS_SKIP;
-  }
-
-  if (g_sbsa_level > 3)
-      status |= i002_entry(num_pe);
+#ifndef TARGET_LINUX
+  status = i001_entry(num_pe) ;
 
   if (g_sbsa_level > 4) {
-      status = i003_entry(num_pe);
-      status = i004_entry(num_pe);
+      status |= i002_entry(num_pe);
+      status |= i003_entry(num_pe);
+      status |= i004_entry(num_pe);
+      status |= i005_entry(num_pe);
   }
 
   if (g_sbsa_level > 5) {
-      status |= i005_entry(num_pe);
       status |= i006_entry(num_pe);
       status |= i007_entry(num_pe);
       status |= i008_entry(num_pe);
@@ -106,18 +98,18 @@ val_smmu_execute_tests(uint32_t level, uint32_t num_pe)
       status |= i010_entry(num_pe);
       status |= i011_entry(num_pe);
       status |= i012_entry(num_pe);
-      status |= i015_entry(num_pe);
+      status |= i013_entry(num_pe);
   }
 
   if (g_sbsa_level > 6) {
-     status |= i013_entry(num_pe);
      status |= i014_entry(num_pe);
+     status |= i015_entry(num_pe);
   }
-
-
+#endif
+#if defined(TARGET_LINUX) || defined(TARGET_EMULATION)
   if (level > 6)
      status |= i016_entry(num_pe);
-
+#endif
   val_print_test_end(status, "SMMU");
 
   return status;

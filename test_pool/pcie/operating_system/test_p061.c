@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2023 Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2023, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,7 +23,7 @@
 
 #define TEST_NUM   (AVS_PCIE_TEST_NUM_BASE + 61)
 #define TEST_DESC  "Check RootPort P&NP Memory Access "
-#define TEST_RULE  "S_PCI_02"
+#define TEST_RULE  "S_PCIe_02"
 
 static void *branch_to_test;
 
@@ -128,6 +128,7 @@ payload(void)
   {
       bdf = bdf_tbl_ptr->device[tbl_index++].bdf;
 
+      val_print(AVS_PRINT_DEBUG, "\n       BDF - 0x%x", bdf);
       /*
        * For Function with Type 1 config space header, obtain
        * base address of the its own BAR address.

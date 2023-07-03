@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2019-2023 Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2019-2023, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,7 +23,7 @@
 
 #define TEST_NUM   (AVS_PCIE_TEST_NUM_BASE + 30)
 #define TEST_DESC  "Check Cmd Reg memory space enable "
-#define TEST_RULE  "RE_REC_1, RE_REC_2"
+#define TEST_RULE  "RE_REG_1, IE_REG_1, IE_REG_3"
 
 static void *branch_to_test;
 
@@ -55,6 +55,7 @@ payload(void)
   uint32_t test_fails;
   uint32_t test_skip = 1;
   uint64_t bar_base;
+  uint32_t dp_type;
   uint32_t status;
   uint32_t timeout;
 
@@ -83,7 +84,15 @@ payload(void)
   {
       bdf = bdf_tbl_ptr->device[tbl_index++].bdf;
       val_print(AVS_PRINT_DEBUG, "\n       tbl_index %x", tbl_index - 1);
-      val_print(AVS_PRINT_DEBUG, "  BDF - 0x%x", bdf);
+
+      dp_type = val_pcie_device_port_type(bdf);
+
+      /* Check entry is RCiEP/ RCEC/ iEP. Else move to next BDF. */
+      if ((dp_type != iEP_EP) && (dp_type != iEP_RP)
+          && (dp_type != RCEC) && (dp_type != RCiEP))
+          continue;
+
+      val_print(AVS_PRINT_DEBUG, "\n       BDF - 0x%x", bdf);
 
       /*
        * For a Function with type 0 config space header, obtain
@@ -154,7 +163,8 @@ exception_return:
   }
 
   if (test_skip == 1) {
-      val_print(AVS_PRINT_DEBUG, "\n       Found no PCIe Device with MMIO Bar. Skipping test.", 0);
+      val_print(AVS_PRINT_DEBUG,
+               "\n       Found no RCiEP/ RCEC/ iEP type device with MMIO Bar. Skipping test.", 0);
       val_set_status(pe_index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
   }
   else if (test_fails)

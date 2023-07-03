@@ -76,6 +76,7 @@
 
   ../test_pool/pcie/operating_system/test_p001.c
   ../test_pool/pcie/operating_system/test_p003.c
+  ../test_pool/pcie/operating_system/test_p016.c
   ../test_pool/pcie/operating_system/test_p020.c
   ../test_pool/pcie/operating_system/test_p021.c
   ../test_pool/pcie/operating_system/test_p022.c
@@ -141,9 +142,6 @@
   ../test_pool/exerciser/operating_system/test_e006.c
   ../test_pool/exerciser/operating_system/test_e007.c
   ../test_pool/exerciser/operating_system/test_e008.c
-  ../test_pool/exerciser/operating_system/test_e009.c
-  ../test_pool/exerciser/operating_system/test_e010.c
-  ../test_pool/exerciser/operating_system/test_e011.c
 
   ../test_pool/mpam/operating_system/test_mpam001.c
   ../test_pool/mpam/operating_system/test_mpam002.c
