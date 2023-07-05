@@ -311,7 +311,6 @@ val_pcie_execute_tests(uint32_t level, uint32_t num_pe)
   val_print_test_start("PCIe");
   g_curr_module = 1 << PCIE_MODULE;
 
-
   #if defined(TARGET_LINUX) || defined(TARGET_EMULATION)
     status |= p009_entry(num_pe);  /* This covers GIC rule */
   #endif
@@ -322,7 +321,6 @@ val_pcie_execute_tests(uint32_t level, uint32_t num_pe)
     status = p062_entry(num_pe);
   #endif
   }
-
 
   if (level > 5) {
 
