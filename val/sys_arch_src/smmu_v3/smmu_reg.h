@@ -18,8 +18,8 @@
 #define __SMMU_REG_H__
 
 #define BITFIELD_DECL(type, name, msb, lsb) \
-	const uint32_t name##_SHIFT = lsb; \
-	const type name##_MASK = ((((type)0x1) << (msb - lsb +1)) - 1);
+        const uint32_t name##_SHIFT = lsb; \
+        const type name##_MASK = ((((type)0x1) << (msb - lsb + 1)) - 1);
 
 #define BITFIELD_GET(name, val) ((val >> name##_SHIFT) & name##_MASK)
 #define BITFIELD_SET(name, val) ((val & name##_MASK) << name##_SHIFT)
@@ -32,8 +32,8 @@
 BITFIELD_DECL(uint32_t, IDR0_ST_LEVEL, 28, 27)
 #define SMMU_IDR0_OFFSET 0x0
 #define IDR0_ST_LEVEL_2LVL 1
-#define IDR0_CD2L (1 << 19)
-#define IDR0_HYP (1 << 9)
+#define IDR0_CD2L   (1 << 19)
+#define IDR0_HYP    (1 << 9)
 #define IDR0_COHACC (1 << 4)
 
 BITFIELD_DECL(uint32_t, IDR0_TTF, 3, 2)
@@ -133,18 +133,18 @@ BITFIELD_DECL(uint64_t, QUEUE_BASE_ADDR, 51, 5)
 BITFIELD_DECL(uint64_t, QUEUE_BASE_LOG2SIZE, 4, 0)
 
 #define STRTAB_L1_SZ_SHIFT 20
-#define STRTAB_SPLIT 8
+#define STRTAB_SPLIT       8
 
 #define STRTAB_L1_DESC_DWORDS 1
-#define STRTAB_L1_DESC_SIZE 8
+#define STRTAB_L1_DESC_SIZE   8
 BITFIELD_DECL(uint64_t, STRTAB_L1_DESC_SPAN, 4, 0)
 BITFIELD_DECL(uint64_t, STRTAB_L1_DESC_L2PTR, 51, 6)
 
 #define STRTAB_STE_DWORDS 8
 #define STRTAB_STE_0_V (1UL << 0)
 BITFIELD_DECL(uint64_t, STRTAB_STE_0_CONFIG, 3, 1)
-#define STRTAB_STE_0_CONFIG_ABORT 0
-#define STRTAB_STE_0_CONFIG_BYPASS 4
+#define STRTAB_STE_0_CONFIG_ABORT    0
+#define STRTAB_STE_0_CONFIG_BYPASS   4
 #define STRTAB_STE_0_CONFIG_S1_TRANS 5
 #define STRTAB_STE_0_CONFIG_S2_TRANS 6
 
@@ -154,8 +154,8 @@ BITFIELD_DECL(uint64_t, STRTAB_STE_0_S1FMT, 5, 4)
 BITFIELD_DECL(uint64_t, STRTAB_STE_0_S1CONTEXTPTR, 51, 6)
 BITFIELD_DECL(uint64_t, STRTAB_STE_0_S1CDMAX, 63, 59)
 
-#define STRTAB_STE_1_S1DSS_SSID0   0x2
-#define STRTAB_STE_1_S1C_CACHE_NC 0UL
+#define STRTAB_STE_1_S1DSS_SSID0    0x2
+#define STRTAB_STE_1_S1C_CACHE_NC   0UL
 #define STRTAB_STE_1_S1C_CACHE_WBRA 1UL
 BITFIELD_DECL(uint64_t, STRTAB_STE_1_S1DSS, 1, 0)
 BITFIELD_DECL(uint64_t, STRTAB_STE_1_S1CIR, 3, 2)
@@ -192,30 +192,30 @@ BITFIELD_DECL(uint64_t, CMDQ_CFGI_1_RANGE, 4, 0)
 
 #define SMMU_CMDQ_POLL_TIMEOUT 0x100000
 
-#define CDTAB_SPLIT			10
-#define CDTAB_L2_ENTRY_COUNT	(1 << CDTAB_SPLIT)
+#define CDTAB_SPLIT             10
+#define CDTAB_L2_ENTRY_COUNT    (1 << CDTAB_SPLIT)
 
-#define CDTAB_L1_DESC_DWORDS	1
-#define CDTAB_L1_DESC_V			(1UL << 0)
+#define CDTAB_L1_DESC_DWORDS    1
+#define CDTAB_L1_DESC_V         (1UL << 0)
 BITFIELD_DECL(uint64_t, CDTAB_L1_DESC_L2PTR, 51, 12)
 
-#define CDTAB_CD_DWORDS		8
+#define CDTAB_CD_DWORDS         8
 BITFIELD_DECL(uint64_t, CDTAB_CD_0_TCR_T0SZ, 5, 0)
 BITFIELD_DECL(uint64_t, CDTAB_CD_0_TCR_TG0, 7, 6)
 BITFIELD_DECL(uint64_t, CDTAB_CD_0_TCR_IRGN0, 9, 8)
 BITFIELD_DECL(uint64_t, CDTAB_CD_0_TCR_ORGN0, 11, 10)
 BITFIELD_DECL(uint64_t, CDTAB_CD_0_TCR_SH0, 13, 12)
-#define CDTAB_CD_0_TCR_EPD0	(1ULL << 14)
-#define CDTAB_CD_0_TCR_EPD1	(1ULL << 30)
+#define CDTAB_CD_0_TCR_EPD0     (1ULL << 14)
+#define CDTAB_CD_0_TCR_EPD1     (1ULL << 30)
 
-#define CDTAB_CD_0_ENDI		(1UL << 15)
-#define CDTAB_CD_0_V		(1UL << 31)
+#define CDTAB_CD_0_ENDI         (1UL << 15)
+#define CDTAB_CD_0_V            (1UL << 31)
 
 BITFIELD_DECL(uint64_t, CDTAB_CD_0_TCR_IPS, 34, 32)
-#define CDTAB_CD_0_AA64		(1UL << 41)
-#define CDTAB_CD_0_R		(1UL << 45)
-#define CDTAB_CD_0_A		(1UL << 46)
-#define CDTAB_CD_0_ASET		(1UL << 47)
+#define CDTAB_CD_0_AA64         (1UL << 41)
+#define CDTAB_CD_0_R            (1UL << 45)
+#define CDTAB_CD_0_A            (1UL << 46)
+#define CDTAB_CD_0_ASET         (1UL << 47)
 BITFIELD_DECL(uint64_t, CDTAB_CD_0_ASID, 63, 48)
 
 BITFIELD_DECL(uint64_t, CDTAB_CD_1_TTB0, 51, 4)

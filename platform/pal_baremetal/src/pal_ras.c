@@ -256,7 +256,7 @@ pal_ras2_dump_info_table(RAS2_INFO_TABLE *RasFeatInfoTable)
   curr_block = RasFeatInfoTable->blocks;
   uint32_t i;
 
-  print(AVS_PRINT_INFO, "\nRAS2 Feature Info :");
+  print(AVS_PRINT_INFO, "\n RAS2 Feature Info :");
   print(AVS_PRINT_INFO,
              "\n Total number of RAS2 feature info blocks  : %d",
              RasFeatInfoTable->num_all_block);

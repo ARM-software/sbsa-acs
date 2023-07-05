@@ -161,7 +161,8 @@ payload(void)
     val_print(AVS_PRINT_DEBUG, "\n       Exercise BDF - 0x%x", e_bdf);
 
     /* Get SMMU node index for this exerciser instance */
-    master.smmu_index = val_iovirt_get_rc_smmu_index(PCIE_EXTRACT_BDF_SEG(e_bdf), PCIE_CREATE_BDF_PACKED(e_bdf));
+    master.smmu_index = val_iovirt_get_rc_smmu_index(PCIE_EXTRACT_BDF_SEG(e_bdf),
+                                                     PCIE_CREATE_BDF_PACKED(e_bdf));
 
     clear_dram_buf(dram_buf_in_virt, test_data_blk_size);
 
@@ -211,7 +212,8 @@ payload(void)
 
         pgt_base_array[instance] = pgt_desc.pgt_base;
 
-        /* Configure the SMMU tables for this exerciser to use this page table for VA to PA translations*/
+        /* Configure the SMMU tables for this exerciser to use this page table
+           for VA to PA translations */
         if (val_smmu_map(master, pgt_desc))
         {
             val_print(AVS_PRINT_ERR,
@@ -270,7 +272,8 @@ test_clean:
   for (instance = 0; instance < num_exercisers; ++instance)
   {
     e_bdf = val_exerciser_get_bdf(instance);
-    master.smmu_index = val_iovirt_get_rc_smmu_index(PCIE_EXTRACT_BDF_SEG(e_bdf), PCIE_CREATE_BDF_PACKED(e_bdf));
+    master.smmu_index = val_iovirt_get_rc_smmu_index(PCIE_EXTRACT_BDF_SEG(e_bdf),
+                                                     PCIE_CREATE_BDF_PACKED(e_bdf));
     if (val_iovirt_get_device_info(PCIE_CREATE_BDF_PACKED(e_bdf),
                                    PCIE_EXTRACT_BDF_SEG(e_bdf),
                                    &device_id, &master.streamid,
