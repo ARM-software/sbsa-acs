@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2023 Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2023, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -57,7 +57,7 @@ payload()
   uint32_t fail_cnt = 0, test_skip = 0;
   uint32_t node_index;
   uint64_t mc_prox_domain;
-  uint32_t err_inj_addr_data;
+  uint32_t err_inj_addr_data = 0;
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
 
   RAS_ERR_IN_t err_in_params;
@@ -110,7 +110,7 @@ payload()
 
     /* check if the address accessible to PE by trying to allocate the address */
     err_inj_addr = (uint64_t)val_mem_alloc_at_address(prox_base_addr, ONE_BYTE_BUFFER);
-
+    val_print(AVS_PRINT_ERR, "\n       err_inj_addr : 0x%lx", err_inj_addr);
     if (err_inj_addr == 0) {
       val_print(AVS_PRINT_ERR, "\n       Unable to allocate address in prox domain : 0x%lx",
                 mc_prox_domain);
@@ -146,7 +146,10 @@ payload()
       break;
     }
 
-    /* Inject error in an implementation defined way */
+    /* Inject error in an implementation defined way.
+       Inject error at an address, which will cause system to
+       record the error on reading with address syndrome in one of
+       the error records present for the current RAS node */
     status = val_ras_inject_error(err_in_params, &err_out_params);
     if (status) {
       val_print(AVS_PRINT_ERR, "\n       val_ras_inject_error failed, node %d", node_index);
@@ -155,18 +158,18 @@ payload()
     }
 
     /* wait loop to allow system to inject the error */
-    val_ras_wait_timeout(1);
+    val_ras_wait_timeout(10);
 
-    /* Perform a read to error-injected address, which will cause system to record the error
-       with address syndrome in one of the error records present for the current RAS node */
-    err_inj_addr_data = val_mmio_read(err_inj_addr);
+    /* Perform a read to error-injected address, which will cause
+     * system to record the error with address syndrome in one of
+     * the error records present for the current RAS node */
+    err_inj_addr_data = (*(volatile addr_t *)err_inj_addr);
     val_print(AVS_PRINT_DEBUG, "\n       Error injected address: 0x%llx", err_inj_addr);
     val_print(AVS_PRINT_DEBUG, "  Data read: 0x%lx", err_inj_addr_data);
 
-    /* wait loop to allow system to update RAS error records */
-    val_ras_wait_timeout(1);
 
 exception_return:
+    val_print(AVS_PRINT_INFO, "\n       value esr_pending, %d", esr_pending);
     /* Check for External Abort */
     if (esr_pending) {
       val_print(AVS_PRINT_DEBUG, "\n       Data abort Check Fail, for node %d", node_index);
