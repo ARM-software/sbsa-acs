@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2019, 2021-2022 Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2019, 2021-2023, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -114,14 +114,17 @@ palPcieGetBdf(UINT32 ClassCode, UINT32 StartBdf)
               if (Hdr->ClassCode[1] == ((ClassCode >> 8) & 0xFF)) {
                  /* Found our device */
                  /* Return the BDF   */
+                 pal_mem_free(HandleBuffer);
                  return (UINT32)(PCIE_CREATE_BDF(Seg, Bus, Dev, Func));
               }
             }
-           }
-         }
-       }
-     }
-   }
+          }
+        }
+      }
+    }
+  }
+
+  pal_mem_free(HandleBuffer);
   return 0;
 }
 
@@ -188,6 +191,7 @@ palPcieGetBase(UINT32 bdf, UINT32 bar_index)
           Status = Pci->Pci.Read (Pci, EfiPciIoWidthUint32, 0, sizeof (PciHeader)/sizeof (UINT32), &PciHeader);
           if (!EFI_ERROR (Status)) {
             Device = &PciHeader.Device.Device;
+            pal_mem_free(HandleBuffer);
             if ((((Device->Bar[bar_index]) >> BAR_MDT_SHIFT) & BAR_MDT_MASK) == BITS_64)
             {
                 bar_value = Device->Bar[bar_index + 1];
@@ -203,6 +207,7 @@ palPcieGetBase(UINT32 bdf, UINT32 bar_index)
     }
   }
 
+  pal_mem_free(HandleBuffer);
   return 0;
 }
 

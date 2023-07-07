@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2020-2023 Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018, 2021-2023, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,60 +18,81 @@
 #include "val/include/sbsa_avs_val.h"
 #include "val/include/val_interface.h"
 
+#include "val/include/sbsa_avs_pe.h"
 #include "val/include/sbsa_avs_smmu.h"
-#include "val/include/sbsa_avs_pcie.h"
 
 #define TEST_NUM   (AVS_SMMU_TEST_NUM_BASE + 5)
-#define TEST_RULE  "S_L6SM_01"
-#define TEST_DESC  "Check SMMU Coherent Access Support"
+#define TEST_RULE  "B_SMMU_11, B_SMMU_22, S_L5SM_03"
+#define TEST_DESC  "Check SMMU for MPAM support       "
 
 static
 void
-payload(void)
+payload()
 {
 
-  uint64_t data;
   uint32_t num_smmu;
-  uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
+  uint32_t smmu_rev;
+  uint32_t minor;
+  uint32_t index;
+  uint32_t pe_mpam, mpam;
+  uint32_t frac;
+  uint32_t max_id;
 
-  if (g_sbsa_level < 6) {
-      val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
-      return;
-  }
-
-  data = val_pcie_get_info(PCIE_INFO_NUM_ECAM, 0);
-
-  if (data == 0) {
-      val_print(AVS_PRINT_WARN, "\n       PCIe Subsystem not  discovered   ", 0);
-      val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 02));
-      return;
-  }
+  index = val_pe_get_index_mpid(val_pe_get_mpid());
+  /* Major MPAM revision supported by the PE (i.e. MPAM v1.x) */
+  pe_mpam = VAL_EXTRACT_BITS(val_pe_reg_read(ID_AA64PFR0_EL1), 40, 43);
+  /* Minor MPAM revision supported by the PE (i.e. MPAM vx.1) */
+  frac = VAL_EXTRACT_BITS(val_pe_reg_read(ID_AA64PFR1_EL1), 16, 19);
 
   num_smmu = val_smmu_get_info(SMMU_NUM_CTRL, 0);
-
   if (num_smmu == 0) {
-      val_print(AVS_PRINT_ERR, "\n       No SMMU Controllers are discovered ", 0);
-      val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 03));
-      return;
+    val_print(AVS_PRINT_DEBUG, "\n       No SMMU Controllers are discovered                 ", 0);
+    val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 1));
+    return;
+  }
+
+  if (!(pe_mpam || frac)) {
+    val_print(AVS_PRINT_DEBUG, "\n       No MPAM controlled resources present               ", 0);
+    val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 2));
+    return;
   }
 
   while (num_smmu--) {
-      if (val_smmu_get_info(SMMU_CTRL_ARCH_MAJOR_REV, num_smmu) == 2) {
-          val_print(AVS_PRINT_WARN, "\n       Not valid for SMMU v2           ", 0);
-          val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 04));
-          return;
-      }
-
-      data = VAL_EXTRACT_BITS(val_smmu_read_cfg(SMMUv3_IDR0, num_smmu), 4, 4);
-
-      /* Check If SMMU_IDR0.COHACC == 1*/
-      if (data != 1) {
-          val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
-          return;
-      }
+        smmu_rev = val_smmu_get_info(SMMU_CTRL_ARCH_MAJOR_REV, num_smmu);
+        if (smmu_rev < 3) {
+                /* MPAM support not required for SMMUv2 and below */
+                val_print(AVS_PRINT_DEBUG, "\n       SMMU revision v2 or lower detected  ", 0);
+                val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 1));
+                return;
+        }
+        else {
+                minor = VAL_EXTRACT_BITS(val_smmu_read_cfg(SMMUv3_AIDR, num_smmu), 0, 3);
+                /* Check if MPAM is supported for any security state (only for SMMU v3.2+) */
+                if (minor >= 2) {
+                        /* SMMU general MPAM support (in either Secure/Non-Secure state) */
+                        mpam = VAL_EXTRACT_BITS(val_smmu_read_cfg(SMMUv3_IDR3, num_smmu),
+                              7, 7);
+                        /* Check if MPAM is supported for any of the NS resources (max part ID) */
+                        max_id = VAL_EXTRACT_BITS(val_smmu_read_cfg(SMMUv3_MPAMIDR,
+                              num_smmu), 0, 15);
+                        if (!(mpam && max_id)) {
+                                val_print(AVS_PRINT_ERR,
+                                          "\n       SMMU without MPAM support detected  ", 0);
+                                val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 2));
+                                return;
+                        }
+                }
+                else {
+                        /* MPAM support not required for SMMUv3.0/3.1 */
+                        val_print(AVS_PRINT_WARN,
+                              "\n       SMMU revision v3.0/3.1 detected  ", 0);
+                        val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 3));
+                        return;
+                }
+        }
   }
 
-  val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
+  val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 1));
 }
 
 uint32_t
@@ -80,7 +101,7 @@ i005_entry(uint32_t num_pe)
 
   uint32_t status = AVS_STATUS_FAIL;
 
-  num_pe = 1;  //This test is run on single processor
+  num_pe = 1;  /* This test is run on single processor */
 
   status = val_initialize_test(TEST_NUM, TEST_DESC, num_pe, g_sbsa_level, TEST_RULE);
   if (status != AVS_STATUS_SKIP)

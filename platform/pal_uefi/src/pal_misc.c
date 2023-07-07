@@ -265,8 +265,8 @@ VOID
 pal_mem_free(VOID *Buffer)
 {
   UINT32 Status;
-  Status = gBS->FreePool (Buffer);
-  if (EFI_ERROR (Status)) {
+  Status = gBS->FreePool(Buffer);
+  if (EFI_ERROR(Status)) {
     sbsa_print(AVS_PRINT_ERR, L"\n       Failed to free memory    ");
   }
 }
@@ -702,7 +702,7 @@ pal_aligned_alloc( UINT32 alignment, UINT32 size)
 */
 
 VOID
-pal_mem_free_aligned (VOID *Buffer)
+pal_mem_free_aligned(VOID *Buffer)
 {
     UINT32 Status;
     Status = gBS->FreePool(((VOID **)Buffer)[-1]);

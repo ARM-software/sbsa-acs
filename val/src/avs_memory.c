@@ -45,15 +45,14 @@ val_memory_execute_tests(uint32_t level, uint32_t num_pe)
       }
   }
 
-  if (g_single_module != SINGLE_MODULE_SENTINEL && g_single_module != AVS_MEM_MAP_TEST_NUM_BASE &&
-       (g_single_test == SINGLE_MODULE_SENTINEL ||
-         (g_single_test - AVS_MEM_MAP_TEST_NUM_BASE > 100 ||
-          g_single_test - AVS_MEM_MAP_TEST_NUM_BASE < 0))) {
-      val_print(AVS_PRINT_TEST, " USER Override - Skipping all memory tests \n", 0);
-      val_print(AVS_PRINT_TEST, " (Running only a single module)\n", 0);
+  /* Check if there are any tests to be executed in the current module with user override*/
+  status = val_check_skip_module(AVS_MEM_MAP_TEST_NUM_BASE);
+  if (status) {
+      val_print(AVS_PRINT_TEST, "\n USER Override - Skipping all memory tests \n", 0);
       return AVS_STATUS_SKIP;
   }
 
+  val_print_test_start("Memory");
   g_curr_module = 1 << MEM_MAP_MODULE;
 
   status = m001_entry(num_pe);
@@ -315,7 +314,6 @@ val_memory_free_aligned(void *addr)
 {
   pal_mem_free_aligned(addr);
 }
-
 
 /**
   @brief  Checks for presence of persistent memory.

@@ -226,6 +226,7 @@ iort_add_block(IORT_TABLE *iort, IORT_NODE *iort_node, IOVIRT_INFO_TABLE *IoVirt
   NODE_DATA_MAP *data_map = &((*block)->data_map[0]);
   NODE_DATA *data = &((*block)->data);
   VOID *node_data = &(iort_node->node_data[0]);
+  IORT_NODE *node_ref_block;
 
   sbsa_print(AVS_PRINT_INFO,
              L" IORT node offset:%x, type: %d\n", (UINT8 *)iort_node - (UINT8 *)iort,
@@ -279,7 +280,16 @@ iort_add_block(IORT_TABLE *iort, IORT_NODE *iort_node, IOVIRT_INFO_TABLE *IoVirt
       next_block = ADD_PTR(IOVIRT_BLOCK, data_map, (*block)->num_data_map * sizeof(NODE_DATA_MAP));
       offset = iort_add_block(iort, ADD_PTR(IORT_NODE, iort, (*data).pmcg.node_ref),
                               IoVirtTable, &next_block);
-      (*data).pmcg.node_ref = offset;
+      /* if the PMCG node is associated with a SMMU, store SMMU base */
+      node_ref_block = ADD_PTR(IORT_NODE, iort, (*data).pmcg.node_ref);
+      if (node_ref_block->type == IOVIRT_NODE_SMMU
+                     || node_ref_block->type == IOVIRT_NODE_SMMU_V3) {
+        (*data).pmcg.smmu_base = ((IORT_SMMU *)node_ref_block->node_data)->base_address;
+      }
+      else {
+        (*data).pmcg.smmu_base = 0;
+      }
+
       count = &IoVirtTable->num_pmcgs;
       break;
     default:

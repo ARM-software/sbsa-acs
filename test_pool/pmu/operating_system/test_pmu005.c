@@ -33,7 +33,7 @@ static void payload(void)
 {
     uint64_t data = 0;
     uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
-    uint32_t fail_cnt = 0, test_skip = 1;
+    uint32_t fail_cnt = 0;
     uint32_t node_count;
     uint32_t node_index;
     uint64_t num_open_txn;
@@ -157,9 +157,6 @@ static void payload(void)
 
     if (fail_cnt) {
         val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 03));
-        return;
-    } else if (test_skip) {
-        val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 02));
         return;
     }
 

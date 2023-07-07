@@ -92,6 +92,7 @@ typedef struct {
   uint64_t base;
   uint32_t overflow_gsiv;
   uint32_t node_ref;
+  uint64_t smmu_base;
 } PLATFORM_OVERRIDE_IOVIRT_PMCG_INFO_BLOCK;
 
 #define MAX_NAMED_COMP_LENGTH 256
@@ -129,6 +130,17 @@ typedef struct {
   uint32_t output_base[IOVIRT_MAX_NUM_MAP];
   uint32_t output_ref[IOVIRT_MAX_NUM_MAP];
 } PLATFORM_OVERRIDE_NODE_DATA_MAP;
+
+#define MAX_CS_COMP_LENGTH 256
+
+typedef struct {
+  char identifier[MAX_CS_COMP_LENGTH];    // Hardware ID for Coresight ARM implementations
+  char dev_name[MAX_CS_COMP_LENGTH];      // Device name of the Coresight components
+} PLATFORM_OVERRIDE_CORESIGHT_COMP_INFO_BLOCK;
+
+typedef struct {
+  PLATFORM_OVERRIDE_CORESIGHT_COMP_INFO_BLOCK component[CS_COMPONENT_COUNT];
+} PLATFORM_OVERRIDE_CS_COMP_NODE_DATA;
 
 typedef struct {
   uint64_t Address;

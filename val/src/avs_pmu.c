@@ -35,6 +35,7 @@ val_pmu_execute_tests(uint32_t level, uint32_t num_pe)
 {
 
   uint32_t status = AVS_STATUS_FAIL;
+  uint32_t skip_module;
   uint32_t i, pmu_node_count;
 
   for (i = 0; i < g_num_skip; i++) {
@@ -44,12 +45,10 @@ val_pmu_execute_tests(uint32_t level, uint32_t num_pe)
       }
   }
 
-  if (g_single_module != SINGLE_MODULE_SENTINEL && g_single_module != AVS_PMU_TEST_NUM_BASE &&
-    (g_single_test == SINGLE_MODULE_SENTINEL ||
-      (g_single_test - AVS_PMU_TEST_NUM_BASE > 100 ||
-        g_single_test - AVS_PMU_TEST_NUM_BASE < 0))) {
-      val_print(AVS_PRINT_TEST, " USER Override - Skipping all PMU tests \n", 0);
-      val_print(AVS_PRINT_TEST, " (Running only a single module)\n", 0);
+  /* Check if there are any tests to be executed in current module with user override options*/
+  skip_module = val_check_skip_module(AVS_PMU_TEST_NUM_BASE);
+  if (skip_module) {
+      val_print(AVS_PRINT_TEST, "\n USER Override - Skipping all PMU tests \n", 0);
       return AVS_STATUS_SKIP;
   }
 
@@ -60,15 +59,14 @@ val_pmu_execute_tests(uint32_t level, uint32_t num_pe)
       return AVS_STATUS_SKIP;
   }
 
+  val_print_test_start("PMU");
   g_curr_module = 1 << PMU_MODULE;
 
   /* run tests which don't check PMU nodes */
-  if (g_sbsa_level > 6) {
-      status  = pmu001_entry(num_pe);
-      status |= pmu002_entry(num_pe);
-      status |= pmu003_entry(num_pe);
-      status |= pmu006_entry(num_pe);
-  }
+  status  = pmu001_entry(num_pe);
+  status |= pmu002_entry(num_pe);
+  status |= pmu003_entry(num_pe);
+  status |= pmu006_entry(num_pe);
 
   pmu_node_count = val_pmu_get_info(PMU_NODE_COUNT, 0);
   if (pmu_node_count == 0) {
@@ -77,13 +75,11 @@ val_pmu_execute_tests(uint32_t level, uint32_t num_pe)
       return AVS_STATUS_SKIP;
   }
 
-  if (g_sbsa_level > 6) {
-      status |= pmu004_entry(num_pe);
-      status |= pmu005_entry(num_pe);
-      status |= pmu007_entry(num_pe);
-      status |= pmu008_entry(num_pe);
-      status |= pmu009_entry(num_pe);
-  }
+  status |= pmu004_entry(num_pe);
+  status |= pmu005_entry(num_pe);
+  status |= pmu007_entry(num_pe);
+  status |= pmu008_entry(num_pe);
+  status |= pmu009_entry(num_pe);
 
   val_print_test_end(status, "PMU");
 

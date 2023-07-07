@@ -274,7 +274,8 @@ typedef struct {
 typedef struct {
   UINT64 base;
   UINT32 overflow_gsiv;
-  UINT32 node_ref;
+  UINT32 node_ref;       /* offest to the IORT node in IORT ACPI table*/
+  UINT64 smmu_base;      /* SMMU base to which component is attached, else NULL */
 }IOVIRT_PMCG_INFO_BLOCK;
 
 typedef enum {
@@ -468,7 +469,8 @@ VOID    *pal_mem_virt_to_phys(VOID *va);
 VOID    *pal_mem_phys_to_virt(UINT64 pa);
 UINT64  pal_memory_get_unpopulated_addr(UINT64 *addr, UINT32 instance);
 
-UINT32 pal_pe_get_num();
+VOID    pal_mem_free(VOID *buffer);
+UINT32  pal_pe_get_num();
 
 /**
   @brief  Instance of system pmu info

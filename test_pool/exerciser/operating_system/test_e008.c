@@ -24,185 +24,221 @@
 #include "val/include/sbsa_avs_smmu.h"
 #include "val/include/sbsa_avs_memory.h"
 #include "val/include/sbsa_avs_exerciser.h"
+#include "val/include/sbsa_avs_pcie.h"
 
 #define TEST_NUM   (AVS_EXERCISER_TEST_NUM_BASE + 8)
-#define TEST_DESC  "PE 2/4/8B writes tp PCIe as 2/4/8B"
-#define TEST_RULE  "S_PCIe_03"
+#define TEST_DESC  "Check 2/4/8 Bytes targeted writes"
+#define TEST_RULE  "S_PCIe_04"
 
-static uint32_t transaction_size = 4;
-static uint32_t run_flag;
-static uint32_t fail_cnt;
 
-static uint32_t test_sequence_check(uint32_t instance, uint64_t write_value)
+static
+uint32_t
+get_target_exer_bdf(uint32_t req_rp_bdf, uint32_t *tgt_e_bdf,
+                    uint32_t *tgt_rp_bdf, uint64_t *bar_base, uint32_t *tgt_instance)
 {
-  uint64_t idx;
-  uint64_t transaction_data;
 
-  for (idx = 0; idx < transaction_size; idx++) {
-      val_exerciser_get_param(DATA_ATTRIBUTES, &transaction_data, &idx, instance);
-      if (transaction_data !=  write_value) {
-          val_print(AVS_PRINT_ERR, "\n       Exerciser %d arrival order check failed", instance);
-          return 1;
+  uint32_t erp_bdf;
+  uint32_t e_bdf;
+  uint32_t instance;
+  uint32_t req_rp_ecam_index;
+  uint32_t erp_ecam_index;
+  uint32_t status;
+
+  instance = val_exerciser_get_info(EXERCISER_NUM_CARDS, 0);
+
+  while (instance-- != 0)
+  {
+      /* if init fail moves to next exerciser */
+      if (val_exerciser_init(instance))
+          continue;
+
+      e_bdf = val_exerciser_get_bdf(instance);
+
+      /* Read e_bdf BAR Register to get the Address to perform P2P */
+      /* If No BAR Space, continue */
+      val_pcie_get_mmio_bar(e_bdf, bar_base);
+      if (*bar_base == 0)
+          continue;
+
+      /* Get RP of the exerciser */
+      if (val_pcie_get_rootport(e_bdf, &erp_bdf))
+          continue;
+
+      if (req_rp_bdf != erp_bdf)
+      {
+          status = val_pcie_get_ecam_index(req_rp_bdf, &req_rp_ecam_index);
+          if (status)
+          {
+             val_print(AVS_PRINT_ERR,
+                       "\n       Error Ecam index for req RP BDF: 0x%x", req_rp_bdf);
+             goto clean_fail;
+          }
+
+          status = val_pcie_get_ecam_index(erp_bdf, &erp_ecam_index);
+          if (status)
+          {
+             val_print(AVS_PRINT_ERR, "\n       Error Ecam index for tgt RP BDF: 0x%x", erp_bdf);
+             goto clean_fail;
+          }
+
+          if (req_rp_ecam_index != erp_ecam_index)
+              continue;
+
+          *tgt_e_bdf = e_bdf;
+          *tgt_rp_bdf = erp_bdf;
+
+          /* Enable Bus Master Enable */
+          val_pcie_enable_bme(e_bdf);
+          /* Enable Memory Space Access */
+          val_pcie_enable_msa(e_bdf);
+
+          *tgt_instance = instance;
+
+          return AVS_STATUS_PASS;
       }
   }
 
-  return 0;
+clean_fail:
+  /* Return failure if No Such Exerciser Found */
+  *tgt_e_bdf = 0;
+  *tgt_rp_bdf = 0;
+  *bar_base = 0;
+  return AVS_STATUS_FAIL;
 }
 
-/* Performs write on 2B data */
-static uint32_t test_sequence_2B(uint16_t *addr, uint32_t instance)
-{
-  uint32_t e_bdf;
-  uint64_t idx;
-  uint64_t write_val = 0xABCD;
-
-  e_bdf = val_exerciser_get_bdf(instance);
-
-  /* Start monitoring exerciser transactions */
-  if (val_exerciser_ops(START_TXN_MONITOR, CFG_READ, instance)) {
-      val_print(AVS_PRINT_DEBUG,
-               "\n       Exerciser BDF 0x%x - Unable to start transaction monitoring", e_bdf);
-      return AVS_STATUS_SKIP;
-  }
-
-  run_flag = 1;
-
-  /* Send the transaction on incremental addresses */
-  for (idx = 0; idx < transaction_size; idx++) {
-      /* Write transaction */
-      val_mmio_write16((addr_t)addr, write_val);
-      addr++;
-  }
-
-  /* Stop monitoring exerciser transactions */
-  val_exerciser_ops(STOP_TXN_MONITOR, CFG_READ, instance);
-
-  return test_sequence_check(instance, write_val);
-}
-
-/* Performs write on 4B data */
-static uint32_t test_sequence_4B(uint32_t *addr, uint32_t instance)
-{
-  uint32_t e_bdf;
-  uint64_t idx;
-  uint64_t write_val = 0xC0DEC0DE;
-
-  e_bdf = val_exerciser_get_bdf(instance);
-
-  /* Start monitoring exerciser transactions */
-  if (val_exerciser_ops(START_TXN_MONITOR, CFG_READ, instance)) {
-      val_print(AVS_PRINT_DEBUG,
-               "\n       Exerciser BDF 0x%x - Unable to start transaction monitoring", e_bdf);
-      return AVS_STATUS_SKIP;
-  }
-
-  run_flag = 1;
-
-  /* Send the transaction on incremental addresses */
-  for (idx = 0; idx < transaction_size; idx++) {
-      val_mmio_write((addr_t)addr, write_val);
-      addr++;
-  }
-
-  /* Stop monitoring exerciser transactions */
-  val_exerciser_ops(STOP_TXN_MONITOR, CFG_READ, instance);
-
-  return test_sequence_check(instance, write_val);
-}
-
-/* Performs write on 8B data */
-static uint32_t test_sequence_8B(uint64_t *addr, uint32_t instance)
-{
-  uint32_t e_bdf;
-  uint64_t idx;
-  uint64_t write_val = 0xCAFECAFECAFECAFE;
-
-  e_bdf = val_exerciser_get_bdf(instance);
-
-  /* Start monitoring exerciser transactions */
-  if (val_exerciser_ops(START_TXN_MONITOR, CFG_READ, instance)) {
-      val_print(AVS_PRINT_DEBUG,
-               "\n       Exerciser BDF 0x%x - Unable to start transaction monitoring", e_bdf);
-      return AVS_STATUS_SKIP;
-  }
-
-  run_flag = 1;
-
-  /* Send the transaction on incremental addresses */
-  for (idx = 0; idx < transaction_size; idx++) {
-      /* Write transaction */
-      val_mmio_write64((addr_t)addr, write_val);
-      addr++;
-  }
-
-  /* Stop monitoring exerciser transactions */
-  val_exerciser_ops(STOP_TXN_MONITOR, CFG_READ, instance);
-
-  return test_sequence_check(instance, write_val);
-}
-
-/* Read and Write on BAR space mapped to Device memory */
 static
-void
-barspace_transactions_order_check(void)
+uint32_t
+check_sequence(uint64_t dma_buffer, uint32_t tgt_instance, uint32_t req_instance,
+               uint64_t bar_base, uint32_t size)
 {
-  uint32_t instance;
-  exerciser_data_t e_data;
-  char *baseptr;
   uint32_t status;
+  uint64_t transaction_data;
+  uint64_t idx;
 
-  /* Read the number of excerciser cards */
-  instance = val_exerciser_get_info(EXERCISER_NUM_CARDS, 0);
+  /* Copy the contents of the memory to requestor exercise's memory */
+  val_exerciser_set_param(DMA_ATTRIBUTES, (uint64_t)dma_buffer, size, req_instance);
+  val_exerciser_ops(START_DMA, EDMA_TO_DEVICE, req_instance);
 
-  while (instance-- != 0) {
+  /* Set the destination buffer as BAR base address of target exerciser */
+  val_exerciser_set_param(DMA_ATTRIBUTES, (uint64_t)bar_base, size, req_instance);
 
-    /* if init fail moves to next exerciser */
-    if (val_exerciser_init(instance))
-        continue;
-
-    /* Get BAR 0 details for this instance */
-    status = val_exerciser_get_data(EXERCISER_DATA_MMIO_SPACE, &e_data, instance);
-    if (status == NOT_IMPLEMENTED) {
-        val_print(AVS_PRINT_ERR, "\n       pal_exerciser_get_data() for MMIO not implemented", 0);
-        continue;
-    } else if (status) {
-        val_print(AVS_PRINT_ERR, "\n       Exerciser %d data read error     ", instance);
-        continue;
-    }
-
-    /* Map mmio space to ARM device memory in MMU page tables */
-    baseptr = (char *)e_data.bar_space.base_addr;
-    if (!baseptr) {
-        val_print(AVS_PRINT_ERR, "\n       Failed in BAR ioremap for instance %x", instance);
-        continue;
-    }
-
-    /* Test Scenario 1 : Transactions on incremental aligned address */
-    fail_cnt += test_sequence_2B((uint16_t *)baseptr, instance);
-    fail_cnt += test_sequence_4B((uint32_t *)baseptr, instance);
-    fail_cnt += test_sequence_8B((uint64_t *)baseptr, instance);
+  /* Start the transaction monitoring in the target exerciser */
+  status = val_exerciser_ops(START_TXN_MONITOR, CFG_READ, tgt_instance);
+  if (status == PCIE_CAP_NOT_FOUND)
+  {
+      val_print(AVS_PRINT_ERR, "\n       Transaction Monitoring capability not found", 0);
+      return 1;
   }
+
+  /* Copy the contents from requestor exerciser to target exerciser's BAR address */
+  val_exerciser_ops(START_DMA, EDMA_FROM_DEVICE, req_instance);
+
+  /* Stop the transaction monitoring in the target exerciser */
+  status = val_exerciser_ops(STOP_TXN_MONITOR, CFG_READ, tgt_instance);
+  if (status == PCIE_CAP_NOT_FOUND)
+  {
+      val_print(AVS_PRINT_ERR, "\n       Transaction Monitoring capability not found", 0);
+      return 1;
+  }
+
+  /* Compare the transaction data */
+  val_exerciser_get_param(DATA_ATTRIBUTES, &transaction_data, &idx, tgt_instance);
+  if (val_memory_compare(&transaction_data, &dma_buffer, size))
+  {
+      val_print(AVS_PRINT_ERR,
+                "\n       Data mismatch for target exerciser instance: %x", tgt_instance);
+      val_print(AVS_PRINT_ERR, " with value: %x", transaction_data);
+      return 1;
+  }
+
+  return 0;
 }
 
 static
 void
 payload(void)
 {
+
+  uint32_t status;
   uint32_t pe_index;
+  uint32_t req_instance;
+  uint32_t fail_cnt;
+  uint32_t test_skip;
+  uint32_t req_e_bdf, req_rp_bdf, tgt_e_bdf, tgt_rp_bdf, tgt_instance;
+  uint64_t bar_base;
+  uint64_t dma_buffer = 0xABCDC0DEABCDC0DE;
 
-  pe_index = val_pe_get_index_mpid (val_pe_get_mpid());
 
-  barspace_transactions_order_check();
+  fail_cnt = 0;
+  test_skip = 1;
+  pe_index = val_pe_get_index_mpid(val_pe_get_mpid());
+  req_instance = val_exerciser_get_info(EXERCISER_NUM_CARDS, 0);
 
-  if (!run_flag) {
-      val_set_status(pe_index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
-      return;
+  status = val_pcie_p2p_support();
+  /* Check If PCIe Hierarchy supports P2P. */
+  if (status) {
+    val_print(AVS_PRINT_DEBUG, "\n       PCIe hierarchy does not support P2P: %x", status);
+    val_set_status(pe_index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
+    return;
   }
 
-  if (fail_cnt)
+
+  while (req_instance-- != 0)
+  {
+
+      /* if init fail moves to next exerciser */
+      if (val_exerciser_init(req_instance))
+          continue;
+
+      req_e_bdf = val_exerciser_get_bdf(req_instance);
+      val_print(AVS_PRINT_DEBUG, "\n       Requester exerciser BDF - 0x%x", req_e_bdf);
+
+      /* Get RP of the exerciser */
+      if (val_pcie_get_rootport(req_e_bdf, &req_rp_bdf))
+          continue;
+
+      /* Find another exerciser on other rootport,
+         Break from the test if no such exerciser if found */
+      if (get_target_exer_bdf(req_rp_bdf, &tgt_e_bdf, &tgt_rp_bdf, &bar_base, &tgt_instance))
+          continue;
+
+      test_skip = 0;
+
+      status = check_sequence(dma_buffer, tgt_instance, req_instance, bar_base, 2);
+      if (status)
+      {
+          val_print(AVS_PRINT_ERR,
+                    "\n       Failed for 2B transaction from exerciser: %x", req_instance);
+          fail_cnt++;
+      }
+
+      status = check_sequence(dma_buffer, tgt_instance, req_instance, bar_base, 4);
+      if (status)
+      {
+          val_print(AVS_PRINT_ERR,
+                    "\n       Failed for 4B transaction from exerciser: %x", req_instance);
+          fail_cnt++;
+      }
+
+      status = check_sequence(dma_buffer, tgt_instance, req_instance, bar_base, 8);
+      if (status)
+      {
+          val_print(AVS_PRINT_ERR,
+                   "\n       Failed for 8B transaction from exerciser: %x", req_instance);
+          fail_cnt++;
+      }
+
+  }
+
+  if (test_skip == 1)
+      val_set_status(pe_index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 02));
+  else if (fail_cnt)
       val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, fail_cnt));
   else
       val_set_status(pe_index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
+
+  return;
+
 }
 
 uint32_t

@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2023 Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2023, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,7 +21,7 @@
 #include "val/include/sbsa_avs_pcie.h"
 #include "val/include/sbsa_avs_pe.h"
 
-#define TEST_NUM   (AVS_PCIE_TEST_NUM_BASE + 62)
+#define TEST_NUM   (AVS_PER_TEST_NUM_BASE + 01)
 #define TEST_DESC  "Check EA Capability               "
 #define TEST_RULE  "S_L4PCI_2"
 
@@ -30,6 +30,7 @@ void
 payload(void)
 {
 
+  uint64_t num_ecam;
   uint32_t bdf;
   uint32_t pe_index;
   uint32_t tbl_index;
@@ -47,9 +48,18 @@ payload(void)
   tbl_index = 0;
   test_fails = 0;
 
+  num_ecam = val_pcie_get_info(PCIE_INFO_NUM_ECAM, 0);
+
+  if (num_ecam == 0) {
+      val_print(AVS_PRINT_ERR, "\n       No ECAMs discovered              ", 0);
+      val_set_status(pe_index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
+      return;
+  }
+
   while (tbl_index < bdf_tbl_ptr->num_entries)
   {
       bdf = bdf_tbl_ptr->device[tbl_index++].bdf;
+      val_print(AVS_PRINT_DEBUG, "\n       BDF - 0x%x", bdf);
 
       /* If test runs for atleast an endpoint */
       test_skip = 0;

@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2018-2019, 2022-2023 Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2018-2019, 2022-2023, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -54,6 +54,7 @@ payload(void)
     }
 
     bdf = val_exerciser_get_bdf(instance);
+    val_print(AVS_PRINT_DEBUG, "\n       Exerciser BDF - 0x%x", bdf);
 
     /* Check ECAM config register read/write */
     for (reg_index = 0; reg_index < TEST_REG_COUNT; reg_index++) {

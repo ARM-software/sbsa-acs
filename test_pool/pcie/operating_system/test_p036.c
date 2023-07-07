@@ -85,7 +85,7 @@ payload(void)
 
   if (test_skip == 1) {
       val_print(AVS_PRINT_DEBUG,
-                "\n       No iEP found with ARI Capability Support. Skipping test", 0);
+                "\n       No iEP_EP found with ARI Capability Support. Skipping test", 0);
       val_set_status(pe_index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
   }
   else if (test_fails)

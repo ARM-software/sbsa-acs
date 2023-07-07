@@ -35,6 +35,7 @@ uint32_t
 val_ras_execute_tests(uint32_t level, uint32_t num_pe)
 {
   uint32_t status, i;
+  uint32_t skip_module;
   uint64_t num_ras_nodes = 0;
 
   for (i = 0; i < g_num_skip; i++) {
@@ -44,12 +45,10 @@ val_ras_execute_tests(uint32_t level, uint32_t num_pe)
       }
   }
 
-  if (g_single_module != SINGLE_MODULE_SENTINEL && g_single_module != AVS_RAS_TEST_NUM_BASE &&
-    (g_single_test == SINGLE_MODULE_SENTINEL ||
-      (g_single_test - AVS_RAS_TEST_NUM_BASE > 100 ||
-        g_single_test - AVS_RAS_TEST_NUM_BASE < 0))) {
-      val_print(AVS_PRINT_TEST, " USER Override - Skipping all RAS tests \n", 0);
-      val_print(AVS_PRINT_TEST, " (Running only a single module)\n", 0);
+  /* Check if there are any tests to be executed in current module with user override options*/
+  skip_module = val_check_skip_module(AVS_RAS_TEST_NUM_BASE);
+  if (skip_module) {
+      val_print(AVS_PRINT_TEST, "\n USER Override - Skipping all RAS tests \n", 0);
       return AVS_STATUS_SKIP;
   }
 
@@ -71,20 +70,21 @@ val_ras_execute_tests(uint32_t level, uint32_t num_pe)
   /* set default status to AVS_STATUS_FAIL */
   status = AVS_STATUS_FAIL;
 
-  if (g_sbsa_level > 6) {
-      status = ras001_entry(num_pe);
-      status |= ras002_entry(num_pe);
-      status |= ras003_entry(num_pe);
-      status |= ras004_entry(num_pe);
-      status |= ras005_entry(num_pe);
-      status |= ras006_entry(num_pe);
-      status |= ras007_entry(num_pe);
-      status |= ras008_entry(num_pe);
-      status |= ras009_entry(num_pe);
-      status |= ras010_entry(num_pe);
-      status |= ras011_entry(num_pe);
-      status |= ras012_entry(num_pe);
-  }
+  val_print_test_start("RAS");
+
+  status = ras001_entry(num_pe);
+  status |= ras002_entry(num_pe);
+  status |= ras003_entry(num_pe);
+  status |= ras004_entry(num_pe);
+  status |= ras005_entry(num_pe);
+  status |= ras006_entry(num_pe);
+  status |= ras007_entry(num_pe);
+  status |= ras008_entry(num_pe);
+  status |= ras009_entry(num_pe);
+  status |= ras010_entry(num_pe);
+  status |= ras011_entry(num_pe);
+  status |= ras012_entry(num_pe);
+
   val_print_test_end(status, "RAS");
 
   return status;

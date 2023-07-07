@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2023 Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2023, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -33,7 +33,6 @@ UINT32 g_pcie_p2p;
 UINT32 g_pcie_cache_present;
 
 UINT32  g_sbsa_level;
-UINT32  g_enable_pcie_tests;
 UINT32  g_print_level;
 UINT32  g_execute_nist;
 UINT32  g_print_mmio = FALSE;
@@ -41,8 +40,10 @@ UINT32  g_curr_module = 0;
 UINT32  g_enable_module = 0;
 UINT32  *g_skip_test_num;
 UINT32  g_num_skip = 0;
-UINT32  g_single_test = SINGLE_TEST_SENTINEL;
-UINT32  g_single_module = SINGLE_MODULE_SENTINEL;
+UINT32  *g_execute_tests;
+UINT32  g_num_tests = 0;
+UINT32  *g_execute_modules;
+UINT32  g_num_modules = 0;
 UINT32  g_sbsa_tests_total;
 UINT32  g_sbsa_tests_pass;
 UINT32  g_sbsa_tests_fail;
@@ -113,17 +114,6 @@ createGicInfoTable (
 
   return Status;
 
-}
-
-EFI_STATUS
-configureGicIts (
-)
-{
-  EFI_STATUS Status;
-
-  Status = val_gic_its_configure();
-
-  return Status;
 }
 
 EFI_STATUS
@@ -434,7 +424,7 @@ HelpMsg (
   )
 {
    Print (L"\nUsage: Sbsa.efi [-v <n>] | [-l <n>] | [-f <filename>] | "
-         "[-skip <n>] | [-nist] | [-p <n>] | [-t <n>] | [-m <n>]\n"
+         "[-skip <n>] | [-nist] | [-t <n>] | [-m <n>]\n"
          "Options:\n"
          "-v      Verbosity of the Prints\n"
          "        1 shows all prints, 5 shows Errors\n"
@@ -449,14 +439,13 @@ HelpMsg (
          "        To skip a module, use Model_ID as mentioned in user guide\n"
          "        To skip a particular test within a module, use the exact testcase number\n"
          "-nist   Enable the NIST Statistical test suite\n"
-         "-p      Enable/disable PCIe SBSA 7.1 (RCiEP) compliance tests\n"
-         "        1 - enables PCIe tests, 0 - disables PCIe tests\n"
          "-t      If set, will only run the specified test, all others will be skipped.\n"
          "-m      If set, will only run the specified module, all others will be skipped.\n"
          "-p2p    Pass this flag to indicate that PCIe Hierarchy Supports Peer-to-Peer\n"
          "-cache  Pass this flag to indicate that if the test system supports PCIe address translation cache\n"
          "-timeout  Set timeout multiple for wakeup tests\n"
          "        1 - min value  5 - max value\n"
+         "-p      Option deprecated. PCIe SBSA 7.1(RCiEP) compliance tests are run from SBSA L6+\n"
   );
 }
 
@@ -468,7 +457,6 @@ STATIC CONST SHELL_PARAM_ITEM ParamList[] = {
   {L"-help" , TypeFlag},     // -help # help : info about commands
   {L"-h"    , TypeFlag},     // -h    # help : info about commands
   {L"-nist" , TypeFlag},     // -nist # Binary Flag to enable the execution of NIST STS
-  {L"-p"    , TypeValue},    // -p    # Enable/disable PCIe SBSA 7.1 (RCiEP) compliance tests.
   {L"-mmio" , TypeValue},    // -mmio # Enable pal_mmio prints
   {L"-t"    , TypeValue},    // -t    # Test to be run
   {L"-m"    , TypeValue},    // -m    # Module to be run
@@ -633,21 +621,6 @@ ShellAppMainsbsa (
     g_pcie_cache_present = FALSE;
   }
 
-  // Options with Values
-  CmdLineArg  = ShellCommandLineGetValue (ParamPackage, L"-p");
-  if (CmdLineArg == NULL) {
-      if (g_sbsa_level >= 4)
-          g_enable_pcie_tests = 1;
-      else
-          g_enable_pcie_tests = 0;
-  } else {
-      g_enable_pcie_tests = StrDecimalToUintn(CmdLineArg);
-      if (g_enable_pcie_tests != 1 && g_enable_pcie_tests != 0) {
-          Print(L"Invalid PCIe option.\nEnter \"-p 1\" to enable or \"-p 0\" to disable PCIe SBSA 7.1 (RCiEP) tests\n", g_enable_pcie_tests);
-          return 0;
-      }
-  }
-
   // Options with Flags
   if (ShellCommandLineGetFlag (ParamPackage, L"-nist")) {
     g_execute_nist = TRUE;
@@ -659,15 +632,81 @@ ShellAppMainsbsa (
       g_execute_nist = TRUE;
 
   // Options with Values
-  CmdLineArg  = ShellCommandLineGetValue (ParamPackage, L"-t");
-  if (CmdLineArg != NULL) {
-    g_single_test = StrDecimalToUintn(CmdLineArg);
+  if (ShellCommandLineGetFlag (ParamPackage, L"-t")) {
+      CmdLineArg  = ShellCommandLineGetValue (ParamPackage, L"-t");
+      if (CmdLineArg == NULL)
+      {
+          Print(L"Invalid parameter passed for -t\n", 0);
+          HelpMsg();
+          return SHELL_INVALID_PARAMETER;
+      }
+      else
+      {
+          Status = gBS->AllocatePool(EfiBootServicesData,
+                                     StrLen(CmdLineArg),
+                                     (VOID **) &g_execute_tests);
+          if (EFI_ERROR(Status))
+          {
+              Print(L"Allocate memory for -t failed \n", 0);
+              return 0;
+          }
+
+          /* Check if the first value to -t is a decimal character. */
+          if (!ShellIsDecimalDigitCharacter(*CmdLineArg)) {
+              Print(L"Invalid parameter passed for -t\n", 0);
+              HelpMsg();
+              return SHELL_INVALID_PARAMETER;
+          }
+
+          g_execute_tests[0] = StrDecimalToUintn((CONST CHAR16 *)(CmdLineArg + 0));
+          for (i = 0; i < StrLen(CmdLineArg); i++) {
+              if (*(CmdLineArg + i) == L',') {
+                  g_execute_tests[++g_num_tests] = StrDecimalToUintn(
+                                                          (CONST CHAR16 *)(CmdLineArg + i + 1));
+              }
+          }
+
+          g_num_tests++;
+        }
   }
 
   // Options with Values
-  CmdLineArg  = ShellCommandLineGetValue (ParamPackage, L"-m");
-  if (CmdLineArg != NULL) {
-    g_single_module = StrDecimalToUintn(CmdLineArg);
+  if (ShellCommandLineGetFlag (ParamPackage, L"-m")) {
+      CmdLineArg  = ShellCommandLineGetValue (ParamPackage, L"-m");
+      if (CmdLineArg == NULL)
+      {
+          Print(L"Invalid parameter passed for -m\n", 0);
+          HelpMsg();
+          return SHELL_INVALID_PARAMETER;
+      }
+      else
+      {
+          Status = gBS->AllocatePool(EfiBootServicesData,
+                                     StrLen(CmdLineArg),
+                                     (VOID **) &g_execute_modules);
+          if (EFI_ERROR(Status))
+          {
+              Print(L"Allocate memory for -m failed \n", 0);
+              return 0;
+          }
+
+          /* Check if the first value to -m is a decimal character. */
+          if (!ShellIsDecimalDigitCharacter(*CmdLineArg)) {
+              Print(L"Invalid parameter passed for -m\n", 0);
+              HelpMsg();
+              return SHELL_INVALID_PARAMETER;
+          }
+
+          g_execute_modules[0] = StrDecimalToUintn((CONST CHAR16 *)(CmdLineArg + 0));
+          for (i = 0; i < StrLen(CmdLineArg); i++) {
+              if (*(CmdLineArg + i) == L',') {
+                  g_execute_modules[++g_num_modules] = StrDecimalToUintn(
+                                                          (CONST CHAR16 *)(CmdLineArg + i + 1));
+              }
+          }
+
+          g_num_modules++;
+      }
   }
 
   //
@@ -731,61 +770,44 @@ ShellAppMainsbsa (
   val_pe_initialize_default_exception_handler(val_pe_default_esr);
   FlushImage();
 
-  val_print(AVS_PRINT_TEST, "\n      ***  Starting PE tests ***  \n", 0);
+  /***         Starting PE tests                     ***/
   Status = val_pe_execute_tests(g_sbsa_level, val_pe_get_num());
 
-  val_print(AVS_PRINT_TEST, "\n      ***  Starting Memory tests ***  \n", 0);
+  /***         Starting Memory tests                 ***/
   Status |= val_memory_execute_tests(g_sbsa_level, val_pe_get_num());
 
-  val_print(AVS_PRINT_TEST, "\n      ***  Starting GIC tests ***  \n", 0);
+  /***         Starting GIC tests                    ***/
   Status |= val_gic_execute_tests(g_sbsa_level, val_pe_get_num());
 
-  if (g_sbsa_level > 3) {
-    val_print(AVS_PRINT_TEST, "\n      *** Starting SMMU  tests ***  \n", 0);
+  /***         Starting SMMU tests                   ***/
+  if (g_sbsa_level > 3)
     Status |= val_smmu_execute_tests(g_sbsa_level, val_pe_get_num());
-  }
 
-  if (g_sbsa_level > 4)
-  {
-    val_print(AVS_PRINT_TEST, "\n      *** Starting Watchdog tests ***  \n", 0);
-    Status |= val_wd_execute_tests(g_sbsa_level, val_pe_get_num());
-  }
-
+  /***         Starting Watchdog tests               ***/
   if (g_sbsa_level > 5)
-  {
-    val_print(AVS_PRINT_TEST, "\n      *** Starting PCIe tests ***  \n", 0);
-    Status |= val_pcie_execute_tests(g_enable_pcie_tests, g_sbsa_level, val_pe_get_num());
-  }
+    Status |= val_wd_execute_tests(g_sbsa_level, val_pe_get_num());
 
-  /*
-   * Configure Gic Redistributor and ITS to support
-   * Generation of LPIs.
-   */
-  configureGicIts();
+  /***         Starting PCIe tests                   ***/
+  Status |= val_pcie_execute_tests(g_sbsa_level, val_pe_get_num());
 
-  if (g_sbsa_level > 2) {
-    val_print(AVS_PRINT_TEST, "\n      *** Starting PCIe Exerciser tests ***  \n", 0);
-    Status |= val_exerciser_execute_tests(g_sbsa_level);
-  }
+  /***         Starting Exerciser tests              ***/
+  Status |= val_exerciser_execute_tests(g_sbsa_level);
 
-  if (g_sbsa_level > 6) {
-    val_print(AVS_PRINT_TEST, "\n      *** Starting MPAM tests ***  \n", 0);
+  /***         Starting MPAM tests                   ***/
+  if (g_sbsa_level > 6)
     Status |= val_mpam_execute_tests(g_sbsa_level, val_pe_get_num());
-  }
 
-  if (g_sbsa_level > 6) {
-    val_print(AVS_PRINT_TEST, "\n      *** Starting PMU tests ***  \n",  0);
+  /***         Starting PMU tests                    ***/
+  if (g_sbsa_level > 6)
     Status |= val_pmu_execute_tests(g_sbsa_level, val_pe_get_num());
-  }
 
-  if (g_sbsa_level > 6) {
-    val_print(AVS_PRINT_TEST, "\n      *** Starting RAS tests ***  \n", 0);
+  /***         Starting RAS tests                    ***/
+  if (g_sbsa_level > 6)
     Status |= val_ras_execute_tests(g_sbsa_level, val_pe_get_num());
-  }
 
 #ifdef ENABLE_NIST
+  /***         Starting NIST tests                   ***/
   if (g_execute_nist == TRUE) {
-    val_print(AVS_PRINT_TEST, "\n      *** Starting NIST statistical tests ***  \n", 0);
     Status |= val_nist_execute_tests(g_sbsa_level, val_pe_get_num());
   }
 #endif

@@ -23,7 +23,7 @@
 
 #define TEST_NUM   (AVS_PCIE_TEST_NUM_BASE + 32)
 #define TEST_DESC  "Check HDR CapPtr Register rule    "
-#define TEST_RULE  "RE_REC_1, RE_REC_2"
+#define TEST_RULE  "RE_REG_1, IE_REG_1, IE_REG_3"
 
 static
 void
@@ -34,6 +34,7 @@ payload(void)
   uint32_t pe_index;
   uint32_t tbl_index;
   uint32_t reg_value;
+  uint32_t dp_type;
   uint32_t cap_ptr_value;
   uint32_t test_fails;
   uint32_t test_skip = 1;
@@ -48,6 +49,13 @@ payload(void)
   while (tbl_index < bdf_tbl_ptr->num_entries)
   {
       bdf = bdf_tbl_ptr->device[tbl_index++].bdf;
+      dp_type = val_pcie_device_port_type(bdf);
+
+      /* Check entry is RCiEP/ RCEC/ iEP. Else move to next BDF. */
+      if ((dp_type != iEP_EP) && (dp_type != iEP_RP)
+          && (dp_type != RCEC) && (dp_type != RCiEP))
+          continue;
+
       val_print(AVS_PRINT_DEBUG, "\n       BDF - 0x%x", bdf);
 
       /* Read 32-bits from Capabilities pointer register offset */

@@ -54,8 +54,11 @@ static uint32_t generate_inbound_traffic(uint32_t node_index, uint64_t base_addr
     val_memcpy(src_buf, dest_buf, size);
 
     /* Read the configured monitors for bandwidth values */
-    for (i = 0; i < NUM_PMU_MON ; i++)
+    for (i = 0; i < NUM_PMU_MON ; i++) {
         value[i] = val_pmu_read_count(node_index, i);
+        val_print(AVS_PRINT_DEBUG, "\n       MON %d", i);
+        val_print(AVS_PRINT_DEBUG, " value = %x", value[i]);
+    }
 
     /*Free the buffers */
     val_mem_free_at_address((uint64_t)src_buf, BUFFER_SIZE);
@@ -68,7 +71,7 @@ static void payload(void)
 {
     uint64_t data = 0;
     uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
-    uint32_t fail_cnt = 0, test_skip = 1;
+    uint32_t fail_cnt = 0;
     uint32_t node_count;
     uint32_t node_index;
     uint64_t bandwidth1[NUM_PMU_MON];
@@ -125,7 +128,7 @@ static void payload(void)
         /* Check if the PMU supports atleast 3 counters */
         data = val_pmu_get_monitor_count(node_index);
         if (data < 3) {
-            val_print(AVS_PRINT_ERR, "\n       PMU should support atleast 3 counter", 0);
+            val_print(AVS_PRINT_ERR, "\n       PMU node must support atleast 3 counter", 0);
             fail_cnt++;
             continue;
         }
@@ -199,9 +202,6 @@ static void payload(void)
 
     if (fail_cnt) {
         val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 03));
-        return;
-    } else if (test_skip) {
-        val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 03));
         return;
     }
 

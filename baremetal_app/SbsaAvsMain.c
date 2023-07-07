@@ -24,7 +24,6 @@
 #include "SbsaAvs.h"
 
 uint32_t  g_sbsa_level;
-uint32_t  g_enable_pcie_tests;
 uint32_t  g_print_level;
 uint32_t  g_execute_nist;
 uint32_t  g_print_mmio;
@@ -38,6 +37,8 @@ uint64_t  g_exception_ret_addr;
 uint64_t  g_ret_addr;
 uint32_t  g_wakeup_timeout;
 uint32_t  *g_skip_test_num;
+uint32_t  *g_execute_tests;
+uint32_t  *g_execute_modules;
 
 uint32_t
 createPeInfoTable(
@@ -73,17 +74,6 @@ createGicInfoTable(
 
   return Status;
 
-}
-
-uint32_t
-configureGicIts(
-)
-{
-  uint32_t Status;
-
-  Status = val_gic_its_configure();
-
-  return Status;
 }
 
 void
@@ -289,7 +279,15 @@ ShellAppMainsbsa(
   uint32_t             Status;
   void                 *branch_label;
 
-  g_skip_test_num = &g_skip_array[0];
+  g_skip_test_num   = &g_skip_array[0];
+  if (g_num_tests) {
+      g_execute_tests   = &g_test_array[0];
+  }
+
+  if (g_num_modules) {
+      g_execute_modules = &g_module_array[0];
+  }
+
   g_print_level = PLATFORM_OVERRIDE_PRINT_LEVEL;
   if (g_print_level < AVS_PRINT_INFO)
   {
@@ -316,7 +314,6 @@ ShellAppMainsbsa(
 
   g_execute_nist = FALSE;
   g_print_mmio = FALSE;
-  g_enable_pcie_tests = 1;
   g_wakeup_timeout = PLATFORM_OVERRIDE_TIMEOUT;
 
   //
@@ -374,57 +371,40 @@ ShellAppMainsbsa(
   val_pe_context_save(AA64ReadSp(), (uint64_t)branch_label);
   val_pe_initialize_default_exception_handler(val_pe_default_esr);
 
-  val_print(AVS_PRINT_TEST, "\n      ***  Starting PE tests ***  \n", 0);
+  /***         Starting PE tests                     ***/
   Status = val_pe_execute_tests(g_sbsa_level, val_pe_get_num());
 
-  val_print(AVS_PRINT_TEST, "\n      ***  Starting Memory tests ***  \n", 0);
+  /***         Starting Memory tests                 ***/
   Status |= val_memory_execute_tests(g_sbsa_level, val_pe_get_num());
 
-  val_print(AVS_PRINT_TEST, "\n      ***  Starting GIC tests ***  \n", 0);
+  /***         Starting GIC tests                    ***/
   Status |= val_gic_execute_tests(g_sbsa_level, val_pe_get_num());
 
-  if (g_sbsa_level > 3) {
-    val_print(AVS_PRINT_TEST, "\n      *** Starting SMMU  tests ***  \n", 0);
+  /***         Starting SMMU tests                   ***/
+  if (g_sbsa_level > 3)
     Status |= val_smmu_execute_tests(g_sbsa_level, val_pe_get_num());
-  }
 
-  if (g_sbsa_level > 4)
-  {
-    val_print(AVS_PRINT_TEST, "\n      *** Starting Watchdog tests ***  \n", 0);
-    Status |= val_wd_execute_tests(g_sbsa_level, val_pe_get_num());
-  }
-
+  /***         Starting Watchdog tests               ***/
   if (g_sbsa_level > 5)
-  {
-    val_print(AVS_PRINT_TEST, "\n      *** Starting PCIe tests ***  \n", 0);
-    Status |= val_pcie_execute_tests(g_enable_pcie_tests, g_sbsa_level, val_pe_get_num());
-  }
+    Status |= val_wd_execute_tests(g_sbsa_level, val_pe_get_num());
 
-  /*
-   * Configure Gic Redistributor and ITS to support
-   * Generation of LPIs.
-   */
-  configureGicIts();
+  /***         Starting PCIe tests                   ***/
+  Status |= val_pcie_execute_tests(g_sbsa_level, val_pe_get_num());
 
-  if (g_sbsa_level > 2) {
-    val_print(AVS_PRINT_TEST, "\n      *** Starting PCIe Exerciser tests ***  \n", 0);
-    Status |= val_exerciser_execute_tests(g_sbsa_level);
-  }
+  /***         Starting Exerciser tests              ***/
+  Status |= val_exerciser_execute_tests(g_sbsa_level);
 
-  if (g_sbsa_level > 6) {
-    val_print(AVS_PRINT_TEST, "\n      *** Starting MPAM tests ***  \n", 0);
+  /***         Starting MPAM tests                   ***/
+  if (g_sbsa_level > 6)
     Status |= val_mpam_execute_tests(g_sbsa_level, val_pe_get_num());
-  }
 
-  if (g_sbsa_level > 6) {
-    val_print(AVS_PRINT_TEST, "\n      *** Starting PMU tests ***  \n",  0);
+  /***         Starting PMU tests                    ***/
+  if (g_sbsa_level > 6)
     Status |= val_pmu_execute_tests(g_sbsa_level, val_pe_get_num());
-  }
 
-  if (g_sbsa_level > 6) {
-    val_print(AVS_PRINT_TEST, "\n      *** Starting RAS tests ***  \n", 0);
+  /***         Starting RAS tests                    ***/
+  if (g_sbsa_level > 6)
     Status |= val_ras_execute_tests(g_sbsa_level, val_pe_get_num());
-  }
 
 print_test_status:
   val_print(AVS_PRINT_TEST, "\n     ------------------------------------------------------- \n", 0);

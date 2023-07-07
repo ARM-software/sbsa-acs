@@ -33,6 +33,9 @@
 #define PCIE_MAX_BUS   256
 #define PCIE_MAX_DEV    32
 #define PCIE_MAX_FUNC    8
+
+#define MAX_SID        32
+
 #elif TARGET_EMUALTION
 #include "../platform/pal_baremetal/FVP/RDN2/include/platform_override_fvp.h"
   typedef INT8   int8_t;
@@ -45,6 +48,9 @@
   typedef UINT64 uint64_t;
   typedef UINT64 addr_t;
   typedef UINT64 dma_addr_t;
+
+  #define MAX_SID  PLATFORM_OVERRIDE_MAX_SID
+
 #if PLATFORM_OVERRIDE_TIMEOUT
     #define TIMEOUT_LARGE    PLATFORM_OVERRIDE_TIMEOUT_LARGE
     #define TIMEOUT_MEDIUM   PLATFORM_OVERRIDE_TIMEOUT_MEDIUM
@@ -82,6 +88,9 @@
 #define TIMEOUT_MEDIUM   0x100000
 #define TIMEOUT_SMALL    0x1000
 #endif
+
+/* Max SID Size in SMMU is 32 */
+#define MAX_SID  32
 
 #if PLATFORM_OVERRIDE_MAX_BDF
     #define PCIE_MAX_BUS    PLATFORM_OVERRIDE_PCIE_MAX_BUS
@@ -376,6 +385,8 @@ uint32_t pal_pcie_check_device_list(void);
 uint32_t pal_pcie_check_device_valid(uint32_t bdf);
 uint32_t pal_pcie_mem_get_offset(uint32_t type);
 
+uint32_t pal_pcie_bar_mem_read(uint32_t bdf, uint64_t address, uint32_t *data);
+uint32_t pal_pcie_bar_mem_write(uint32_t bdf, uint64_t address, uint32_t data);
 /**
   @brief  Instance of SMMU INFO block
 **/
@@ -394,7 +405,8 @@ typedef struct {
 typedef struct {
   uint64_t base;
   uint32_t overflow_gsiv;
-  uint32_t node_ref;
+  uint32_t node_ref;       /* offest to the IORT node in IORT ACPI table*/
+  uint64_t smmu_base;      /* SMMU base to which component is attached, else NULL */
 } IOVIRT_PMCG_INFO_BLOCK;
 
 typedef enum {
@@ -597,14 +609,11 @@ typedef struct {
 uint32_t pal_pcie_get_legacy_irq_map(uint32_t seg, uint32_t bus, uint32_t dev, uint32_t fn, PERIPHERAL_IRQ_MAP *irq_map);
 uint32_t pal_pcie_is_device_behind_smmu(uint32_t seg, uint32_t bus, uint32_t dev, uint32_t fn);
 uint32_t pal_pcie_get_root_port_bdf(uint32_t *seg, uint32_t *bus, uint32_t *dev, uint32_t *func);
-uint32_t pal_pcie_get_device_type(uint32_t seg, uint32_t bus, uint32_t dev, uint32_t fn);
 uint32_t pal_pcie_get_snoop_bit(uint32_t seg, uint32_t bus, uint32_t dev, uint32_t fn);
 uint32_t pal_pcie_get_dma_support(uint32_t seg, uint32_t bus, uint32_t dev, uint32_t fn);
-uint32_t pal_pcie_device_driver_present(uint32_t seg, uint32_t bus, uint32_t dev, uint32_t fn);
 uint32_t pal_pcie_get_dma_coherent(uint32_t seg, uint32_t bus, uint32_t dev, uint32_t fn);
 uint32_t pal_pcie_is_devicedma_64bit(uint32_t seg, uint32_t bus, uint32_t dev, uint32_t fn);
-uint32_t pal_pcie_scan_bridge_devices_and_check_memtype(uint32_t seg, uint32_t bus,
-                                                            uint32_t dev, uint32_t fn);
+uint32_t pal_pcie_device_driver_present(uint32_t seg, uint32_t bus, uint32_t dev, uint32_t fn);
 uint32_t pal_pcie_get_rp_transaction_frwd_support(uint32_t seg, uint32_t bus, uint32_t dev, uint32_t fn);
 /**
   @brief DMA controllers info structure

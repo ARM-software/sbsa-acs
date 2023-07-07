@@ -181,17 +181,17 @@ payload(void)
         /* If test runs for atleast an endpoint */
         test_skip = 0;
 
-        /* Check_1: Accessing address in range of P memory
-         * should not cause any exception or data abort
+        /* Check_1: Accessing address in range of NP memory
+         * must not cause any exception or data abort
          *
          * Write known value to an address which is in range
-         * Base + offset should always be in the range.
+         * Base + offset must always be in the range.
          * Read the same
          */
 
-        old_value = (*(volatile uint32_t *)(mem_base + mem_offset));
-        *(volatile uint32_t *)(mem_base + mem_offset) = KNOWN_DATA;
-        read_value = (*(volatile uint32_t *)(mem_base + mem_offset));
+        val_pcie_bar_mem_read(bdf, mem_base + mem_offset, &old_value);
+        val_pcie_bar_mem_write(bdf, mem_base + mem_offset, KNOWN_DATA);
+        val_pcie_bar_mem_read(bdf, mem_base + mem_offset, &read_value);
 
         if ((old_value != read_value && read_value == PCIE_UNKNOWN_RESPONSE) ||
              val_pcie_is_urd(bdf)) {
@@ -213,7 +213,7 @@ payload(void)
             continue;
         }
 
-        /**Check_2: Accessing out of NP memory limit range should return 0xFFFFFFFF
+        /**Check_2: Accessing out of NP memory limit range must return 0xFFFFFFFF
          *
          * If the limit exceeds 1MB then modify the range to be 1MB
          * and access out of the limit set
@@ -228,7 +228,7 @@ payload(void)
            val_pcie_write_cfg(bdf, TYPE1_NP_MEM, mem_base);
            val_pcie_read_cfg(bdf, TYPE1_NP_MEM, &read_value);
 
-           value = (*(volatile uint32_t *)(new_mem_lim + MEM_OFFSET_SMALL));
+           val_pcie_bar_mem_read(bdf, new_mem_lim + MEM_OFFSET_SMALL, &value);
            val_print(AVS_PRINT_DEBUG, "       Value read is 0x%llx", value);
            if (value != PCIE_UNKNOWN_RESPONSE)
            {
@@ -262,7 +262,7 @@ exception_return:
 
   if (test_skip == 1) {
       val_print(AVS_PRINT_DEBUG,
-        "\n       No RP/ iEP_RP type device found with valid Memory Base/Limit Reg.", 0);
+        "\n       No iEP_RP type device found with valid Memory Base/Limit Reg.", 0);
       val_print(AVS_PRINT_DEBUG, "\n       Skipping Test", 0);
       val_set_status(pe_index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
   }
