@@ -17,7 +17,7 @@ Most of the tests are executed from UEFI Shell by executing the SBSA UEFI shell 
 A few tests are executed by running the SBSA ACS Linux application which in turn depends on the SBSA ACS Linux kernel module.
 
 ## Release details
- - Code Quality: REL v7.1.1 BETA-1
+ - Code Quality: REL v7.1.2
  - The tests are written for version 7.1 of the SBSA specification.
  - The compliance suite is not a substitute for design verification.
  - To review the SBSA ACS logs, Arm licensees can contact Arm directly through their partner managers.
@@ -252,6 +252,7 @@ The details of the hardware or Verification IP which enable these exerciser test
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 |   SBSA Spec Version   |   ACS Coverage Mapping   |   SBSA ACS Version   |        SBSA Tag ID         |   BSA ACS Version   |      BSA Tag ID     |    Pre-Si Support    |
 |-----------------------|:------------------------:|:--------------------:|:--------------------------:|:-------------------:|:-------------------:|:--------------------:|
+|       SBSA v7.1       |    BSA ACS + SBSA ACS    |      v7.1.2          |   v23.07_REL7.1.2          |        v1.0.5       |   v23.07_REL1.0.5   |       Yes            |
 |       SBSA v7.1       |    BSA ACS + SBSA ACS    |      v7.1.1 BETA-1   |   v23.03_REL7.1.1_BETA-1   |        v1.0.4       |   v23.03_REL1.0.4   |       Yes            |
 |       SBSA v7.1       |    BSA ACS + SBSA ACS    |      v7.1.0 BETA-0   |   v23.01_REL7.1.0_BETA-0   |        v1.0.3       |   v23.01_REL1.0.3   |       Yes            |
 |       SBSA v6.1       |    BSA ACS + SBSA ACS    |      v6.1.0          |   v22.10_REL6.1.0          |        v1.0.2       |   v22.10_REL1.0.2   |       Yes            |
