@@ -28,3 +28,12 @@ v23.03_REL7.1.1_BETA-1
 * Better messaging and info details
 * Removal of Exerciser tests common to SBSA and BSA
 * Documentation
+
+v23.07_REL7.1.2
+
+* Test enhancements and bug fixes
+* PMU and RAS tests updates
+* Added support to Coresight components in Baremetal
+* test select and skip option enhanced to select multiple tests
+* SMMU tests reordering and enhancements
+* Documentation Changes

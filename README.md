@@ -47,7 +47,7 @@ To enable the export of a few kernel APIs that are necessary for PCIe and IOMMU 
 ## ACS build steps - UEFI Shell application
 
 ### Prebuilt images
-Prebuilt images for v23_03_REL7.1.1_BETA-1 release is available in the prebuilt_images folder of the master branch. The prebuilt images of previous release are present in [release branch](https://github.com/ARM-software/sbsa-acs/tree/release/prebuilt_images). You can choose to use this images or build your own image by following the steps below. If you choose to use the prebuilt image, jump to the test suite execution section below for details on how to run the application.
+Prebuilt images for v23.07_REL7.1.2 release is available in the prebuilt_images folder of the master branch. The prebuilt images of previous release are present in [release branch](https://github.com/ARM-software/sbsa-acs/tree/release/prebuilt_images). You can choose to use this images or build your own image by following the steps below. If you choose to use the prebuilt image, jump to the test suite execution section below for details on how to run the application.
 
 ### Prerequisites
 Before starting the build, ensure that the following requirements are met.
