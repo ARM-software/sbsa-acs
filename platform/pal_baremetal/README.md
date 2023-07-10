@@ -20,8 +20,8 @@ Reference Makefile is present at [Makefile](../../Makefile). To compile SBSA, pe
 
 The output library files will be generated at <sbsa_path>/build/lib/
 
-For more details on how to port the reference code to a specific platform and for further customisation please refer to the [User Guide](docs/Arm_SBSA_ACS_Bare-metal_User_Guide.pdf)
+For more details on how to port the reference code to a specific platform and for further customisation please refer to the [User Guide](../../docs/Arm_SBSA_ACS_Bare-metal_User_Guide.pdf)
 
 -----------------
 
-*Copyright (c) 2020-2021, Arm Limited and Contributors. All rights reserved.*
+*Copyright (c) 2020-2023, Arm Limited and Contributors. All rights reserved.*

@@ -15,11 +15,11 @@ This suite includes a set of examples of the invariant behaviors that are provid
 The tests are executed in a baremetal environment. The initialization of the baremetal environment is specific to the environment and is out of scope of this document.
 
 ## Release details
- - Code Quality: REL v7.1.1 BETA-1
+ - Code Quality: REL v7.1.2 EAC
  - The tests are written for version 7.1 of the SBSA specification.
  - The compliance suite is not a substitute for design verification.
  - To review the SBSA ACS logs, Arm licensees can contact Arm directly through their partner managers.
- - To know about the gaps in the test coverage, see the [Testcase checklist](docs/testcase-checklist.md).
+ - To know about the SBSA rules not implemented in this release, see [Test Scenario Document](docs/Arm_SBSA_Architecture_Compliance_Test_Scenario.pdf).
 
 ### EDA vendors
 Contact your EDA vendor and ask if they include these tests as part of their verificatoin IP package.
@@ -29,9 +29,9 @@ Contact your EDA vendor and ask if they include these tests as part of their ver
   - To get the latest version of the code with bug fixes and new features, use the master branch.
 
 ## Additional reading
-  - For details on the SBSA ACS test execution, see the [Arm SBSA ACS User Guide](platform/pal_baremetal/docs/Arm_SBSA_ACS_Bare-metal_User_Guide.pdf).
+  - For details on the SBSA ACS test execution, see the [Arm SBSA ACS User Guide](docs/Arm_SBSA_ACS_Bare-metal_User_Guide.pdf).
   - For details on the Design of the SBSA ACS, see the [Arm SBSA Validation Methodology Document](docs/Arm_SBSA_Architecture_Compliance_Validation_Methodology.pdf).
-  - For information about the test coverage scenarios that are implemented in the current release of ACS and the scenarios that are  planned for the future releases, see the [Testcase checklist](docs/testcase-checklist.md). <br />
+  - For information about the test coverage scenarios that are implemented in the current release of ACS and the scenarios that are  planned for the future releases, see the [Testcase checklist](docs/Arm_SBSA_testcase-checklist.rst). <br />
 Note: The Baremetal PCIe enumeration code provided as part of the SBSA ACS should be used and should not be replaced. This code is vital in analyzing of the test result.
 
 ## Target platforms
@@ -129,10 +129,30 @@ On a system where a USB port is available and functional, perform the following 
 6. To start the compliance tests, run the executable Sbsa.efi with the appropriate parameters.
    For details on the parameters, refer to [SBSA ACS User Guide](docs/Arm_SBSA_Architecture_Compliance_User_Guide.pdf)
 
+## Limitations
+Validating the compliance of certain PCIe rules defined in the SBSA specification requires the PCIe end-point to generate specific stimulus during the runtime of the test. Examples of such stimulus are  P2P, PASID, ATC, etc. The tests that requires these stimuli are grouped together in the exerciser module. The exerciser layer is an abstraction layer that enables the integration of hardware capable of generating such stimuli to the test framework.
+The details of the hardware or Verification IP which enable these exerciser tests are platform specific and are beyond the scope of this document.
+
+ - Some PCIe and Exerciser test are dependent on PCIe features supported by the test system.
+   Please fill the required API's with test system information.
+
+|APIs                         |Description                                                                   |Affected tests          |
+|-----------------------------|------------------------------------------------------------------------------|------------------------|
+|pal_pcie_p2p_support         |Return 0 if the test system PCIe supports peer to peer transaction, else 1    |856                     |
+|pal_pcie_is_cache_present    |Return 1 if the test system supports PCIe address translation cache, else 0   |852                     |
+|pal_pcie_get_legacy_irq_map  |Return 0 if system legacy irq map is filled, else 1                           |850                  |
+
+   Below exerciser capabilities are required by exerciser test.
+   - MSI-X interrupt generation.
+   - Incoming Transaction Monitoring(order, type).
+   - Initiating transacions from and to the exerciser.
+   - Ability to check on BDF and register address seen for each configuration address along with access type.
+
 ### SBSA ACS version mapping
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 |   SBSA Spec Version   |   ACS Coverage Mapping   |   SBSA ACS Version   |        SBSA Tag ID         |   BSA ACS Version   |      BSA Tag ID     |    Pre-Si Support    |
 |-----------------------|:------------------------:|:--------------------:|:--------------------------:|:-------------------:|:-------------------:|:--------------------:|
+|       SBSA v7.1       |    BSA ACS + SBSA ACS    |      v7.1.2 EAC      |   v23.07_REL7.1.2          |        v1.0.5       |   v23.07_REL1.0.5   |       Yes            |
 |       SBSA v7.1       |    BSA ACS + SBSA ACS    |      v7.1.1 BETA-1   |   v23.03_REL7.1.1_BETA-1   |        v1.0.4       |   v23.03_REL1.0.4   |       Yes            |
 |       SBSA v7.1       |    BSA ACS + SBSA ACS    |      v7.1.0 BETA-0   |   v23.01_REL7.1.0_BETA-0   |        v1.0.3       |   v23.01_REL1.0.3   |       Yes            |
 |       SBSA v6.1       |    BSA ACS + SBSA ACS    |      v6.1.0          |   v22.10_REL6.1.0          |        v1.0.2       |   v22.10_REL1.0.2   |       Yes            |

@@ -145,6 +145,51 @@ Value1 - Requested transaction data<br/>
 Value2 - Null<br/>
 Bdf -  BDF of the exerciser<br/>
 <br/>
+
+### Error Injection
+Error injection capability enables user to inject error in a PCIe endpoint.<br/>
+- The user can inject an error at that endpoint with the error configured using the error_code field. The error_codes are defined in Error Codes section. This bit is cleared once the error has been injected.
+**pal_exerciser_get_param(Type, Value1, Value2, Bdf)**<br/>
+Type - ERRR_INJECT_TYPE<br/>
+Value1 - Type of error to inject(Refer error code section)<br/>
+Value2 - Null<br/>
+Bdf -  BDF of the exerciser<br/>
+**pal_exerciser_ops(Ops, Param, Bdf)**<br/>
+Ops - INJECT_ERROR<br/>
+Param - Type of error to inject(Refer error code section)<br/>
+Bdf -  BDF of the exerciser<br/>
+<br/>
+
+## Error Codes
+   |Error Name                                |Error Code|
+   |------------------------------------------|----------|
+   |Correctable Receiver Error                |0x00      |
+   |Correctable Bad TLP                       |0x01      |
+   |Correctable Bad DLLP                      |0x02      |
+   |Correctable Replay Num Rollover           |0x03      |
+   |Correctable Replay Timer Timeout          |0x04      |
+   |Correctable Advisory Non-Fatal Error      |0x05      |
+   |Correctable Internal Error                |0x06      |
+   |Correctable Header Log OverFlow           |0x07      |
+   |Uncorrectable Data Link Error             |0x08      |
+   |Uncorrectable Surprise Down Error         |0x09      |
+   |Uncorrectable Poisoned TLP Received       |0x0A      |
+   |Uncorrectable Flow Control Error          |0x0B      |
+   |Uncorrectable Completion Timeout          |0x0C      |
+   |Uncorrectable Completer Abort             |0x0D      |
+   |Uncorrectable Unexpected Completion       |0x0E      |
+   |Uncorrectable Receiver Overflow           |0x0F      |
+   |Uncorrectable Malformed TLP               |0x10      |
+   |Uncorrectable ECRC Error                  |0x11      |
+   |Uncorrectable Unsupported Request         |0x12      |
+   |Uncorrectable ACS Violation               |0x13      |
+   |Uncorrectable Internal Error              |0x14      |
+   |Uncorrectable MultiCast Blocked TLP       |0x15      |
+   |Uncorrectable Atomic Op Egress Blocked    |0x16      |
+   |Uncorrectable TLP Prefix Blocked Egress   |0x17      |
+   |Uncorrectable Poisoned TLP Egress Blocked |0x18      |
+   |Invalid configuration                     |0x19      |
+<br/>
 <br/>
 
 ## License
@@ -152,5 +197,5 @@ Arm SBSA ACS is distributed under Apache v2.0 License.
 
 --------------
 
-*Copyright (c) 2022, Arm Limited and Contributors. All rights reserved.*
+*Copyright (c) 2022-2023, Arm Limited and Contributors. All rights reserved.*
 
