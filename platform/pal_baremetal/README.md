@@ -23,7 +23,7 @@ The output library files will be generated at <sbsa_path>/build/lib/
 Note: Any platform specific changes can be done by using TARGET_EMULATION macro defintion
 
 
-For more details on how to port the reference code to a specific platform and for further customisation please refer to the [User Guide](docs/Arm_SBSA_ACS_Bare-metal_User_Guide.pdf)
+For more details on how to port the reference code to a specific platform and for further customisation please refer to the [User Guide](../../docs/Arm_SBSA_ACS_Bare-metal_User_Guide.pdf)
 
 -----------------
 
