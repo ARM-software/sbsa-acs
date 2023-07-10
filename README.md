@@ -17,28 +17,26 @@ Most of the tests are executed from UEFI Shell by executing the SBSA UEFI shell 
 A few tests are executed by running the SBSA ACS Linux application which in turn depends on the SBSA ACS Linux kernel module.
 
 ## Release details
- - Code Quality: REL v7.1.1 BETA-1
+ - Code Quality: REL v7.1.2
  - The tests are written for version 7.1 of the SBSA specification.
- - The release includes test which are not verified due to platform dependency. Please refer to [testcase-checklist](docs/testcase-checklist.md) for these tests.
  - The compliance suite is not a substitute for design verification.
  - To review the SBSA ACS logs, Arm licensees can contact Arm directly through their partner managers.
- - To know about the gaps in the test coverage, see [Test Scenario Document](docs/Arm_SBSA_Architecture_Compliance_Test_Scenario.pdf).
+ - To know about the SBSA rules not implemented in this release, see [Test Scenario Document](docs/Arm_SBSA_Architecture_Compliance_Test_Scenario.pdf).
 
 
 ## GitHub branch
-  - To pick up the release version of the code, checkout the corresponding tag from master branch.
+  - To pick up the release version of the code, checkout the corresponding tag from the master branch.
   - To get the latest version of the code with bug fixes and new features, use the master branch.
 
 ## Additional reading
-  - For details on the SBSA ACS UEFI Shell Application, Linux Application and PMU Linux Application see the [Arm SBSA ACS User Guide](docs/Arm_SBSA_Architecture_Compliance_User_Guide.pdf).
+  - For information about the implementable SBSA rules test algorithm and for unimplemented SBSA rules, see the [Test Scenario Document](docs/Arm_SBSA_Architecture_Compliance_Test_Scenario.pdf).
+  - For information on test category(UEFI, Linux, BM) and applicable systems(SR,PreSilicon), see [Test Checklist](docs/Arm_SBSA_testcase-checklist.rst)
   - For details on the design of the SBSA ACS, see the [Arm SBSA Validation Methodology Document](docs/Arm_SBSA_Architecture_Compliance_Validation_Methodology.pdf).
-  - For information about the test coverage scenarios that are implemented in the current release of ACS and the scenarios that are planned for the future releases, see the [Test Scenario Document](docs/Arm_SBSA_Architecture_Compliance_Test_Scenario.pdf).
-
-## SBSA ACS Baremetal Reference Code
-Bare-metal reference code is added as part of this release. For more information, see
-  - [Arm SBSA ACS Bare-metal User Guide](platform/pal_baremetal/docs/Arm_SBSA_ACS_Bare-metal_User_Guide.pdf).
-  - [Bare-metal Code](platform/pal_baremetal/). <br />
-Note: The Baremetal PCIe enumeration code provided as part of the SBSA ACS should be used and should not be replaced. This code is vital in analyzing of the test result.
+  - For details on the SBSA ACS UEFI Shell Application, Linux Application and PMU Linux Application see the [Arm SBSA ACS User Guide](docs/Arm_SBSA_Architecture_Compliance_User_Guide.pdf).
+  - For details on the SBSA ACS Baremetal support, see the
+    - [Arm SBSA ACS Bare-metal User Guide](docs/Arm_SBSA_ACS_Bare-metal_User_Guide.pdf).
+    - [Bare-metal Code](platform/pal_baremetal/). <br />
+Note: The Baremetal PCIe enumeration code provided as part of the SBSA ACS should be used and should not be replaced. This code is vital in analyzing of the test result. 
 
 ## SBSA ACS Linux kernel module
 To enable the export of a few kernel APIs that are necessary for PCIe and IOMMU tests, Linux kernel module and a kernel patch file are required. These files are available at [linux-acs](https://gitlab.arm.com/linux-arm/linux-acs).
@@ -56,45 +54,54 @@ Before starting the build, ensure that the following requirements are met.
 
 - Any mainstream Linux based OS distribution running on a x86 or AArch64 machine.
 - Install GCC-ARM 10.3 or later toolchain for Linux from [here](https://developer.arm.com/tools-and-software/open-source-software/developer-tools/gnu-toolchain/gnu-a/downloads).
-- git clone the edk2-stable202208 tag of [EDK2 tree](https://github.com/tianocore/edk2).
-- git clone the [EDK2 port of libc](https://github.com/tianocore/edk2-libc) SHA: 61687168fe02ac4d933a36c9145fdd242ac424d1.
-- Install the build prerequisite packages to build EDK2.<br />
-Note:<br /> 
-- The details of the packages are beyond the scope of this document.
+- Install the build prerequisite packages to build EDK2.
+Note: The details of the packages are beyond the scope of this document.
 
-To start the ACS build, perform the following steps:
+### 1. Build Steps
 
-1.  cd local_edk2_path
-2.  git clone https://github.com/tianocore/edk2-libc
-3.  git submodule update --init --recursive
-4.  git clone https://github.com/ARM-software/sbsa-acs ShellPkg/Application/sbsa-acs
-5.  Add the following to the [LibraryClasses.common] section in ShellPkg/ShellPkg.dsc
-   - Add  SbsaValLib|ShellPkg/Application/sbsa-acs/val/SbsaValLib.inf
-   - Add  SbsaPalLib|ShellPkg/Application/sbsa-acs/platform/pal_uefi/SbsaPalLib.inf
-6.  Add ShellPkg/Application/sbsa-acs/uefi_app/SbsaAvs.inf in the [components] section of ShellPkg/ShellPkg.dsc
+1.  git clone the edk2-stable202208 tag of EDK2 tree
+> git clone --recursive --branch edk2-stable202208 https://github.com/tianocore/edk2
+2.  git clone the EDK2 port of libc
+> git clone https://github.com/tianocore/edk2-libc edk2/edk2-libc
+3.  git clone sbsa-acs
+> git clone https://github.com/ARM-software/sbsa-acs edk2/ShellPkg/Application/sbsa-acs
+4.  Add the following to the [LibraryClasses.common] section in edk2/ShellPkg/ShellPkg.dsc
+> SbsaValLib|ShellPkg/Application/sbsa-acs/val/SbsaValLib.inf
 
-### Linux build environment
-If the build environment is Linux, perform the following steps:
-1.  export GCC49_AARCH64_PREFIX= GCC 10.3 toolchain path pointing to /bin/aarch64-none-linux-gnu- in case of x86 machine.<br /> For AArch64 build it should point to /usr/bin/
-2.  export PACKAGES_PATH= path pointing to edk2-libc
-3.  source edksetup.sh
-4.  make -C BaseTools/Source/C
-5.  source ShellPkg/Application/sbsa-acs/tools/scripts/avsbuild.sh
+> SbsaPalLib|ShellPkg/Application/sbsa-acs/platform/pal_uefi/SbsaPalLib.inf
+5.  Add the following to the [components] section of edk2/ShellPkg/ShellPkg.dsc
+> ShellPkg/Application/sbsa-acs/uefi_app/SbsaAvs.inf
 
-**Note:** To build the ACS with NIST Statistical Test Suite, see the [SBSA_NIST_User_Guide](docs/Arm_SBSA_NIST_User_Guide.md)
+### 1.1 On Linux build environment, perform the following steps:
+- On x86 machine
+> wget https://developer.arm.com/-/media/Files/downloads/gnu-a/10.3-2021.07/binrel/gcc-arm-10.3-2021.07-x86_64-aarch64-none-linux-gnu.tar.xz
 
-### Build output
+> tar -xf gcc-arm-10.3-2021.07-x86_64-aarch64-none-linux-gnu.tar.xz
+
+> export GCC49_AARCH64_PREFIX= GCC 10.3 toolchain path pointing to gcc-arm-10.3-2021.07-x86_64-aarch64-none-linux-gnu/bin/aarch64-none-linux-gnu-
+
+- On AArch64 machine
+> export GCC49_AARCH64_PREFIX=/usr/bin
+
+- From inside the edk2 directory in console
+
+> export PACKAGES_PATH=$PWD/edk2-libc
+
+> source edksetup.sh
+
+> make -C BaseTools/Source/C
+
+> source ShellPkg/Application/sbsa-acs/tools/scripts/avsbuild.sh
+### 2. Build output
 
 The EFI executable file is generated at <edk2_path>/Build/Shell/DEBUG_GCC49/AARCH64/Sbsa.efi
 
+### 3. Execution Steps
 
-## Test suite execution
+The execution of the compliance suite varies depending on the test environment.
+These steps assume that the test suite is invoked through the ACS UEFI shell application.
 
-The execution of the compliance suite varies depending on the test environment. These steps assume that the test suite is invoked through the ACS UEFI shell application.
-
-For details about the SBSA ACS UEFI Shell application, see [SBSA ACS USER Guide](docs/Arm_SBSA_Architecture_Compliance_User_Guide.pdf)
-
-### Prerequisites
+#### Firmware Dependencies
 - If the system supports LPI’s (Interrupt ID > 8192), then Firmware should have support for installing handler for LPI interrupts.
     - If you are using edk2, change the ArmGic driver in the ArmPkg to obtain support for installing handler for LPI’s.
     - Add the following in edk2/ArmPkg/Drivers/ArmGic/GicV3/ArmGicV3Dxe.c
@@ -104,8 +111,7 @@ For details about the SBSA ACS UEFI Shell application, see [SBSA ACS USER Guide]
 >          -mGicNumInterrupts      = ArmGicGetMaxNumInterrupts (mGicDistributorBase);
 >          +mGicNumInterrupts      = ARM_GIC_MAX_NUM_INTERRUPT;
 
-### On Silicon
-
+### 3.1 On Silicon
 On a system where a USB port is available and functional, perform the following steps:
 
 1. Copy 'Sbsa.efi' to a USB Flash drive.
@@ -115,17 +121,19 @@ On a system where a USB port is available and functional, perform the following 
 5. Type 'fsx' where 'x' is replaced by the number determined in step 4.
 6. To start the compliance tests, run the executable Sbsa.efi with the appropriate parameters.
    For details on the parameters, refer to [SBSA ACS User Guide](docs/Arm_SBSA_Architecture_Compliance_User_Guide.pdf)
+> shell> Sbsa.efi
 7. Copy the UART console output to a log file for analysis and certification.
 
 
-### Emulation environment with secondary storage
+### 3.2 Emulation environment with secondary storage
 On an emulation environment with secondary storage, perform the following steps:
 
 1. Create an image file which contains the 'Sbsa.efi' file. For Example:
-  - mkfs.vfat -C -n HD0 hda.img 2097152
-  - sudo mount -o rw,loop=/dev/loop0,uid=`whoami`,gid=`whoami` hda.img /mnt/sbsa.
+  - mkfs.vfat -C -n HD0 \<name of image\>.img 2097152.
+    Here 2097152 is the size of the image.
+  - sudo mount -o rw,loop=/dev/loop0,uid=`whoami`,gid=`whoami` \<name of image\>.img /mnt/sbsa.
     If loop0 is busy, specify the loop that is free
-  - cp  "<path to application>/Sbsa.efi" /mnt/sbsa/
+  - cp  "\<path to application\>/Sbsa.efi" /mnt/sbsa/
   - sudo umount /mnt/sbsa
 2. Load the image file to the secondary storage using a backdoor.
    The steps followed to load the image file are emulation environment-specific and beyond the scope of this document.
@@ -134,11 +142,11 @@ On an emulation environment with secondary storage, perform the following steps:
 5. Type 'fsx' where 'x' is replaced by the number determined in step 4.
 6. To start the compliance tests, run the executable Sbsa.efi with the appropriate parameters.
    For details on the parameters, see the [SBSA ACS User Guide](docs/Arm_SBSA_Architecture_Compliance_User_Guide.pdf)
+> shell> Sbsa.efi
 7. Copy the UART console output to a log file for analysis and certification.
 
 
-### Emulation environment without secondary storage
-
+### 3.3 Emulation environment without secondary storage
 On an emulation platform where secondary storage is not available, perform the following steps:
 
 1. Add the path to 'Sbsa.efi' file in the UEFI FD file.
@@ -244,6 +252,7 @@ The details of the hardware or Verification IP which enable these exerciser test
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 |   SBSA Spec Version   |   ACS Coverage Mapping   |   SBSA ACS Version   |        SBSA Tag ID         |   BSA ACS Version   |      BSA Tag ID     |    Pre-Si Support    |
 |-----------------------|:------------------------:|:--------------------:|:--------------------------:|:-------------------:|:-------------------:|:--------------------:|
+|       SBSA v7.1       |    BSA ACS + SBSA ACS    |      v7.1.2          |   v23.07_REL7.1.2          |        v1.0.5       |   v23.07_REL1.0.5   |       Yes            |
 |       SBSA v7.1       |    BSA ACS + SBSA ACS    |      v7.1.1 BETA-1   |   v23.03_REL7.1.1_BETA-1   |        v1.0.4       |   v23.03_REL1.0.4   |       Yes            |
 |       SBSA v7.1       |    BSA ACS + SBSA ACS    |      v7.1.0 BETA-0   |   v23.01_REL7.1.0_BETA-0   |        v1.0.3       |   v23.01_REL1.0.3   |       Yes            |
 |       SBSA v6.1       |    BSA ACS + SBSA ACS    |      v6.1.0          |   v22.10_REL6.1.0          |        v1.0.2       |   v22.10_REL1.0.2   |       Yes            |

@@ -22,7 +22,7 @@
 
   #define SBSA_ACS_MAJOR_VER     7
   #define SBSA_ACS_MINOR_VER     1
-  #define SBSA_ACS_SUBMINOR_VER  1
+  #define SBSA_ACS_SUBMINOR_VER  2
 
   #define SBSA_MIN_LEVEL_SUPPORTED 3
   #define SBSA_MAX_LEVEL_SUPPORTED 7
