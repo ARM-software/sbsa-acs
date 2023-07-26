@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, 2021-2023 Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018, 2021-2023, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,7 +23,7 @@
 
 #define TEST_NUM   (AVS_SMMU_TEST_NUM_BASE + 9)
 #define TEST_RULE  "B_SMMU_03"
-#define TEST_DESC  "Check Large Virtual Addr Support      "
+#define TEST_DESC  "Check SMMU Large VA Support       "
 
 static
 void
