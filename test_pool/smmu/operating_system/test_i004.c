@@ -24,7 +24,7 @@
 
 #define TEST_NUM   (AVS_SMMU_TEST_NUM_BASE + 4)
 #define TEST_RULE  "B_SMMU_20"
-#define TEST_DESC  "SMMU Revision,S-EL2 support Hyp   "
+#define TEST_DESC  "Check S-EL2 & SMMU Stage2 Support "
 
 static
 void
