@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2023 Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2023, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -24,7 +24,7 @@
 
 #define TEST_NUM   (AVS_SMMU_TEST_NUM_BASE + 14)
 #define TEST_RULE  "S_L7SM_03, S_L7SM_04"
-#define TEST_DESC  "Check SMMUv3 PMU Extension        "
+#define TEST_DESC  "Check SMMU PMU Extension          "
 
 static
 void

@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2023 Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2023, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -25,7 +25,7 @@
 
 #define TEST_NUM   (AVS_SMMU_TEST_NUM_BASE + 16)
 #define TEST_RULE  "S_L7SM_02"
-#define TEST_DESC  "Check for SMMU/CATU in ETR Path       "
+#define TEST_DESC  "Check for SMMU/CATU in ETR Path   "
 
 #define MAX_NUM_ETR 6
 
