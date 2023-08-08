@@ -1701,6 +1701,7 @@ uint32_t val_pcie_bitfield_check(uint32_t bdf, uint64_t *bitfield_entry)
 
   uint32_t bf_value;
   uint32_t cap_base;
+  uint32_t id;
   uint32_t reg_value;
   uint32_t reg_offset;
   uint32_t temp_reg_value;
@@ -1727,9 +1728,11 @@ uint32_t val_pcie_bitfield_check(uint32_t bdf, uint64_t *bitfield_entry)
           break;
       case PCIE_CAP:
           status = val_pcie_find_capability(bdf, PCIE_CAP, bf_entry->cap_id, &cap_base);
+          id = bf_entry->cap_id;
           break;
       case PCIE_ECAP:
           status = val_pcie_find_capability(bdf, PCIE_ECAP, bf_entry->ecap_id, &cap_base);
+          id = bf_entry->ecap_id;
           break;
       default:
           val_print(AVS_PRINT_ERR, "\n       Invalid reg_type : 0x%x  ", bf_entry->reg_type);
@@ -1738,7 +1741,8 @@ uint32_t val_pcie_bitfield_check(uint32_t bdf, uint64_t *bitfield_entry)
 
   if (status != PCIE_SUCCESS)
   {
-      val_print(AVS_PRINT_ERR, "\n       PCIe Capability not found for BDF 0x%x", bdf);
+      val_print(AVS_PRINT_ERR, "\n       PCIe Capability 0x%x", id);
+      val_print(AVS_PRINT_ERR, " not found for BDF 0x%x", bdf);
       return status;
   }
 
