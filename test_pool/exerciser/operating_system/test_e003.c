@@ -70,6 +70,8 @@ payload(void)
   uint32_t dma_len;
   uint32_t instance;
   uint32_t e_bdf;
+  uint32_t erp_bdf;
+  uint32_t rc_index;
   uint32_t cap_base;
   void *dram_buf_in_virt;
   void *dram_buf_out_virt;
@@ -157,6 +159,20 @@ payload(void)
 
     /* If ATS Capability Not Present, Skip. */
     if (val_pcie_find_capability(e_bdf, PCIE_ECAP, ECID_ATS, &cap_base) != PCIE_SUCCESS)
+        continue;
+
+    /* Get RP of the exerciser */
+    if (val_pcie_get_rootport(e_bdf, &erp_bdf))
+        continue;
+
+    /* Get index for RC in IOVIRT mapping*/
+    rc_index = val_iovirt_get_rc_index(PCIE_EXTRACT_BDF_SEG(erp_bdf));
+    if (rc_index == AVS_INVALID_INDEX)
+        continue;
+
+    /* Continue further only if RC supports ATS - this is not standard but information
+     * based on the SOC design */
+    if (!val_iovirt_get_pcie_rc_info(RC_ATS_ATTRIBUTE, rc_index))
         continue;
 
     val_pcie_read_cfg(e_bdf, cap_base + ATS_CTRL, &reg_value);
