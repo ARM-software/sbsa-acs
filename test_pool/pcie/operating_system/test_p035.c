@@ -68,6 +68,7 @@ payload(void)
   uint32_t test_fails;
   uint32_t test_skip = 1;
   uint32_t idx;
+  uint32_t timeout;
   uint32_t status;
   addr_t config_space_addr;
   void *func_config_space;
@@ -137,7 +138,22 @@ payload(void)
           /* If test runs for atleast an endpoint */
           test_skip = 0;
 
-          /* Vendor Id must not be 0xFF after max FLR period */
+          /* If Vendor Id is 0xFF after max FLR period, wait
+           * for 1 ms and read again. Keep polling for 5 secs */
+          timeout = (5 * TIMEOUT_LARGE);
+          while (timeout-- > 0)
+          {
+              val_pcie_read_cfg(bdf, 0, &reg_value);
+              if ((reg_value & TYPE01_VIDR_MASK) == TYPE01_VIDR_MASK)
+              {
+                  status = val_time_delay_ms(ONE_MILLISECOND);
+                  continue;
+              }
+              else
+                  break;
+          }
+
+          /* Vendor Id must not be 0xFF after max timeout period */
           val_pcie_read_cfg(bdf, 0, &reg_value);
           if ((reg_value & TYPE01_VIDR_MASK) == TYPE01_VIDR_MASK)
           {
