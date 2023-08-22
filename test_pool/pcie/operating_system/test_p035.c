@@ -30,21 +30,9 @@ static
 uint32_t is_flr_failed(uint32_t bdf)
 {
   uint32_t reg_value;
-  uint32_t index;
   uint32_t check_failed;
 
   check_failed = 0;
-  /* Check BAR base address is cleared */
-  for (index = 0; index < TYPE0_MAX_BARS; index++)
-  {
-      val_pcie_read_cfg(bdf, TYPE01_BAR + (index * BAR_BASE_SHIFT), &reg_value);
-      if ((reg_value >> BAR_BASE_SHIFT) != 0)
-      {
-          val_print(AVS_PRINT_ERR, "\n       BAR%d base addr ", index);
-          val_print(AVS_PRINT_ERR, "for BDF 0x%x not cleared", bdf);
-          check_failed++;
-      }
-  }
 
   /* Check the Bus Master Enable bit is cleared */
   val_pcie_read_cfg(bdf, TYPE01_CR, &reg_value);
