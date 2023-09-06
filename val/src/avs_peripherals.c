@@ -41,7 +41,7 @@ val_peripheral_execute_tests(uint32_t level, uint32_t num_pe)
 
   for (i = 0; i < g_num_skip; i++) {
       if (g_skip_test_num[i] == AVS_PER_TEST_NUM_BASE) {
-          val_print(AVS_PRINT_TEST, "      USER Override - Skipping all Peripheral tests \n", 0);
+          val_print(AVS_PRINT_INFO, "      USER Override - Skipping all Peripheral tests \n", 0);
           return AVS_STATUS_SKIP;
       }
   }
@@ -49,7 +49,7 @@ val_peripheral_execute_tests(uint32_t level, uint32_t num_pe)
   /* Check if there are any tests to be executed in current module with user override options*/
   skip_module = val_check_skip_module(AVS_PER_TEST_NUM_BASE);
   if (skip_module) {
-      val_print(AVS_PRINT_TEST, "\n USER Override - Skipping all Peripheral tests \n", 0);
+      val_print(AVS_PRINT_INFO, "\n USER Override - Skipping all Peripheral tests \n", 0);
       return AVS_STATUS_SKIP;
   }
 
