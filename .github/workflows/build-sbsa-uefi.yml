@@ -1,0 +1,59 @@
+name: SBSA-ACS UEFI application build
+
+on:
+  push:
+    branches:                # trigger on push to master
+      - master
+  pull_request:              # trigger on pull requests to master
+    branches:
+      - master
+  schedule:
+      - cron: '0 4 * * *'    # runs at 10 AM IST (4 AM UTC) every day
+  workflow_dispatch:         # to dispatch from Github Actions
+
+jobs:
+  build:
+    name: SBSA-ACS UEFI application build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Install dependencies
+        run: sudo apt-get update && sudo apt-get install -y git build-essential nasm
+
+      - name: Download edk2 and its submodules
+        run: |
+          git clone --recursive --branch edk2-stable202208 https://github.com/tianocore/edk2
+          git clone https://github.com/tianocore/edk2-libc edk2/edk2-libc
+
+      - name: Checkout sbsa-acs repository
+        uses: actions/checkout@v3
+        with:
+          path: 'edk2/ShellPkg/Application/sbsa-acs'
+
+      - name: Apply edk2 sbsa patch
+        run: |
+          cd edk2
+          git apply ShellPkg/Application/sbsa-acs/patches/edk2-sbsa.diff
+
+      - name: Download Arm GCC cross-compiler
+        run: |
+          mkdir -p /opt/cross
+          cd /opt/cross
+          wget https://developer.arm.com/-/media/Files/downloads/gnu-a/10.3-2021.07/binrel/gcc-arm-10.3-2021.07-x86_64-aarch64-none-linux-gnu.tar.xz
+          tar -xf gcc-arm-10.3-2021.07-x86_64-aarch64-none-linux-gnu.tar.xz
+
+      - name: Set up EDK2 environment and build Sbsa.efi
+        run: |
+          cd edk2
+          export GCC49_AARCH64_PREFIX=/opt/cross/gcc-arm-10.3-2021.07-x86_64-aarch64-none-linux-gnu/bin/aarch64-none-linux-gnu-
+          export PACKAGES_PATH=$PWD/edk2-libc
+          source edksetup.sh
+          make -C BaseTools/Source/C
+          source ShellPkg/Application/sbsa-acs/tools/scripts/avsbuild.sh
+          ls Build/Shell/DEBUG_GCC49/AARCH64/Sbsa.efi
+      - name: Save Sbsa.efi as an artifact
+        uses: actions/upload-artifact@v3.1.2
+        with:
+          name: Sbsa.efi
+          path: edk2/Build/Shell/DEBUG_GCC49/AARCH64/Sbsa.efi
+          if-no-files-found: error
