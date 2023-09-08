@@ -65,6 +65,7 @@ payload(void)
   uint32_t dp_type;
   uint32_t cap_base;
   uint32_t flr_cap;
+  uint32_t base_cc;
   uint32_t test_fails;
   uint32_t test_skip = 1;
   uint32_t idx;
@@ -85,6 +86,13 @@ payload(void)
   {
       bdf = bdf_tbl_ptr->device[tbl_index++].bdf;
       dp_type = val_pcie_device_port_type(bdf);
+
+      /* Skip check for Storage devices as the
+       * logs will not be stored if FLR is done*/
+      val_pcie_read_cfg(bdf, TYPE01_RIDR, &reg_value);
+      base_cc = reg_value >> TYPE01_BCC_SHIFT;
+      if (base_cc == MAS_CC)
+          continue;
 
       /* Check entry is  RCiEP or iEP endpoint or normal EP */
       if ((dp_type == RCiEP) || (dp_type == iEP_EP))
