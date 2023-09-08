@@ -66,6 +66,7 @@ static void payload(void)
     val_print(AVS_PRINT_DEBUG, "\n       MSC count = %d", msc_node_cnt);
 
     if (msc_node_cnt == 0) {
+        val_print(AVS_PRINT_ERR, "\n       MSC count is 0", 0);
         val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 03));
         return;
     }
