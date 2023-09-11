@@ -8,7 +8,7 @@ on:
     branches:
       - master
   schedule:
-      - cron: '0 4 * * *'    # runs at 10 AM IST (4 AM UTC) every day
+    - cron: '30 17 * * *'    # Runs everyday at 11 PM IST (17:30 UTC)
   workflow_dispatch:         # to dispatch from Github Actions
 
 jobs:
