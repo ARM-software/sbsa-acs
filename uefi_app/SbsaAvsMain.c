@@ -445,7 +445,6 @@ HelpMsg (
          "-cache  Pass this flag to indicate that if the test system supports PCIe address translation cache\n"
          "-timeout  Set timeout multiple for wakeup tests\n"
          "        1 - min value  5 - max value\n"
-         "-p      Option deprecated. PCIe SBSA 7.1(RCiEP) compliance tests are run from SBSA L6+\n"
   );
 }
 
