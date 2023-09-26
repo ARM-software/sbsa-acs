@@ -25,7 +25,7 @@
 
 #define TEST_NUM   (AVS_SMMU_TEST_NUM_BASE + 16)
 #define TEST_RULE  "S_L7SM_02"
-#define TEST_DESC  "Check for SMMU/CATU in ETR Path       "
+#define TEST_DESC  "Check for SMMU/CATU in ETR Path   "
 
 #define MAX_NUM_ETR 6
 

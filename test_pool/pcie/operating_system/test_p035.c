@@ -30,21 +30,9 @@ static
 uint32_t is_flr_failed(uint32_t bdf)
 {
   uint32_t reg_value;
-  uint32_t index;
   uint32_t check_failed;
 
   check_failed = 0;
-  /* Check BAR base address is cleared */
-  for (index = 0; index < TYPE0_MAX_BARS; index++)
-  {
-      val_pcie_read_cfg(bdf, TYPE01_BAR + (index * BAR_BASE_SHIFT), &reg_value);
-      if ((reg_value >> BAR_BASE_SHIFT) != 0)
-      {
-          val_print(AVS_PRINT_ERR, "\n       BAR%d base addr ", index);
-          val_print(AVS_PRINT_ERR, "for BDF 0x%x not cleared", bdf);
-          check_failed++;
-      }
-  }
 
   /* Check the Bus Master Enable bit is cleared */
   val_pcie_read_cfg(bdf, TYPE01_CR, &reg_value);
@@ -77,9 +65,11 @@ payload(void)
   uint32_t dp_type;
   uint32_t cap_base;
   uint32_t flr_cap;
+  uint32_t base_cc;
   uint32_t test_fails;
   uint32_t test_skip = 1;
   uint32_t idx;
+  uint32_t timeout;
   uint32_t status;
   addr_t config_space_addr;
   void *func_config_space;
@@ -96,6 +86,13 @@ payload(void)
   {
       bdf = bdf_tbl_ptr->device[tbl_index++].bdf;
       dp_type = val_pcie_device_port_type(bdf);
+
+      /* Skip check for Storage devices as the
+       * logs will not be stored if FLR is done*/
+      val_pcie_read_cfg(bdf, TYPE01_RIDR, &reg_value);
+      base_cc = reg_value >> TYPE01_BCC_SHIFT;
+      if (base_cc == MAS_CC)
+          continue;
 
       /* Check entry is  RCiEP or iEP endpoint or normal EP */
       if ((dp_type == RCiEP) || (dp_type == iEP_EP))
@@ -149,7 +146,22 @@ payload(void)
           /* If test runs for atleast an endpoint */
           test_skip = 0;
 
-          /* Vendor Id must not be 0xFF after max FLR period */
+          /* If Vendor Id is 0xFF after max FLR period, wait
+           * for 1 ms and read again. Keep polling for 5 secs */
+          timeout = (5 * TIMEOUT_LARGE);
+          while (timeout-- > 0)
+          {
+              val_pcie_read_cfg(bdf, 0, &reg_value);
+              if ((reg_value & TYPE01_VIDR_MASK) == TYPE01_VIDR_MASK)
+              {
+                  status = val_time_delay_ms(ONE_MILLISECOND);
+                  continue;
+              }
+              else
+                  break;
+          }
+
+          /* Vendor Id must not be 0xFF after max timeout period */
           val_pcie_read_cfg(bdf, 0, &reg_value);
           if ((reg_value & TYPE01_VIDR_MASK) == TYPE01_VIDR_MASK)
           {

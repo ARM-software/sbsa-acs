@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2020-2023 Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2023, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -24,7 +24,7 @@
 
 #define TEST_NUM   (AVS_PCIE_TEST_NUM_BASE + 42)
 #define TEST_DESC  "Check Power Management rules      "
-#define TEST_RULE  "RE_PWR_1"
+#define TEST_RULE  "RE_PWR_1, IE_PWR_1"
 
 static
 void

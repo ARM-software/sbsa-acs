@@ -118,7 +118,7 @@ uint32_t val_exerciser_ops(EXERCISER_OPS ops, uint64_t param, uint32_t instance)
 uint32_t val_exerciser_get_data(EXERCISER_DATA_TYPE type, exerciser_data_t *data, uint32_t instance);
 uint32_t val_exerciser_execute_tests(uint32_t level);
 uint32_t val_exerciser_get_bdf(uint32_t instance);
-uint32_t val_get_exerciser_err_info(uint32_t type);
+uint32_t val_get_exerciser_err_info(EXERCISER_ERROR_CODE type);
 
 uint32_t e001_entry(void);
 uint32_t e002_entry(void);

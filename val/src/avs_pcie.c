@@ -290,7 +290,7 @@ val_pcie_execute_tests(uint32_t level, uint32_t num_pe)
 
   for (i = 0; i < g_num_skip; i++) {
       if (g_skip_test_num[i] == AVS_PCIE_TEST_NUM_BASE) {
-          val_print(AVS_PRINT_TEST, "\n USER Override - Skipping all PCIe tests \n", 0);
+          val_print(AVS_PRINT_INFO, "\n USER Override - Skipping all PCIe tests \n", 0);
           return AVS_STATUS_SKIP;
       }
   }
@@ -298,7 +298,7 @@ val_pcie_execute_tests(uint32_t level, uint32_t num_pe)
   /* Check if there are any tests to be executed in current module with user override options*/
   status = val_check_skip_module(AVS_PCIE_TEST_NUM_BASE);
   if (status) {
-      val_print(AVS_PRINT_TEST, "\n USER Override - Skipping all PCIe tests \n", 0);
+      val_print(AVS_PRINT_INFO, "\n USER Override - Skipping all PCIe tests \n", 0);
       return AVS_STATUS_SKIP;
   }
 
@@ -542,7 +542,8 @@ val_pcie_create_info_table(uint64_t *pcie_info_table)
 
   pal_pcie_create_info_table(g_pcie_info_table);
 
-  val_print(AVS_PRINT_TEST, " PCIE_INFO: Number of ECAM regions    :    %lx \n", val_pcie_get_info(PCIE_INFO_NUM_ECAM, 0));
+  val_print(AVS_PRINT_TEST, " PCIE_INFO: Number of ECAM regions    :    %ld \n",
+                                      val_pcie_get_info(PCIE_INFO_NUM_ECAM, 0));
 
   val_pcie_enumerate();
 
@@ -1690,6 +1691,7 @@ uint32_t val_pcie_bitfield_check(uint32_t bdf, uint64_t *bitfield_entry)
 
   uint32_t bf_value;
   uint32_t cap_base;
+  uint32_t id;
   uint32_t reg_value;
   uint32_t reg_offset;
   uint32_t temp_reg_value;
@@ -1716,9 +1718,11 @@ uint32_t val_pcie_bitfield_check(uint32_t bdf, uint64_t *bitfield_entry)
           break;
       case PCIE_CAP:
           status = val_pcie_find_capability(bdf, PCIE_CAP, bf_entry->cap_id, &cap_base);
+          id = bf_entry->cap_id;
           break;
       case PCIE_ECAP:
           status = val_pcie_find_capability(bdf, PCIE_ECAP, bf_entry->ecap_id, &cap_base);
+          id = bf_entry->ecap_id;
           break;
       default:
           val_print(AVS_PRINT_ERR, "\n       Invalid reg_type : 0x%x  ", bf_entry->reg_type);
@@ -1727,7 +1731,8 @@ uint32_t val_pcie_bitfield_check(uint32_t bdf, uint64_t *bitfield_entry)
 
   if (status != PCIE_SUCCESS)
   {
-      val_print(AVS_PRINT_ERR, "\n       PCIe Capability not found for BDF 0x%x", bdf);
+      val_print(AVS_PRINT_ERR, "\n       PCIe Capability 0x%x", id);
+      val_print(AVS_PRINT_ERR, " not found for BDF 0x%x", bdf);
       return status;
   }
 

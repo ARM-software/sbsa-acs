@@ -26,7 +26,7 @@
 #include "val/include/sbsa_avs_exerciser.h"
 
 #define TEST_NUM   (AVS_EXERCISER_TEST_NUM_BASE + 5)
-#define TEST_DESC  "PE 2/4/8B writes tp PCIe as 2/4/8B"
+#define TEST_DESC  "PE 2/4/8B writes to PCIe as 2/4/8B"
 #define TEST_RULE  "S_PCIe_03"
 
 static uint32_t transaction_size = 4;

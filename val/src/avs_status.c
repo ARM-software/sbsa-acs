@@ -18,6 +18,7 @@
 #include "include/sbsa_avs_val.h"
 #include "include/sbsa_avs_common.h"
 
+extern uint32_t g_override_skip;
 
 /**
   @brief  Parse the input status and print the appropriate information to console
@@ -31,6 +32,10 @@
 void
 val_report_status(uint32_t index, uint32_t status, char8_t *ruleid)
 {
+
+  /* Test stays quiet if it is overridden by any of the user options */
+  if (!g_override_skip)
+    return;
 
   if (IS_TEST_FAIL(status)) {
       val_print(AVS_PRINT_ERR, "\n       Failed on PE - %4d ", index);
