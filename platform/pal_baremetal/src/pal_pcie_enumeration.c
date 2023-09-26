@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2020-2023 Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2023, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -530,7 +530,7 @@ pal_pcie_get_bdf(uint32_t ClassCode, uint32_t StartBdf)
   InputDev  = PCIE_EXTRACT_BDF_DEV(StartBdf);
   InputFunc = PCIE_EXTRACT_BDF_FUNC(StartBdf);
 
-  for (Bus = InputBus; Bus < PCIE_MAX_BUS; Bus++)
+  for (Bus = InputBus; Bus < PLATFORM_OVERRIDE_PCIE_MAX_BUS; Bus++)
   {
     for (Dev = InputDev; Dev < PCIE_MAX_DEV; Dev++)
     {

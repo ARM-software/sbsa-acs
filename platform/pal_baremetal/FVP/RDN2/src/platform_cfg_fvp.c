@@ -1245,27 +1245,17 @@ SRAT_INFO_TABLE platform_srat_cfg = {
 
     .num_of_srat_entries  = PLATFORM_OVERRIDE_NUM_SRAT_ENTRIES,
 
+    /* Example : SRAT Node type to be filled */
+    /*
     .srat_info[0].node_type    = SRAT_NODE_MEM_AFF,
     .srat_info[1].node_type    = SRAT_NODE_GICC_AFF,
-    .srat_info[2].node_type    = SRAT_NODE_GICC_AFF,
-    .srat_info[3].node_type    = SRAT_NODE_GICC_AFF,
-    .srat_info[4].node_type    = SRAT_NODE_GICC_AFF,
-    .srat_info[5].node_type    = SRAT_NODE_GICC_AFF,
-    .srat_info[6].node_type    = SRAT_NODE_GICC_AFF,
-    .srat_info[7].node_type    = SRAT_NODE_GICC_AFF,
-    .srat_info[8].node_type    = SRAT_NODE_GICC_AFF,
-    .srat_info[9].node_type    = SRAT_NODE_GICC_AFF,
-    .srat_info[10].node_type   = SRAT_NODE_GICC_AFF,
-    .srat_info[11].node_type   = SRAT_NODE_GICC_AFF,
-    .srat_info[12].node_type   = SRAT_NODE_GICC_AFF,
-    .srat_info[13].node_type   = SRAT_NODE_GICC_AFF,
-    .srat_info[14].node_type   = SRAT_NODE_GICC_AFF,
-    .srat_info[15].node_type   = SRAT_NODE_GICC_AFF,
-    .srat_info[16].node_type   = SRAT_NODE_GICC_AFF,
+    */
 };
 
 PLATFORM_OVERRIDE_SRAT_NODE_INFO_TABLE platform_srat_node_type = {
 
+    /* Example : SRAT Node type details to be filled */
+    /*
     .mem_aff[0].prox_domain     = PLATFORM_SRAT_MEM0_PROX_DOMAIN,
     .mem_aff[0].flags           = PLATFORM_SRAT_MEM0_FLAGS,
     .mem_aff[0].addr_base       = PLATFORM_SRAT_MEM0_ADDR_BASE,
@@ -1275,98 +1265,27 @@ PLATFORM_OVERRIDE_SRAT_NODE_INFO_TABLE platform_srat_node_type = {
     .gicc_aff[0].proc_uid       = PLATFORM_SRAT_GICC0_PROC_UID,
     .gicc_aff[0].flags          = PLATFORM_SRAT_GICC0_FLAGS,
     .gicc_aff[0].clk_domain     = PLATFORM_SRAT_GICC0_CLK_DOMAIN,
-
-    .gicc_aff[1].prox_domain    = PLATFORM_SRAT_GICC1_PROX_DOMAIN,
-    .gicc_aff[1].proc_uid       = PLATFORM_SRAT_GICC1_PROC_UID,
-    .gicc_aff[1].flags          = PLATFORM_SRAT_GICC1_FLAGS,
-    .gicc_aff[1].clk_domain     = PLATFORM_SRAT_GICC1_CLK_DOMAIN,
-
-    .gicc_aff[2].prox_domain    = PLATFORM_SRAT_GICC2_PROX_DOMAIN,
-    .gicc_aff[2].proc_uid       = PLATFORM_SRAT_GICC2_PROC_UID,
-    .gicc_aff[2].flags          = PLATFORM_SRAT_GICC2_FLAGS,
-    .gicc_aff[2].clk_domain     = PLATFORM_SRAT_GICC2_CLK_DOMAIN,
-
-    .gicc_aff[3].prox_domain    = PLATFORM_SRAT_GICC3_PROX_DOMAIN,
-    .gicc_aff[3].proc_uid       = PLATFORM_SRAT_GICC3_PROC_UID,
-    .gicc_aff[3].flags          = PLATFORM_SRAT_GICC3_FLAGS,
-    .gicc_aff[3].clk_domain     = PLATFORM_SRAT_GICC3_CLK_DOMAIN,
-
-    .gicc_aff[4].prox_domain    = PLATFORM_SRAT_GICC4_PROX_DOMAIN,
-    .gicc_aff[4].proc_uid       = PLATFORM_SRAT_GICC4_PROC_UID,
-    .gicc_aff[4].flags          = PLATFORM_SRAT_GICC4_FLAGS,
-    .gicc_aff[4].clk_domain     = PLATFORM_SRAT_GICC4_CLK_DOMAIN,
-
-    .gicc_aff[5].prox_domain    = PLATFORM_SRAT_GICC5_PROX_DOMAIN,
-    .gicc_aff[5].proc_uid       = PLATFORM_SRAT_GICC5_PROC_UID,
-    .gicc_aff[5].flags          = PLATFORM_SRAT_GICC5_FLAGS,
-    .gicc_aff[5].clk_domain     = PLATFORM_SRAT_GICC5_CLK_DOMAIN,
-
-    .gicc_aff[6].prox_domain    = PLATFORM_SRAT_GICC6_PROX_DOMAIN,
-    .gicc_aff[6].proc_uid       = PLATFORM_SRAT_GICC6_PROC_UID,
-    .gicc_aff[6].flags          = PLATFORM_SRAT_GICC6_FLAGS,
-    .gicc_aff[6].clk_domain     = PLATFORM_SRAT_GICC6_CLK_DOMAIN,
-
-    .gicc_aff[7].prox_domain    = PLATFORM_SRAT_GICC7_PROX_DOMAIN,
-    .gicc_aff[7].proc_uid       = PLATFORM_SRAT_GICC7_PROC_UID,
-    .gicc_aff[7].flags          = PLATFORM_SRAT_GICC7_FLAGS,
-    .gicc_aff[7].clk_domain     = PLATFORM_SRAT_GICC7_CLK_DOMAIN,
-
-    .gicc_aff[8].prox_domain    = PLATFORM_SRAT_GICC8_PROX_DOMAIN,
-    .gicc_aff[8].proc_uid       = PLATFORM_SRAT_GICC8_PROC_UID,
-    .gicc_aff[8].flags          = PLATFORM_SRAT_GICC8_FLAGS,
-    .gicc_aff[8].clk_domain     = PLATFORM_SRAT_GICC8_CLK_DOMAIN,
-
-    .gicc_aff[9].prox_domain    = PLATFORM_SRAT_GICC9_PROX_DOMAIN,
-    .gicc_aff[9].proc_uid       = PLATFORM_SRAT_GICC9_PROC_UID,
-    .gicc_aff[9].flags          = PLATFORM_SRAT_GICC9_FLAGS,
-    .gicc_aff[9].clk_domain     = PLATFORM_SRAT_GICC9_CLK_DOMAIN,
-
-    .gicc_aff[10].prox_domain   = PLATFORM_SRAT_GICC10_PROX_DOMAIN,
-    .gicc_aff[10].proc_uid      = PLATFORM_SRAT_GICC10_PROC_UID,
-    .gicc_aff[10].flags         = PLATFORM_SRAT_GICC10_FLAGS,
-    .gicc_aff[10].clk_domain    = PLATFORM_SRAT_GICC10_CLK_DOMAIN,
-
-    .gicc_aff[11].prox_domain   = PLATFORM_SRAT_GICC11_PROX_DOMAIN,
-    .gicc_aff[11].proc_uid      = PLATFORM_SRAT_GICC11_PROC_UID,
-    .gicc_aff[11].flags         = PLATFORM_SRAT_GICC11_FLAGS,
-    .gicc_aff[11].clk_domain    = PLATFORM_SRAT_GICC11_CLK_DOMAIN,
-
-    .gicc_aff[12].prox_domain   = PLATFORM_SRAT_GICC12_PROX_DOMAIN,
-    .gicc_aff[12].proc_uid      = PLATFORM_SRAT_GICC12_PROC_UID,
-    .gicc_aff[12].flags         = PLATFORM_SRAT_GICC12_FLAGS,
-    .gicc_aff[12].clk_domain    = PLATFORM_SRAT_GICC12_CLK_DOMAIN,
-
-    .gicc_aff[13].prox_domain   = PLATFORM_SRAT_GICC13_PROX_DOMAIN,
-    .gicc_aff[13].proc_uid      = PLATFORM_SRAT_GICC13_PROC_UID,
-    .gicc_aff[13].flags         = PLATFORM_SRAT_GICC13_FLAGS,
-    .gicc_aff[13].clk_domain    = PLATFORM_SRAT_GICC13_CLK_DOMAIN,
-
-    .gicc_aff[14].prox_domain   = PLATFORM_SRAT_GICC14_PROX_DOMAIN,
-    .gicc_aff[14].proc_uid      = PLATFORM_SRAT_GICC14_PROC_UID,
-    .gicc_aff[14].flags         = PLATFORM_SRAT_GICC14_FLAGS,
-    .gicc_aff[14].clk_domain    = PLATFORM_SRAT_GICC14_CLK_DOMAIN,
-
-    .gicc_aff[15].prox_domain   = PLATFORM_SRAT_GICC15_PROX_DOMAIN,
-    .gicc_aff[15].proc_uid      = PLATFORM_SRAT_GICC15_PROC_UID,
-    .gicc_aff[15].flags         = PLATFORM_SRAT_GICC15_FLAGS,
-    .gicc_aff[15].clk_domain    = PLATFORM_SRAT_GICC15_CLK_DOMAIN,
-
+    */
 };
 
 PLATFORM_OVERRIDE_HMAT_INFO_TABLE platform_hmat_cfg = {
 
     .num_of_prox_domain = PLATFORM_OVERRIDE_NUM_OF_HMAT_PROX_DOMAIN,
 
+    /* Example : HMAT Node details to be filled */
+    /*
     .bw_info[0].type            = HMAT_NODE_MEM_SLLBIC,
     .bw_info[0].data_type       = HMAT_NODE_MEM_SLLBIC_DATA_TYPE,
     .bw_info[0].flags           = HMAT_NODE_MEM_SLLBIC_FLAGS,
     .bw_info[0].entry_base_unit = HMAT_NODE_MEM_SLLBIC_ENTRY_BASE_UNIT,
-
+    */
 };
 
 
 PLATFORM_OVERRIDE_HMAT_MEM_TABLE platform_hmat_mem_cfg = {
 
+    /* Example : HMAT MEM details to be filled */
+    /*
     .bw_mem_info[0].mem_prox_domain  = PLATFORM_HMAT_MEM0_PROX_DOMAIN,
     .bw_mem_info[0].max_write_bw     = PLATFORM_HMAT_MEM0_MAX_WRITE_BW,
     .bw_mem_info[0].max_read_bw      = PLATFORM_HMAT_MEM0_MAX_READ_BW,
@@ -1382,20 +1301,22 @@ PLATFORM_OVERRIDE_HMAT_MEM_TABLE platform_hmat_mem_cfg = {
     .bw_mem_info[3].mem_prox_domain  = PLATFORM_HMAT_MEM3_PROX_DOMAIN,
     .bw_mem_info[3].max_write_bw     = PLATFORM_HMAT_MEM3_MAX_WRITE_BW,
     .bw_mem_info[3].max_read_bw      = PLATFORM_HMAT_MEM3_MAX_READ_BW,
-
+    */
 };
 
 PLATFORM_OVERRIDE_PMU_INFO_TABLE platform_pmu_cfg = {
 
     .pmu_count = PLATFORM_OVERRIDE_PMU_NODE_CNT,
 
+    /* Example : PMU Node details to be filled */
+    /*
     .pmu_info[0].base0               = PLATFORM_PMU_NODE0_BASE0,
     .pmu_info[0].base1               = PLATFORM_PMU_NODE0_BASE1,
     .pmu_info[0].type                = PLATFORM_PMU_NODE0_TYPE,
     .pmu_info[0].primary_instance    = PLATFORM_PMU_NODE0_PRI_INSTANCE,
     .pmu_info[0].secondary_instance  = PLATFORM_PMU_NODE0_SEC_INSTANCE,
     .pmu_info[0].dual_page_extension = PLATFORM_PMU_NODE0_DUAL_PAGE_EXT,
-
+    */
 };
 
 RAS_INFO_TABLE platform_ras_cfg = {
@@ -1404,10 +1325,12 @@ RAS_INFO_TABLE platform_ras_cfg = {
     .num_pe_node    = PLATFORM_OVERRIDE_NUM_PE_RAS_NODES,
     .num_mc_node    = PLATFORM_OVERRIDE_NUM_MC_RAS_NODES,
 
+    /* Example : PE RAS Node to be filled */
+    /*
     .node[0].type               = NODE_TYPE_PE,
     .node[0].length             = 140,
     .node[0].num_intr_entries   = 1,
-
+    */
     /* Example : Memory Controller RAS Node to be filled */
     //.node[1].type         = NODE_TYPE_MC,
     //.node[1].length            = 0,
@@ -1417,18 +1340,22 @@ RAS_INFO_TABLE platform_ras_cfg = {
 
 PLATFORM_OVERRIDE_RAS_NODE_DATA_INFO platform_ras_node_data = {
 
+    /* Example : PE RAS Node data to be filled */
+    /*
     .node_data[0].pe.processor_id      = PLATFORM_RAS_NODE0_PE_PROCESSOR_ID,
     .node_data[0].pe.resource_type     = PLATFORM_RAS_NODE0_PE_RES_TYPE,
     .node_data[0].pe.flags             = PLATFORM_RAS_NODE0_PE_FLAGS,
     .node_data[0].pe.affinity          = PLATFORM_RAS_NODE0_PE_AFF,
     .node_data[0].pe.res_specific_data = PLATFORM_RAS_NODE0_PE_RES_DATA,
-
+    */
     /* Example : Memory Controller RAS Node data to be filled */
     //.node_data[1].mc.proximity_domain = PLATFORM_RAS_NODE0_MC_PROX_DOMAIN,
 };
 
 PLATFORM_OVERRIDE_RAS_NODE_INTERFACE_INFO platform_ras_node_interface = {
 
+    /* Example : RAS Node interface info to be filled */
+    /*
     .intf_info[0].intf_type            = PLATFORM_RAS_NODE0_INTF_TYPE,
     .intf_info[0].flags                = PLATFORM_RAS_NODE0_INTF_FLAGS,
     .intf_info[0].base_addr            = PLATFORM_RAS_NODE0_INTF_BASE,
@@ -1437,26 +1364,18 @@ PLATFORM_OVERRIDE_RAS_NODE_INTERFACE_INFO platform_ras_node_interface = {
     .intf_info[0].err_rec_implement    = PLATFORM_RAS_NODE0_INTF_ERR_REC_IMP,
     .intf_info[0].err_status_reporting = PLATFORM_RAS_NODE0_INTF_ERR_STATUS,
     .intf_info[0].addressing_mode      = PLATFORM_RAS_NODE0_INTF_ADDR_MODE,
-
-    /* Example : RAS Node interface info to be filled */
-    /*
-    .intf_info[1].intf_type            = PLATFORM_RAS_NODE1_INTF_TYPE,
-    .intf_info[1].flags                = PLATFORM_RAS_NODE1_INTF_FLAGS,
-    .intf_info[1].base_addr            = PLATFORM_RAS_NODE1_INTF_BASE,
-    .intf_info[1].start_rec_index      = PLATFORM_RAS_NODE1_INTF_START_REC,
-    .intf_info[1].num_err_rec          = PLATFORM_RAS_NODE1_INTF_NUM_REC,
-    .intf_info[1].err_rec_implement    = PLATFORM_RAS_NODE1_INTF_ERR_REC_IMP,
-    .intf_info[1].err_status_reporting = PLATFORM_RAS_NODE1_INTF_ERR_STATUS,
-    .intf_info[1].addressing_mode      = PLATFORM_RAS_NODE1_INTF_ADDR_MODE,
     */
 };
 
 PLATFORM_OVERRIDE_RAS_NODE_INTERRUPT_INFO platform_ras_node_interrupt = {
 
+    /* Example : RAS Node 0 Interrupt 0 details needs to be filled */
+    /*
     .intr_info[0][0].type          = PLATFORM_RAS_NODE0_INTR0_TYPE,
     .intr_info[0][0].flag          = PLATFORM_RAS_NODE0_INTR0_FLAG,
     .intr_info[0][0].gsiv          = PLATFORM_RAS_NODE0_INTR0_GSIV,
     .intr_info[0][0].its_grp_id    = PLATFORM_RAS_NODE0_INTR0_ITS_ID,
+     */
 
     /* Example : RAS Node 0 Interrupt 1 details needs to be filled */
     /*
@@ -1480,6 +1399,8 @@ PLATFORM_OVERRIDE_RAS2_INFO_TABLE platform_ras2_cfg = {
     .num_all_block      = PLATFORM_OVERRIDE_NUM_RAS2_BLOCK,
     .num_of_mem_block   = PLATFORM_OVERRIDE_NUM_RAS2_MEM_BLOCK,
 
+    /* Example : RAS2 Blocks to be filled */
+    /*
     .blocks[0].type                 = RAS2_TYPE_MEMORY,
     .blocks[0].proximity_domain     = PLATFORM_OVERRIDE_RAS2_BLOCK0_PROXIMITY,
     .blocks[0].patrol_scrub_support = PLATFORM_OVERRIDE_RAS2_BLOCK0_PATROL_SCRUB_SUPPORT,
@@ -1491,12 +1412,6 @@ PLATFORM_OVERRIDE_RAS2_INFO_TABLE platform_ras2_cfg = {
     .blocks[2].type                 = RAS2_TYPE_MEMORY,
     .blocks[2].proximity_domain     = PLATFORM_OVERRIDE_RAS2_BLOCK2_PROXIMITY,
     .blocks[2].patrol_scrub_support = PLATFORM_OVERRIDE_RAS2_BLOCK2_PATROL_SCRUB_SUPPORT,
-
-    /* Example : RAS2 Blocks to be filled */
-    /*
-    .blocks[1].type                 = RAS2_TYPE_MEMORY,
-    .blocks[1].proximity_domain     = PLATFORM_OVERRIDE_RAS2_BLOCK1_PROXIMITY,
-    .blocks[1].patrol_scrub_support = PLATFORM_OVERRIDE_RAS2_BLOCK1_PATROL_SCRUB_SUPPORT,
     */
 
 };
@@ -1504,6 +1419,8 @@ PLATFORM_OVERRIDE_RAS2_INFO_TABLE platform_ras2_cfg = {
 PLATFORM_OVERRIDE_MPAM_INFO_TABLE platform_mpam_cfg = {
     .msc_count = PLATFORM_MPAM_MSC_COUNT,
 
+    /* Example : MPAM MSC Blocks to be filled */
+    /*
     .msc_node[0].msc_base_addr = PLATFORM_MPAM_MSC0_BASE_ADDR,
     .msc_node[0].msc_addr_len  = PLATFORM_MPAM_MSC0_ADDR_LEN,
     .msc_node[0].max_nrdy      = PLATFORM_MPAM_MSC0_MAX_NRDY,
@@ -1513,5 +1430,5 @@ PLATFORM_OVERRIDE_MPAM_INFO_TABLE platform_mpam_cfg = {
     .msc_node[0].rsrc_node[0].locator_type  = PLATFORM_MPAM_MSC0_RSRC0_LOCATOR_TYPE,
     .msc_node[0].rsrc_node[0].descriptor1   = PLATFORM_MPAM_MSC0_RSRC0_DESCRIPTOR1,
     .msc_node[0].rsrc_node[0].descriptor2   = PLATFORM_MPAM_MSC0_RSRC0_DESCRIPTOR2,
-
+    */
 };
