@@ -33,6 +33,8 @@ static void payload(void)
     uint32_t llc_index;
     uint64_t cache_identifier;
     uint32_t test_run = 0;
+    uint32_t ris_supported = 0;
+    uint32_t cpor_supported = 0;
 
     if (g_sbsa_level < 5) {
         val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
@@ -76,7 +78,12 @@ static void payload(void)
         rsrc_node_cnt = val_mpam_get_info(MPAM_MSC_RSRC_COUNT, msc_index, 0);
 
         val_print(AVS_PRINT_DEBUG, "\n       msc index  = %d", msc_index);
-        val_print(AVS_PRINT_DEBUG, "\n       Resource count %d = ", rsrc_node_cnt);
+        val_print(AVS_PRINT_DEBUG, "\n       Resource count = %d", rsrc_node_cnt);
+
+        cpor_supported = 0;
+
+        ris_supported = val_mpam_msc_supports_ris(msc_index);
+        val_print(AVS_PRINT_INFO, "\n       RIS Support = %d", ris_supported);
 
         for (rsrc_index = 0; rsrc_index < rsrc_node_cnt; rsrc_index++) {
 
@@ -89,20 +96,34 @@ static void payload(void)
                     val_print(AVS_PRINT_DEBUG, "\n       rsrc index  = %d", rsrc_index);
 
                     test_run = 1;
+
+                    /* Select resource instance if RIS feature implemented */
+                    if (ris_supported)
+                        val_mpam_memory_configure_ris_sel(msc_index, rsrc_index);
+
                     /* Check CPOR are present */
-                    if (!val_mpam_supports_cpor(msc_index)) {
-                        val_print(AVS_PRINT_ERR, "\n       CPOR unsupported by LLC", 0);
-                        val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 04));
-                        return;
+                    if (val_mpam_supports_cpor(msc_index)) {
+                        val_print(AVS_PRINT_DEBUG,
+                                  "\n       CPOR Supported by LLC for rsrc_index %d", rsrc_index);
+                        cpor_supported = 1;
+                        break;
                     }
+                    val_print(AVS_PRINT_DEBUG,
+                              "\n       CPOR Not Supported by LLC for rsrc_index %d", rsrc_index);
                 }
             }
         }
+        if (cpor_supported)
+            break;
     }
 
     if (!test_run) {
         val_print(AVS_PRINT_ERR, "\n       No LLC MSC found", 0);
         val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 05));
+        return;
+    } else if (!cpor_supported) {
+        val_print(AVS_PRINT_ERR, "\n       CPOR unsupported by LLC", 0);
+        val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 04));
         return;
     }
 

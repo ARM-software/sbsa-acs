@@ -29,7 +29,8 @@ typedef struct {
 
 typedef struct {
     UINT16 length;
-    UINT16 reserved;
+    UINT8  InterfaceType;
+    UINT8  reserved;
     UINT32 identifier;
     UINT64 base_address;
     UINT32 mmio_size;
