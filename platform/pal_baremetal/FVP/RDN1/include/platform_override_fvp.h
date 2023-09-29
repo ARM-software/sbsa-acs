@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2020-2022, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2023, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -633,5 +633,3 @@
 #define PLATFORM_OVERRIDE_MEMORY_ENTRY3_TYPE        MEMORY_TYPE_NORMAL
 
 /** End config **/
-
-

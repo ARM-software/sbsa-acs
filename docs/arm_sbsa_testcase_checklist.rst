@@ -310,6 +310,6 @@ The below table provides the following details
 |PMU app|Latency events                              |L7   |PMU_EV_10                                           |Yes             |No  |No        |Yes  |No                 |
 +-------+--------------------------------------------+-----+----------------------------------------------------+----------------+----+----------+-----+-------------------+
 
-*For running tests on a bare-metal environment, integration of ACS with platform boot code is required. See `Bare-metal User Guide <Arm_SBSA_ACS_Bare-metal_User_Guide.pdf>`_
+*For running tests on a bare-metal environment, integration of ACS with platform boot code is required. See `arm SBSA Bare-metal User Guide <arm_sbsa_architecture_compliance_bare-metal_user_guide.pdf>`_
 
 
