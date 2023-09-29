@@ -19,7 +19,7 @@ The tests are executed in a baremetal environment. The initialization of the bar
  - The tests are written for version 7.1 of the SBSA specification.
  - The compliance suite is not a substitute for design verification.
  - To review the SBSA ACS logs, Arm licensees can contact Arm directly through their partner managers.
- - To know about the SBSA rules not implemented in this release, see [Test Scenario Document](docs/Arm_SBSA_Architecture_Compliance_Test_Scenario.pdf).
+ - To know about the SBSA rules not implemented in this release, see [arm SBSA Test Scenario Document](docs/arm_sbsa_architecture_compliance_test_scenario.pdf).
 
 ### EDA vendors
 Contact your EDA vendor and ask if they include these tests as part of their verificatoin IP package.
@@ -29,9 +29,9 @@ Contact your EDA vendor and ask if they include these tests as part of their ver
   - To get the latest version of the code with bug fixes and new features, use the master branch.
 
 ## Additional reading
-  - For details on the SBSA ACS test execution, see the [Arm SBSA ACS User Guide](docs/Arm_SBSA_ACS_Bare-metal_User_Guide.pdf).
-  - For details on the Design of the SBSA ACS, see the [Arm SBSA Validation Methodology Document](docs/Arm_SBSA_Architecture_Compliance_Validation_Methodology.pdf).
-  - For information about the test coverage scenarios that are implemented in the current release of ACS and the scenarios that are  planned for the future releases, see the [Testcase checklist](docs/Arm_SBSA_testcase-checklist.rst). <br />
+  - For details on the SBSA ACS test execution, see the [arm SBSA User Guide Document](docs/arm_sbsa_architecture_compliance_bare-metal_user_guide.pdf).
+  - For details on the Design of the SBSA ACS, see the [arm SBSA Validation Methodology Document](docs/arm_sbsa_architecture_compliance_validation_methodology.pdf).
+  - For information about the test coverage scenarios that are implemented in the current release of ACS and the scenarios that are  planned for the future releases, see the [Testcase checklist](docs/testcase-checklist.md). <br />
 Note: The Baremetal PCIe enumeration code provided as part of the SBSA ACS should be used and should not be replaced. This code is vital in analyzing of the test result.
 
 ### Running Exerciser tests for complete coverage
@@ -100,6 +100,7 @@ To start the ACS build, perform the following steps:
           +#endif
 ```
 
+
 ### Linux build environment
 If the build environment is Linux, perform the following steps:
 1.  export GCC49_AARCH64_PREFIX= GCC10.3 toolchain path pointing to /bin/aarch64-linux-gnu- in case of x86 machine. For AArch64 build it should point to /usr/bin/
@@ -119,7 +120,7 @@ The EFI executable file is generated at <edk2_path>/Build/Shell/DEBUG_GCC49/AARC
 
 The execution of the compliance suite varies depending on the test environment. These steps assume that the test suite is invoked through the ACS UEFI shell application.
 
-For details about the SBSA ACS UEFI Shell application, see the [SBSA ACS USER Guide](docs/Arm_SBSA_Architecture_Compliance_User_Guide.pdf)
+For details about the SBSA ACS UEFI Shell application, see the [arm SBSA User Guide Document](docs/arm_sbsa_architecture_compliance_user_guide.pdf)
 
 ### On-Silicon
 
@@ -133,7 +134,7 @@ On a system where a USB port is available and functional, perform the following 
 4. To determine the file system number of the plugged in USB drive, execute 'map -r' command.
 5. Type 'fsx' where 'x' is replaced by the number determined in step 4.
 6. To start the compliance tests, run the executable Sbsa.efi with the appropriate parameters.
-   For details on the parameters, refer to [SBSA ACS User Guide](docs/Arm_SBSA_Architecture_Compliance_User_Guide.pdf)
+   For details on the parameters, refer to [arm SBSA User Guide Document](docs/arm_sbsa_architecture_compliance_user_guide.pdf)
 
 ## Limitations
 Validating the compliance of certain PCIe rules defined in the SBSA specification requires the PCIe end-point to generate specific stimulus during the runtime of the test. Examples of such stimulus are  P2P, PASID, ATC, etc. The tests that requires these stimuli are grouped together in the exerciser module. The exerciser layer is an abstraction layer that enables the integration of hardware capable of generating such stimuli to the test framework.

@@ -1,5 +1,6 @@
 
 Please Note: The code in the "pal_baremetal" directory is only a reference code for implementation of PAL API's and it has not been verified on any model or SoC's.
+
 The directory pal_baremetal consists of the reference code of the PAL API's specific to a platform.
 Description of each directory are as follows:
 
@@ -20,8 +21,8 @@ Reference Makefile is present at [Makefile](../../Makefile). To compile SBSA, pe
 
 The output library files will be generated at <sbsa_path>/build/lib/
 
-For more details on how to port the reference code to a specific platform and for further customisation please refer to the [User Guide](../../docs/Arm_SBSA_ACS_Bare-metal_User_Guide.pdf)
+For more details on how to port the reference code to a specific platform and for further customisation please refer to the [User Guide](../../docs/arm_sbsa_architecture_compliance_bare-metal_user_guide.pdf)
 
 -----------------
 
-*Copyright (c) 2020-2023, Arm Limited and Contributors. All rights reserved.*
+*Copyright (c) 2021-2023, Arm Limited and Contributors. All rights reserved.*
