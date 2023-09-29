@@ -14,12 +14,18 @@ For more information, download the [SBSA specification](https://developer.arm.co
 
 SBSA **Architecture Compliance Suite** (ACS) is a collection of self-checking, portable C-based tests.
 This suite includes a set of examples of the invariant behaviors that are provided by the [SBSA specification](https://developer.arm.com/documentation/den0029/h/?lang=en), so that implementers can verify if these behaviours have been interpreted correctly.
+
 Most of the tests are executed from UEFI Shell by executing the SBSA UEFI shell application.
 A few tests are executed by running the SBSA ACS Linux application which in turn depends on the SBSA ACS Linux kernel module.
+The tests can also be executed in a Bare-metal environment. The initialization of the Bare-metal environment is specific to the environment and is out of scope of this document.
 
 ## Release details
  - Code Quality: REL v7.1.2
  - The tests are written for version 7.1 of the SBSA specification.
+ - For complete coverage of the SBSA rules, availability of an Exerciser is required for Exerciser tests to be run during verficiation at Pre-Silicon level.
+ - For complete coverage, both SBSA and BSA ACS should be run.
+ - The SBSA specification compliments the [BSA specification](https://developer.arm.com/documentation/den0094/c/?lang=en).
+ - The tests can be run at both the Pre-Silicon and Silicon level.
  - The compliance suite is not a substitute for design verification.
  - To review the SBSA ACS logs, Arm licensees can contact Arm directly through their partner managers.
  - To know about the SBSA rules not implemented in this release, see [Test Scenario Document](docs/Arm_SBSA_Architecture_Compliance_Test_Scenario.pdf).
@@ -31,13 +37,19 @@ A few tests are executed by running the SBSA ACS Linux application which in turn
 
 ## Additional reading
   - For information about the implementable SBSA rules test algorithm and for unimplemented SBSA rules, see the [Test Scenario Document](docs/Arm_SBSA_Architecture_Compliance_Test_Scenario.pdf).
-  - For information on test category(UEFI, Linux, BM) and applicable systems(SR,PreSilicon), see [Test Checklist](docs/Arm_SBSA_testcase-checklist.rst)
+  - For information on test category(UEFI, Linux, Bare-metal) and applicable systems(SR,Pre-Silicon), see [Test Checklist](docs/Arm_SBSA_testcase-checklist.rst)
   - For details on the design of the SBSA ACS, see the [Arm SBSA Validation Methodology Document](docs/Arm_SBSA_Architecture_Compliance_Validation_Methodology.pdf).
   - For details on the SBSA ACS UEFI Shell Application, Linux Application and PMU Linux Application see the [Arm SBSA ACS User Guide](docs/Arm_SBSA_Architecture_Compliance_User_Guide.pdf).
-  - For details on the SBSA ACS Baremetal support, see the
+  - For details on the SBSA ACS Bare-metal support, see the
     - [Arm SBSA ACS Bare-metal User Guide](docs/Arm_SBSA_ACS_Bare-metal_User_Guide.pdf).
     - [Bare-metal Code](platform/pal_baremetal/). <br />
-Note: The Baremetal PCIe enumeration code provided as part of the SBSA ACS should be used and should not be replaced. This code is vital in analyzing of the test result. 
+Note: The Bare-metal PCIe enumeration code provided as part of the SBSA ACS should be used and should not be replaced. This code is vital in analyzing of the test result.
+
+### Running Exerciser tests for complete coverage
+
+Exerciser is a client device wrapped up by PCIe Endpoint. This device is created to meet SBSA requirements for various PCIe capability validation tests. Running the Exerciser tests provides additional test coverage on the platform.
+
+Note: To run the exerciser tests on a UEFI Based platform with Exerciser, the Exerciser PAL API's need to be implemented. For details on the reference Exerciser implementation and support, see the [Exerciser.md](docs/PCIe_Exerciser/Exerciser.md) and [Exerciser_API_porting_guide.md](docs/PCIe_Exerciser/Exerciser_API_porting_guide.md)
 
 ## SBSA ACS Linux kernel module
 To enable the export of a few kernel APIs that are necessary for PCIe and IOMMU tests, Linux kernel module and a kernel patch file are required. These files are available at [linux-acs](https://gitlab.arm.com/linux-arm/linux-acs).
@@ -214,6 +226,13 @@ shell> ./sbsa
 ```
   - For information on the SBSA Linux application parameters, see the [SBSA ACS User Guide](docs/Arm_SBSA_Architecture_Compliance_User_Guide.pdf).
 
+## ACS build steps - Bare-metal abstraction
+
+The Bare-metal build environment is platform specific.
+
+To execute the Bare-metal code from UEFI Shell, checkout to [bare-metal](https://github.com/ARM-software/sbsa-acs/tree/baremetal_reference) branch of SBSA and the build steps to integrate and run the same from UEFI shell are provided in the [README.md](https://github.com/ARM-software/sbsa-acs/blob/baremetal_reference/README.md)
+
+For details on generating the binaries to run on Bare-metal environment, refer [README.md](platform/pal_baremetal/README.md)
 
 ## Security implication
 Arm Enterprise ACS test suite may run at higher privilege level. An attacker may utilize these tests as a means to elevate privilege which can potentially reveal the platform security assets. To prevent the leakage of secure information, it is strongly recommended that the ACS test suite is run only on development platforms. If it is run on production systems, the system should be scrubbed after running the test suite.

@@ -1,8 +1,8 @@
-# Exerciser Porting Guide
-This document gives details of the various PCIe capabilities that exerciser device supports and how the exerciser is supposed to behave.
+# Exerciser API Porting Guide
+This document gives details of the various PCIe capabilities that exerciser device supports and how the exerciser is supposed to behave. It targets the Silicon partners and/or EDA vendors who are porting Exerciser API's on their platform
 
 ## Introduction to PCIe Exerciser Endpoint Device
-PCIe Exerciser is a client device wrapped up by PCIe Endpoint. This device was created to meet SBSA (Server Based System Architecture) requirements for various PCIe capability validation tests.
+PCIe Exerciser is a client device wrapped up by PCIe Endpoint. This device was created to generate custom stimuli to meet SBSA (Server Based System Architecture) requirements for various PCIe capability validation tests.
 
 ### Generating DMA
 - Before triggering DMA all the required DMA attribute fields like DMA bus address, DMA length, exerciser instance fields should be correctly set <br/>
