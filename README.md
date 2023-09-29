@@ -15,7 +15,7 @@ This suite includes a set of examples of the invariant behaviors that are provid
 The tests are executed in a baremetal environment. The initialization of the baremetal environment is specific to the environment and is out of scope of this document.
 
 ## Release details
- - Code Quality: REL v7.1.2 EAC
+ - Code Quality: REL v7.1.3
  - The tests are written for version 7.1 of the SBSA specification.
  - The compliance suite is not a substitute for design verification.
  - To review the SBSA ACS logs, Arm licensees can contact Arm directly through their partner managers.
@@ -145,9 +145,9 @@ The details of the hardware or Verification IP which enable these exerciser test
 
 |APIs                         |Description                                                                   |Affected tests          |
 |-----------------------------|------------------------------------------------------------------------------|------------------------|
-|pal_pcie_p2p_support         |Return 0 if the test system PCIe supports peer to peer transaction, else 1    |856                     |
+|pal_pcie_dev_p2p_support     |Return 0 if the test system PCIe supports peer to peer transaction, else 1    |856, 857                |
 |pal_pcie_is_cache_present    |Return 1 if the test system supports PCIe address translation cache, else 0   |852                     |
-|pal_pcie_get_legacy_irq_map  |Return 0 if system legacy irq map is filled, else 1                           |850                  |
+|pal_pcie_get_legacy_irq_map  |Return 0 if system legacy irq map is filled, else 1                           |850                     |
 
    Below exerciser capabilities are required by exerciser test.
    - MSI-X interrupt generation.
@@ -159,7 +159,8 @@ The details of the hardware or Verification IP which enable these exerciser test
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 |   SBSA Spec Version   |   ACS Coverage Mapping   |   SBSA ACS Version   |        SBSA Tag ID         |   BSA ACS Version   |      BSA Tag ID     |    Pre-Si Support    |
 |-----------------------|:------------------------:|:--------------------:|:--------------------------:|:-------------------:|:-------------------:|:--------------------:|
-|       SBSA v7.1       |    BSA ACS + SBSA ACS    |      v7.1.2 EAC      |   v23.07_REL7.1.2          |        v1.0.5       |   v23.07_REL1.0.5   |       Yes            |
+|       SBSA v7.1       |    BSA ACS + SBSA ACS    |      v7.1.3          |   v23.09_REL7.1.3          |        v1.0.6       |   v23.09_REL1.0.6   |       Yes            |
+|       SBSA v7.1       |    BSA ACS + SBSA ACS    |      v7.1.2          |   v23.07_REL7.1.2          |        v1.0.5       |   v23.07_REL1.0.5   |       Yes            |
 |       SBSA v7.1       |    BSA ACS + SBSA ACS    |      v7.1.1 BETA-1   |   v23.03_REL7.1.1_BETA-1   |        v1.0.4       |   v23.03_REL1.0.4   |       Yes            |
 |       SBSA v7.1       |    BSA ACS + SBSA ACS    |      v7.1.0 BETA-0   |   v23.01_REL7.1.0_BETA-0   |        v1.0.3       |   v23.01_REL1.0.3   |       Yes            |
 |       SBSA v6.1       |    BSA ACS + SBSA ACS    |      v6.1.0          |   v22.10_REL6.1.0          |        v1.0.2       |   v22.10_REL1.0.2   |       Yes            |
