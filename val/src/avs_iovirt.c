@@ -141,6 +141,40 @@ val_iovirt_get_pcie_rc_info(PCIE_RC_INFO_e type, uint32_t index)
 
 }
 
+uint32_t
+val_iovirt_get_rc_index(uint32_t rc_seg_num)
+{
+  uint32_t i, j = 0;
+  IOVIRT_BLOCK *block;
+
+  if (g_iovirt_info_table == NULL)
+  {
+      val_print(AVS_PRINT_ERR, "GET_PCIe_RC_INFO: iovirt info table is not created \n", 0);
+      return 0;
+  }
+
+  /* Go through the table to reach a RC with the segment number */
+  block = &g_iovirt_info_table->blocks[0];
+  for (i = 0; i < g_iovirt_info_table->num_blocks; i++, block = IOVIRT_NEXT_BLOCK(block))
+  {
+      if (block->type == IOVIRT_NODE_PCI_ROOT_COMPLEX)
+      {
+          if (block->data.rc.segment == rc_seg_num)
+          {
+             break;
+          }
+          j++;
+      }
+  }
+  if (i >=  g_iovirt_info_table->num_blocks)
+  {
+      val_print(AVS_PRINT_ERR, "GET_PCIe_RC_INFO: segemnt (%d) is not valid \n", rc_seg_num);
+      return AVS_INVALID_INDEX;
+  }
+  return j;
+
+}
+
 /**
   @brief   This API is a single point of entry to retrieve
            Named component info stored in the iovirt info table.
