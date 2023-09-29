@@ -23,7 +23,7 @@ The output library files will be generated at <sbsa_path>/build/lib/
 Note: Any platform specific changes can be done by using TARGET_EMULATION macro defintion. The pal_baremetal reference code is located in [pal_baremetal](.). To customize the bare-metal code for different platforms, create a directory <platform_name> in [pal_baremetal](.) folder and copy the reference code from [source](src) folder and [RDN2](FVP/RDN2) folder to <platform_name>.
 
 
-For more details on how to port the reference code to a specific platform and for further customisation please refer to the [User Guide](../../docs/Arm_SBSA_ACS_Bare-metal_User_Guide.pdf)
+For more details on how to port the reference code to a specific platform and for further customisation please refer to the [User Guide](../../docs/arm_sbsa_architecture_compliance_bare-metal_user_guide.pdf)
 
 -----------------
 
