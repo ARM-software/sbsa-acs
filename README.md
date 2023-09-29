@@ -28,7 +28,7 @@ The tests can also be executed in a Bare-metal environment. The initialization o
  - The tests can be run at both the Pre-Silicon and Silicon level.
  - The compliance suite is not a substitute for design verification.
  - To review the SBSA ACS logs, Arm licensees can contact Arm directly through their partner managers.
- - To know about the SBSA rules not implemented in this release, see [Test Scenario Document](docs/Arm_SBSA_Architecture_Compliance_Test_Scenario.pdf).
+ - To know about the SBSA rules not implemented in this release, see [Test Scenario Document](docs/arm_sbsa_architecture_compliance_test_scenario.pdf).
 
 
 ## GitHub branch
@@ -36,12 +36,12 @@ The tests can also be executed in a Bare-metal environment. The initialization o
   - To get the latest version of the code with bug fixes and new features, use the master branch.
 
 ## Additional reading
-  - For information about the implementable SBSA rules test algorithm and for unimplemented SBSA rules, see the [Test Scenario Document](docs/Arm_SBSA_Architecture_Compliance_Test_Scenario.pdf).
-  - For information on test category(UEFI, Linux, Bare-metal) and applicable systems(SR,Pre-Silicon), see [Test Checklist](docs/Arm_SBSA_testcase-checklist.rst)
-  - For details on the design of the SBSA ACS, see the [Arm SBSA Validation Methodology Document](docs/Arm_SBSA_Architecture_Compliance_Validation_Methodology.pdf).
-  - For details on the SBSA ACS UEFI Shell Application, Linux Application and PMU Linux Application see the [Arm SBSA ACS User Guide](docs/Arm_SBSA_Architecture_Compliance_User_Guide.pdf).
+  - For information about the implementable SBSA rules test algorithm and for unimplemented SBSA rules, see the [arm SBSA Test Scenario Document](docs/arm_sbsa_architecture_compliance_test_scenario.pdf).
+  - For information on test category(UEFI, Linux, Bare-metal) and applicable systems(SR,Pre-Silicon), see [arm SBSA Test Checklist Document](docs/arm_sbsa_testcase_checklist.rst)
+  - For details on the design of the SBSA ACS, see the [arm SBSA Validation Methodology Document](docs/arm_sbsa_architecture_compliance_validation_methodology.pdf).
+  - For details on the SBSA ACS UEFI Shell Application, Linux Application and PMU Linux Application see the [arm SBSA User Guide Document](docs/arm_sbsa_architecture_compliance_user_guide.pdf).
   - For details on the SBSA ACS Bare-metal support, see the
-    - [Arm SBSA ACS Bare-metal User Guide](docs/Arm_SBSA_ACS_Bare-metal_User_Guide.pdf).
+    - [arm SBSA Bare-metal User Guide Document](docs/arm_sbsa_architecture_compliance_bare-metal_user_guide.pdf).
     - [Bare-metal Code](platform/pal_baremetal/). <br />
 Note: The Bare-metal PCIe enumeration code provided as part of the SBSA ACS should be used and should not be replaced. This code is vital in analyzing of the test result.
 
@@ -57,16 +57,22 @@ To enable the export of a few kernel APIs that are necessary for PCIe and IOMMU 
 ## Target platforms
   Any AARCH64 Enterprise Platform that boots UEFI and Linux OS.
 
+
 ## ACS build steps - UEFI Shell application
 
+This section details the steps to build standalone SBSA UEFI application and also to build full SBSA image, which includes UEFI, Linux and PMU tests.
+
 ### Prebuilt images
-Prebuilt images for v23.07_REL7.1.2 release is available in the prebuilt_images folder of the master branch. The prebuilt images of previous release are present in [release branch](https://github.com/ARM-software/sbsa-acs/tree/release/prebuilt_images). You can choose to use this images or build your own image by following the steps below. If you choose to use the prebuilt image, jump to the test suite execution section below for details on how to run the application.
+For each release prebuilt images are available in the prebuilt_images folder of the master branch.
+You can choose to use these images or build your own image by following the steps below.
+If you choose to use the prebuilt image, jump to the test suite execution section below for details on how to run the application.
+
 
 ### Prerequisites
 Before starting the build, ensure that the following requirements are met.
 
 - Any mainstream Linux based OS distribution running on a x86 or AArch64 machine.
-- Install GCC-ARM 10.3 or later toolchain for Linux from [here](https://developer.arm.com/tools-and-software/open-source-software/developer-tools/gnu-toolchain/gnu-a/downloads).
+- Install GCC-ARM 10.3 [toolchain](https://developer.arm.com/tools-and-software/open-source-software/developer-tools/gnu-toolchain/gnu-a/downloads).
 - Install the build prerequisite packages to build EDK2.
 Note: The details of the packages are beyond the scope of this document.
 
@@ -133,7 +139,7 @@ On a system where a USB port is available and functional, perform the following 
 4. To determine the file system number of the plugged in USB drive, execute 'map -r' command.
 5. Type 'fsx' where 'x' is replaced by the number determined in step 4.
 6. To start the compliance tests, run the executable Sbsa.efi with the appropriate parameters.
-   For details on the parameters, refer to [SBSA ACS User Guide](docs/Arm_SBSA_Architecture_Compliance_User_Guide.pdf)
+   For details on the parameters, refer to [arm SBSA User Guide Document](docs/arm_sbsa_architecture_compliance_user_guide.pdf)
 > shell> Sbsa.efi
 7. Copy the UART console output to a log file for analysis and certification.
 
@@ -154,7 +160,7 @@ On an emulation environment with secondary storage, perform the following steps:
 4. To determine the file system number of the secondary storage, execute 'map -r' command.
 5. Type 'fsx' where 'x' is replaced by the number determined in step 4.
 6. To start the compliance tests, run the executable Sbsa.efi with the appropriate parameters.
-   For details on the parameters, see the [SBSA ACS User Guide](docs/Arm_SBSA_Architecture_Compliance_User_Guide.pdf)
+   For details on the parameters, see the [arm SBSA User Guide Document](docs/arm_sbsa_architecture_compliance_user_guide.pdf)
 > shell> Sbsa.efi
 7. Copy the UART console output to a log file for analysis and certification.
 
@@ -166,7 +172,7 @@ On an emulation platform where secondary storage is not available, perform the f
 2. Build UEFI image including the UEFI Shell.
 3. Boot the system to UEFI shell.
 4. Run the executable 'Sbsa.efi' to start the compliance tests.
-   For details about the parameters, see the [SBSA ACS User Guide](docs/Arm_SBSA_Architecture_Compliance_User_Guide.pdf).
+   For details about the parameters, see the [arm SBSA User Guide Document](docs/arm_sbsa_architecture_compliance_user_guide.pdf).
 > shell> Sbsa.efi
 5. Copy the UART console output to a log file for analysis and certification.
 
@@ -224,7 +230,7 @@ shell> insmod sbsa_acs.ko
 ```sh
 shell> ./sbsa
 ```
-  - For information on the SBSA Linux application parameters, see the [SBSA ACS User Guide](docs/Arm_SBSA_Architecture_Compliance_User_Guide.pdf).
+  - For information on the SBSA Linux application parameters, see the [User Guide](docs/arm_sbsa_architecture_compliance_user_guide.pdf).
 
 ## ACS build steps - Bare-metal abstraction
 
@@ -235,7 +241,7 @@ To execute the Bare-metal code from UEFI Shell, checkout to [bare-metal](https:/
 For details on generating the binaries to run on Bare-metal environment, refer [README.md](platform/pal_baremetal/README.md)
 
 ## Security implication
-Arm Enterprise ACS test suite may run at higher privilege level. An attacker may utilize these tests as a means to elevate privilege which can potentially reveal the platform security assets. To prevent the leakage of secure information, it is strongly recommended that the ACS test suite is run only on development platforms. If it is run on production systems, the system should be scrubbed after running the test suite.
+SBSA ACS test suite may run at higher privilege level. An attacker may utilize these tests as a means to elevate privilege which can potentially reveal the platform security assets. To prevent the leakage of secure information, it is strongly recommended that the ACS test suite is run only on development platforms. If it is run on production systems, the system should be scrubbed after running the test suite.
 
 ## Limitations
 Validating the compliance of certain PCIe rules defined in the SBSA specification requires the PCIe end-point to generate specific stimulus during the runtime of the test. Examples of such stimulus are  P2P, PASID, ATC, etc. The tests that requires these stimuli are grouped together in the exerciser module. The exerciser layer is an abstraction layer that enables the integration of hardware capable of generating such stimuli to the test framework.
@@ -252,7 +258,7 @@ The details of the hardware or Verification IP which enable these exerciser test
  - PMU test will require system to implement APMT table.
  - Entrophy rule will require ACS to build with STS package
 
-**Note:** To build the ACS with NIST Statistical Test Suite, see the [SBSA_NIST_User_Guide](docs/Arm_SBSA_NIST_User_Guide.md)
+**Note:** To build the ACS with NIST Statistical Test Suite, see the [arm SBSA_NIST_User_Guide Document](docs/arm_sbsa_nist_user_guide.md)
 
 |APIs                         |Description                                                                   |Affected tests          |
 |-----------------------------|------------------------------------------------------------------------------|------------------------|
