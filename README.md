@@ -34,6 +34,12 @@ Contact your EDA vendor and ask if they include these tests as part of their ver
   - For information about the test coverage scenarios that are implemented in the current release of ACS and the scenarios that are  planned for the future releases, see the [Testcase checklist](docs/Arm_SBSA_testcase-checklist.rst). <br />
 Note: The Baremetal PCIe enumeration code provided as part of the SBSA ACS should be used and should not be replaced. This code is vital in analyzing of the test result.
 
+### Running Exerciser tests for complete coverage
+
+Exerciser is a client device wrapped up by PCIe Endpoint. This device is created to meet SBSA requirements for various PCIe capability validation tests. Running the Exerciser tests provides additional test coverage on the platform.
+
+Note: To run the exerciser tests on a UEFI Based platform with Exerciser, the Exerciser PAL API's need to be implemented. For details on the reference Exerciser implementation and support, see the [Exerciser.md](docs/PCIe_Exerciser/Exerciser.md) and [Exerciser_API_porting_guide.md](docs/PCIe_Exerciser/Exerciser_API_porting_guide.md)
+
 ## Target platforms
   Any 64-bit Arm based Server design presented as a full chip Emulation or Simulation environment
 

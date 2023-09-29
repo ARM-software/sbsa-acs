@@ -1,0 +1,157 @@
+{
+    "hostbridge/hostbridge0": {
+    },
+    "ahci/ahci0": {
+        "device": 30,
+        "function": 0,
+        "image_path": "",
+        "express_capability_device_type": 9,
+        "ats_supported": true,
+        "pasid_supported": true,
+        "aer_supported": true
+    },
+    "exerciser/exerciser0": {
+        "device": 31,
+        "function": 0,
+        "interrupt_pin_index": 4,
+        "express_capability_device_type": 9,
+        "uses_client_based_atc": true,
+        "ats_supported": true,
+        "max_transaction_trace_entries": 8,
+        "pasid_supported": true,
+        "error_injection_supported": true,
+        "aer_supported": true
+    },
+    "exerciser/exerciser1": {
+        "device": 15,
+        "function": 0,
+        "interrupt_pin_index": 4,
+        "express_capability_device_type": 9,
+        "uses_client_based_atc": true,
+        "ats_supported": true,
+        "max_transaction_trace_entries":8,
+        "pasid_supported": true,
+        "error_injection_supported": true,
+        "aer_supported": true
+
+    },
+    "rootport/rootport0": {
+        "device_number": 1,
+        "dpc_supported": true,
+        "acs_supported": true,
+        "aer_supported": true,
+        "__downstream__": {
+            "ahci/ahci1": {
+            "device": 0,
+            "function": 0,
+            "image_path": ""
+            }
+        }
+    },
+    "rootport/rootport1": {
+        "device_number": 2,
+        "dpc_supported": true,
+        "aer_supported": true,
+        "acs_supported": true,
+        "error_injection_supported": true,
+        "msix_support": true,
+        "__downstream__": {
+            "exerciser/exerciser2": {
+                "interrupt_pin_index": 4,
+                "device": 0,
+                "function": 0,
+                "multi_function": true,
+                "msix_support": true,
+                "uses_client_based_atc": true,
+                "ats_supported": true,
+                "error_injection_supported": true,
+                "max_transaction_trace_entries": 8,
+                "pasid_supported": true,
+                "aer_supported": true
+            },
+            "exerciser/exerciser3": {
+                "device": 0,
+                "function": 1,
+                "interrupt_pin_index": 4,
+                "msix_support": true,
+                "uses_client_based_atc": true,
+                "ats_supported": true,
+                "error_injection_supported": true,
+                "max_transaction_trace_entries": 8,
+                "pasid_supported": true,
+                "aer_supported": true
+            }
+        }
+    },
+    "rootport/rootport2": {
+        "device_number": 3,
+        "acs_supported": true,
+        "dpc_supported": true,
+        "aer_supported": true,
+        "error_injection_supported": true,
+        "msix_support": true,
+        "__downstream__": {
+            "switch/switch0": {
+                "device_number": 0,
+                "__downstream__0": {
+                    "ahci/ahci2": {}
+                },
+                "__downstream__1": {
+                    "exerciser/exerciser4": {
+                    "device": 0,
+                    "function": 0,
+                    "multi_function": true ,
+                    "interrupt_pin_index": 4,
+                    "uses_client_based_atc": true,
+                    "msix_support": true,
+                    "ats_supported": true,
+                    "error_injection_supported": true,
+                    "max_transaction_trace_entries": 8,
+                    "pasid_supported": true,
+                    "aer_supported": true
+                    },
+                    "exerciser/exerciser5": {
+                    "device": 0,
+                    "function": 7,
+                    "interrupt_pin_index": 4,
+                    "error_injection_supported": true,
+                    "msix_support": true,
+                    "uses_client_based_atc": true,
+                    "ats_supported": true,
+                    "max_transaction_trace_entries": 8,
+                    "pasid_supported": true,
+                    "aer_supported": true
+                    }
+                },
+                "__downstream__2": {
+                    "smmuv3testengine/smmuv3testengine1": {
+                    "device": 0,
+                    "function": 0,
+                    "multi_function": true
+                    },
+                    "smmuv3testengine/smmuv3testengine2": {
+                    "device": 0,
+                    "function": 7
+                    }
+                }
+            }
+        }
+    },
+    "rootport/rootport3": {
+        "device_number": 4,
+        "acs_supported": true,
+        "dpc_supported": true,
+        "aer_supported": true,
+        "__downstream__": {
+            "smmuv3testengine/smmuv3testengine3": {
+                "device": 0,
+                "function": 0,
+                "multi_function": true
+            },
+            "smmuv3testengine/smmuv3testengine4": {
+                "device": 0,
+                "function": 1
+            }
+        }
+    }
+}
