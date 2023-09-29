@@ -20,7 +20,7 @@ A few tests are executed by running the SBSA ACS Linux application which in turn
 The tests can also be executed in a Bare-metal environment. The initialization of the Bare-metal environment is specific to the environment and is out of scope of this document.
 
 ## Release details
- - Code Quality: REL v7.1.2
+ - Code Quality: REL v7.1.3
  - The tests are written for version 7.1 of the SBSA specification.
  - For complete coverage of the SBSA rules, availability of an Exerciser is required for Exerciser tests to be run during verficiation at Pre-Silicon level.
  - For complete coverage, both SBSA and BSA ACS should be run.
@@ -52,7 +52,7 @@ Exerciser is a client device wrapped up by PCIe Endpoint. This device is created
 Note: To run the exerciser tests on a UEFI Based platform with Exerciser, the Exerciser PAL API's need to be implemented. For details on the reference Exerciser implementation and support, see the [Exerciser.md](docs/PCIe_Exerciser/Exerciser.md) and [Exerciser_API_porting_guide.md](docs/PCIe_Exerciser/Exerciser_API_porting_guide.md)
 
 ## SBSA ACS Linux kernel module
-To enable the export of a few kernel APIs that are necessary for PCIe and IOMMU tests, Linux kernel module and a kernel patch file are required. These files are available at [linux-acs](https://gitlab.arm.com/linux-arm/linux-acs).
+To enable the export of a few kernel APIs that are necessary for PCIe and SMMU tests, Linux kernel module and a kernel patch file are required. These files are available at [linux-acs](https://gitlab.arm.com/linux-arm/linux-acs).
 
 ## Target platforms
   Any AARCH64 Enterprise Platform that boots UEFI and Linux OS.
@@ -78,8 +78,8 @@ Note: The details of the packages are beyond the scope of this document.
 
 ### 1. Build Steps
 
-1.  git clone the edk2-stable202208 tag of EDK2 tree
-> git clone --recursive --branch edk2-stable202208 https://github.com/tianocore/edk2
+1.  git clone the edk2-stable202302 tag of EDK2 tree
+> git clone --recursive --branch edk2-stable202302 https://github.com/tianocore/edk2
 2.  git clone the EDK2 port of libc
 > git clone https://github.com/tianocore/edk2-libc edk2/edk2-libc
 3.  git clone sbsa-acs
@@ -133,7 +133,7 @@ These steps assume that the test suite is invoked through the ACS UEFI shell app
 ### 3.1 On Silicon
 On a system where a USB port is available and functional, perform the following steps:
 
-1. Copy 'Sbsa.efi' to a USB Flash drive.
+1. Copy 'Sbsa.efi' to a USB Flash drive. Path for 'Sbsa.efi' is present in step 2.
 2. Plug in the USB Flash drive to one of the functional USB ports on the system.
 3. Boot the system to UEFI shell.
 4. To determine the file system number of the plugged in USB drive, execute 'map -r' command.
@@ -179,7 +179,7 @@ On an emulation platform where secondary storage is not available, perform the f
 
 ## ACS build steps - Linux application
 
-Certain Peripheral, PCIe and Memory map tests require Linux operating system.This chapter provides information on building and executing these tests from the Linux application.
+Certain PCIe and SMMU tests require Linux operating system.This chapter provides information on building and executing these tests from the Linux application.
 
 ### 1. Build steps and environment setup
 This section lists the porting and build steps for the kernel module.
@@ -187,22 +187,22 @@ The patch for the kernel tree and the Linux PAL are hosted separately on [linux-
 
 ### 1.1 Building the kernel module
 #### Prerequisites
-- Linux kernel source version 5.11, 5.13, 5.15, 6.0.
-- Linaro GCC tool chain 10.3 or above.
+- Linux kernel source version 5.11, 5.13, 5.15, 6.0, 6.4
+- Install GCC-ARM 10.3 [toolchain](https://developer.arm.com/tools-and-software/open-source-software/developer-tools/gnu-toolchain/gnu-a/downloads).
 - Build environment for AArch64 Linux kernel.<br />
 NOTE: <br />
-- Linux version 6.0 is recommened version.
-- GCC 10.3 is recommended toolchain. 
+- Linux version 6.4 is recommened version.
+- GCC 10.3 is recommended toolchain
 
 #### Porting steps for Linux kernel
 1. git clone https://gitlab.arm.com/linux-arm/linux-acs sbsa-acs-drv
 2. git clone https://github.com/ARM-software/sbsa-acs.git sbsa-acs
-3. git clone https://github.com/torvalds/linux.git -b v6.0
+3. git clone https://github.com/torvalds/linux.git -b v6.4
 4. export CROSS_COMPILE=<GCC10.3 toolchain path> pointing to /bin/aarch64-linux-gnu-
-5. git apply <local_dir>/sbsa-acs-drv/kernel/src/0001-BSA-ACS-Linux-6.0.patch to your kernel source tree.
+5. git apply <local_dir>/sbsa-acs-drv/kernel/src/0001-BSA-ACS-Linux-6.4.patch to your kernel source tree.
 6. make ARCH=arm64 defconfig && make -j $(nproc) ARCH=arm64
 
-NOTE: The steps mentions Linux version 6.0, as it is latest version which is verified at ACS end.
+NOTE: The steps mentions Linux version 6.4, as it is latest version which is verified at ACS end.
 
 #### 1.2 Build steps for SBSA kernel module
 1. cd <local_dir>/sbsa-acs-drv/files
@@ -247,24 +247,25 @@ SBSA ACS test suite may run at higher privilege level. An attacker may utilize t
 Validating the compliance of certain PCIe rules defined in the SBSA specification requires the PCIe end-point to generate specific stimulus during the runtime of the test. Examples of such stimulus are  P2P, PASID, ATC, etc. The tests that requires these stimuli are grouped together in the exerciser module. The exerciser layer is an abstraction layer that enables the integration of hardware capable of generating such stimuli to the test framework.
 The details of the hardware or Verification IP which enable these exerciser tests are platform specific and are beyond the scope of this document.
 
-### SBSA Level 7 tests dependencies
- - MPAM test will require EL3 firmware to enable access to MPAM registers from lower EL's.
-   If arm trusted firmware is used as EL3 fimrware, enable ENABLE_MPAM_FOR_LOWER_ELS=1 in tf build
+### SBSA Tests dependencies
+ - MPAM tests will require EL3 firmware to enable access to MPAM registers from lower EL's.
+   If arm trusted firmware is used as EL3 fimrware, enable ENABLE_MPAM_FOR_LOWER_ELS=1 during arm TF build.
+   If the above flags are not enabled, MPAM tests can lead to exception at EL3.
  - RAS test will require EL3 firmware to enable access to RAS registers from lower EL's and forward RAS related exceptions to lower EL's.
-   If arm trusted firmware is used as EL3 fimrware, enable EL3_EXCEPTION_HANDLING=1 RAS_EXTENSION=1 HANDLE_EA_EL3_FIRST=1 RAS_TRAP_LOWER_EL_ERR_ACCESS=0 in tf build
- - If the above flags are not enabled, MPAM and RAS test can lead to exception at EL3.
- - MPAM test will require system to implement MPAM, SRAT, HMAT, PPTT tables.
- - RAS test will require system to implement AEST, RAS2, SRAT, HMAT, PPTT tables.
- - PMU test will require system to implement APMT table.
- - Entrophy rule will require ACS to build with STS package
+   If arm trusted firmware is used as EL3 fimrware, enable EL3_EXCEPTION_HANDLING=1 RAS_EXTENSION=1 HANDLE_EA_EL3_FIRST=1 RAS_TRAP_LOWER_EL_ERR_ACCESS=0 during arm TF build
+   If the above flags are not enabled, RAS tests can lead to exception at EL3.
+ - MPAM test have dependency on MPAM, SRAT, HMAT, PPTT tables.
+ - RAS test have dependency on AEST, RAS2, SRAT, HMAT, PPTT tables.
+ - PMU test have dependency on APMT table.
+ - Entrophy rule will require ACS to build with NIST-STS package
 
 **Note:** To build the ACS with NIST Statistical Test Suite, see the [arm SBSA_NIST_User_Guide Document](docs/arm_sbsa_nist_user_guide.md)
 
 |APIs                         |Description                                                                   |Affected tests          |
 |-----------------------------|------------------------------------------------------------------------------|------------------------|
-|pal_pcie_p2p_support         |Return 0 if the test system PCIe supports peer to peer transaction, else 1    |853, 854, 856, 911      |
+|pal_pcie_dev_p2p_support     |Return 0 if the test system PCIe supports peer to peer transaction, else 1    |856, 857                |
 |pal_pcie_is_cache_present    |Return 1 if the test system supports PCIe address translation cache, else 0   |852                     |
-|pal_pcie_get_legacy_irq_map  |Return 0 if system legacy irq map is filled, else 1                           |812, 850                |
+|pal_pcie_get_legacy_irq_map  |Return 0 if system legacy irq map is filled, else 1                           |850                     |
 
    Below exerciser capabilities are required by exerciser test.
    - MSI-X interrupt generation.
@@ -278,6 +279,7 @@ The details of the hardware or Verification IP which enable these exerciser test
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 |   SBSA Spec Version   |   ACS Coverage Mapping   |   SBSA ACS Version   |        SBSA Tag ID         |   BSA ACS Version   |      BSA Tag ID     |    Pre-Si Support    |
 |-----------------------|:------------------------:|:--------------------:|:--------------------------:|:-------------------:|:-------------------:|:--------------------:|
+|       SBSA v7.1       |    BSA ACS + SBSA ACS    |      v7.1.3          |   v23.09_REL7.1.3          |        v1.0.6       |   v23.09_REL1.0.6   |       Yes            |
 |       SBSA v7.1       |    BSA ACS + SBSA ACS    |      v7.1.2          |   v23.07_REL7.1.2          |        v1.0.5       |   v23.07_REL1.0.5   |       Yes            |
 |       SBSA v7.1       |    BSA ACS + SBSA ACS    |      v7.1.1 BETA-1   |   v23.03_REL7.1.1_BETA-1   |        v1.0.4       |   v23.03_REL1.0.4   |       Yes            |
 |       SBSA v7.1       |    BSA ACS + SBSA ACS    |      v7.1.0 BETA-0   |   v23.01_REL7.1.0_BETA-0   |        v1.0.3       |   v23.01_REL1.0.3   |       Yes            |
