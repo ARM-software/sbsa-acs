@@ -34,10 +34,14 @@
 #define ERR_FATAL 1
 #define ERR_FATAL_NONFATAL 2
 #define ERR_UNCORR   0x3
+#define MAX_DEVICES  256
 
 static uint32_t msg_type[] = {ERR_FATAL_NONFATAL, ERR_FATAL};
 static uint32_t irq_pending;
 static uint32_t lpi_int_id = 0x204C;
+
+/* Allocating memory only for 256 devices */
+static void     *cfg_space_buf[MAX_DEVICES];
 
 static
 void
@@ -50,6 +54,91 @@ intr_handler(void)
   val_gic_end_of_interrupt(lpi_int_id);
   return;
 }
+
+static uint32_t
+restore_config_space(uint32_t rp_bdf)
+{
+
+  uint32_t idx;
+  uint32_t bdf, dev_rp_bdf;
+  uint32_t tbl_index = 0;
+  addr_t   cfg_space_addr;
+
+  pcie_device_bdf_table *bdf_tbl_ptr;
+  bdf_tbl_ptr = val_pcie_bdf_table_ptr();
+  while (tbl_index < bdf_tbl_ptr->num_entries)
+  {
+      bdf = bdf_tbl_ptr->device[tbl_index++].bdf;
+
+      if (val_pcie_get_rootport(bdf, &dev_rp_bdf))
+              continue;
+
+      /* Check if the RP of the device matches with the rp_bdf */
+      if (rp_bdf != dev_rp_bdf)
+              continue;
+
+      /* Traverse through the devices under this RP and restore its config space */
+      cfg_space_addr = val_pcie_get_bdf_config_addr(bdf);
+      /* Restore the EP config space after Secondary Bus Reset */
+      for (idx = 0; idx < PCIE_CFG_SIZE/4; idx++) {
+          *((uint32_t *)cfg_space_addr + idx) = *(((uint32_t *)(cfg_space_buf[tbl_index])) + idx);
+      }
+
+      val_memory_free_aligned(cfg_space_buf[tbl_index]);
+   }
+  return 0;
+}
+
+static uint32_t
+save_config_space(uint32_t rp_bdf)
+{
+
+  uint32_t idx;
+  uint32_t bdf, dev_rp_bdf;
+  uint32_t tbl_index = 0;
+  addr_t   cfg_space_addr;
+  uint32_t pe_index = val_pe_get_index_mpid(val_pe_get_mpid());
+
+  pcie_device_bdf_table *bdf_tbl_ptr;
+  bdf_tbl_ptr = val_pcie_bdf_table_ptr();
+  if (bdf_tbl_ptr->num_entries > MAX_DEVICES) {
+      val_print(AVS_PRINT_WARN, "\n WARNING: Memory is allocated only for %d devices", MAX_DEVICES);
+      val_print(AVS_PRINT_WARN, "\n The number of PCIe devices is %d", bdf_tbl_ptr->num_entries);
+      val_print(AVS_PRINT_WARN, "\n for which the additional memory is not allocated", 0);
+      val_print(AVS_PRINT_WARN, "\n and test may fail\n", 0);
+  }
+
+  while (tbl_index < bdf_tbl_ptr->num_entries)
+  {
+      bdf = bdf_tbl_ptr->device[tbl_index++].bdf;
+
+      if (val_pcie_get_rootport(bdf, &dev_rp_bdf))
+              continue;
+
+      /* Check if the RP of the device matches with the rp_bdf */
+      if (rp_bdf != dev_rp_bdf)
+              continue;
+
+      /* Traverse through the devices under this RP and store its config space. When SBR is
+         performed, all the devices connected below the RP is reset. This needs to be restored
+         after SBR*/
+      cfg_space_buf[tbl_index] = val_aligned_alloc(MEM_ALIGN_4K, PCIE_CFG_SIZE);
+      if (cfg_space_buf == NULL)
+      {
+          val_print(AVS_PRINT_ERR, "\n       Memory allocation failed.", 0);
+          val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
+          return 1;
+      }
+
+      cfg_space_addr = val_pcie_get_bdf_config_addr(bdf);
+      /* Save the EP config space to restore after Secondary Bus Reset */
+      for (idx = 0; idx < PCIE_CFG_SIZE/4; idx++) {
+          *(((uint32_t *)(cfg_space_buf[tbl_index])) + idx) = *((uint32_t *)cfg_space_addr + idx);
+      }
+   }
+  return 0;
+}
+
 
 static
 void
@@ -78,11 +167,6 @@ payload(void)
   uint32_t msi_index = 0;
   uint32_t msi_cap_offset = 0;
 
-  void     *cfg_space_buf;
-  addr_t   cfg_space_addr;
-  uint32_t idx;
-  cfg_space_buf = NULL;
-
   fail_cnt = 0;
   pe_index = val_pe_get_index_mpid(val_pe_get_mpid());
   instance = val_exerciser_get_info(EXERCISER_NUM_CARDS, 0);
@@ -99,7 +183,6 @@ payload(void)
 
       if (val_pcie_get_rootport(e_bdf, &erp_bdf))
           continue;
-
       val_pcie_enable_eru(erp_bdf);
 
       /* Check DPC capability */
@@ -166,23 +249,11 @@ payload(void)
       for (int i = 0; i < 2; i++)
       {
           val_pcie_data_link_layer_status(erp_bdf);
-          cfg_space_buf = val_aligned_alloc(MEM_ALIGN_4K, PCIE_CFG_SIZE);
-          if (cfg_space_buf == NULL)
-          {
-              val_print(AVS_PRINT_ERR, "\n       Memory allocation failed.", 0);
-              val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
-              return;
-          }
 
-          /* Get configuration space address for EP */
-          cfg_space_addr = val_pcie_get_bdf_config_addr(e_bdf);
+          /* Save the config space of all the devices connected to the RP
+           to restore after Secondary Bus Reset (SBR)*/
+          save_config_space(erp_bdf);
           val_print(AVS_PRINT_INFO, "\n       EP BDF 0x%x : ", e_bdf);
-          val_print(AVS_PRINT_INFO, "Config space addr 0x%x", cfg_space_addr);
-
-          /* Save the EP config space to restore after Secondary Bus Reset */
-          for (idx = 0; idx < PCIE_CFG_SIZE/4; idx++) {
-              *((uint32_t *)cfg_space_buf + idx) = *((uint32_t *)cfg_space_addr + idx);
-          }
 
           irq_pending = 1;
           val_pcie_read_cfg(erp_bdf, rp_dpc_cap_base + DPC_CTRL_OFFSET, &reg_value);
@@ -312,6 +383,8 @@ payload(void)
           val_pcie_read_cfg(erp_bdf, rp_dpc_cap_base + DPC_CTRL_OFFSET, &reg_value);
           val_pcie_write_cfg(erp_bdf, rp_dpc_cap_base + DPC_CTRL_OFFSET, reg_value & 0xFFFCFFFF);
 
+          /* Restore the EP config space after Secondary Bus Reset */
+          restore_config_space(erp_bdf);
           val_pcie_read_cfg(e_bdf, aer_offset + AER_UNCORR_STATUS_OFFSET, &reg_value);
           val_pcie_write_cfg(e_bdf, aer_offset + AER_UNCORR_STATUS_OFFSET, reg_value & 0xFFFFFFFF);
 
@@ -322,13 +395,10 @@ payload(void)
               fail_cnt++;
           }
 
-          /* Restore EP Config Space */
-          for (idx = 0; idx < PCIE_CFG_SIZE/4; idx++) {
-              *((uint32_t *)cfg_space_addr + idx) = *((uint32_t *)cfg_space_buf + idx);
-          }
       }
 
   }
+
   if (test_skip)
       val_set_status(pe_index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
   else if (fail_cnt)
