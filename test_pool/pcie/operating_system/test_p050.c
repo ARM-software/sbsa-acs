@@ -79,6 +79,10 @@ payload(void)
         if (status == NOT_IMPLEMENTED) {
             val_print (AVS_PRINT_WARN,
                         "\n       pal_pcie_get_legacy_irq_map unimplemented. Skipping test", 0);
+            val_print(AVS_PRINT_WARN,
+                        "\n       The API is platform specific and to be populated", 0);
+            val_print(AVS_PRINT_WARN,
+                        "\n       by partners with system legacy irq map", 0);
             val_set_status(pe_index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 02));
         }
         else {
