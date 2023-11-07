@@ -36,41 +36,26 @@
 #define GCC_ASM_IMPORT(func__)  \
        .extern  _CONCATENATE (__USER_LABEL_PREFIX__, func__)
 
-.text
-.align 2
+#include "SbsaAvs.h"
 
-GCC_ASM_EXPORT(AA64ReadMpam1)
-GCC_ASM_EXPORT(AA64WriteMpam1)
-GCC_ASM_EXPORT(AA64ReadMpam2)
-GCC_ASM_EXPORT(AA64WriteMpam2)
-GCC_ASM_EXPORT(AA64ReadMpamidr)
-GCC_ASM_EXPORT(AA64IssueDSB)
+GCC_ASM_EXPORT(EnableMMU)
+GCC_ASM_EXPORT(DisableMMU)
 
+ASM_PFX(DisableMMU):
+  MRS X0, SCTLR_EL1             // Read System Control Register configuration data
+  AND X0, X0, #DISABLE_MMU_BIT  // Set [M] bit and enable the MMU.
+  MSR SCTLR_EL1, X0             // Write System Control Register configuration data
+  ISB                           // The ISB forces these changes to be seen by the next instruction
 
-ASM_PFX(AA64ReadMpam1):
-  mrs  x0, mpam1_el1
-  ret
+  RET
 
-ASM_PFX(AA64WriteMpam1):
-  msr   mpam1_el1, x0
-  ret
+ASM_PFX(EnableMMU):
 
-ASM_PFX(AA64ReadMpam2):
-  mrs  x0, mpam2_el2
-  ret
+  // Enable MMU.
 
-ASM_PFX(AA64WriteMpam2):
-  msr   mpam2_el2, x0
-  ret
+  MRS X0, SCTLR_EL1         // Read System Control Register configuration data
+  ORR X0, X0, #1            // Set [M] bit and enable the MMU.
+  MSR SCTLR_EL1, X0         // Write System Control Register configuration data
+  ISB                       // The ISB forces these changes to be seen by the next instruction
 
-ASM_PFX(AA64ReadMpamidr):
-  mrs  x0, mpamidr_el1
-  ret
-
-ASM_PFX(AA64IssueDSB):
-  dsb sy
-  ret
-
-#ifndef TARGET_EMULATION
-ASM_FUNCTION_REMOVE_IF_UNREFERENCED
-#endif // TARGET_EMULATION
+  RET
