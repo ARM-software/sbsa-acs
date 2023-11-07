@@ -34,7 +34,7 @@ payload(void)
   uint32_t pe_index;
   uint32_t tbl_index;
   uint32_t reg_value;
-  uint32_t max_payload_value;
+  int32_t max_payload_value;
   uint32_t dp_type;
   uint32_t test_fails;
   uint32_t test_skip = 1;

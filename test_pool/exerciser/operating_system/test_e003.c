@@ -100,7 +100,7 @@ payload(void)
   dram_buf_in_phys = 0;
 
   pe_index = val_pe_get_index_mpid(val_pe_get_mpid());
-  num_exercisers = val_exerciser_get_info(EXERCISER_NUM_CARDS, 0);
+  num_exercisers = val_exerciser_get_info(EXERCISER_NUM_CARDS);
   num_smmus = val_iovirt_get_smmu_info(SMMU_NUM_CTRL, 0);
 
   /* Allocate an array to store base addresses of page tables allocated for

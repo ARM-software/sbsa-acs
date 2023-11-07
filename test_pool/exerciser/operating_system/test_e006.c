@@ -288,7 +288,7 @@ payload(void)
   uint32_t dpc_cap_base = 0;
 
   pe_index = val_pe_get_index_mpid(val_pe_get_mpid());
-  instance = val_exerciser_get_info(EXERCISER_NUM_CARDS, 0);
+  instance = val_exerciser_get_info(EXERCISER_NUM_CARDS);
 
   while (instance-- != 0) {
 

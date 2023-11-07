@@ -538,6 +538,7 @@ val_check_for_error(uint32_t test_num, uint32_t num_pe, char8_t *ruleid)
   uint32_t status = 0;
   uint32_t error_flag = 0;
   uint32_t my_index = val_pe_get_index_mpid(val_pe_get_mpid());
+  (void) test_num;
 
   /* this special case is needed when the Main PE is not the first entry
      of pe_info_table but num_pe is 1 for SOC tests */

@@ -54,6 +54,7 @@
 #define SINGLE_TEST_SENTINEL   10000
 #define SINGLE_MODULE_SENTINEL 10001
 
+typedef char char8_t;
 /* GENERIC VAL APIs */
 void val_allocate_shared_mem(void);
 void val_free_shared_mem(void);

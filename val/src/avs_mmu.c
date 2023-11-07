@@ -228,7 +228,7 @@ uint32_t val_mmu_update_entry(uint64_t address, uint32_t size)
 **/
 static uint32_t log2_func(uint64_t value)
 {
-    int bit = 0;
+    uint32_t bit = 0;
 
     while (value != 0)
     {

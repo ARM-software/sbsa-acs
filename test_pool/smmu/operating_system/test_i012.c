@@ -32,7 +32,7 @@ payload()
 {
 
   uint64_t data;
-  uint64_t data_pe_endian;
+  uint64_t data_pe_endian = 0;
   uint32_t num_smmu;
   uint32_t index;
 

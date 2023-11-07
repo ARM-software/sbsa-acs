@@ -378,6 +378,7 @@ val_pe_context_save(uint64_t sp, uint64_t elr)
 void
 val_pe_context_restore(uint64_t sp)
 {
+    (void) sp;
     sp = 0;
     *(uint64_t *)(g_stack_pointer+8) = g_ret_addr;
 }
@@ -408,7 +409,7 @@ void
 val_pe_default_esr(uint64_t interrupt_type, void *context)
 {
     uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
-    val_print(AVS_PRINT_WARN, "\n        Unexpected exception occured", 0);
+    val_print(AVS_PRINT_WARN, "\n        Unexpected exception occured of type %d", interrupt_type);
 
 #ifndef TARGET_LINUX
     if (pal_target_is_bm()) {
