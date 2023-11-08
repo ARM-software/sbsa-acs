@@ -37,7 +37,7 @@ static void payload(void)
     uint32_t msc_index;
     uint32_t rsrc_index;
     uint32_t llc_index;
-    uint32_t cache_identifier;
+    uint64_t cache_identifier;
     uint32_t cache_size;
     uint32_t max_pmg;
     uint32_t max_partid;

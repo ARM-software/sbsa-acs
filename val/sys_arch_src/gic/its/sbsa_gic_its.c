@@ -128,13 +128,13 @@ uint32_t ArmGicSetItsTables(uint32_t its_index)
   uint32_t                DevBits, CIDBits;
   uint64_t                Address;
   uint64_t                ItsBase;
-
+  uint64_t                offset;
   ItsBase = g_gic_its_info->GicIts[its_index].Base;
 
   /* Allocate Memory for Table Depending on the Type of the table in GITS_BASER<n>. */
   for (it = 0; it < ARM_NUM_GITS_BASER; it++) {
-
-    its_baser = val_mmio_read64(ItsBase + ARM_GITS_BASER(it));
+    offset = (uint64_t) ARM_GITS_BASER(it);
+    its_baser = val_mmio_read64(ItsBase + offset);
     table_type = ARM_GITS_BASER_GET_TYPE(its_baser);
     entry_size = ARM_GITS_BASER_GET_ENTRY_SIZE(its_baser);
 
@@ -162,13 +162,12 @@ uint32_t ArmGicSetItsTables(uint32_t its_index)
   }
 
   val_memory_set((void *)Address,  PAGES_TO_SIZE(Pages), 0);
-
-  write_value = val_mmio_read64(ItsBase + ARM_GITS_BASER(it));
+  write_value = val_mmio_read64(ItsBase + offset);
   write_value = write_value & (~ARM_GITS_BASER_PA_MASK);
   write_value = write_value | (Address & ARM_GITS_BASER_PA_MASK);
   write_value = write_value | ARM_GITS_BASER_VALID;
   write_value = write_value | (Pages-1);
-  val_mmio_write64(ItsBase + ARM_GITS_BASER(it), write_value);
+  val_mmio_write64(ItsBase + offset, write_value);
 
   }
 
@@ -220,7 +219,6 @@ void
 WriteCmdQMAPC(
    uint32_t     its_index,
    uint64_t     *CMDQ_BASE,
-   uint32_t     device_id,
    uint32_t     Clctn_ID,
    uint32_t     RDBase,
    uint64_t     Valid
@@ -431,7 +429,7 @@ void val_its_create_lpi_map(uint32_t its_index, uint32_t device_id,
                 g_gic_its_info->GicIts[its_index].ITTBase,
                 g_gic_its_info->GicIts[its_index].IDBits, 0x1 /*Valid*/);
   /* Map Collection using MAPC */
-  WriteCmdQMAPC(its_index, (uint64_t *)(ItsCommandBase), device_id,
+  WriteCmdQMAPC(its_index, (uint64_t *)(ItsCommandBase),
                 0x1 /*Clctn_ID*/, RDBase, 0x1 /*Valid*/);
   /* Map Interrupt using MAPI */
   WriteCmdQMAPI(its_index, (uint64_t *)(ItsCommandBase), device_id, int_id, 0x1 /*Clctn_ID*/);
@@ -539,8 +537,7 @@ uint32_t val_its_init(void)
   }
 
   /* Configure Redistributor For LPIs */
-  Status = ArmGicRedistributorConfigurationForLPI(g_gic_its_info->GicDBase,
-                                                  g_gic_its_info->GicRdBase);
+  Status = ArmGicRedistributorConfigurationForLPI(g_gic_its_info->GicRdBase);
   if (Status)
     return Status;
 

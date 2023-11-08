@@ -37,6 +37,8 @@ val_timer_execute_tests(uint32_t level, uint32_t num_pe)
 {
   uint32_t status = AVS_STATUS_SKIP, i;
   uint32_t skip_module;
+  (void) level;
+  (void) num_pe;
 
   for (i = 0; i < g_num_skip; i++) {
       if (g_skip_test_num[i] == AVS_TIMER_TEST_NUM_BASE) {
@@ -53,7 +55,6 @@ val_timer_execute_tests(uint32_t level, uint32_t num_pe)
   }
 
   val_print_test_start("Timer");
-
   return status;
 }
 
@@ -92,22 +93,27 @@ val_timer_get_info(TIMER_INFO_e info_type, uint64_t instance)
           val_platform_timer_get_entry_index (instance, &block_num, &block_index);
           if (block_num != 0xFFFF)
               return ((g_timer_info_table->gt_info[block_num].flags[block_index] >> 16) & 1);
+      break;
       case TIMER_INFO_SYS_CNTL_BASE:
           val_platform_timer_get_entry_index (instance, &block_num, &block_index);
           if (block_num != 0xFFFF)
               return g_timer_info_table->gt_info[block_num].block_cntl_base;
+      break;
       case TIMER_INFO_SYS_CNT_BASE_N:
           val_platform_timer_get_entry_index (instance, &block_num, &block_index);
           if (block_num != 0xFFFF)
               return g_timer_info_table->gt_info[block_num].GtCntBase[block_index];
+      break;
       case TIMER_INFO_FRAME_NUM:
           val_platform_timer_get_entry_index (instance, &block_num, &block_index);
           if (block_num != 0xFFFF)
               return g_timer_info_table->gt_info[block_num].frame_num[block_index];
+      break;
       case TIMER_INFO_SYS_INTID:
           val_platform_timer_get_entry_index (instance, &block_num, &block_index);
           if (block_num != 0xFFFF)
             return g_timer_info_table->gt_info[block_num].gsiv[block_index];
+      break;
       case TIMER_INFO_PHY_EL1_FLAGS:
           return g_timer_info_table->header.ns_el1_timer_flag;
       case TIMER_INFO_VIR_EL1_FLAGS:
@@ -119,6 +125,7 @@ val_timer_get_info(TIMER_INFO_e info_type, uint64_t instance)
     default:
       return 0;
   }
+  return 0;
 }
 
 void

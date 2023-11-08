@@ -1231,6 +1231,8 @@ val_pcie_get_atomicop_requester_capable(uint32_t bdf)
 {
   /* TO DO */
   //return pal_pcie_get_atomicop_requester_capable(bdf);
+  (void) bdf;
+
   return 0;
 }
 

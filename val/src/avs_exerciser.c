@@ -138,8 +138,9 @@ uint32_t val_get_exerciser_err_info(EXERCISER_ERROR_CODE type)
   @param   instance     - Stimulus hadrware instance number
   @return  value        - Information value for input type
 **/
-uint32_t val_exerciser_get_info(EXERCISER_INFO_TYPE type, uint32_t instance)
+uint32_t val_exerciser_get_info(EXERCISER_INFO_TYPE type)
 {
+
     switch (type) {
     case EXERCISER_NUM_CARDS:
          return g_exerciser_info_table.num_exerciser;
@@ -312,7 +313,7 @@ val_exerciser_execute_tests(uint32_t level)
   val_print(AVS_PRINT_INFO, "\n      Starting Exerciser Setup\n", 0);
 
   val_exerciser_create_info_table();
-  num_instances = val_exerciser_get_info(EXERCISER_NUM_CARDS, 0);
+  num_instances = val_exerciser_get_info(EXERCISER_NUM_CARDS);
 
   if (num_instances == 0) {
       val_print(AVS_PRINT_WARN, "\n     No Exerciser Devices Found, Skipping Exerciser tests...\n", 0);

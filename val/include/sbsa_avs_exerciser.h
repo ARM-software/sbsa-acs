@@ -109,7 +109,7 @@ typedef struct {
 
 void val_exerciser_create_info_table(void);
 uint32_t val_exerciser_init(uint32_t instance);
-uint32_t val_exerciser_get_info(EXERCISER_INFO_TYPE type, uint32_t instance);
+uint32_t val_exerciser_get_info(EXERCISER_INFO_TYPE type);
 uint32_t val_exerciser_set_param(EXERCISER_PARAM_TYPE type, uint64_t value1, uint64_t value2, uint32_t instance);
 uint32_t val_exerciser_get_param(EXERCISER_PARAM_TYPE type, uint64_t *value1, uint64_t *value2, uint32_t instance);
 uint32_t val_exerciser_set_state(EXERCISER_STATE state, uint64_t *value, uint32_t instance);

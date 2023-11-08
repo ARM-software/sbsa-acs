@@ -170,7 +170,7 @@
 #define ITS_NEXT_CMD_PTR    4
 #define NUM_BYTES_IN_DW     8
 
-uint32_t ArmGicRedistributorConfigurationForLPI(uint64_t gicd_base, uint64_t rd_base);
+uint32_t ArmGicRedistributorConfigurationForLPI(uint64_t rd_base);
 
 void ClearConfigTable(uint32_t int_id);
 void SetConfigTable(uint32_t int_id, uint32_t Priority);

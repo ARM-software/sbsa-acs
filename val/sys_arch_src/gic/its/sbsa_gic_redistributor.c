@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2021, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2021, 2023, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,7 +22,6 @@ static uint64_t ConfigBase;
 
 uint32_t
 ArmGicSetItsConfigTableBase(
-    uint64_t    GicDistributorBase,
     uint64_t    GicRedistributorBase
   )
 {
@@ -65,7 +64,6 @@ ArmGicSetItsConfigTableBase(
 
 uint32_t
 ArmGicSetItsPendingTableBase(
-    uint64_t    GicDistributorBase,
     uint64_t    GicRedistributorBase
   )
 {
@@ -77,7 +75,6 @@ ArmGicSetItsPendingTableBase(
   uint64_t                write_value;
   uint32_t                gicr_propbaser_idbits;
   uint64_t                Address;
-
 
   /* Get Memory size by reading the GICD_TYPER.IDBits, GICR_PROPBASER.IDBits field */
   gicr_propbaser_idbits = ARM_GICR_PROPBASER_IDbits(
@@ -133,20 +130,19 @@ void EnableLPIsRD(uint64_t GicRedistributorBase)
 
 uint32_t
 ArmGicRedistributorConfigurationForLPI(
-    uint64_t    GicDistributorBase,
     uint64_t    GicRedistributorBase
   )
 {
   uint32_t    Status;
   /* Set Configuration Table Base */
 
-  Status = ArmGicSetItsConfigTableBase(GicDistributorBase, GicRedistributorBase);
+  Status = ArmGicSetItsConfigTableBase(GicRedistributorBase);
   if ((Status)) {
     return Status;
   }
 
   /* Set Pending Table Base For Each Redistributor */
-  Status = ArmGicSetItsPendingTableBase(GicDistributorBase, GicRedistributorBase);
+  Status = ArmGicSetItsPendingTableBase(GicRedistributorBase);
   if ((Status)) {
     return Status;
   }

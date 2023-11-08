@@ -38,6 +38,7 @@ val_mpam_execute_tests(uint32_t level, uint32_t num_pe)
   uint32_t status = AVS_STATUS_FAIL, i;
   uint32_t skip_module;
   uint32_t msc_node_cnt;
+  (void) level;
 
   for (i = 0; i < g_num_skip; i++) {
       if (g_skip_test_num[i] == AVS_MPAM_TEST_NUM_BASE) {

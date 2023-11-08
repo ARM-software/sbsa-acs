@@ -20,6 +20,7 @@
 
 #include "include/sbsa_avs_pgt.h"
 #include "include/sbsa_avs_memory.h"
+#include "include/sbsa_avs_mmu.h"
 
 #define get_min(a, b) ((a) < (b))?(a):(b)
 
@@ -198,12 +199,6 @@ uint32_t val_pgt_create(memory_region_descriptor_t *mem_desc, pgt_descriptor_t *
         {
             val_print(AVS_PRINT_WARN, "\n      val_pgt_create: input address size error, truncating to %d-bits     ", pgt_desc->ias);
             mem_desc->virtual_address &= ((0x1ull << pgt_desc->ias) - 1);
-        }
-
-        if ((pgt_desc->tcr.tg_size_log2) != page_size_log2)
-        {
-            val_print(AVS_PRINT_ERR, "\n      val_pgt_create: input page_size 0x%x not supported     ", (0x1 << pgt_desc->tcr.tg_size_log2));
-            return AVS_STATUS_ERR;
         }
 
         tt_desc.input_base = mem_desc->virtual_address & ((0x1ull << pgt_desc->ias) - 1);

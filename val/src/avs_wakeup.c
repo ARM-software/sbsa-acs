@@ -35,9 +35,11 @@ extern int32_t gPsciConduit;
 uint32_t
 val_wakeup_execute_tests(uint32_t level, uint32_t num_pe)
 {
+
   uint32_t status = AVS_STATUS_SKIP, i;
   uint32_t skip_module;
-
+  (void) level;
+  (void) num_pe;
 
   for (i = 0; i < g_num_skip; i++) {
       if (g_skip_test_num[i] == AVS_WAKEUP_TEST_NUM_BASE) {

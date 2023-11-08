@@ -1,5 +1,5 @@
 #/** @file
-# Copyright (c) 2023 Arm Limited or its affiliates. All rights reserved.
+# Copyright (c) 2023, Arm Limited or its affiliates. All rights reserved.
 # SPDX-License-Identifier : Apache-2.0
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,6 +15,8 @@
 # limitations under the License.
 #
 #**/
+
+#include "gcc_types.h"
 
 .text
 .align 2
@@ -50,5 +52,3 @@ ASM_PFX(AA64ReadMpamidr):
 ASM_PFX(AA64IssueDSB):
   dsb sy
   ret
-
-ASM_FUNCTION_REMOVE_IF_UNREFERENCED

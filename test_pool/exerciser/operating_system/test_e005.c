@@ -152,7 +152,7 @@ barspace_transactions_order_check(void)
   uint32_t status;
 
   /* Read the number of excerciser cards */
-  instance = val_exerciser_get_info(EXERCISER_NUM_CARDS, 0);
+  instance = val_exerciser_get_info(EXERCISER_NUM_CARDS);
 
   while (instance-- != 0) {
 

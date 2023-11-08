@@ -123,7 +123,7 @@ save_config_space(uint32_t rp_bdf)
          performed, all the devices connected below the RP is reset. This needs to be restored
          after SBR*/
       cfg_space_buf[tbl_index] = val_aligned_alloc(MEM_ALIGN_4K, PCIE_CFG_SIZE);
-      if (cfg_space_buf == NULL)
+      if (cfg_space_buf[tbl_index] == NULL)
       {
           val_print(AVS_PRINT_ERR, "\n       Memory allocation failed.", 0);
           val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
@@ -169,7 +169,7 @@ payload(void)
 
   fail_cnt = 0;
   pe_index = val_pe_get_index_mpid(val_pe_get_mpid());
-  instance = val_exerciser_get_info(EXERCISER_NUM_CARDS, 0);
+  instance = val_exerciser_get_info(EXERCISER_NUM_CARDS);
 
   while (instance-- != 0)
   {
