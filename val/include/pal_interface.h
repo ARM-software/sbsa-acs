@@ -23,6 +23,32 @@
 #include <linux/acpi_iort.h>
 #endif
 
+#ifdef TARGET_BM_BOOT
+
+#include "platform_image_def.h"
+#include "platform_override_fvp.h"
+
+  #define IMAGE_BASE    PLATFORM_NORMAL_WORLD_IMAGE_BASE
+  #define IMAGE_SIZE    PLATFORM_NORMAL_WORLD_IMAGE_SIZE
+
+  #define UART_BASE     BASE_ADDRESS_ADDRESS
+  #define GICC_BASE     PLATFORM_OVERRIDE_GICC_BASE
+  #define GICD_BASE     PLATFORM_OVERRIDE_GICD_BASE
+  #define GICRD_BASE    PLATFORM_OVERRIDE_GICRD_BASE
+  #define GICH_BASE     PLATFORM_OVERRIDE_GICH_BASE
+  #define MEM_POOL_SIZE PLATFORM_MEMORY_POOL_SIZE
+
+  #define PCIE_BAR64       PLATFORM_OVERRIDE_PCIE_BAR64_VAL
+  #define PCIE_BAR64_RP    PLATFORM_OVERRIDE_RP_BAR64_VAL
+  #define PCIE_BAR32_NP    PLATFORM_OVERRIDE_PCIE_BAR32NP_VAL
+  #define PCIE_BAR32_P     PLATFORM_OVERRIDE_PCIE_BAR32P_VAL
+  #define PCIE_BAR32_RP    PLATOFRM_OVERRIDE_RP_BAR32_VAL
+
+  #define MMU_PGT_IAS      PLATFORM_OVERRIDE_MMU_PGT_IAS
+  #define MMU_PGT_OAS      PLATFORM_OVERRIDE_MMU_PGT_OAS
+
+#endif
+
 #ifdef TARGET_LINUX
   typedef char          char8_t;
   typedef long long int addr_t;
@@ -35,9 +61,11 @@
 #define PCIE_MAX_FUNC    8
 
 #define MAX_SID        32
+#define MMU_PGT_IAS    48
+#define MMU_PGT_OAS    48
 
 #elif TARGET_EMUALTION
-#include "../platform/pal_baremetal/FVP/RDN2/include/platform_override_fvp.h"
+#include "platform_override_fvp.h"
   typedef INT8   int8_t;
   typedef INT32  int32_t;
   typedef CHAR8  char8_t;
@@ -50,6 +78,8 @@
   typedef UINT64 dma_addr_t;
 
   #define MAX_SID  PLATFORM_OVERRIDE_MAX_SID
+  #define MMU_PGT_IAS    48
+  #define MMU_PGT_OAS    48
 
 #if PLATFORM_OVERRIDE_TIMEOUT
     #define TIMEOUT_LARGE    PLATFORM_OVERRIDE_TIMEOUT_LARGE
@@ -187,6 +217,11 @@ typedef struct {
 void pal_pe_call_smc(ARM_SMC_ARGS *args, int32_t conduit);
 void pal_pe_execute_payload(ARM_SMC_ARGS *args);
 uint32_t pal_pe_install_esr(uint32_t exception_type, void (*esr)(uint64_t, void *));
+#ifdef TARGET_BM_BOOT
+  uint32_t pal_get_pe_count(void);
+  uint64_t *pal_get_phy_mpidr_list_base(void);
+#endif // TARGET_BM_BOOT
+
 /* ********** PE INFO END **********/
 
 
@@ -387,6 +422,7 @@ uint32_t pal_pcie_mem_get_offset(uint32_t type);
 
 uint32_t pal_pcie_bar_mem_read(uint32_t bdf, uint64_t address, uint32_t *data);
 uint32_t pal_pcie_bar_mem_write(uint32_t bdf, uint64_t address, uint32_t data);
+
 /**
   @brief  Instance of SMMU INFO block
 **/
@@ -461,6 +497,7 @@ typedef struct {
 }IOVIRT_BLOCK;
 
 #define IOVIRT_NEXT_BLOCK(b) (IOVIRT_BLOCK *)((uint8_t*)(&b->data_map[0]) + b->num_data_map * sizeof(NODE_DATA_MAP))
+#define ALIGN_MEMORY(b, bound) (IOVIRT_BLOCK *) (((uint64_t)b + bound - 1) & (~(bound - 1)))
 #define IOVIRT_CCA_MASK ~((uint32_t)0)
 
 typedef struct {
@@ -685,6 +722,7 @@ uint64_t pal_memory_get_unpopulated_addr(uint64_t *addr, uint32_t instance);
 /* Common Definitions */
 void     pal_print(char8_t *string, uint64_t data);
 void     pal_print_raw(uint64_t addr, char8_t *string, uint64_t data);
+void     pal_uart_print(int log, const char *fmt, ...);
 uint32_t pal_strncmp(char8_t *str1, char8_t *str2, uint32_t len);
 void    *pal_memcpy(void *dest_buffer, void *src_buffer, uint32_t len);
 void    *pal_mem_alloc(uint32_t size);
@@ -717,8 +755,6 @@ void     pal_mmio_write8(uint64_t addr, uint8_t data);
 void     pal_mmio_write16(uint64_t addr, uint16_t data);
 void     pal_mmio_write(uint64_t addr, uint32_t data);
 void     pal_mmio_write64(uint64_t addr, uint64_t data);
-
-void     pal_mem_set(void *Buf, uint32_t Size, uint8_t Value);
 
 void     pal_pe_update_elr(void *context, uint64_t offset);
 uint64_t pal_pe_get_esr(void *context);

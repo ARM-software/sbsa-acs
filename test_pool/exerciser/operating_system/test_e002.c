@@ -94,7 +94,7 @@ payload(void)
   mem_desc = &mem_desc_array[0];
   dram_buf_in_phys = 0;
   pe_index = val_pe_get_index_mpid(val_pe_get_mpid());
-  num_exercisers = val_exerciser_get_info(EXERCISER_NUM_CARDS, 0);
+  num_exercisers = val_exerciser_get_info(EXERCISER_NUM_CARDS);
 
   /* Allocate an array to store base addresses of page tables allocated for
    * all exercisers

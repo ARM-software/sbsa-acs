@@ -38,6 +38,8 @@ val_peripheral_execute_tests(uint32_t level, uint32_t num_pe)
 
   uint32_t status = AVS_STATUS_SKIP, i;
   uint32_t skip_module;
+  (void) level;
+  (void) num_pe;
 
   for (i = 0; i < g_num_skip; i++) {
       if (g_skip_test_num[i] == AVS_PER_TEST_NUM_BASE) {
@@ -54,7 +56,6 @@ val_peripheral_execute_tests(uint32_t level, uint32_t num_pe)
   }
 
   val_print_test_start("Peripheral");
-
   return status;
 }
 #endif

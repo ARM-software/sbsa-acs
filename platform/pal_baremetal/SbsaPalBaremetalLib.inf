@@ -25,35 +25,35 @@
   LIBRARY_CLASS                  = SbsaPalBaremetalLib|UEFI_APPLICATION UEFI_DRIVER
 
 [Sources.common]
-  src/AArch64/ArmSmc.S
-  src/AArch64/AvsTestInfra.S
-  src/AArch64/ModuleEntryPoint.S
-  src/pal_pe.c
-  src/pal_pcie.c
-  src/pal_pcie_enumeration.c
-  src/pal_gic.c
-  src/pal_timer_wd.c
-  src/pal_exerciser.c
-  src/pal_iovirt.c
-  src/pal_smmu.c
-  src/pal_peripherals.c
-  src/pal_misc.c
-  src/pal_dma.c
-  src/pal_ras.c
-  src/pal_pmu.c
-  src/pal_mpam.c
-  src/pal_hmat.c
-  FVP/src/pal_bm_dma.c
-  FVP/src/pal_bm_exerciser.c
-  FVP/src/pal_bm_gic.c
-  FVP/src/pal_bm_iovirt.c
-  FVP/src/pal_bm_misc.c
-  FVP/src/pal_bm_pcie.c
-  FVP/src/pal_bm_pe.c
-  FVP/src/pal_bm_peripherals.c
-  FVP/src/pal_bm_pmu.c
-  FVP/src/pal_bm_ras.c
-  FVP/src/pal_bm_smmu.c
+  common/src/AArch64/ArmSmc.S
+  common/src/AArch64/AvsTestInfra.S
+  common/src/AArch64/ModuleEntryPoint.S
+  common/src/pal_pe.c
+  common/src/pal_pcie.c
+  common/src/pal_pcie_enumeration.c
+  common/src/pal_gic.c
+  common/src/pal_timer_wd.c
+  common/src/pal_exerciser.c
+  common/src/pal_iovirt.c
+  common/src/pal_smmu.c
+  common/src/pal_peripherals.c
+  common/src/pal_misc.c
+  common/src/pal_dma.c
+  common/src/pal_ras.c
+  common/src/pal_pmu.c
+  common/src/pal_mpam.c
+  common/src/pal_hmat.c
+  RDN2/src/pal_bm_dma.c
+  RDN2/src/pal_bm_exerciser.c
+  RDN2/src/pal_bm_gic.c
+  RDN2/src/pal_bm_iovirt.c
+  RDN2/src/pal_bm_misc.c
+  RDN2/src/pal_bm_pcie.c
+  RDN2/src/pal_bm_pe.c
+  RDN2/src/pal_bm_peripherals.c
+  RDN2/src/pal_bm_pmu.c
+  RDN2/src/pal_bm_ras.c
+  RDN2/src/pal_bm_smmu.c
 
 [Packages]
   StdLib/StdLib.dec

@@ -34,9 +34,11 @@ static RAS2_INFO_TABLE *g_ras2_info_table;
 uint32_t
 val_ras_execute_tests(uint32_t level, uint32_t num_pe)
 {
+
   uint32_t status, i;
   uint32_t skip_module;
   uint64_t num_ras_nodes = 0;
+  (void) level;
 
   for (i = 0; i < g_num_skip; i++) {
       if (g_skip_test_num[i] == AVS_RAS_TEST_NUM_BASE) {
@@ -417,7 +419,7 @@ uint64_t
 val_ras_reg_read(uint32_t node_index, uint32_t reg, uint32_t err_rec_idx)
 {
   uint64_t base, value = INVALID_RAS_REG_VAL;
-  uint32_t start_rec_index, offset;
+  uint32_t start_rec_index, offset = 0;
   uint64_t num_err_recs, err_rec_impl_bitmap;
 
   start_rec_index = g_ras_info_table->node[node_index].intf_info.start_rec_index;
@@ -568,7 +570,7 @@ void
 val_ras_reg_write(uint32_t node_index, uint32_t reg, uint64_t write_data)
 {
   uint64_t base;
-  uint32_t rec_index, offset;
+  uint32_t rec_index, offset = 0;
 
   rec_index = g_ras_info_table->node[node_index].intf_info.start_rec_index;
 
@@ -768,7 +770,7 @@ uint32_t val_ras_check_err_record(uint32_t node_index, uint32_t error_type)
 {
   uint32_t status = AVS_STATUS_PASS;
   uint64_t err_status;
-  uint32_t err_type_mask;
+  uint32_t err_type_mask = 0;
 
   /* Loop for Wait */
   val_ras_wait_timeout(1);

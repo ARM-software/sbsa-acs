@@ -40,7 +40,7 @@
 
 #define VAL_EXTRACT_BITS(data, start, end) ((data >> start) & ((1ul << (end-start+1))-1))
 
-#ifndef TARGET_EMULATION
+#if !defined(TARGET_EMULATION) || defined(TARGET_BM_BOOT)
 #define TRUE 1
 #define FALSE 0
 #define BIT0 (1)
@@ -54,9 +54,11 @@
 #define SINGLE_TEST_SENTINEL   10000
 #define SINGLE_MODULE_SENTINEL 10001
 
+typedef char char8_t;
 /* GENERIC VAL APIs */
 void val_allocate_shared_mem(void);
 void val_free_shared_mem(void);
+
 void val_print(uint32_t level, char8_t *string, uint64_t data);
 void val_print_raw(uint64_t uart_address, uint32_t level, char8_t *string,
                                                                 uint64_t data);
@@ -385,6 +387,13 @@ typedef enum {
 /* MMU entries APIs*/
 uint32_t val_mmu_update_entry(uint64_t address, uint32_t size);
 
+/* Mem Map APIs */
+void val_mmu_add_mmap(void);
+void val_mmap_add_region(uint64_t va_base, uint64_t pa_base,
+                uint64_t length, uint64_t attributes);
+uint32_t val_setup_mmu(void);
+uint32_t val_enable_mmu(void);
+
 /* Identify memory type using MAIR attribute, refer to ARM ARM VMSA for details */
 
 #define MEM_NORMAL_WB_IN_OUT(attr) (((attr & 0xcc) == 0xcc) || (((attr & 0x7) >= 5) && (((attr >> 4) & 0x7) >= 5)))
@@ -427,6 +436,7 @@ void val_cache_free_info_table(void);
 uint64_t val_cache_get_info(CACHE_INFO_e type, uint32_t cache_index);
 uint32_t val_cache_get_llc_index(void);
 uint32_t val_cache_get_pe_l1_cache_res(uint32_t res_index);
+uint64_t val_get_primary_mpidr(void);
 
 /* MPAM tests APIs */
 #define MPAM_INVALID_INFO 0xFFFFFFFF

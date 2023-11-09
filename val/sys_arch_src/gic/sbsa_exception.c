@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2021 Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2021, 2023, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -29,8 +29,11 @@ irq_handler g_intr_handler[NUM_ARM_MAX_INTERRUPT];
 
 void default_irq_handler(uint64_t exception_type, void *context)
 {
+
   uint32_t ack_interrupt;
   uint32_t iar_ack_val;
+  (void) exception_type;
+  (void) context;
 
   iar_ack_val = val_sbsa_gic_acknowledgeInterrupt();
   ack_interrupt = iar_ack_val & 0xFFFFFF;
