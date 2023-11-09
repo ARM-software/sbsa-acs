@@ -44,7 +44,7 @@ get_target_exer_bdf(uint32_t req_rp_bdf, uint32_t *tgt_e_bdf,
   uint32_t erp_ecam_index;
   uint32_t status;
 
-  instance = val_exerciser_get_info(EXERCISER_NUM_CARDS, 0);
+  instance = val_exerciser_get_info(EXERCISER_NUM_CARDS);
 
   while (instance-- != 0)
   {
@@ -172,7 +172,7 @@ payload(void)
   fail_cnt = 0;
   test_skip = 1;
   pe_index = val_pe_get_index_mpid(val_pe_get_mpid());
-  req_instance = val_exerciser_get_info(EXERCISER_NUM_CARDS, 0);
+  req_instance = val_exerciser_get_info(EXERCISER_NUM_CARDS);
 
   status = val_pcie_p2p_support();
   /* Check If PCIe Hierarchy supports P2P. */

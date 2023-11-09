@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2020, 2022-2023 Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2020, 2022-2023, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -24,7 +24,7 @@
 #include "smmu_reg.h"
 #include "../include/sbsa_avs_pe.h"
 
-static uint64_t inline get_max(uint64_t x, uint64_t y)
+static inline uint64_t get_max(uint64_t x, uint64_t y)
 {
     return x > y ? x : y;
 }

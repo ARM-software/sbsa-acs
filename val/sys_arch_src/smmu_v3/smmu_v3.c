@@ -466,7 +466,7 @@ smmu_master_t *smmu_master_at(uint32_t sid)
 }
 
 // Event handler. Gives the info of the kind of event error generated.
-static int smmu_handle_evt(smmu_dev_t *smmu, uint64_t *event)
+static int smmu_handle_evt(uint64_t *event)
 {
         switch (BITFIELD_GET(EVTQ_0_ID, event[0])) {
         case EVT_ID_UUT:
@@ -610,9 +610,9 @@ void smmu_evtq_thread(void)
     do {
         while (!smmu_queue_remove_raw(evntq, event)) {
             uint8_t id = BITFIELD_GET(EVTQ_0_ID, event[0]);
-            ret = smmu_handle_evt(smmu, event);
+            ret = smmu_handle_evt(event);
             val_print(AVS_PRINT_TEST, "\n  event 0x%02x received: %d     ", id);
-            for (int i = 0; i < ARRAY_SIZE(event); ++i)
+            for (int i = 0; i < EVNTQ_DWORDS_PER_ENT; ++i)
             {
                 val_print(AVS_PRINT_TEST, "\n  0x%016llx     ", (unsigned long long)event[i]);
             }

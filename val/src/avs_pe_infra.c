@@ -21,7 +21,13 @@
 #include "include/sbsa_std_smc.h"
 #include "sys_arch_src/gic/sbsa_exception.h"
 
+#include "include/val_interface.h"
+#include "include/pal_interface.h"
+
 int32_t gPsciConduit;
+
+/* Global variable to store mpidr of primary PE */
+uint64_t g_primary_mpidr = PAL_INVALID_MPID;
 
 /**
   @brief   Pointer to the memory location of the PE Information table
@@ -111,7 +117,6 @@ val_pe_get_num()
   }
   return g_pe_info_table->header.num_of_pe;
 }
-
 
 /**
   @brief   This API reads MPIDR system regiser and return the Affinity bits
@@ -373,6 +378,7 @@ val_pe_context_save(uint64_t sp, uint64_t elr)
 void
 val_pe_context_restore(uint64_t sp)
 {
+    (void) sp;
     sp = 0;
     *(uint64_t *)(g_stack_pointer+8) = g_ret_addr;
 }
@@ -403,7 +409,7 @@ void
 val_pe_default_esr(uint64_t interrupt_type, void *context)
 {
     uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
-    val_print(AVS_PRINT_WARN, "\n        Unexpected exception occured", 0);
+    val_print(AVS_PRINT_WARN, "\n        Unexpected exception occured of type %d", interrupt_type);
 
 #ifndef TARGET_LINUX
     if (pal_target_is_bm()) {
@@ -587,3 +593,45 @@ val_cache_get_pe_l1_cache_res(uint32_t res_index)
       return DEFAULT_CACHE_IDX;
   }
 }
+
+#ifdef TARGET_BM_BOOT
+/**
+ *   @brief    Returns mpidr of primary cpu set during boot.
+ *   @param    void
+ *   @return   primary mpidr
+**/
+uint64_t val_get_primary_mpidr(void)
+{
+    return g_primary_mpidr;
+}
+
+/**
+ *   @brief    Convert mpidr to logical cpu number
+ *   @param    mpidr    - mpidr value
+ *   @return   Logical cpu number
+**/
+// This API is only used for baremetal boot at which point PE info table is not yet created.
+uint32_t val_get_pe_id(uint64_t mpidr)
+{
+    uint32_t pe_index = 0;
+    uint32_t total_pe_num = pal_get_pe_count();
+    uint64_t *phy_mpidr_list = pal_get_phy_mpidr_list_base();
+
+    mpidr = mpidr & PAL_MPIDR_AFFINITY_MASK;
+
+    for (pe_index = 0; pe_index < total_pe_num; pe_index++)
+    {
+        if (mpidr == phy_mpidr_list[pe_index])
+            return pe_index;
+    }
+
+    /* In case virtual mpidr returned for realm */
+    for (pe_index = 0; pe_index < total_pe_num; pe_index++)
+    {
+        if (mpidr == pe_index)
+            return pe_index;
+    }
+
+    return PAL_INVALID_MPID;
+}
+#endif //TARGET_BM_BOOT

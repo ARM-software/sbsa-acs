@@ -20,7 +20,6 @@
 #include "val/include/sbsa_avs_val.h"
 #include "val/include/sbsa_avs_memory.h"
 
-#include "platform/pal_baremetal/FVP/RDN2/include/platform_override_fvp.h"
 #include "SbsaAvs.h"
 
 uint32_t  g_sbsa_level;
@@ -39,6 +38,13 @@ uint32_t  g_wakeup_timeout;
 uint32_t  *g_skip_test_num;
 uint32_t  *g_execute_tests;
 uint32_t  *g_execute_modules;
+
+extern uint32_t g_skip_array[];
+extern uint32_t g_num_skip;
+extern uint32_t g_test_array[];
+extern uint32_t g_num_tests;
+extern uint32_t g_module_array[];
+extern uint32_t g_num_modules;
 
 uint32_t
 createPeInfoTable(
@@ -244,9 +250,19 @@ createInfoTable(
 }
 
 void
+createRas2InfoTable(
+)
+{
+  uint64_t ras2_size = sizeof(RAS2_INFO_TABLE)
+                       + PLATFORM_OVERRIDE_NUM_RAS2_BLOCK * sizeof(RAS2_BLOCK)
+                       + PLATFORM_OVERRIDE_NUM_RAS2_MEM_BLOCK * sizeof(RAS2_MEM_INFO);
+  createInfoTable(val_ras2_create_info_table, ras2_size, "RAS2");
+
+}
+
+void
 freeSbsaAvsMem()
 {
-
   val_pe_free_info_table();
   val_gic_free_info_table();
   val_timer_free_info_table();
@@ -279,15 +295,6 @@ ShellAppMainsbsa(
   uint32_t             Status;
   void                 *branch_label;
 
-  g_skip_test_num   = &g_skip_array[0];
-  if (g_num_tests) {
-      g_execute_tests   = &g_test_array[0];
-  }
-
-  if (g_num_modules) {
-      g_execute_modules = &g_module_array[0];
-  }
-
   g_print_level = PLATFORM_OVERRIDE_PRINT_LEVEL;
   if (g_print_level < AVS_PRINT_INFO)
   {
@@ -299,6 +306,16 @@ ShellAppMainsbsa(
       val_print(AVS_PRINT_ERR, "Setting Print level to %d\n", AVS_PRINT_ERR);
       g_print_level = AVS_PRINT_ERR;
   }
+
+#ifdef TARGET_BM_BOOT
+  /* Write page tables */
+  if (val_setup_mmu())
+      return AVS_STATUS_FAIL;
+
+  /* Enable Stage-1 MMU */
+  if (val_enable_mmu())
+      return AVS_STATUS_FAIL;
+#endif
 
   g_sbsa_level = PLATFORM_OVERRIDE_SBSA_LEVEL;
   if (g_sbsa_level < SBSA_MIN_LEVEL_SUPPORTED)
@@ -312,6 +329,25 @@ ShellAppMainsbsa(
       g_sbsa_level = SBSA_MAX_LEVEL_SUPPORTED;
   }
 
+  val_print(AVS_PRINT_TEST, "\n\n SBSA Architecture Compliance Suite \n", 0);
+  val_print(AVS_PRINT_TEST, "    Version %d.", SBSA_ACS_MAJOR_VER);
+  val_print(AVS_PRINT_TEST, "%d.", SBSA_ACS_MINOR_VER);
+  val_print(AVS_PRINT_TEST, "%d  \n", SBSA_ACS_SUBMINOR_VER);
+
+  val_print(AVS_PRINT_TEST, "\n Starting tests for level %2d", g_sbsa_level);
+  val_print(AVS_PRINT_TEST, " (Print level is %2d)\n\n", g_print_level);
+
+  val_print(AVS_PRINT_TEST, " Creating Platform Information Tables \n", 0);
+
+  g_skip_test_num   = &g_skip_array[0];
+  if (g_num_tests) {
+      g_execute_tests   = &g_test_array[0];
+  }
+
+  if (g_num_modules) {
+      g_execute_modules = &g_module_array[0];
+  }
+
   g_execute_nist = FALSE;
   g_print_mmio = FALSE;
   g_wakeup_timeout = PLATFORM_OVERRIDE_TIMEOUT;
@@ -323,16 +359,6 @@ ShellAppMainsbsa(
   g_sbsa_tests_pass  = 0;
   g_sbsa_tests_fail  = 0;
 
-  val_print(AVS_PRINT_TEST, "\n\n SBSA Architecture Compliance Suite \n", 0);
-  val_print(AVS_PRINT_TEST, "    Version %d.", SBSA_ACS_MAJOR_VER);
-  val_print(AVS_PRINT_TEST, "%d.", SBSA_ACS_MINOR_VER);
-  val_print(AVS_PRINT_TEST, "%d  \n", SBSA_ACS_SUBMINOR_VER);
-
-  val_print(AVS_PRINT_TEST, "\n Starting tests for level %2d", g_sbsa_level);
-  val_print(AVS_PRINT_TEST, " (Print level is %2d)\n\n", g_print_level);
-
-  val_print(AVS_PRINT_TEST, " Creating Platform Information Tables \n", 0);
-
   Status = createPeInfoTable();
   if (Status)
     return Status;
@@ -342,6 +368,7 @@ ShellAppMainsbsa(
     return Status;
 
   createTimerInfoTable();
+
   createWatchdogInfoTable();
 
   createCacheInfoTable();
@@ -352,15 +379,15 @@ ShellAppMainsbsa(
 
   createSratInfoTable();
 
-  uint64_t ras2_size = sizeof(RAS2_INFO_TABLE)
-                       + PLATFORM_OVERRIDE_NUM_RAS2_BLOCK * sizeof(RAS2_BLOCK)
-                       + PLATFORM_OVERRIDE_NUM_RAS2_MEM_BLOCK * sizeof(RAS2_MEM_INFO);
-  createInfoTable(val_ras2_create_info_table, ras2_size, "RAS2");
-
   createPcieVirtInfoTable();
+
   createPeripheralInfoTable();
+
   createPmuInfoTable();
+
   createRasInfoTable();
+
+  createRas2InfoTable();
 
   val_allocate_shared_mem();
 
@@ -421,6 +448,6 @@ print_test_status:
 
 
   val_pe_context_restore(AA64WriteSp(g_stack_pointer));
-
+  while (1);
   return 0;
 }

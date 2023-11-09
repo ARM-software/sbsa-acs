@@ -44,7 +44,7 @@ uint32_t
 val_smmu_read_cfg(uint32_t offset, uint32_t index);
 
 uint64_t
-val_smmu_ops(SMMU_OPS_e ops, uint32_t index, void *param1, void *param2);
+val_smmu_ops(SMMU_OPS_e ops, void *param1, void *param2);
 
 uint32_t
 val_smmu_max_pasids(uint32_t smmu_index);

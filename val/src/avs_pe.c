@@ -42,6 +42,7 @@ extern ARM_SMC_ARGS g_smc_args;
 uint32_t
 val_pe_execute_tests(uint32_t level, uint32_t num_pe)
 {
+
   uint32_t status = AVS_STATUS_PASS, i;
 
   for (i = 0; i < g_num_skip; i++) {
@@ -242,11 +243,13 @@ val_pe_reg_read(uint32_t reg_id)
             return AA64ReadMair1();
           if (AA64ReadCurrentEL() == AARCH64_EL2)
             return AA64ReadMair2();
+          break;
       case TCR_ELx:
           if (AA64ReadCurrentEL() == AARCH64_EL1)
             return AA64ReadTcr1();
           if (AA64ReadCurrentEL() == AARCH64_EL2)
             return AA64ReadTcr2();
+          break;
       case ID_AA64ZFR0_EL1:
           return AA64ReadZfr0();
       default:
