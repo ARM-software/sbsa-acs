@@ -31,7 +31,7 @@ Contact your EDA vendor and ask if they include these tests as part of their ver
 ## Additional reading
   - For details on the SBSA ACS test execution, see the [arm SBSA User Guide Document](docs/arm_sbsa_architecture_compliance_bare-metal_user_guide.pdf).
   - For details on the Design of the SBSA ACS, see the [arm SBSA Validation Methodology Document](docs/arm_sbsa_architecture_compliance_validation_methodology.pdf).
-  - For information about the test coverage scenarios that are implemented in the current release of ACS and the scenarios that are  planned for the future releases, see the [Testcase checklist](docs/testcase-checklist.md). <br />
+  - For information about the test coverage scenarios that are implemented in the current release of ACS and the scenarios that are  planned for the future releases, see the [Testcase checklist](docs/arm_sbsa_testcase_checklist.rst). <br />
 Note: The Baremetal PCIe enumeration code provided as part of the SBSA ACS should be used and should not be replaced. This code is vital in analyzing of the test result.
 
 ### Running Exerciser tests for complete coverage
@@ -70,11 +70,11 @@ To start the ACS build, perform the following steps:
    - UefiRuntimeLib|MdePkg/Library/UefiRuntimeLib/UefiRuntimeLib.inf
    - SbsaValLib|ShellPkg/Application/sbsa-acs/val/SbsaValLib.inf
    - SbsaPalBaremetalLib|ShellPkg/Application/sbsa-acs/platform/pal_baremetal/SbsaPalBaremetalLib.inf
-   - SbsaPalFVPLib|ShellPkg/Application/sbsa-acs/platform/pal_baremetal/FVP/RDN2/SbsaPalFVPLib.inf
+   - SbsaPalFVPLib|ShellPkg/Application/sbsa-acs/platform/pal_baremetal/RDN2/SbsaPalFVPLib.inf
 7.  Add ShellPkg/Application/sbsa-acs/baremetal_app/SbsaAvs.inf in the [components] section of ShellPkg/ShellPkg.dsc
 8.  Modify CC Flags in the [BuildOptions] section of ShellPkg/ShellPkg.dsc
 ```
-      *_*_*_CC_FLAGS = -DTARGET_EMULATION -DENABLE_OOB
+      *_*_*_CC_FLAGS = -DTARGET_EMULATION -DENABLE_OOB -I${WORKSPACE}/ShellPkg/Application/sbsa-acs/platform/pal_baremetal/common/include -I${WORKSPACE}/ShellPkg/Application/sbsa-acs/platform/pal_baremetal/RDN2/include/
 
       !include StdLib/StdLib.inc
 ```
