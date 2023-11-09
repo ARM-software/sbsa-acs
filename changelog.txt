@@ -45,3 +45,11 @@ v23.09_REL7.1.3
 * Improved print messages
 * Reference documents for PCIe exerciser functionality
 * Documentation changes
+
+v23.11_BootFramework
+
+* Deprecating Baremetal support for RDN1 and Juno
+* Introducing Bootwrapper support
+* Replacing pal_print calls with val_print in val
+* Addition of cmake files instead of Makefiles
+* Code improvements needed when additional compiler flags are added
