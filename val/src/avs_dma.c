@@ -109,7 +109,8 @@ val_dma_create_info_table(uint64_t *dma_info_ptr)
 
   pal_dma_create_info_table(g_dma_info_table);
 
-  val_print(AVS_PRINT_TEST, " DMA_INFO: Number of DMA CTRL in PCIe :    %x\n", val_dma_get_info(DMA_NUM_CTRL, 0));
+  val_print(AVS_PRINT_TEST, " DMA_INFO: Number of DMA CTRL in PCIe :    %x\n",
+                                                        val_dma_get_info(DMA_NUM_CTRL, 0));
 }
 
 

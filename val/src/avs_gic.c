@@ -91,8 +91,10 @@ val_gic_create_info_table(uint64_t *gic_info_table)
 
   pal_gic_create_info_table(g_gic_info_table);
 
-  val_print(AVS_PRINT_TEST, " GIC_INFO: Number of GICD             : %4d\n", g_gic_info_table->header.num_gicd);
-  val_print(AVS_PRINT_TEST, " GIC_INFO: Number of ITS              : %4d\n", g_gic_info_table->header.num_its);
+  val_print(AVS_PRINT_TEST, " GIC_INFO: Number of GICD             : %4d\n",
+                                                            g_gic_info_table->header.num_gicd);
+  val_print(AVS_PRINT_TEST, " GIC_INFO: Number of ITS              : %4d\n",
+                                                            g_gic_info_table->header.num_its);
 
   if (g_gic_info_table->header.num_gicd == 0) {
       val_print(AVS_PRINT_ERR,"\n ** CRITICAL ERROR: GIC Distributor count is 0 **\n", 0);

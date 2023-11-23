@@ -115,7 +115,8 @@ val_wd_create_info_table(uint64_t *wd_info_table)
 
   pal_wd_create_info_table(g_wd_info_table);
 
-  val_print(AVS_PRINT_TEST, " WATCHDOG_INFO: Number of Watchdogs   : %4d\n", val_wd_get_info(0, WD_INFO_COUNT));
+  val_print(AVS_PRINT_TEST, " WATCHDOG_INFO: Number of Watchdogs   : %4d\n",
+                                                            val_wd_get_info(0, WD_INFO_COUNT));
 }
 
 /**

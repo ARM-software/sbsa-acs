@@ -694,7 +694,7 @@ val_pcie_create_device_bdf_table()
   val_pcie_populate_device_rootport();
 
   val_print(AVS_PRINT_TEST,
-            " PCIE_INFO: Number of BDFs found      :    %d\n", g_pcie_bdf_table->num_entries);
+            " PCIE_INFO: Number of BDFs found      : %4d\n", g_pcie_bdf_table->num_entries);
 
   return 0;
 }

@@ -119,17 +119,17 @@ main (int argc, char **argv)
     }
 
 
-    printf ("\n ************ SBSA Architecture Compliance Suite *********\n");
-    printf ("                        Version %d.%d.%d\n", SBSA_APP_VERSION_MAJOR,
+    printf("\n ************ SBSA Architecture Compliance Suite *********\n");
+    printf("                        Version %d.%d.%d\n", SBSA_APP_VERSION_MAJOR,
             SBSA_APP_VERSION_MINOR, SBSA_APP_VERSION_SUBMINOR);
 
 
-    printf ("\n Starting tests for level %2d (Print level is %2d)\n\n", g_sbsa_level, g_print_level);
+    printf("\n Starting tests for level %2d (Print level is %2d)\n\n", g_sbsa_level, g_print_level);
 
-    printf (" Gathering system information....\n");
+    printf(" Gathering system information....\n");
     status = initialize_test_environment(g_print_level);
     if (status) {
-        printf ("Cannot initialize test environment. Exiting....\n");
+        printf("Cannot initialize test environment. Exiting....\n");
         return 0;
     }
 
