@@ -50,7 +50,7 @@ pal_mmio_read8(uint64_t addr)
 
   data = (*(volatile uint8_t *)addr);
   if (g_print_mmio || (g_curr_module & g_enable_module))
-      print(AVS_PRINT_INFO, " pal_mmio_read8 Address = %llx  Data = %lx \n", addr, data);
+      print(AVS_PRINT_INFO, " pal_mmio_read8 Address = %llx  Data = %lx\n", addr, data);
 
   return data;
 }
@@ -70,7 +70,7 @@ pal_mmio_read16(uint64_t addr)
 
   data = (*(volatile uint16_t *)addr);
   if (g_print_mmio || (g_curr_module & g_enable_module))
-      print(AVS_PRINT_INFO, " pal_mmio_read16 Address = %llx  Data = %lx \n", addr, data);
+      print(AVS_PRINT_INFO, " pal_mmio_read16 Address = %llx  Data = %lx\n", addr, data);
 
   return data;
 }
@@ -90,7 +90,7 @@ pal_mmio_read64(uint64_t addr)
 
   data = (*(volatile uint64_t *)addr);
   if (g_print_mmio || (g_curr_module & g_enable_module))
-      print(AVS_PRINT_INFO, " pal_mmio_read64 Address = %llx  Data = %llx \n", addr, data);
+      print(AVS_PRINT_INFO, " pal_mmio_read64 Address = %llx  Data = %llx\n", addr, data);
 
   return data;
 }
@@ -116,7 +116,7 @@ pal_mmio_read(uint64_t addr)
 
   data = (*(volatile uint32_t *)addr);
   if (g_print_mmio || (g_curr_module & g_enable_module))
-      print(AVS_PRINT_INFO, " pal_mmio_read Address = %8x  Data = %x \n", addr, data);
+      print(AVS_PRINT_INFO, " pal_mmio_read Address = %8x  Data = %x\n", addr, data);
 
   return data;
 
@@ -135,7 +135,7 @@ void
 pal_mmio_write8(uint64_t addr, uint8_t data)
 {
   if (g_print_mmio || (g_curr_module & g_enable_module))
-      print(AVS_PRINT_INFO, " pal_mmio_write8 Address = %llx  Data = %lx \n", addr, data);
+      print(AVS_PRINT_INFO, " pal_mmio_write8 Address = %llx  Data = %lx\n", addr, data);
 
   *(volatile uint8_t *)addr = data;
 }
@@ -153,7 +153,7 @@ void
 pal_mmio_write16(uint64_t addr, uint16_t data)
 {
   if (g_print_mmio || (g_curr_module & g_enable_module))
-      print(AVS_PRINT_INFO, " pal_mmio_write16 Address = %llx  Data = %lx \n", addr, data);
+      print(AVS_PRINT_INFO, " pal_mmio_write16 Address = %llx  Data = %lx\n", addr, data);
 
   *(volatile uint16_t *)addr = data;
 }
@@ -171,7 +171,7 @@ void
 pal_mmio_write64(uint64_t addr, uint64_t data)
 {
   if (g_print_mmio || (g_curr_module & g_enable_module))
-      print(AVS_PRINT_INFO, " pal_mmio_write64 Address = %llx  Data = %llx \n", addr, data);
+      print(AVS_PRINT_INFO, " pal_mmio_write64 Address = %llx  Data = %llx\n", addr, data);
 
   *(volatile uint64_t *)addr = data;
 }
@@ -190,12 +190,12 @@ pal_mmio_write(uint64_t addr, uint32_t data)
 {
 
   if (addr & 0x3) {
-      print(AVS_PRINT_WARN, "\n  Error-Input address is not aligned. Masking the last 2 bits \n");
+      print(AVS_PRINT_WARN, "\n  Error-Input address is not aligned. Masking the last 2 bits\n");
       addr = addr & ~(0x3);  //make sure addr is aligned to 4 bytes
   }
 
   if (g_print_mmio || (g_curr_module & g_enable_module))
-      print(AVS_PRINT_INFO, " pal_mmio_write Address = %8x  Data = %x \n", addr, data);
+      print(AVS_PRINT_INFO, " pal_mmio_write Address = %8x  Data = %x\n", addr, data);
 
     *(volatile uint32_t *)addr = data;
 }

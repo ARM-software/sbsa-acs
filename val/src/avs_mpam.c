@@ -42,7 +42,7 @@ val_mpam_execute_tests(uint32_t level, uint32_t num_pe)
 
   for (i = 0; i < g_num_skip; i++) {
       if (g_skip_test_num[i] == AVS_MPAM_TEST_NUM_BASE) {
-          val_print(AVS_PRINT_INFO, "      USER Override - Skipping all MPAM tests \n", 0);
+          val_print(AVS_PRINT_INFO, "      USER Override - Skipping all MPAM tests\n", 0);
           return AVS_STATUS_SKIP;
       }
   }
@@ -50,7 +50,7 @@ val_mpam_execute_tests(uint32_t level, uint32_t num_pe)
   /* Check if there are any tests to be executed in the current module with user override*/
   skip_module = val_check_skip_module(AVS_MPAM_TEST_NUM_BASE);
   if (skip_module) {
-      val_print(AVS_PRINT_INFO, "\n USER Override - Skipping all MPAM tests \n", 0);
+      val_print(AVS_PRINT_INFO, "\n USER Override - Skipping all MPAM tests\n", 0);
       return AVS_STATUS_SKIP;
   }
 
@@ -749,7 +749,7 @@ void
 val_mpam_create_info_table(uint64_t *mpam_info_table)
 {
   if (mpam_info_table == NULL) {
-    val_print(AVS_PRINT_ERR, "\n Pre-allocated memory pointer is NULL \n", 0);
+    val_print(AVS_PRINT_ERR, "\n Pre-allocated memory pointer is NULL\n", 0);
     return;
   }
 
@@ -758,7 +758,7 @@ val_mpam_create_info_table(uint64_t *mpam_info_table)
   pal_mpam_create_info_table(g_mpam_info_table);
 
   val_print(AVS_PRINT_TEST,
-                " MPAM INFO: Number of MSC nodes       :    %d \n", g_mpam_info_table->msc_count);
+                " MPAM INFO: Number of MSC nodes       :    %d\n", g_mpam_info_table->msc_count);
 #endif
 }
 
@@ -785,7 +785,7 @@ void
 val_hmat_create_info_table(uint64_t *hmat_info_table)
 {
   if (hmat_info_table == NULL) {
-    val_print(AVS_PRINT_ERR, "\n Pre-allocated memory pointer is NULL \n", 0);
+    val_print(AVS_PRINT_ERR, "\n Pre-allocated memory pointer is NULL\n", 0);
     return;
   }
 #ifndef TARGET_LINUX
@@ -795,7 +795,7 @@ val_hmat_create_info_table(uint64_t *hmat_info_table)
 
   if (g_hmat_info_table->num_of_mem_prox_domain != 0)
       val_print(AVS_PRINT_TEST,
-                " HMAT INFO: Number of Prox domains    :    %d \n",
+                " HMAT INFO: Number of Prox domains    :    %d\n",
                                     g_hmat_info_table->num_of_mem_prox_domain);
 #endif
 }
@@ -823,7 +823,7 @@ void
 val_srat_create_info_table(uint64_t *srat_info_table)
 {
   if (srat_info_table == NULL) {
-    val_print(AVS_PRINT_ERR, "\n Pre-allocated memory pointer is NULL \n", 0);
+    val_print(AVS_PRINT_ERR, "\n Pre-allocated memory pointer is NULL\n", 0);
     return;
   }
 #ifndef TARGET_LINUX
@@ -833,7 +833,7 @@ val_srat_create_info_table(uint64_t *srat_info_table)
 
   if (g_srat_info_table->num_of_mem_ranges != 0)
       val_print(AVS_PRINT_TEST,
-                " SRAT INFO: Number of Memory Ranges   :    %d \n",
+                " SRAT INFO: Number of Memory Ranges   :    %d\n",
                                     g_srat_info_table->num_of_mem_ranges);
 #endif
 }

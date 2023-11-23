@@ -67,7 +67,7 @@ void val_exerciser_create_info_table(void)
           val_print(AVS_PRINT_DEBUG, "      exerciser Bdf %x\n", Bdf);
       }
   }
-  val_print(AVS_PRINT_TEST, "      PCIE_INFO: Number of exerciser cards : %4d \n",
+  val_print(AVS_PRINT_TEST, "      PCIE_INFO: Number of exerciser cards : %4d\n",
                                                              g_exerciser_info_table.num_exerciser);
   return;
 }
@@ -287,7 +287,7 @@ val_exerciser_execute_tests(uint32_t level)
 
   for (i = 0; i < g_num_skip; i++) {
       if (g_skip_test_num[i] == AVS_EXERCISER_TEST_NUM_BASE) {
-          val_print(AVS_PRINT_INFO, "\n USER Override - Skipping the Exerciser tests \n", 0);
+          val_print(AVS_PRINT_INFO, "\n USER Override - Skipping the Exerciser tests\n", 0);
           return AVS_STATUS_SKIP;
       }
   }
@@ -295,7 +295,7 @@ val_exerciser_execute_tests(uint32_t level)
   /* Check if there are any tests to be executed in current module with user override options*/
   status = val_check_skip_module(AVS_EXERCISER_TEST_NUM_BASE);
   if (status) {
-    val_print(AVS_PRINT_INFO, "\n USER Override - Skipping all Exerciser tests \n", 0);
+    val_print(AVS_PRINT_INFO, "\n USER Override - Skipping all Exerciser tests\n", 0);
     return AVS_STATUS_SKIP;
   }
 
@@ -306,7 +306,7 @@ val_exerciser_execute_tests(uint32_t level)
 
    if (pcie_bdf_table_list_flag == 1) {
     val_print(AVS_PRINT_WARN, "\n     *** Created device list with valid bdf doesn't match \
-                with the platform pcie device hierarchy, Skipping exerciser tests *** \n", 0);
+                with the platform pcie device hierarchy, Skipping exerciser tests ***\n", 0);
     return AVS_STATUS_SKIP;
   }
 
