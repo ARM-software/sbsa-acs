@@ -83,7 +83,7 @@ createPeInfoTable (
 
   if (EFI_ERROR(Status))
   {
-    Print(L"Allocate Pool failed %x \n", Status);
+    Print(L"Allocate Pool failed %x\n", Status);
     return Status;
   }
 
@@ -106,7 +106,7 @@ createGicInfoTable (
 
   if (EFI_ERROR(Status))
   {
-    Print(L"Allocate Pool failed %x \n", Status);
+    Print(L"Allocate Pool failed %x\n", Status);
     return Status;
   }
 
@@ -129,7 +129,7 @@ createTimerInfoTable(
 
   if (EFI_ERROR(Status))
   {
-    Print(L"Allocate Pool failed %x \n", Status);
+    Print(L"Allocate Pool failed %x\n", Status);
     return Status;
   }
   val_timer_create_info_table(TimerInfoTable);
@@ -150,7 +150,7 @@ createWatchdogInfoTable(
 
   if (EFI_ERROR(Status))
   {
-    Print(L"Allocate Pool failed %x \n", Status);
+    Print(L"Allocate Pool failed %x\n", Status);
     return Status;
   }
   val_wd_create_info_table(WdInfoTable);
@@ -175,7 +175,7 @@ createPcieVirtInfoTable(
 
   if (EFI_ERROR(Status))
   {
-    Print(L"Allocate Pool failed %x \n", Status);
+    Print(L"Allocate Pool failed %x\n", Status);
     return Status;
   }
   val_pcie_create_info_table(PcieInfoTable);
@@ -186,7 +186,7 @@ createPcieVirtInfoTable(
 
   if (EFI_ERROR(Status))
   {
-    Print(L"Allocate Pool failed %x \n", Status);
+    Print(L"Allocate Pool failed %x\n", Status);
     return Status;
   }
   val_iovirt_create_info_table(IoVirtInfoTable);
@@ -209,7 +209,7 @@ createPeripheralInfoTable(
 
   if (EFI_ERROR(Status))
   {
-    Print(L"Allocate Pool failed %x \n", Status);
+    Print(L"Allocate Pool failed %x\n", Status);
     return Status;
   }
   val_peripheral_create_info_table(PeripheralInfoTable);
@@ -220,7 +220,7 @@ createPeripheralInfoTable(
 
   if (EFI_ERROR(Status))
   {
-    Print(L"Allocate Pool failed %x \n", Status);
+    Print(L"Allocate Pool failed %x\n", Status);
     return Status;
   }
 
@@ -242,7 +242,7 @@ createPmuInfoTable(
 
   if (EFI_ERROR(Status))
   {
-    Print(L"Allocate Pool failed %x \n", Status);
+    Print(L"Allocate Pool failed %x\n", Status);
     return Status;
   }
   val_pmu_create_info_table(PmuInfoTable);
@@ -264,7 +264,7 @@ createRasInfoTable(
 
   if (EFI_ERROR(Status))
   {
-    Print(L"Allocate Pool failed %x \n", Status);
+    Print(L"Allocate Pool failed %x\n", Status);
     return Status;
   }
   val_ras_create_info_table(RasInfoTable);
@@ -286,7 +286,7 @@ createCacheInfoTable(
 
   if (EFI_ERROR(Status))
   {
-    Print(L"Allocate Pool failed %x \n", Status);
+    Print(L"Allocate Pool failed %x\n", Status);
     return Status;
   }
   val_cache_create_info_table(CacheInfoTable);
@@ -307,7 +307,7 @@ createMpamInfoTable(
 
   if (EFI_ERROR(Status))
   {
-    Print(L"Allocate Pool failed %x \n", Status);
+    Print(L"Allocate Pool failed %x\n", Status);
     return Status;
   }
   val_mpam_create_info_table(MpamInfoTable);
@@ -328,7 +328,7 @@ createHmatInfoTable(
 
   if (EFI_ERROR(Status))
   {
-    Print(L"Allocate Pool failed %x \n", Status);
+    Print(L"Allocate Pool failed %x\n", Status);
     return Status;
   }
   val_hmat_create_info_table(HmatInfoTable);
@@ -349,7 +349,7 @@ createSratInfoTable(
 
   if (EFI_ERROR(Status))
   {
-    Print(L"Allocate Pool failed %x \n", Status);
+    Print(L"Allocate Pool failed %x\n", Status);
     return Status;
   }
   val_srat_create_info_table(SratInfoTable);
@@ -517,7 +517,7 @@ ShellAppMainsbsa (
                                  (VOID **) &g_skip_test_num);
       if (EFI_ERROR(Status))
       {
-        Print(L"Allocate memory for -skip failed \n", 0);
+        Print(L"Allocate memory for -skip failed\n", 0);
         return 0;
       }
 
@@ -646,7 +646,7 @@ ShellAppMainsbsa (
                                      (VOID **) &g_execute_tests);
           if (EFI_ERROR(Status))
           {
-              Print(L"Allocate memory for -t failed \n", 0);
+              Print(L"Allocate memory for -t failed\n", 0);
               return 0;
           }
 
@@ -685,7 +685,7 @@ ShellAppMainsbsa (
                                      (VOID **) &g_execute_modules);
           if (EFI_ERROR(Status))
           {
-              Print(L"Allocate memory for -m failed \n", 0);
+              Print(L"Allocate memory for -m failed\n", 0);
               return 0;
           }
 
@@ -715,15 +715,15 @@ ShellAppMainsbsa (
   g_sbsa_tests_pass  = 0;
   g_sbsa_tests_fail  = 0;
 
-  val_print(AVS_PRINT_TEST, "\n\n SBSA Architecture Compliance Suite \n", 0);
+  val_print(AVS_PRINT_TEST, "\n\n SBSA Architecture Compliance Suite\n", 0);
   val_print(AVS_PRINT_TEST, "    Version %d.", SBSA_ACS_MAJOR_VER);
   val_print(AVS_PRINT_TEST, "%d.", SBSA_ACS_MINOR_VER);
-  val_print(AVS_PRINT_TEST, "%d  \n", SBSA_ACS_SUBMINOR_VER);
+  val_print(AVS_PRINT_TEST, "%d\n", SBSA_ACS_SUBMINOR_VER);
 
   val_print(AVS_PRINT_TEST, "\n Starting tests for level %2d", g_sbsa_level);
   val_print(AVS_PRINT_TEST, " (Print level is %2d)\n\n", g_print_level);
 
-  val_print(AVS_PRINT_TEST, " Creating Platform Information Tables \n", 0);
+  val_print(AVS_PRINT_TEST, " Creating Platform Information Tables\n", 0);
 
   Status = createPeInfoTable();
   if (Status)
@@ -738,23 +738,23 @@ ShellAppMainsbsa (
 
   Status = createCacheInfoTable();
   if (Status)
-    Print(L" Failed to created Cache info table \n");
+    Print(L" Failed to created Cache info table\n");
 
   Status = createMpamInfoTable();
   if (Status)
-    Print(L" Failed to created Mpam info table \n");
+    Print(L" Failed to created Mpam info table\n");
 
   Status = createHmatInfoTable();
   if (Status)
-    Print(L" Failed to created HMAT info table \n");
+    Print(L" Failed to created HMAT info table\n");
 
   Status = createSratInfoTable();
   if (Status)
-    Print(L" Failed to created SRAT info table \n");
+    Print(L" Failed to created SRAT info table\n");
 
   Status = createInfoTable(val_ras2_create_info_table, RAS2_FEAT_INFO_TBL_SZ, "RAS2");
   if (Status)
-    Print(L" Failed to created RAS2 feature info table \n");
+    Print(L" Failed to created RAS2 feature info table\n");
 
   createPcieVirtInfoTable();
   createPeripheralInfoTable();
@@ -812,17 +812,17 @@ ShellAppMainsbsa (
 #endif
 
 print_test_status:
-  val_print(AVS_PRINT_TEST, "\n     ------------------------------------------------------- \n", 0);
+  val_print(AVS_PRINT_TEST, "\n     -------------------------------------------------------\n", 0);
   val_print(AVS_PRINT_TEST, "     Total Tests run  = %4d;", g_sbsa_tests_total);
   val_print(AVS_PRINT_TEST, "  Tests Passed  = %4d", g_sbsa_tests_pass);
   val_print(AVS_PRINT_TEST, "  Tests Failed = %4d\n", g_sbsa_tests_fail);
-  val_print(AVS_PRINT_TEST, "     --------------------------------------------------------- \n", 0);
+  val_print(AVS_PRINT_TEST, "     ---------------------------------------------------------\n", 0);
 
   freeSbsaAvsMem();
 
   val_print(AVS_PRINT_TEST, "\n      **  For complete SBSA test coverage, it is ", 0);
-  val_print(AVS_PRINT_TEST, "\n            necessary to also run the BSA test    ** \n\n", 0);
-  val_print(AVS_PRINT_TEST, "\n      *** SBSA tests complete. Reset the system. *** \n\n", 0);
+  val_print(AVS_PRINT_TEST, "\n            necessary to also run the BSA test    **\n\n", 0);
+  val_print(AVS_PRINT_TEST, "\n      *** SBSA tests complete. Reset the system. ***\n\n", 0);
 
   if(g_sbsa_log_file_handle) {
     ShellCloseFile(&g_sbsa_log_file_handle);

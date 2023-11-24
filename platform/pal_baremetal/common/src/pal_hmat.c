@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2023 Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2023, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -64,7 +64,7 @@ void pal_hmat_create_info_table(HMAT_INFO_TABLE *HmatTable)
   HMAT_BW_ENTRY *curr_info_entry;
 
   if (HmatTable == NULL) {
-      print(AVS_PRINT_ERR, " Unable to create HMAT info table, input pointer is NULL \n");
+      print(AVS_PRINT_ERR, " Unable to create HMAT info table, input pointer is NULL\n");
       return;
   }
 

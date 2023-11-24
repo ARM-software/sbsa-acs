@@ -515,7 +515,7 @@ uint32_t val_its_init(void)
   uint32_t    Status;
   uint32_t    index;
 
-  val_print(AVS_PRINT_INFO, "\n      Initializing GIC ITS \n", 0);
+  val_print(AVS_PRINT_INFO, "\n      Initializing GIC ITS\n", 0);
 
   g_cwriter_ptr = (uint32_t *)pal_aligned_alloc(MEM_ALIGN_4K,
                                            sizeof(uint32_t) * (g_gic_its_info->GicNumIts));
@@ -556,7 +556,7 @@ uint32_t val_its_init(void)
 
   g_its_setup_done = 1;
 
-  val_print(AVS_PRINT_INFO, "      ITS : Info Block \n", 0);
+  val_print(AVS_PRINT_INFO, "      ITS : Info Block\n", 0);
   for (index = 0; index < g_gic_its_info->GicNumIts; index++)
   {
       val_print(AVS_PRINT_INFO, "      GIC ITS Index : %x\n", index);

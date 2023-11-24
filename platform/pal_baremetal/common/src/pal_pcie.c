@@ -40,14 +40,14 @@ pal_pcie_create_info_table(PCIE_INFO_TABLE *PcieTable)
   uint32_t i = 0;
 
   if (PcieTable == NULL) {
-    print(AVS_PRINT_ERR, "Input PCIe Table Pointer is NULL. Cannot create PCIe INFO \n");
+    print(AVS_PRINT_ERR, "Input PCIe Table Pointer is NULL. Cannot create PCIe INFO\n");
     return;
   }
 
   PcieTable->num_entries = 0;
 
   if(platform_pcie_cfg.num_entries == 0) {
-    print(AVS_PRINT_ERR, "Number of ECAM is 0. Cannot create PCIe INFO \n");
+    print(AVS_PRINT_ERR, "Number of ECAM is 0. Cannot create PCIe INFO\n");
     return;
   }
 

@@ -329,15 +329,15 @@ ShellAppMainsbsa(
       g_sbsa_level = SBSA_MAX_LEVEL_SUPPORTED;
   }
 
-  val_print(AVS_PRINT_TEST, "\n\n SBSA Architecture Compliance Suite \n", 0);
+  val_print(AVS_PRINT_TEST, "\n\n SBSA Architecture Compliance Suite\n", 0);
   val_print(AVS_PRINT_TEST, "    Version %d.", SBSA_ACS_MAJOR_VER);
   val_print(AVS_PRINT_TEST, "%d.", SBSA_ACS_MINOR_VER);
-  val_print(AVS_PRINT_TEST, "%d  \n", SBSA_ACS_SUBMINOR_VER);
+  val_print(AVS_PRINT_TEST, "%d\n", SBSA_ACS_SUBMINOR_VER);
 
   val_print(AVS_PRINT_TEST, "\n Starting tests for level %2d", g_sbsa_level);
   val_print(AVS_PRINT_TEST, " (Print level is %2d)\n\n", g_print_level);
 
-  val_print(AVS_PRINT_TEST, " Creating Platform Information Tables \n", 0);
+  val_print(AVS_PRINT_TEST, " Creating Platform Information Tables\n", 0);
 
   g_skip_test_num   = &g_skip_array[0];
   if (g_num_tests) {
@@ -434,17 +434,17 @@ ShellAppMainsbsa(
     Status |= val_ras_execute_tests(g_sbsa_level, val_pe_get_num());
 
 print_test_status:
-  val_print(AVS_PRINT_TEST, "\n     ------------------------------------------------------- \n", 0);
+  val_print(AVS_PRINT_TEST, "\n     -------------------------------------------------------\n", 0);
   val_print(AVS_PRINT_TEST, "     Total Tests run  = %4d;", g_sbsa_tests_total);
   val_print(AVS_PRINT_TEST, "  Tests Passed  = %4d", g_sbsa_tests_pass);
   val_print(AVS_PRINT_TEST, "  Tests Failed = %4d\n", g_sbsa_tests_fail);
-  val_print(AVS_PRINT_TEST, "     --------------------------------------------------------- \n", 0);
+  val_print(AVS_PRINT_TEST, "     ---------------------------------------------------------\n", 0);
 
   freeSbsaAvsMem();
 
   val_print(AVS_PRINT_TEST, "\n      **  For complete SBSA test coverage, it is ", 0);
-  val_print(AVS_PRINT_TEST, "\n            necessary to also run the BSA test    ** \n\n", 0);
-  val_print(AVS_PRINT_TEST, "\n      *** SBSA tests complete. Reset the system. *** \n\n", 0);
+  val_print(AVS_PRINT_TEST, "\n            necessary to also run the BSA test    **\n\n", 0);
+  val_print(AVS_PRINT_TEST, "\n      *** SBSA tests complete. Reset the system. ***\n\n", 0);
 
 
   val_pe_context_restore(AA64WriteSp(g_stack_pointer));

@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, 2021-2023 Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018, 2021-2023, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -158,7 +158,7 @@ PalAllocateSecondaryStack(UINT64 mpidr)
                     StackSize,
                     (VOID **) &Buffer);
       if (EFI_ERROR(Status)) {
-          sbsa_print(AVS_PRINT_ERR, L"\n FATAL - Allocation for Seconday stack failed %x \n", Status);
+          sbsa_print(AVS_PRINT_ERR, L"\n FATAL - Allocation for Seconday stack failed %x\n", Status);
       }
       pal_pe_data_cache_ops_by_va((UINT64)&Buffer, CLEAN_AND_INVALIDATE);
 
@@ -195,7 +195,7 @@ pal_pe_create_info_table(PE_INFO_TABLE *PeTable)
   UINT32                        Flags;
 
   if (PeTable == NULL) {
-    sbsa_print(AVS_PRINT_ERR, L" Input PE Table Pointer is NULL. Cannot create PE INFO \n");
+    sbsa_print(AVS_PRINT_ERR, L" Input PE Table Pointer is NULL. Cannot create PE INFO\n");
     return;
   }
 
@@ -203,9 +203,9 @@ pal_pe_create_info_table(PE_INFO_TABLE *PeTable)
 
   if (gMadtHdr != NULL) {
     TableLength =  gMadtHdr->Header.Length;
-    sbsa_print(AVS_PRINT_INFO, L" MADT is at %x and length is %x \n", gMadtHdr, TableLength);
+    sbsa_print(AVS_PRINT_INFO, L" MADT is at %x and length is %x\n", gMadtHdr, TableLength);
   } else {
-    sbsa_print(AVS_PRINT_ERR, L" MADT not found \n");
+    sbsa_print(AVS_PRINT_ERR, L" MADT not found\n");
     return;
   }
 
@@ -220,7 +220,7 @@ pal_pe_create_info_table(PE_INFO_TABLE *PeTable)
     if (Entry->Type == EFI_ACPI_6_1_GIC) {
       //Fill in the cpu num and the mpidr in pe info table
       Flags           = Entry->Flags;
-      sbsa_print(AVS_PRINT_INFO, L"  Flags %x \n", Flags);
+      sbsa_print(AVS_PRINT_INFO, L"  Flags %x\n", Flags);
       sbsa_print(AVS_PRINT_DEBUG, L"  PE Enabled %d, Online Capable %d\n", ENABLED_BIT(Flags), ONLINE_CAP_BIT(Flags));
 
       /* As per MADT (GICC CPU Interface Flags) Processor is usable when
@@ -237,7 +237,7 @@ pal_pe_create_info_table(PE_INFO_TABLE *PeTable)
           Ptr->acpi_proc_uid = Entry->AcpiProcessorUid;
           for (i = 0; i < MAX_L1_CACHE_RES; i++)
               Ptr->level_1_res[i] = DEFAULT_CACHE_IDX; //initialize cache index fields with all 1's
-          sbsa_print(AVS_PRINT_DEBUG, L" MPIDR %llx PE num %x \n", Ptr->mpidr, Ptr->pe_num);
+          sbsa_print(AVS_PRINT_DEBUG, L" MPIDR %llx PE num %x\n", Ptr->mpidr, Ptr->pe_num);
           pal_pe_data_cache_ops_by_va((UINT64)Ptr, CLEAN_AND_INVALIDATE);
           Ptr++;
           PeTable->header.num_of_pe++;
@@ -563,7 +563,7 @@ pal_cache_create_info_table(CACHE_INFO_TABLE *CacheTable, PE_INFO_TABLE *PeTable
   UINT32 next_index;
 
   if (CacheTable == NULL) {
-    sbsa_print(AVS_PRINT_ERR, L" Unable to create cache info table, input pointer is NULL \n");
+    sbsa_print(AVS_PRINT_ERR, L" Unable to create cache info table, input pointer is NULL\n");
     return;
   }
 

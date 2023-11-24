@@ -41,7 +41,7 @@ val_gic_execute_tests(uint32_t level, uint32_t num_pe)
 
   for (i = 0; i < g_num_skip; i++) {
       if (g_skip_test_num[i] == AVS_GIC_TEST_NUM_BASE) {
-          val_print(AVS_PRINT_INFO, "      USER Override - Skipping all GIC tests \n", 0);
+          val_print(AVS_PRINT_INFO, "      USER Override - Skipping all GIC tests\n", 0);
           return AVS_STATUS_SKIP;
       }
   }
@@ -50,7 +50,7 @@ val_gic_execute_tests(uint32_t level, uint32_t num_pe)
   /* Check if there are any tests to be executed in current module with user override options*/
   module_skip = val_check_skip_module(AVS_GIC_TEST_NUM_BASE);
   if (module_skip) {
-      val_print(AVS_PRINT_INFO, "\n USER Override - Skipping all GIC tests \n", 0);
+      val_print(AVS_PRINT_INFO, "\n USER Override - Skipping all GIC tests\n", 0);
       return AVS_STATUS_SKIP;
   }
 
@@ -83,7 +83,7 @@ val_gic_create_info_table(uint64_t *gic_info_table)
 {
 
   if (gic_info_table == NULL) {
-      val_print(AVS_PRINT_ERR, "Input for Create Info table cannot be NULL \n", 0);
+      val_print(AVS_PRINT_ERR, "Input for Create Info table cannot be NULL\n", 0);
       return AVS_STATUS_ERR;
   }
 
@@ -91,8 +91,10 @@ val_gic_create_info_table(uint64_t *gic_info_table)
 
   pal_gic_create_info_table(g_gic_info_table);
 
-  val_print(AVS_PRINT_TEST, " GIC_INFO: Number of GICD             : %4d \n", g_gic_info_table->header.num_gicd);
-  val_print(AVS_PRINT_TEST, " GIC_INFO: Number of ITS              : %4d \n", g_gic_info_table->header.num_its);
+  val_print(AVS_PRINT_TEST, " GIC_INFO: Number of GICD             : %4d\n",
+                                                            g_gic_info_table->header.num_gicd);
+  val_print(AVS_PRINT_TEST, " GIC_INFO: Number of ITS              : %4d\n",
+                                                            g_gic_info_table->header.num_its);
 
   if (g_gic_info_table->header.num_gicd == 0) {
       val_print(AVS_PRINT_ERR,"\n ** CRITICAL ERROR: GIC Distributor count is 0 **\n", 0);
@@ -132,7 +134,7 @@ val_get_gicd_base(void)
   GIC_INFO_ENTRY  *gic_entry;
 
   if (g_gic_info_table == NULL) {
-      val_print(AVS_PRINT_ERR, "GIC INFO table not available \n", 0);
+      val_print(AVS_PRINT_ERR, "GIC INFO table not available\n", 0);
       return 0;
   }
 
@@ -161,7 +163,7 @@ val_get_gicr_base(uint32_t *rdbase_len)
   GIC_INFO_ENTRY  *gic_entry;
 
   if (g_gic_info_table == NULL) {
-      val_print(AVS_PRINT_ERR, "GIC INFO table not available \n", 0);
+      val_print(AVS_PRINT_ERR, "GIC INFO table not available\n", 0);
       return 0;
   }
 
@@ -197,7 +199,7 @@ val_get_gich_base(void)
   GIC_INFO_ENTRY  *gic_entry;
 
   if (g_gic_info_table == NULL) {
-      val_print(AVS_PRINT_ERR, "GIC INFO table not available \n", 0);
+      val_print(AVS_PRINT_ERR, "GIC INFO table not available\n", 0);
       return 0;
   }
 
@@ -225,7 +227,7 @@ val_get_cpuif_base(void)
   GIC_INFO_ENTRY  *gic_entry;
 
   if (g_gic_info_table == NULL) {
-      val_print(AVS_PRINT_ERR, "GIC INFO table not available \n", 0);
+      val_print(AVS_PRINT_ERR, "GIC INFO table not available\n", 0);
       return 0;
   }
 
