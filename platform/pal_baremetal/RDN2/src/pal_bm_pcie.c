@@ -131,3 +131,21 @@ pal_pcie_check_device_valid(uint32_t bdf)
 
   return 0;
 }
+
+/**
+  @brief  Returns the memory offset that can be accesed safely.
+          This offset is platform-specific. It needs to
+          be modified according to the requirement.
+
+  @param  bdf      - PCIe BUS/Device/Function
+  @param  mem_type - If the memory is Pre-fetchable or Non-prefetchable memory
+  @return memory offset
+**/
+uint32_t
+pal_pcie_mem_get_offset(uint32_t bdf, PCIE_MEM_TYPE_INFO_e mem_type)
+{
+
+  (void) bdf;
+  (void) mem_type;
+  return MEM_OFFSET_SMALL;
+}

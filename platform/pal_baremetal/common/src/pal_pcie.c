@@ -649,29 +649,6 @@ uint32_t pal_pcie_check_device_list(void)
 }
 
 /**
-  @brief  Returns the memory offset that can be accesed.
-          This offset is platform-specific. It needs to
-          be modified according to the requirement.
-
-  @param  memory offset
-  @return memory offset
-**/
-uint32_t
-pal_pcie_mem_get_offset(uint32_t type)
-{
-
-  switch (type) {
-      case MEM_OFFSET_SMALL:
-         return MEM_OFFSET_SMALL;
-      case MEM_OFFSET_MEDIUM:
-         return MEM_OFFSET_MEDIUM;
-      default:
-         return MEM_OFFSET_SMALL;
-  }
-
-}
-
-/**
     @brief   Reads 32-bit data from BAR space pointed by Bus,
              Device, Function and register offset.
 

@@ -377,6 +377,10 @@ typedef struct {
   PCIE_INFO_BLOCK  block[];
 }PCIE_INFO_TABLE;
 
+typedef enum {
+  NON_PREFETCH_MEMORY = 0x0,
+  PREFETCH_MEMORY = 0x1
+} PCIE_MEM_TYPE_INFO_e;
 
 void     pal_pcie_enumerate(void);
 uint32_t pal_pcie_enumerate_device(uint32_t bus, uint32_t sec_bus);
@@ -401,7 +405,7 @@ uint32_t pal_pcie_is_onchip_peripheral(uint32_t bdf);
 void pal_pcie_io_write_cfg(uint32_t bdf, uint32_t offset, uint32_t data);
 uint32_t pal_pcie_check_device_list(void);
 uint32_t pal_pcie_check_device_valid(uint32_t bdf);
-uint32_t pal_pcie_mem_get_offset(uint32_t type);
+uint32_t pal_pcie_mem_get_offset(uint32_t bdf, PCIE_MEM_TYPE_INFO_e mem_type);
 
 uint32_t pal_pcie_bar_mem_read(uint32_t bdf, uint64_t address, uint32_t *data);
 uint32_t pal_pcie_bar_mem_write(uint32_t bdf, uint64_t address, uint32_t data);

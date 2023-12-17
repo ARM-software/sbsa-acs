@@ -44,7 +44,6 @@ esr(uint64_t interrupt_type, void *context)
   val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
 }
 
-
 static
 uint32_t
 check_bdf_under_rp(uint32_t rp_bdf)
@@ -173,13 +172,24 @@ payload(void)
 
         /* If Memory Limit is programmed with value less the Base, then Skip.*/
         if (mem_lim < mem_base) {
-            val_print(AVS_PRINT_DEBUG,
-                      "\n       Memory limit < Memory Base. Skipping Bdf - 0x%x", bdf);
+            val_print(AVS_PRINT_DEBUG, "\n       No P memory on secondary side of the Bridge", 0);
+            val_print(AVS_PRINT_DEBUG, "\n       Skipping Bdf - 0x%x", bdf);
             continue;
         }
 
         /* If test runs for atleast an endpoint */
         test_skip = 0;
+
+        mem_offset = val_pcie_mem_get_offset(bdf, PREFETCH_MEMORY);
+
+        if ((mem_base + mem_offset) > mem_lim)
+        {
+            val_print(AVS_PRINT_ERR,
+                    "\n        Memory offset + base 0x%llx", mem_base + mem_offset);
+            val_print(AVS_PRINT_ERR, " exceeds the memory limit 0x%llx", mem_lim);
+            val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
+            return;
+        }
 
         /* Check_1: Accessing address in range of P memory
          * mjust not cause any exception or data abort
@@ -188,15 +198,6 @@ payload(void)
          * Base + offset must always be in the range.
          * Read the same
         */
-        mem_offset = val_pcie_mem_get_offset(MEM_OFFSET_MEDIUM);
-
-        if ((mem_base + mem_offset) > mem_lim)
-        {
-            val_print(AVS_PRINT_ERR, "\n       Memory offset + base 0x%x ", mem_base + mem_offset);
-            val_print(AVS_PRINT_ERR, "exceeds the memory limit 0x%x", mem_lim);
-            val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
-            return;
-        }
 
         val_pcie_bar_mem_read(bdf, mem_base + mem_offset, &old_value);
         val_pcie_bar_mem_write(bdf, mem_base + mem_offset, KNOWN_DATA);
