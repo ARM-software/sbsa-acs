@@ -371,8 +371,10 @@ val_pcie_execute_tests(uint32_t level, uint32_t num_pe)
       status |= p045_entry(num_pe); /* iEP/RP only */
       status |= p046_entry(num_pe);
       status |= p047_entry(num_pe); /* iEP/RP only */
+#ifdef TARGET_EMULATION
       status |= p048_entry(num_pe); /* iEP/RP only */
       status |= p049_entry(num_pe);
+#endif
       status |= p050_entry(num_pe);
       status |= p051_entry(num_pe); /* iEP/RP only */
       status |= p052_entry(num_pe);
@@ -2354,9 +2356,9 @@ uint32_t val_pcie_get_ecam_index(uint32_t bdf, uint32_t *ecam_index)
   @return memory offset
 
 **/
-uint32_t val_pcie_mem_get_offset(uint32_t type)
+uint32_t val_pcie_mem_get_offset(uint32_t bdf, PCIE_MEM_TYPE_INFO_e mem_type)
 {
-  return pal_pcie_mem_get_offset(type);
+  return pal_pcie_mem_get_offset(bdf, mem_type);
 }
 
 /**

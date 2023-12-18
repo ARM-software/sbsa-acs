@@ -478,14 +478,15 @@ pal_pcie_check_device_list(void)
 
 /**
   @brief  Returns the memory offset that can be
-          accessed from the BAR base and is within
+          accessed safely from the BAR base and is within
           BAR limit value
 
-  @param  type
+  @param  bdf      - PCIe BUS/Device/Function
+  @param  mem_type - If the memory is Pre-fetchable or Non-prefetchable memory
   @return memory offset
 **/
 UINT32
-pal_pcie_mem_get_offset(UINT32 type)
+pal_pcie_mem_get_offset(UINT32 bdf, PCIE_MEM_TYPE_INFO_e mem_type)
 {
 
   return MEM_OFFSET_SMALL;

@@ -253,6 +253,11 @@ typedef struct {
   PCIE_INFO_BLOCK block[];
 }PCIE_INFO_TABLE;
 
+typedef enum {
+  NON_PREFETCH_MEMORY = 0x0,
+  PREFETCH_MEMORY = 0x1
+} PCIE_MEM_TYPE_INFO_e;
+
 VOID *pal_pci_bdf_to_dev(UINT32 bdf);
 VOID pal_pci_read_config_byte(UINT32 bdf, UINT8 offset, UINT8 *data);
 
