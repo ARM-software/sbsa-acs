@@ -89,7 +89,7 @@ pal_get_acpi_table_ptr(UINT32 table_signature)
 
   Xsdt = (EFI_ACPI_DESCRIPTION_HEADER *) pal_get_xsdt_ptr();
   if (Xsdt == NULL) {
-      sbsa_print(AVS_PRINT_ERR, L" XSDT not found \n");
+      sbsa_print(AVS_PRINT_ERR, L" XSDT not found\n");
       return 0;
   }
 
@@ -122,7 +122,7 @@ pal_get_madt_ptr()
 
   Xsdt = (EFI_ACPI_DESCRIPTION_HEADER *) pal_get_xsdt_ptr();
   if (Xsdt == NULL) {
-      sbsa_print(AVS_PRINT_ERR, L" XSDT not found \n");
+      sbsa_print(AVS_PRINT_ERR, L" XSDT not found\n");
       return 0;
   }
 
@@ -156,7 +156,7 @@ pal_get_gtdt_ptr()
 
   Xsdt = (EFI_ACPI_DESCRIPTION_HEADER *) pal_get_xsdt_ptr();
   if (Xsdt == NULL) {
-      sbsa_print(AVS_PRINT_ERR, L" XSDT not found \n");
+      sbsa_print(AVS_PRINT_ERR, L" XSDT not found\n");
       return 0;
   }
 
@@ -189,7 +189,7 @@ pal_get_mcfg_ptr()
 
   Xsdt = (EFI_ACPI_DESCRIPTION_HEADER *) pal_get_xsdt_ptr();
   if (Xsdt == NULL) {
-      sbsa_print(AVS_PRINT_ERR, L" XSDT not found \n");
+      sbsa_print(AVS_PRINT_ERR, L" XSDT not found\n");
       return 0;
   }
 
@@ -222,7 +222,7 @@ pal_get_spcr_ptr()
 
   Xsdt = (EFI_ACPI_DESCRIPTION_HEADER *) pal_get_xsdt_ptr();
   if (Xsdt == NULL) {
-      sbsa_print(AVS_PRINT_ERR, L" XSDT not found \n");
+      sbsa_print(AVS_PRINT_ERR, L" XSDT not found\n");
       return 0;
   }
 
@@ -255,7 +255,7 @@ pal_get_iort_ptr()
 
   Xsdt = (EFI_ACPI_DESCRIPTION_HEADER *) pal_get_xsdt_ptr();
   if (Xsdt == NULL) {
-      sbsa_print(AVS_PRINT_ERR, L" XSDT not found \n");
+      sbsa_print(AVS_PRINT_ERR, L" XSDT not found\n");
       return 0;
   }
 
@@ -292,7 +292,7 @@ pal_get_aest_ptr()
 
   Xsdt = (EFI_ACPI_DESCRIPTION_HEADER *) pal_get_xsdt_ptr();
   if (Xsdt == NULL) {
-      sbsa_print(AVS_PRINT_ERR, L" XSDT not found \n");
+      sbsa_print(AVS_PRINT_ERR, L" XSDT not found\n");
       return 0;
   }
 
@@ -324,7 +324,7 @@ pal_get_apmt_ptr()
 
   Xsdt = (EFI_ACPI_DESCRIPTION_HEADER *) pal_get_xsdt_ptr();
   if (Xsdt == NULL) {
-      sbsa_print(AVS_PRINT_ERR, L" XSDT not found \n");
+      sbsa_print(AVS_PRINT_ERR, L" XSDT not found\n");
       return 0;
   }
 
@@ -357,7 +357,7 @@ pal_get_hmat_ptr(void)
 
   Xsdt = (EFI_ACPI_DESCRIPTION_HEADER *) pal_get_xsdt_ptr();
   if (Xsdt == NULL) {
-      sbsa_print(AVS_PRINT_ERR, L" XSDT not found \n");
+      sbsa_print(AVS_PRINT_ERR, L" XSDT not found\n");
       return 0;
   }
 
@@ -390,7 +390,7 @@ pal_get_mpam_ptr()
 
   Xsdt = (EFI_ACPI_DESCRIPTION_HEADER *) pal_get_xsdt_ptr();
   if (Xsdt == NULL) {
-      sbsa_print(AVS_PRINT_ERR, L" XSDT not found \n");
+      sbsa_print(AVS_PRINT_ERR, L" XSDT not found\n");
       return 0;
   }
 
@@ -424,7 +424,7 @@ pal_get_pptt_ptr(void)
 
   Xsdt = (EFI_ACPI_DESCRIPTION_HEADER *) pal_get_xsdt_ptr();
   if (Xsdt == NULL) {
-      sbsa_print(AVS_PRINT_ERR, L" XSDT not found \n");
+      sbsa_print(AVS_PRINT_ERR, L" XSDT not found\n");
       return 0;
   }
 
@@ -458,7 +458,7 @@ pal_get_srat_ptr(void)
 
   Xsdt = (EFI_ACPI_DESCRIPTION_HEADER *) pal_get_xsdt_ptr();
   if (Xsdt == NULL) {
-      sbsa_print(AVS_PRINT_ERR, L" XSDT not found \n");
+      sbsa_print(AVS_PRINT_ERR, L" XSDT not found\n");
       return 0;
   }
 
@@ -494,7 +494,7 @@ pal_get_fadt_ptr (
 
   Xsdt = (EFI_ACPI_DESCRIPTION_HEADER *) pal_get_xsdt_ptr();
   if (Xsdt == NULL) {
-      sbsa_print(AVS_PRINT_ERR, L" XSDT not found \n");
+      sbsa_print(AVS_PRINT_ERR, L" XSDT not found\n");
       return 0;
   }
 

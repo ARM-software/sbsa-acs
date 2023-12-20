@@ -231,7 +231,7 @@ void val_pcie_clear_device_status_error(uint32_t bdf);
 uint32_t val_pcie_is_device_status_error(uint32_t bdf);
 uint32_t val_pcie_is_sig_target_abort(uint32_t bdf);
 void val_pcie_clear_sig_target_abort(uint32_t bdf);
-uint32_t val_pcie_mem_get_offset(uint32_t type);
+uint32_t val_pcie_mem_get_offset(uint32_t bdf, PCIE_MEM_TYPE_INFO_e mem_type);
 uint32_t val_pcie_link_cap_support(uint32_t bdf);
 
 /* IO-VIRT APIs */

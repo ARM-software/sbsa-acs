@@ -51,7 +51,7 @@ pal_pcie_get_mcfg_ecam()
   gMcfgHdr = (EFI_ACPI_MEMORY_MAPPED_CONFIGURATION_BASE_ADDRESS_TABLE_HEADER *) pal_get_mcfg_ptr();
 
   if (gMcfgHdr == NULL) {
-      sbsa_print(AVS_PRINT_WARN, L" ACPI - MCFG Table not found. Setting ECAM Base to 0. \n");
+      sbsa_print(AVS_PRINT_WARN, L" ACPI - MCFG Table not found. Setting ECAM Base to 0.\n");
       return 0x0;
   }
 
@@ -77,7 +77,7 @@ pal_pcie_create_info_table(PCIE_INFO_TABLE *PcieTable)
   UINT32 i = 0;
 
   if (PcieTable == NULL) {
-    sbsa_print(AVS_PRINT_ERR, L" Input PCIe Table Pointer is NULL. Cannot create PCIe INFO \n");
+    sbsa_print(AVS_PRINT_ERR, L" Input PCIe Table Pointer is NULL. Cannot create PCIe INFO\n");
     return;
   }
 
@@ -86,7 +86,7 @@ pal_pcie_create_info_table(PCIE_INFO_TABLE *PcieTable)
   gMcfgHdr = (EFI_ACPI_MEMORY_MAPPED_CONFIGURATION_BASE_ADDRESS_TABLE_HEADER *) pal_get_mcfg_ptr();
 
   if (gMcfgHdr == NULL) {
-      sbsa_print(AVS_PRINT_DEBUG, L" ACPI - MCFG Table not found. \n");
+      sbsa_print(AVS_PRINT_DEBUG, L" ACPI - MCFG Table not found.\n");
       return;
   }
 
@@ -478,14 +478,15 @@ pal_pcie_check_device_list(void)
 
 /**
   @brief  Returns the memory offset that can be
-          accessed from the BAR base and is within
+          accessed safely from the BAR base and is within
           BAR limit value
 
-  @param  type
+  @param  bdf      - PCIe BUS/Device/Function
+  @param  mem_type - If the memory is Pre-fetchable or Non-prefetchable memory
   @return memory offset
 **/
 UINT32
-pal_pcie_mem_get_offset(UINT32 type)
+pal_pcie_mem_get_offset(UINT32 bdf, PCIE_MEM_TYPE_INFO_e mem_type)
 {
 
   return MEM_OFFSET_SMALL;

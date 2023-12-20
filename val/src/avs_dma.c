@@ -109,7 +109,8 @@ val_dma_create_info_table(uint64_t *dma_info_ptr)
 
   pal_dma_create_info_table(g_dma_info_table);
 
-  val_print(AVS_PRINT_TEST, " DMA_INFO: Number of DMA CTRL in PCIe :    %x \n", val_dma_get_info(DMA_NUM_CTRL, 0));
+  val_print(AVS_PRINT_TEST, " DMA_INFO: Number of DMA CTRL in PCIe :    %x\n",
+                                                        val_dma_get_info(DMA_NUM_CTRL, 0));
 }
 
 
@@ -128,12 +129,12 @@ val_dma_get_info(DMA_INFO_e type, uint32_t index)
 
   if (g_dma_info_table == NULL)
   {
-      val_print(AVS_PRINT_ERR, "GET_DMA_INFO: DMA info table is not created \n", 0);
+      val_print(AVS_PRINT_ERR, "GET_DMA_INFO: DMA info table is not created\n", 0);
       return 0;
   }
   if (index > g_dma_info_table->num_dma_ctrls)
   {
-      val_print(AVS_PRINT_ERR, "GET_DMA_INFO: Index (%d) is greater than num of DMA \n", index);
+      val_print(AVS_PRINT_ERR, "GET_DMA_INFO: Index (%d) is greater than num of DMA\n", index);
       return 0;
   }
 
@@ -161,7 +162,7 @@ val_dma_get_info(DMA_INFO_e type, uint32_t index)
           return ((uint64_t)g_dma_info_table->info[index].flags & (PCI_EP_MASK));
 
       default:
-          val_print(AVS_PRINT_ERR, "This DMA info option not supported %d \n", type);
+          val_print(AVS_PRINT_ERR, "This DMA info option not supported %d\n", type);
           break;
   }
 

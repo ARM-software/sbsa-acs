@@ -364,6 +364,11 @@ typedef struct {
   PCIE_READ_BLOCK device[];
 } PCIE_READ_TABLE;
 
+typedef enum {
+  NON_PREFETCH_MEMORY = 0x0,
+  PREFETCH_MEMORY = 0x1
+} PCIE_MEM_TYPE_INFO_e;
+
 typedef struct {
   uint32_t bdf;
   uint32_t rp_bdf;

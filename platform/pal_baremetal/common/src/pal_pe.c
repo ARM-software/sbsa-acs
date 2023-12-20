@@ -88,7 +88,7 @@ PalAllocateSecondaryStack(uint64_t mpidr)
   {
       gSecondaryPeStack = pal_aligned_alloc(MEM_ALIGN_4K, NumPe * SIZE_STACK_SECONDARY_PE);
       if (gSecondaryPeStack == NULL){
-          print(AVS_PRINT_ERR, "FATAL - Allocation for Secondary stack failed \n", 0);
+          print(AVS_PRINT_ERR, "FATAL - Allocation for Secondary stack failed\n", 0);
       }
       pal_pe_data_cache_ops_by_va((uint64_t)&gSecondaryPeStack, CLEAN_AND_INVALIDATE);
   }
@@ -328,7 +328,7 @@ pal_cache_create_info_table(CACHE_INFO_TABLE *CacheTable, PE_INFO_TABLE *PeTable
   uint32_t i;
 
   if (CacheTable == NULL) {
-    print(AVS_PRINT_ERR, " Unable to create cache info table, input pointer is NULL \n");
+    print(AVS_PRINT_ERR, " Unable to create cache info table, input pointer is NULL\n");
     return;
   }
 

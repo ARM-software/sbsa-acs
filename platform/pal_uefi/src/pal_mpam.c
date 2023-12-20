@@ -124,7 +124,7 @@ pal_mpam_create_info_table(MPAM_INFO_TABLE *MpamTable)
   MPAM_MSC_NODE *curr_entry;
 
   if (MpamTable == NULL) {
-      sbsa_print(AVS_PRINT_ERR, L" Input MPAM Table Pointer is NULL \n");
+      sbsa_print(AVS_PRINT_ERR, L" Input MPAM Table Pointer is NULL\n");
       return;
   }
 
@@ -197,7 +197,7 @@ pal_srat_create_info_table(SRAT_INFO_TABLE *SratTable)
   UINT32  Length = 0;
 
   if (SratTable == NULL) {
-      sbsa_print(AVS_PRINT_ERR, L" Input SRAT Table Pointer is NULL \n");
+      sbsa_print(AVS_PRINT_ERR, L" Input SRAT Table Pointer is NULL\n");
       return;
   }
 
@@ -209,9 +209,9 @@ pal_srat_create_info_table(SRAT_INFO_TABLE *SratTable)
 
   if (SratHdr != NULL) {
     TableLength =  SratHdr->Header.Length;
-    sbsa_print(AVS_PRINT_INFO, L" SRAT is at %x and length is %x \n", SratHdr, TableLength);
+    sbsa_print(AVS_PRINT_INFO, L" SRAT is at %x and length is %x\n", SratHdr, TableLength);
   } else {
-    sbsa_print(AVS_PRINT_DEBUG, L" SRAT not found \n");
+    sbsa_print(AVS_PRINT_DEBUG, L" SRAT not found\n");
     return;
   }
 
@@ -231,9 +231,9 @@ pal_srat_create_info_table(SRAT_INFO_TABLE *SratTable)
       Ptr->node_data.mem_aff.addr_len    = ((UINT64) Mem_Aff_Entry->LengthHigh << 32) |
                                                               Mem_Aff_Entry->LengthLow;
       Ptr->node_data.mem_aff.flags       = Mem_Aff_Entry->Flags;
-      sbsa_print(AVS_PRINT_DEBUG, L" Proximity Domain %x \n", Ptr->node_data.mem_aff.prox_domain);
-      sbsa_print(AVS_PRINT_DEBUG, L" Address %x  \n", Ptr->node_data.mem_aff.addr_base);
-      sbsa_print(AVS_PRINT_DEBUG, L" Length %x  \n", Ptr->node_data.mem_aff.addr_len);
+      sbsa_print(AVS_PRINT_DEBUG, L" Proximity Domain %x\n", Ptr->node_data.mem_aff.prox_domain);
+      sbsa_print(AVS_PRINT_DEBUG, L" Address %x\n", Ptr->node_data.mem_aff.addr_base);
+      sbsa_print(AVS_PRINT_DEBUG, L" Length %x\n", Ptr->node_data.mem_aff.addr_len);
       pal_pe_data_cache_ops_by_va((UINT64)Ptr, CLEAN_AND_INVALIDATE);
       Ptr++;
       SratTable->num_of_mem_ranges++;
@@ -247,9 +247,9 @@ pal_srat_create_info_table(SRAT_INFO_TABLE *SratTable)
       Ptr->node_data.gicc_aff.proc_uid = Gicc_Aff_Entry->AcpiProcessorUid;
       Ptr->node_data.gicc_aff.flags = Gicc_Aff_Entry->Flags;
       Ptr->node_data.gicc_aff.clk_domain = Gicc_Aff_Entry->ClockDomain;
-      sbsa_print(AVS_PRINT_DEBUG, L" Proximity Domain %x \n", Ptr->node_data.gicc_aff.prox_domain);
-      sbsa_print(AVS_PRINT_DEBUG, L" Processor UID %x  \n", Ptr->node_data.gicc_aff.proc_uid);
-      sbsa_print(AVS_PRINT_DEBUG, L" Clock Domain %x  \n", Ptr->node_data.gicc_aff.clk_domain);
+      sbsa_print(AVS_PRINT_DEBUG, L" Proximity Domain %x\n", Ptr->node_data.gicc_aff.prox_domain);
+      sbsa_print(AVS_PRINT_DEBUG, L" Processor UID %x\n", Ptr->node_data.gicc_aff.proc_uid);
+      sbsa_print(AVS_PRINT_DEBUG, L" Clock Domain %x\n", Ptr->node_data.gicc_aff.clk_domain);
       pal_pe_data_cache_ops_by_va((UINT64)Ptr, CLEAN_AND_INVALIDATE);
       Ptr++;
       SratTable->num_of_srat_entries++;

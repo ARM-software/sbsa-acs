@@ -91,7 +91,7 @@ payload()
     /* Setup an error in an implementation defined way */
     status = val_ras_setup_error(err_in_params, &err_out_params);
     if (status == NOT_IMPLEMENTED) {
-        val_print(AVS_PRINT_ERR, "\n      ras_setup_error API unimplemented", 0);
+        val_print(AVS_PRINT_ERR, "\n       ras_setup_error API unimplemented", 0);
         val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
         return;
     }

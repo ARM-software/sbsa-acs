@@ -64,7 +64,7 @@ void pal_hmat_create_info_table(HMAT_INFO_TABLE *HmatTable)
   HMAT_BW_ENTRY *curr_info_entry;
 
   if (HmatTable == NULL) {
-      print(AVS_PRINT_ERR, " Unable to create HMAT info table, input pointer is NULL \n");
+      print(AVS_PRINT_ERR, " Unable to create HMAT info table, input pointer is NULL\n");
       return;
   }
 

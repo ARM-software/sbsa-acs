@@ -163,12 +163,16 @@ payload(void)
 
         /* If Memory Limit is programmed with value less the Base, then Skip.*/
         if (mem_lim < mem_base) {
-            val_print(AVS_PRINT_DEBUG,
-                      "\n       Memory limit < Memory Base. Skipping Bdf - 0x%x", bdf);
+            val_print(AVS_PRINT_DEBUG, "\n       No NP memory on secondary side of the Bridge", 0);
+            val_print(AVS_PRINT_DEBUG, "\n       Skipping Bdf - 0x%x", bdf);
             continue;
         }
 
-        mem_offset = val_pcie_mem_get_offset(MEM_OFFSET_SMALL);
+
+        /* If test runs for atleast an endpoint */
+        test_skip = 0;
+
+        mem_offset = val_pcie_mem_get_offset(bdf, NON_PREFETCH_MEMORY);
 
         if ((mem_base + mem_offset) > mem_lim)
         {
@@ -177,9 +181,6 @@ payload(void)
             val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
             return;
         }
-
-        /* If test runs for atleast an endpoint */
-        test_skip = 0;
 
         /* Check_1: Accessing address in range of NP memory
          * must not cause any exception or data abort

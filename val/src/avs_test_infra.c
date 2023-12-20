@@ -61,7 +61,7 @@ val_print_test_start(char8_t *string)
 {
   val_print(AVS_PRINT_TEST, "\n      *** Starting ", 0);
   val_print(AVS_PRINT_TEST, string, 0);
-  val_print(AVS_PRINT_TEST, " tests ***  \n", 0);
+  val_print(AVS_PRINT_TEST, " tests ***\n", 0);
 }
 
 void
@@ -558,7 +558,7 @@ val_check_for_error(uint32_t test_num, uint32_t num_pe, char8_t *ruleid)
 
   for (i = 0; i < num_pe; i++) {
       status = val_get_status(i);
-      //val_print(AVS_PRINT_ERR, "Status %4x \n", status);
+      //val_print(AVS_PRINT_ERR, "Status %4x\n", status);
       if (IS_TEST_FAIL_SKIP(status)) {
           val_report_status(i, status, ruleid);
           error_flag += 1;

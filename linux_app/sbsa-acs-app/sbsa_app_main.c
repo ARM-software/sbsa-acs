@@ -119,35 +119,35 @@ main (int argc, char **argv)
     }
 
 
-    printf ("\n ************ SBSA Architecture Compliance Suite ********* \n");
-    printf ("                        Version %d.%d.%d\n", SBSA_APP_VERSION_MAJOR,
+    printf("\n ************ SBSA Architecture Compliance Suite *********\n");
+    printf("                        Version %d.%d.%d\n", SBSA_APP_VERSION_MAJOR,
             SBSA_APP_VERSION_MINOR, SBSA_APP_VERSION_SUBMINOR);
 
 
-    printf ("\n Starting tests for level %2d (Print level is %2d)\n\n", g_sbsa_level, g_print_level);
+    printf("\n Starting tests for level %2d (Print level is %2d)\n\n", g_sbsa_level, g_print_level);
 
-    printf (" Gathering system information.... \n");
+    printf(" Gathering system information....\n");
     status = initialize_test_environment(g_print_level);
     if (status) {
-        printf ("Cannot initialize test environment. Exiting.... \n");
+        printf("Cannot initialize test environment. Exiting....\n");
         return 0;
     }
 
     if (g_sbsa_level > 6)
     {
-        printf("\n      *** Starting SMMU tests ***  \n");
+        printf("\n      *** Starting SMMU tests ***\n");
         execute_tests_smmu(1, g_sbsa_level, g_print_level);
     }
-    printf("\n      *** Starting PCIe tests ***  \n");
+    printf("\n      *** Starting PCIe tests ***\n");
     execute_tests_pcie(1, g_sbsa_level, g_print_level);
 
     if (run_exerciser) {
-        printf("\n      *** PCIe Exerciser tests only runs on UEFI ***  \n");
+        printf("\n      *** PCIe Exerciser tests only runs on UEFI ***\n");
         //execute_tests_exerciser(1, g_sbsa_level, g_print_level);
     }
     printf("\n                    **  For complete SBSA test coverage, it is ");
     printf("\n                          necessary to also run the BSA test  **\n\n");
-    printf("\n                    *** SBSA tests complete *** \n\n");
+    printf("\n                    *** SBSA tests complete ***\n\n");
 
     cleanup_test_environment();
 

@@ -253,7 +253,7 @@ payload(void)
           /* Save the config space of all the devices connected to the RP
            to restore after Secondary Bus Reset (SBR)*/
           save_config_space(erp_bdf);
-          val_print(AVS_PRINT_INFO, "\n       EP BDF 0x%x : ", e_bdf);
+          val_print(AVS_PRINT_INFO, "       EP BDF : 0x%x\n", e_bdf);
 
           irq_pending = 1;
           val_pcie_read_cfg(erp_bdf, rp_dpc_cap_base + DPC_CTRL_OFFSET, &reg_value);
