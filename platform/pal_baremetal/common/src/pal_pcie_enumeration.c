@@ -560,7 +560,7 @@ void pal_pcie_enumerate(void)
          return;
     }
 
-    print(AVS_PRINT_INFO, "\nStarting Enumeration \n", 0);
+    print(AVS_PRINT_INFO, "\nStarting Enumeration\n", 0);
     while (pcie_index < g_pcie_info_table->num_entries)
     {
        pri_bus = g_pcie_info_table->block[pcie_index].start_bus_num;

@@ -118,7 +118,7 @@ pal_mpam_create_info_table(MPAM_INFO_TABLE *MpamTable)
   MPAM_MSC_NODE *curr_entry;
 
   if (MpamTable == NULL) {
-      print(AVS_PRINT_ERR, " Input MPAM Table Pointer is NULL \n");
+      print(AVS_PRINT_ERR, " Input MPAM Table Pointer is NULL\n");
       return;
   }
 
@@ -168,7 +168,7 @@ pal_srat_create_info_table(SRAT_INFO_TABLE *SratTable)
   uint32_t Index, mem_index = 0, gicc_index = 0;
 
   if (SratTable == NULL) {
-      print(AVS_PRINT_ERR, " Input SRAT Table Pointer is NULL \n");
+      print(AVS_PRINT_ERR, " Input SRAT Table Pointer is NULL\n");
       return;
   }
 

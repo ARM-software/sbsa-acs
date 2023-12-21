@@ -128,9 +128,11 @@
 #define BAR0_OFFSET               0x10
 #define BAR_TYPE_0_MAX_OFFSET     0x24
 #define BAR_TYPE_1_MAX_OFFSET     0x14
+#define BAR_NP_TYPE               0x0
+#define BAR_P_TYPE                0x1
 #define BAR_64_BIT                0x1
 #define BAR_32_BIT                0x0
-#define BAR_REG(bar_reg_value) ((bar_reg_value >> 2) & 0x1)
+#define BAR_REG(bar_reg_value)    ((bar_reg_value >> 2) & 0x1)
 
 #define TYPE0_MAX_BARS  6
 #define TYPE1_MAX_BARS  2

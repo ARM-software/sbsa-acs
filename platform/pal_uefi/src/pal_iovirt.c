@@ -157,13 +157,13 @@ check_mapping_overlap(IOVIRT_INFO_TABLE *iovirt)
             if(tmp->type == IOVIRT_NODE_ITS_GROUP) {
                key_block->flags |= (1 << IOVIRT_FLAG_DEVID_OVERLAP_SHIFT);
                block->flags |= (1 << IOVIRT_FLAG_DEVID_OVERLAP_SHIFT);
-               sbsa_print(AVS_PRINT_INFO, L"\n Overlapping device ids %x-%x and %x-%x \n",
+               sbsa_print(AVS_PRINT_INFO, L"\n Overlapping device ids %x-%x and %x-%x\n",
                           key_start, key_end, start, end);
             }
             else {
                key_block->flags |= (1 << IOVIRT_FLAG_STRID_OVERLAP_SHIFT);
                block->flags |= (1 << IOVIRT_FLAG_STRID_OVERLAP_SHIFT);
-               sbsa_print(AVS_PRINT_INFO, L"\n Overlapping stream ids %x-%x and %x-%x \n",
+               sbsa_print(AVS_PRINT_INFO, L"\n Overlapping stream ids %x-%x and %x-%x\n",
                           key_start, key_end, start, end);
             }
           }
@@ -414,7 +414,7 @@ pal_iovirt_create_info_table(IOVIRT_INFO_TABLE *IoVirtTable)
   /* Create iovirt block for each IORT node*/
   for (i = 0; i < iort->node_count; i++) {
     if (iort_node >= iort_end) {
-      sbsa_print(AVS_PRINT_ERR, L" Bad IORT table \n");
+      sbsa_print(AVS_PRINT_ERR, L" Bad IORT table\n");
       return;
     }
     iort_add_block(iort, iort_node, IoVirtTable, &next_block);

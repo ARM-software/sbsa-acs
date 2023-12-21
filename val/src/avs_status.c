@@ -46,7 +46,7 @@ val_report_status(uint32_t index, uint32_t status, char8_t *ruleid)
       val_print(AVS_PRINT_DEBUG, "\n       ", 0);
       val_print(AVS_PRINT_DEBUG, ruleid, 0);
       val_print(AVS_PRINT_DEBUG, "\n                                  ", 0);
-      val_print(AVS_PRINT_TEST, ": Result:  PASS \n", status);
+      val_print(AVS_PRINT_TEST, ": Result:  PASS\n", status);
   }
   else
     if (IS_TEST_FAIL(status)) {
@@ -56,7 +56,7 @@ val_report_status(uint32_t index, uint32_t status, char8_t *ruleid)
             val_print(AVS_PRINT_ERR, "\n       Checkpoint -- %2d             ",
                       status & STATUS_MASK);
         }
-        val_print(AVS_PRINT_ERR, "     : Result:  FAIL \n", 0);
+        val_print(AVS_PRINT_ERR, "     : Result:  FAIL\n", 0);
     }
     else
       if (IS_TEST_SKIP(status)) {
@@ -66,16 +66,16 @@ val_report_status(uint32_t index, uint32_t status, char8_t *ruleid)
               val_print(AVS_PRINT_WARN, "\n       Checkpoint -- %2d             ",
                         status & STATUS_MASK);
           }
-          val_print(AVS_PRINT_WARN, "     : Result:  SKIPPED \n", 0);
+          val_print(AVS_PRINT_WARN, "     : Result:  SKIPPED\n", 0);
       }
       else
         if (IS_TEST_START(status))
           val_print(AVS_PRINT_INFO, "\n       START  ", status);
         else
           if (IS_TEST_END(status))
-            val_print(AVS_PRINT_INFO, "       END  \n\n", status);
+            val_print(AVS_PRINT_INFO, "       END\n\n", status);
           else
-            val_print(AVS_PRINT_ERR, ": Result:  %8x  \n", status);
+            val_print(AVS_PRINT_ERR, ": Result:  %8x\n", status);
 
 }
 

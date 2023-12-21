@@ -42,7 +42,7 @@ val_ras_execute_tests(uint32_t level, uint32_t num_pe)
 
   for (i = 0; i < g_num_skip; i++) {
       if (g_skip_test_num[i] == AVS_RAS_TEST_NUM_BASE) {
-          val_print(AVS_PRINT_INFO, "\n      USER Override - Skipping all RAS tests \n", 0);
+          val_print(AVS_PRINT_INFO, "\n      USER Override - Skipping all RAS tests\n", 0);
           return AVS_STATUS_SKIP;
       }
   }
@@ -50,7 +50,7 @@ val_ras_execute_tests(uint32_t level, uint32_t num_pe)
   /* Check if there are any tests to be executed in current module with user override options*/
   skip_module = val_check_skip_module(AVS_RAS_TEST_NUM_BASE);
   if (skip_module) {
-      val_print(AVS_PRINT_INFO, "\n USER Override - Skipping all RAS tests \n", 0);
+      val_print(AVS_PRINT_INFO, "\n USER Override - Skipping all RAS tests\n", 0);
       return AVS_STATUS_SKIP;
   }
 
@@ -105,7 +105,7 @@ val_ras_create_info_table(uint64_t *ras_info_table)
 {
 
   if (ras_info_table == NULL) {
-      val_print(AVS_PRINT_ERR, "Input for Create Info table cannot be NULL \n", 0);
+      val_print(AVS_PRINT_ERR, "Input for Create Info table cannot be NULL\n", 0);
       return AVS_STATUS_ERR;
   }
 
@@ -113,7 +113,7 @@ val_ras_create_info_table(uint64_t *ras_info_table)
 
   pal_ras_create_info_table(g_ras_info_table);
 
-  val_print(AVS_PRINT_TEST, " RAS_INFO: Number of RAS nodes        : %4d \n",
+  val_print(AVS_PRINT_TEST, " RAS_INFO: Number of RAS nodes        : %4d\n",
                            g_ras_info_table->num_nodes);
 
   return AVS_STATUS_PASS;
@@ -141,7 +141,7 @@ val_ras2_create_info_table(uint64_t *ras2_info_table)
 {
 
   if (ras2_info_table == NULL) {
-      val_print(AVS_PRINT_ERR, "\nInput for RAS2 feat create info table cannot be NULL \n", 0);
+      val_print(AVS_PRINT_ERR, "\nInput for RAS2 feat create info table cannot be NULL\n", 0);
       return;
   }
 
@@ -150,9 +150,9 @@ val_ras2_create_info_table(uint64_t *ras2_info_table)
 
   pal_ras2_create_info_table(g_ras2_info_table);
 
-  val_print(AVS_PRINT_TEST, " RAS2_INFO: Number of RAS2 entries    : %4d \n",
+  val_print(AVS_PRINT_TEST, " RAS2_INFO: Number of RAS2 entries    : %4d\n",
                            g_ras2_info_table->num_all_block);
-  val_print(AVS_PRINT_TEST, " RAS2_INFO: Num of RAS2 memory entries: %4d \n",
+  val_print(AVS_PRINT_TEST, " RAS2_INFO: Num of RAS2 memory entries: %4d\n",
                            g_ras2_info_table->num_of_mem_block);
 #endif
 return;
@@ -368,7 +368,7 @@ val_ras2_get_mem_info(RAS2_MEM_INFO_e type, uint32_t index)
   RAS2_BLOCK *block;
 
   if (g_ras2_info_table == NULL) {
-      val_print(AVS_PRINT_ERR, "\nRAS2_GET_MEM_INFO : ras2 info table is not created \n", 0);
+      val_print(AVS_PRINT_ERR, "\nRAS2_GET_MEM_INFO : ras2 info table is not created\n", 0);
       return 0; /* imply no ras2_info entries */
   }
 
@@ -396,7 +396,7 @@ val_ras2_get_mem_info(RAS2_MEM_INFO_e type, uint32_t index)
                   return block->block_info.mem_feat_info.patrol_scrub_support;
               default:
                   val_print(AVS_PRINT_ERR,
-                            "\nThis RAS2 memory info option not supported: %d \n", type);
+                            "\nThis RAS2 memory info option not supported: %d\n", type);
                   return INVALID_RAS2_INFO;
               }
           }
@@ -443,7 +443,7 @@ val_ras_reg_read(uint32_t node_index, uint32_t reg, uint32_t err_rec_idx)
       val_print(AVS_PRINT_ERR,
                 "\n       RAS_REG_READ : Error record index(%d) is unimplemented ", err_rec_idx);
       val_print(AVS_PRINT_ERR,
-                "for node with index: %d \n", node_index);
+                "for node with index: %d\n", node_index);
       return INVALID_RAS_REG_VAL;
   }
 
@@ -711,7 +711,7 @@ ras_pfg_access_node(uint32_t node_index)
                 node_index);
   }
 
-  val_print(AVS_PRINT_INFO, "      Access RAS Node, CTLR : 0x%llx \n", reg_value);
+  val_print(AVS_PRINT_INFO, "      Access RAS Node, CTLR : 0x%llx\n", reg_value);
 }
 
 /**

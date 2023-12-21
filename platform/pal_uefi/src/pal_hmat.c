@@ -210,7 +210,7 @@ VOID pal_hmat_create_info_table(HMAT_INFO_TABLE *HmatTable)
   UINT32 TableLength = 0;
 
   if (HmatTable == NULL) {
-      sbsa_print(AVS_PRINT_ERR, L" Unable to create HMAT info table, input pointer is NULL \n");
+      sbsa_print(AVS_PRINT_ERR, L" Unable to create HMAT info table, input pointer is NULL\n");
       return;
   }
 

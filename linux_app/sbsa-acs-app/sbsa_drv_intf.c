@@ -46,12 +46,12 @@ call_drv_get_status(unsigned long int *arg0, unsigned long int *arg1, unsigned l
 
     if (NULL == fd)
     {
-        printf("fopen failed \n");
+        printf("fopen failed\n");
         return 1;
     }
   fread(&test_params,1,sizeof(test_params),fd);
 
-  //printf("read back value is %x %lx \n", test_params.api_num, test_params.arg1);
+  //printf("read back value is %x %lx\n", test_params.api_num, test_params.arg1);
 
   fclose(fd);
 
@@ -89,7 +89,7 @@ call_drv_init_test_env(unsigned int print_level)
 
     if (NULL == fd)
     {
-        printf("fopen failed \n");
+        printf("fopen failed\n");
         return 1;
     }
 
@@ -116,7 +116,7 @@ call_drv_clean_test_env()
 
     if (NULL == fd)
     {
-        printf("fopen failed \n");
+        printf("fopen failed\n");
         return 1;
     }
 
@@ -142,7 +142,7 @@ call_drv_execute_test(unsigned int api_num, unsigned int num_pe,
 
     if (NULL == fd)
     {
-        printf("fopen failed \n");
+        printf("fopen failed\n");
         return 1;
     }
 
@@ -169,7 +169,7 @@ call_update_skip_list(unsigned int api_num, int *p_skip_test_num)
 
     if (NULL == fd)
     {
-        printf("fopen failed \n");
+        printf("fopen failed\n");
         return 1;
     }
 
@@ -201,7 +201,7 @@ int read_from_proc_sbsa_msg() {
   fd = fopen("/proc/sbsa_msg", "r");
 
   if (NULL == fd) {
-    printf("fopen failed \n");
+    printf("fopen failed\n");
     return 1;
   }
 

@@ -71,7 +71,7 @@ val_pe_create_info_table(uint64_t *pe_info_table)
   }
 
   if (pe_info_table == NULL) {
-      val_print(AVS_PRINT_ERR, "Input memory for PE Info table cannot be NULL \n", 0);
+      val_print(AVS_PRINT_ERR, "Input memory for PE Info table cannot be NULL\n", 0);
       return AVS_STATUS_ERR;
   }
 
@@ -80,7 +80,7 @@ val_pe_create_info_table(uint64_t *pe_info_table)
   pal_pe_create_info_table(g_pe_info_table);
   val_data_cache_ops_by_va((addr_t)&g_pe_info_table, CLEAN_AND_INVALIDATE);
 
-  val_print(AVS_PRINT_TEST, " PE_INFO: Number of PE detected       : %4d \n", val_pe_get_num());
+  val_print(AVS_PRINT_TEST, " PE_INFO: Number of PE detected       : %4d\n", val_pe_get_num());
 
   if (val_pe_get_num() == 0) {
       val_print(AVS_PRINT_ERR, "\n *** CRITICAL ERROR: Num PE is 0x0 ***\n", 0);
@@ -292,7 +292,7 @@ val_execute_on_pe(uint32_t index, void (*payload)(void), uint64_t test_input)
 
   int timeout = TIMEOUT_LARGE;
   if (index > g_pe_info_table->header.num_of_pe) {
-      val_print(AVS_PRINT_ERR, "Input Index exceeds Num of PE %x \n", index);
+      val_print(AVS_PRINT_ERR, "Input Index exceeds Num of PE %x\n", index);
       val_report_status(index, RESULT_FAIL(g_sbsa_level, 0, 0xFF), NULL);
       return;
   }
@@ -337,7 +337,7 @@ val_pe_install_esr(uint32_t exception_type, void (*esr)(uint64_t, void *))
 {
 
   if (exception_type > 3) {
-      val_print(AVS_PRINT_ERR, "Invalid Exception type %x \n", exception_type);
+      val_print(AVS_PRINT_ERR, "Invalid Exception type %x\n", exception_type);
       return AVS_STATUS_ERR;
   }
 
@@ -461,7 +461,7 @@ void
 val_cache_create_info_table(uint64_t *cache_info_table)
 {
   if (cache_info_table == NULL) {
-      val_print(AVS_PRINT_ERR, "\n   Pre-allocated memory pointer is NULL \n", 0);
+      val_print(AVS_PRINT_ERR, "\n   Pre-allocated memory pointer is NULL\n", 0);
       return;
   }
 
@@ -526,7 +526,7 @@ val_cache_get_info(CACHE_INFO_e type, uint32_t cache_index)
       return entry->is_private;
   default:
       val_print(AVS_PRINT_ERR,
-                "\n      cache option not supported %d \n", type);
+                "\n      cache option not supported %d\n", type);
       return INVALID_CACHE_INFO;
   }
 

@@ -56,7 +56,7 @@ pal_peripheral_create_info_table(PERIPHERAL_INFO_TABLE *peripheralInfoTable)
 
   if (peripheralInfoTable == NULL) {
     sbsa_print(AVS_PRINT_ERR,
-               L" Input Peripheral Table Pointer is NULL. Cannot create Peripheral INFO \n");
+               L" Input Peripheral Table Pointer is NULL. Cannot create Peripheral INFO\n");
     return;
   }
 
@@ -81,7 +81,7 @@ pal_peripheral_create_info_table(PERIPHERAL_INFO_TABLE *peripheralInfoTable)
                   break;
           }
           per_info->bdf   = DeviceBdf;
-          sbsa_print(AVS_PRINT_INFO, L" Found a USB controller %4x \n", per_info->base0);
+          sbsa_print(AVS_PRINT_INFO, L" Found a USB controller %4x\n", per_info->base0);
           peripheralInfoTable->header.num_usb++;
           peripheralInfoTable->header.num_all++;
           per_info++;
@@ -104,7 +104,7 @@ pal_peripheral_create_info_table(PERIPHERAL_INFO_TABLE *peripheralInfoTable)
                   break;
           }
           per_info->bdf   = DeviceBdf;
-          sbsa_print(AVS_PRINT_INFO, L" Found a SATA controller %4x \n", per_info->base0);
+          sbsa_print(AVS_PRINT_INFO, L" Found a SATA controller %4x\n", per_info->base0);
           peripheralInfoTable->header.num_sata++;
           peripheralInfoTable->header.num_all++;
           per_info++;
@@ -256,7 +256,7 @@ pal_memory_create_info_table(MEMORY_INFO_TABLE *memoryInfoTable)
   UINT32                Index, i = 0;
 
   if (memoryInfoTable == NULL) {
-    sbsa_print(AVS_PRINT_ERR, L" Input Memory Table Pointer is NULL. Cannot create Memory INFO \n");
+    sbsa_print(AVS_PRINT_ERR, L" Input Memory Table Pointer is NULL. Cannot create Memory INFO\n");
     return;
   }
 
