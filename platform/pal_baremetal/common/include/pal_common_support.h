@@ -174,6 +174,60 @@ void *mem_alloc(size_t alignment, size_t size);
 
 #define NOT_IMPLEMENTED       0x4B1D
 
+#define MEM_SIZE_64K          0x10000
+
+#define ATTR_NORMAL_NONCACHEABLE      (0x0ull << 2)
+#define ATTR_NORMAL_WB_WA_RA          (0x1ull << 2)
+#define ATTR_DEVICE                   (0x2ull << 2)
+#define ATTR_NORMAL_WB                (0x1ull << 3)
+
+/* Stage 1 Inner and Outer Cacheability attribute encoding without TEX remap */
+#define ATTR_S1_NONCACHEABLE         (0x0ull << 2)
+#define ATTR_S1_WB_WA_RA             (0x1ull << 2)
+#define ATTR_S1_WT_RA                (0x2ull << 2)
+#define ATTR_S1_WB_RA                (0x3ull << 2)
+
+/* Stage 2 MemAttr[1:0] encoding for Normal memory */
+#define ATTR_S2_INNER_NONCACHEABLE   (0x1ull << 2)
+#define ATTR_S2_INNER_WT_CACHEABLE   (0x2ull << 2)
+#define ATTR_S2_INNER_WB_CACHEABLE   (0x3ull << 2)
+
+#define ATTR_NS              (0x1ull << 5)
+#define ATTR_S               (0x0ull << 5)
+
+#define ATTR_STAGE1_AP_RW    (0x1ull << 6)
+#define ATTR_STAGE2_AP_RW    (0x3ull << 6)
+#define ATTR_STAGE2_MASK     (0x3ull << 6 | 0x1ull << 4)
+#define ATTR_STAGE2_MASK_RO  (0x1ull << 6 | 0x1ull << 4)
+
+#define ATTR_NON_SHARED      (0x0ull << 8)
+#define ATTR_OUTER_SHARED    (0x2ull << 8)
+#define ATTR_INNER_SHARED    (0x3ull << 8)
+
+#define ATTR_AF              (0x1ull << 10)
+#define ATTR_nG              (0x1ull << 11)
+#define ATTR_UXN             (0x1ull << 54)
+#define ATTR_PXN             (0x1ull << 53)
+
+#define ATTR_PRIV_RW         (0x0ull << 6)
+#define ATTR_PRIV_RO         (0x2ull << 6)
+#define ATTR_USER_RW         (0x1ull << 6)
+#define ATTR_USER_RO         (0x3ull << 6)
+
+#define ATTR_CODE           (ATTR_S1_WB_WA_RA | ATTR_USER_RO | \
+                              ATTR_AF | ATTR_INNER_SHARED | ATTR_NS)
+#define ATTR_RO_DATA        (ATTR_S1_WB_WA_RA | ATTR_USER_RO | \
+                              ATTR_UXN | ATTR_PXN | ATTR_AF | \
+                              ATTR_INNER_SHARED | ATTR_NS)
+#define ATTR_RW_DATA        (ATTR_S1_WB_WA_RA | \
+                              ATTR_USER_RW | ATTR_UXN | ATTR_PXN | ATTR_AF \
+                              | ATTR_INNER_SHARED | ATTR_NS)
+#define ATTR_DEVICE_RW      (ATTR_DEVICE | ATTR_USER_RW | ATTR_UXN | \
+                              ATTR_PXN | ATTR_AF | ATTR_INNER_SHARED | ATTR_NS)
+#define ATTR_RW_DATA_NC      (ATTR_S1_NONCACHEABLE | \
+                              ATTR_USER_RW | ATTR_UXN | ATTR_PXN | ATTR_AF \
+                              | ATTR_INNER_SHARED | ATTR_NS)
+
 typedef struct {
   uint64_t   Arg0;
   uint64_t   Arg1;
@@ -577,6 +631,13 @@ typedef struct {
   uint64_t  dram_size;
   MEM_INFO_BLOCK  info[];
 } MEMORY_INFO_TABLE;
+
+typedef struct {
+    uint64_t physical_address;
+    uint64_t virtual_address;
+    uint64_t length;
+    uint64_t attributes;
+} memory_region_descriptor_t;
 
 /**
   @brief DMA controllers info structure
