@@ -23,7 +23,7 @@
 
 #define SBSA_ACS_MAJOR_VER     7
 #define SBSA_ACS_MINOR_VER     1
-#define SBSA_ACS_SUBMINOR_VER  3
+#define SBSA_ACS_SUBMINOR_VER  4
 
 #define SIZE_4K 0x100
 
