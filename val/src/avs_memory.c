@@ -28,23 +28,6 @@ MEMORY_INFO_TABLE  *g_memory_info_table;
 
 #ifdef TARGET_BM_BOOT
 
-/* Linker symbols used to figure out the memory layout of secure partition. */
-extern addr_t __TEXT_START__, __TEXT_END__;
-#define TEXT_START    ((addr_t)&__TEXT_START__)
-#define TEXT_END      ((addr_t)&__TEXT_END__)
-
-extern addr_t __RODATA_START__, __RODATA_END__;
-#define RODATA_START  ((addr_t)&__RODATA_START__)
-#define RODATA_END    ((addr_t)&__RODATA_END__)
-
-extern addr_t __DATA_START__, __DATA_END__;
-#define DATA_START    ((addr_t)&__DATA_START__)
-#define DATA_END      ((addr_t)&__DATA_END__)
-
-extern addr_t __BSS_START__, __BSS_END__;
-#define BSS_START  ((addr_t)&__BSS_START__)
-#define BSS_END    ((addr_t)&__BSS_END__)
-
 /**
  *   @brief    Add regions assigned to host into its translation table data structure.
  *   @param    void
@@ -52,42 +35,27 @@ extern addr_t __BSS_START__, __BSS_END__;
 **/
 void val_mmu_add_mmap(void)
 {
-    /* Host Image region */
-    val_mmap_add_region(TEXT_START, TEXT_START,
-                        (TEXT_END - TEXT_START),
-                        ATTR_CODE | ATTR_NS);
-    val_mmap_add_region(RODATA_START, RODATA_START,
-                        (RODATA_END - RODATA_START),
-                        ATTR_RO_DATA | ATTR_NS);
-    val_mmap_add_region(DATA_START, DATA_START,
-                        (DATA_END - DATA_START),
-                        ATTR_RW_DATA | ATTR_NS);
-    val_mmap_add_region(BSS_START, BSS_START,
-                        (BSS_END - BSS_START),
-                        ATTR_RW_DATA | ATTR_NS);
+    return pal_mmu_add_mmap();
+}
 
-    /* Memory Pool region */
-    val_mmap_add_region(IMAGE_BASE + IMAGE_SIZE,
-                        IMAGE_BASE + IMAGE_SIZE,
-                        MEM_POOL_SIZE,
-                        ATTR_RW_DATA | ATTR_NS);
+/**
+ *   @brief    Get the list of mem regions.
+ *   @param    void
+ *   @return   Pointer of the list.
+**/
+void *val_mmu_get_mmap_list(void)
+{
+    return pal_mmu_get_mmap_list();
+}
 
-    /* Device region */
-    val_mmap_add_region(UART_BASE, UART_BASE, 0x10000, ATTR_DEVICE_RW | ATTR_NS);
-    val_mmap_add_region(GICD_BASE, GICD_BASE, 0x10000, ATTR_DEVICE_RW | ATTR_NS);
-    val_mmap_add_region(GICC_BASE, GICC_BASE, 0x10000, ATTR_DEVICE_RW | ATTR_NS);
-    val_mmap_add_region(GICH_BASE, GICH_BASE, 0x10000, ATTR_DEVICE_RW | ATTR_NS);
-    val_mmap_add_region(GICRD_BASE, GICRD_BASE, 0x10000, ATTR_DEVICE_RW | ATTR_NS);
-
-    /* PCIe BAR region */
-    val_mmap_add_region(PCIE_BAR64, PCIE_BAR64, 0x100000, ATTR_RW_DATA | ATTR_NS);
-    val_mmap_add_region(PCIE_BAR64_RP, PCIE_BAR64_RP, 0x100000, ATTR_RW_DATA | ATTR_NS);
-
-    val_mmap_add_region(PCIE_BAR32_P, PCIE_BAR32_P, 0x100000, ATTR_RW_DATA | ATTR_NS);
-    val_mmap_add_region(PCIE_BAR32_NP, PCIE_BAR32_NP, 0x100000, ATTR_RW_DATA | ATTR_NS);
-    val_mmap_add_region(PCIE_BAR32_RP, PCIE_BAR32_RP, 0x100000, ATTR_RW_DATA | ATTR_NS);
-
-
+/**
+ *   @brief    Get the total number of mem map regions.
+ *   @param    void
+ *   @return   Count of mem map regions.
+**/
+uint32_t val_mmu_get_mapping_count(void)
+{
+    return pal_mmu_get_mapping_count();
 }
 #endif  // TARGET_BM_BOOT
 

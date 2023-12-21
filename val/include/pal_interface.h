@@ -25,24 +25,31 @@
 
 #ifdef TARGET_BM_BOOT
 
-#include "platform_image_def.h"
 #include "platform_override_fvp.h"
 
-  #define IMAGE_BASE    PLATFORM_NORMAL_WORLD_IMAGE_BASE
-  #define IMAGE_SIZE    PLATFORM_NORMAL_WORLD_IMAGE_SIZE
+  #define VAL_TG0_4K          0x0
+  #define VAL_TG0_64K         0x1
+  #define VAL_TG0_16K         0x2
+  #define PAGE_SIZE_4K        0x1000
+  #define PAGE_SIZE_16K       (4 * 0x1000)
+  #define PAGE_SIZE_64K       (16 * 0x1000)
+  #define PAGE_BITS_4K        12
+  #define PAGE_BITS_16K       14
+  #define PAGE_BITS_64K       16
 
-  #define UART_BASE     BASE_ADDRESS_ADDRESS
-  #define GICC_BASE     PLATFORM_OVERRIDE_GICC_BASE
-  #define GICD_BASE     PLATFORM_OVERRIDE_GICD_BASE
-  #define GICRD_BASE    PLATFORM_OVERRIDE_GICRD_BASE
-  #define GICH_BASE     PLATFORM_OVERRIDE_GICH_BASE
-  #define MEM_POOL_SIZE PLATFORM_MEMORY_POOL_SIZE
-
-  #define PCIE_BAR64       PLATFORM_OVERRIDE_PCIE_BAR64_VAL
-  #define PCIE_BAR64_RP    PLATFORM_OVERRIDE_RP_BAR64_VAL
-  #define PCIE_BAR32_NP    PLATFORM_OVERRIDE_PCIE_BAR32NP_VAL
-  #define PCIE_BAR32_P     PLATFORM_OVERRIDE_PCIE_BAR32P_VAL
-  #define PCIE_BAR32_RP    PLATOFRM_OVERRIDE_RP_BAR32_VAL
+  #if (PLATFORM_PAGE_SIZE == PAGE_SIZE_4K)
+    #define PAGE_ALIGNMENT      PAGE_SIZE_4K
+    #define PAGE_SIZE           PAGE_SIZE_4K
+    #define TCR_TG0             VAL_TG0_4K
+  #elif (PLATFORM_PAGE_SIZE == PAGE_SIZE_16K)
+    #define PAGE_ALIGNMENT      PAGE_SIZE_16K
+    #define PAGE_SIZE           PAGE_SIZE_16K
+    #define TCR_TG0             VAL_TG0_16K
+  #elif (PLATFORM_PAGE_SIZE == PAGE_SIZE_64K)
+    #define PAGE_ALIGNMENT      PAGE_SIZE_64K
+    #define PAGE_SIZE           PAGE_SIZE_64K
+    #define TCR_TG0             VAL_TG0_64K
+  #endif
 
   #define MMU_PGT_IAS      PLATFORM_OVERRIDE_MMU_PGT_IAS
   #define MMU_PGT_OAS      PLATFORM_OVERRIDE_MMU_PGT_OAS
@@ -709,6 +716,9 @@ uint64_t pal_memory_get_unpopulated_addr(uint64_t *addr, uint32_t instance);
 void     pal_print(char8_t *string, uint64_t data);
 void     pal_print_raw(uint64_t addr, char8_t *string, uint64_t data);
 void     pal_uart_print(int log, const char *fmt, ...);
+void     pal_mmu_add_mmap(void);
+void    *pal_mmu_get_mmap_list(void);
+uint32_t pal_mmu_get_mapping_count(void);
 uint32_t pal_strncmp(char8_t *str1, char8_t *str2, uint32_t len);
 void    *pal_memcpy(void *dest_buffer, void *src_buffer, uint32_t len);
 void    *pal_mem_alloc(uint32_t size);
