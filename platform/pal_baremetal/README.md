@@ -21,7 +21,7 @@ Description of each directory are as follows:
 Reference Cmake file is present at [CMakeLists.txt](../../CMakeLists.txt). To compile SBSA, perform following steps.
 
 1. cd sbsa-acs
-2. export CROSS_COMPILE=<path_to_the_toolchain>/bin/aarch64-none-linux-gnu-
+2. export CROSS_COMPILE=<path_to_the_toolchain>/bin/aarch64-none-elf-
 3. mkdir build
 4. cd build
 5. cmake ../ -G"Unix Makefiles" -DCROSS_COMPILE=$CROSS_COMPILE -DTARGET="Target platform"
