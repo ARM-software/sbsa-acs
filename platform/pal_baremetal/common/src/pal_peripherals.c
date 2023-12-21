@@ -21,6 +21,7 @@
 
 extern PLATFORM_OVERRIDE_UART_INFO_TABLE platform_uart_cfg;
 extern PLATFORM_OVERRIDE_MEMORY_INFO_TABLE  platform_mem_cfg;
+extern PCIE_INFO_TABLE platform_pcie_cfg;
 
 #define USB_CLASSCODE   0x0C0300
 #define SATA_CLASSCODE  0x010600
@@ -60,6 +61,10 @@ pal_peripheral_create_info_table(PERIPHERAL_INFO_TABLE *peripheralInfoTable)
   peripheralInfoTable->header.num_uart = 0;
   peripheralInfoTable->header.num_all = 0;
   per_info->base0 = 0;
+
+  // If there is no ECAM region found in the system, skip USB and SATA controllers.
+  if (platform_pcie_cfg.num_entries == 0)
+    goto UART_CONFIG;
 
   /* check for any USB Controllers */
   do {
@@ -109,6 +114,7 @@ pal_peripheral_create_info_table(PERIPHERAL_INFO_TABLE *peripheralInfoTable)
 
   } while (DeviceBdf != 0);
 
+UART_CONFIG:
   /* UART details
    * Assumption that UART bdf details is
    * known to platform owner */

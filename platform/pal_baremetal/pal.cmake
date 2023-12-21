@@ -20,6 +20,7 @@ set(PAL_SRC
     ${ROOT_DIR}/platform/pal_baremetal/${TARGET}/src/pal_bm_exerciser.c
     ${ROOT_DIR}/platform/pal_baremetal/${TARGET}/src/pal_bm_gic.c
     ${ROOT_DIR}/platform/pal_baremetal/${TARGET}/src/pal_bm_iovirt.c
+    ${ROOT_DIR}/platform/pal_baremetal/${TARGET}/src/pal_bm_memory.c
     ${ROOT_DIR}/platform/pal_baremetal/${TARGET}/src/pal_bm_misc.c
     ${ROOT_DIR}/platform/pal_baremetal/${TARGET}/src/pal_bm_pcie.c
     ${ROOT_DIR}/platform/pal_baremetal/${TARGET}/src/pal_bm_pe.c
