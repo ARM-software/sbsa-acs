@@ -24,8 +24,6 @@
 #include "include/val_interface.h"
 
 static uint32_t log2_func(uint64_t size);
-static uint8_t mmap_list_curr_index;
-memory_region_descriptor_t mmap_region_list[MAX_MMAP_REGION_COUNT];
 
 /**
   @brief   This API will check whether inputted base address is already
@@ -240,24 +238,6 @@ static uint32_t log2_func(uint64_t value)
     return 0;
 }
 
-/**
- * @brief Populate mmap_region_list with given map info
- * @param va_base - VA address
- * @param pa_base - PA address
- * @param length  - Size of the region
- * @param attributes - Map attributes
- * @return Void
-**/
-void val_mmap_add_region(uint64_t va_base, uint64_t pa_base,
-                uint64_t length, uint64_t attributes)
-{
-    mmap_region_list[mmap_list_curr_index].virtual_address = va_base;
-    mmap_region_list[mmap_list_curr_index].physical_address = pa_base;
-    mmap_region_list[mmap_list_curr_index].length = length;
-    mmap_region_list[mmap_list_curr_index].attributes = attributes;
-    mmap_list_curr_index++;
-}
-
 #ifdef TARGET_BM_BOOT
 /**
  * @brief Setup page table for image regions and device regions
@@ -267,8 +247,10 @@ void val_mmap_add_region(uint64_t va_base, uint64_t pa_base,
 uint32_t val_setup_mmu(void)
 {
     memory_region_descriptor_t mem_desc_array[2], *mem_desc;
+    memory_region_descriptor_t *mmap_region_list;
     pgt_descriptor_t pgt_desc;
     uint8_t i = 0;
+    uint32_t map_count;
 
     // Memory map the image regions
     val_mmu_add_mmap();
@@ -286,8 +268,10 @@ uint32_t val_setup_mmu(void)
 
     val_memory_set(mem_desc_array, sizeof(mem_desc_array), 0);
     mem_desc = &mem_desc_array[0];
+    mmap_region_list = (memory_region_descriptor_t *) val_mmu_get_mmap_list();
+    map_count = val_mmu_get_mapping_count();
 
-    while (i < mmap_list_curr_index)
+    while (i < map_count)
     {
         mem_desc->virtual_address = mmap_region_list[i].virtual_address;
         mem_desc->physical_address = mmap_region_list[i].physical_address;
@@ -325,19 +309,20 @@ uint32_t val_enable_mmu(void)
      * Attr1 = b11111111 = Normal, Inner/Outer WB/WA/RA
      * Attr2 = b00000000 = Device-nGnRnE
      */
-    val_mair_write(0xFF00, currentEL);
+    val_mair_write(0x00FF44, currentEL);
 
     /* Setup ttbr0 */
     val_ttbr0_write((uint64_t)tt_l0_base, currentEL);
 
-    if (AA64ReadCurrentEL() == AARCH64_EL2)
+    if (currentEL == 0x02)
     {
-        tcr = ((1ull << 20) |          /* TBI, top byte ignored. */
-              (TCR_TG0 << 14) |        /* TG0, granule size */
-              (3ull << 12) |           /* SH0, inner shareable. */
-              (1ull << 10) |           /* ORGN0, normal mem, WB RA WA Cacheable */
-              (1ull << 8) |            /* IRGN0, normal mem, WB RA WA Cacheable */
-              (64 - MMU_PGT_IAS));               /* T0SZ, input address is 2^40 bytes. */
+        tcr = ((1ull << 20)    |           /* TBI, top byte ignored. */
+               (5ull << 16)    |           /* Physical Address Size - 48 Bits*/
+               (TCR_TG0 << 14) |           /* TG0, granule size */
+               (3ull << 12)    |           /* SH0, inner shareable. */
+               (1ull << 10)    |           /* ORGN0, normal mem, WB RA WA Cacheable */
+               (1ull << 8)     |           /* IRGN0, normal mem, WB RA WA Cacheable */
+               (64 - MMU_PGT_IAS));        /* T0SZ, input address is 2^40 bytes. */
     }
 
     val_tcr_write(tcr, currentEL);
@@ -345,10 +330,15 @@ uint32_t val_enable_mmu(void)
     val_print(AVS_PRINT_DEBUG, "       val_setup_mmu: TG0=0x%x\n", TCR_TG0);
     val_print(AVS_PRINT_DEBUG, "       val_setup_mmu: tcr=0x%lx\n", tcr);
 
-    // Enable the MMU
-    EnableMMU();
+    /* Enable MMU */
+    val_sctlr_write((1 << 0) |  // M=1 Enable the stage 1 MMU
+                    (1 << 2) |  // C=1 Enable data and unified caches
+                    (1 << 12) | // I=1 Enable instruction caches
+                    val_sctlr_read(currentEL),
+                    currentEL);
 
     val_print(AVS_PRINT_DEBUG, "       val_enable_mmu: successful\n", 0);
+    val_print(AVS_PRINT_DEBUG, "       System Control EL2 is %llx", val_sctlr_read(currentEL));
 
     return AVS_STATUS_PASS;
 }

@@ -168,7 +168,6 @@ payload(void)
             continue;
         }
 
-
         /* If test runs for atleast an endpoint */
         test_skip = 0;
 
