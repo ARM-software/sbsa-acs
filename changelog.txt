@@ -53,3 +53,12 @@ v23.11_BootFramework
 * Replacing pal_print calls with val_print in val
 * Addition of cmake files instead of Makefiles
 * Code improvements needed when additional compiler flags are added
+
+v23.12_REL7.1.4
+
+* Initialize MMU at EL2
+* Modified values of TCR_EL2 and SCTLR_EL2
+* Enhancements to Memory mapping of devices, peripherals and Memory pool
+* Bug fixes and enhancements
+* Improvements for better prints
+* Document updates
