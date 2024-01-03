@@ -28,6 +28,7 @@ void payload(void)
 {
     uint64_t data = 0;
     uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
+    uint32_t primary_pe_idx = val_pe_get_primary_index();
 
     if (g_sbsa_level < 6) {
         val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
@@ -36,6 +37,8 @@ void payload(void)
 
     /* Read ID_AA64PFR0_EL1.SVE[35:32] = 0b0001 for SVE */
     data = VAL_EXTRACT_BITS(val_pe_reg_read(ID_AA64PFR0_EL1), 32, 35);
+    if (index == primary_pe_idx)
+        val_print(AVS_PRINT_DEBUG, "\n       ID_AA64PFR0_EL1.SVE = %llx", data);
 
     if (data == 0) {
         /* SVE Not Implemented Skip the test */
@@ -45,8 +48,10 @@ void payload(void)
 
     /* Read ID_AA64DFR0_EL1.PMSVer[35:32] = 0b0010 for v8.3-SPE */
     data = VAL_EXTRACT_BITS(val_pe_reg_read(ID_AA64DFR0_EL1), 32, 35);
+    if (index == primary_pe_idx)
+        val_print(AVS_PRINT_DEBUG, "\n       ID_AA64DFR0_EL1.PMSVer = %llx", data);
 
-    if (data != 2)
+    if (data < 2)
         val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
     else
         val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
