@@ -91,6 +91,7 @@ uint32_t val_pe_get_uid(uint64_t mpidr);
 uint32_t val_pe_install_esr(uint32_t exception_type, void (*esr)(uint64_t, void *));
 uint32_t val_pe_get_gmain_gsiv(uint32_t index);
 uint32_t val_pe_feat_check(PE_FEAT_NAME pe_feature);
+uint32_t val_pe_get_primary_index(void);
 
 void     val_execute_on_pe(uint32_t index, void (*payload)(void), uint64_t args);
 void     val_suspend_pe(uint32_t power_state, uint64_t entry, uint32_t context_id);
