@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2023, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2024, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -51,6 +51,7 @@ UINT64  g_stack_pointer;
 UINT64  g_exception_ret_addr;
 UINT64  g_ret_addr;
 UINT32  g_wakeup_timeout;
+UINT32 g_sys_last_lvl_cache;
 SHELL_FILE_HANDLE g_sbsa_log_file_handle;
 
 STATIC VOID FlushImage (VOID)
@@ -445,6 +446,9 @@ HelpMsg (
          "-cache  Pass this flag to indicate that if the test system supports PCIe address translation cache\n"
          "-timeout  Set timeout multiple for wakeup tests\n"
          "        1 - min value  5 - max value\n"
+         "-slc    Provide system last level cache type\n"
+         "        1 - PPTT PE-side cache,  2 - HMAT mem-side cache\n"
+         "        defaults to 0, if not set depicting SLC type unknown\n"
   );
 }
 
@@ -462,6 +466,7 @@ STATIC CONST SHELL_PARAM_ITEM ParamList[] = {
   {L"-p2p", TypeFlag},       // -p2p  # Peer-to-Peer is supported
   {L"-cache", TypeFlag},     // -cache# PCIe address translation cache is supported
   {L"-timeout" , TypeValue}, // -timeout # Set timeout multiple for wakeup tests
+  {L"-slc"  , TypeValue},    // -slc  # system last level cache type
   {NULL     , TypeMax}
   };
 
@@ -569,7 +574,7 @@ ShellAppMainsbsa (
     Print(L"Wakeup timeout multiple %d.\n", g_wakeup_timeout);
     if (g_wakeup_timeout > 5)
         g_wakeup_timeout = 5;
-    }
+  }
 
     // Options with Values
   CmdLineArg  = ShellCommandLineGetValue (ParamPackage, L"-f");
@@ -584,6 +589,17 @@ ShellAppMainsbsa (
     }
   }
 
+  /* get System Last-level cache info */
+  CmdLineArg  = ShellCommandLineGetValue (ParamPackage, L"-slc");
+  if (CmdLineArg == NULL) {
+    g_sys_last_lvl_cache = 0; /* default value. SLC unknown */
+  } else {
+    g_sys_last_lvl_cache = StrDecimalToUintn(CmdLineArg);
+    if (g_sys_last_lvl_cache > 2 || g_sys_last_lvl_cache < 1) {
+        Print(L"Invalid value provided for -slc, Value = %d\n", g_sys_last_lvl_cache);
+        g_sys_last_lvl_cache = 0; /* default value. SLC unknown */
+    }
+  }
 
   // Options with Flags
   if ((ShellCommandLineGetFlag (ParamPackage, L"-help")) || (ShellCommandLineGetFlag (ParamPackage, L"-h"))){

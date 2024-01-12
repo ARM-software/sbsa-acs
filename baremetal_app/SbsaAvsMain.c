@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2022-2023, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2022-2024, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -38,6 +38,7 @@ uint32_t  g_wakeup_timeout;
 uint32_t  *g_skip_test_num;
 uint32_t  *g_execute_tests;
 uint32_t  *g_execute_modules;
+uint32_t  g_sys_last_lvl_cache;
 
 extern uint32_t g_skip_array[];
 extern uint32_t g_num_skip;
@@ -351,6 +352,7 @@ ShellAppMainsbsa(
   g_execute_nist = FALSE;
   g_print_mmio = FALSE;
   g_wakeup_timeout = PLATFORM_OVERRIDE_TIMEOUT;
+  g_sys_last_lvl_cache = PLATFORM_OVERRRIDE_SLC;
 
   //
   // Initialize global counters
