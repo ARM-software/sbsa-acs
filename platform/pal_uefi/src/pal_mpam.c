@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2023, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2023-2024, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -65,6 +65,8 @@ pal_mpam_dump_table(MPAM_INFO_TABLE *MpamTable)
                             curr_entry->rsrc_node[j].locator_type);
           sbsa_print(AVS_PRINT_INFO, L"\ndescriptor1     :%llx ",
                              curr_entry->rsrc_node[j].descriptor1);
+          sbsa_print(AVS_PRINT_INFO, L"\ndescriptor2     :%x ",
+                             curr_entry->rsrc_node[j].descriptor2);
       }
       curr_entry = MPAM_NEXT_MSC(curr_entry);
   }
@@ -163,6 +165,7 @@ pal_mpam_create_info_table(MPAM_INFO_TABLE *MpamTable)
          curr_entry->rsrc_node[i].ris_index = rsrc_node->ris_index;
          curr_entry->rsrc_node[i].locator_type = rsrc_node->locator_type;
          curr_entry->rsrc_node[i].descriptor1 =  rsrc_node->descriptor1;
+         curr_entry->rsrc_node[i].descriptor2 =  rsrc_node->descriptor2;
          rsrc_node = ADD_PTR(EFI_ACPI_MPAM_RESOURCE_NODE_STRUCTURE, rsrc_node,
                      sizeof(EFI_ACPI_MPAM_RESOURCE_NODE_STRUCTURE) +
                      (sizeof(EFI_ACPI_MPAM_FUNC_DEPEN_DESC_STRUCTURE) *

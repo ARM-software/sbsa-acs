@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2023, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2024, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -461,6 +461,7 @@ typedef enum {
   MPAM_MSC_BASE_ADDR,
   MPAM_MSC_ADDR_LEN,
   MPAM_MSC_RSRC_DESC1,
+  MPAM_MSC_RSRC_DESC2,
   MPAM_MSC_NRDY
 } MPAM_INFO_e;
 
