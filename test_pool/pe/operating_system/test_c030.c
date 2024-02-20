@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2023 Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2023-2024, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,22 +21,26 @@
 
 #define TEST_NUM   (AVS_PE_TEST_NUM_BASE  +  30)
 #define TEST_RULE  "S_L7PE_03"
-#define TEST_DESC  "Check for AMUv1p1 Support         "
+#define TEST_DESC  "Check for AMUv1 Support           "
 
 static void payload(void)
 {
     uint64_t data = 0;
     uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
+    uint32_t primary_pe_idx = val_pe_get_primary_index();
 
     if (g_sbsa_level < 7) {
         val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
         return;
     }
 
-    /*  ID_AA64PFR0_EL1.AMU[47:44] = 0b0010 indicate AMU Support */
+    /*  ID_AA64PFR0_EL1.AMU[47:44] >= 0b0001 indicate AMU Support */
     data = VAL_EXTRACT_BITS(val_pe_reg_read(ID_AA64PFR0_EL1), 44, 47);
+    if (index == primary_pe_idx) {
+        val_print(AVS_PRINT_DEBUG, "\n       ID_AA64PFR0_EL1.AMU[47:44]  = %llx", data);
+    }
 
-    if (data == 2)
+    if (data >= 1)
         val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
     else
         val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
