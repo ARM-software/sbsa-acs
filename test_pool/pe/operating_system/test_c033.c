@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2023, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2023-2024, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,22 +21,32 @@
 
 #define TEST_NUM   (AVS_PE_TEST_NUM_BASE + 33)
 #define TEST_RULE  "S_L7PE_06"
-#define TEST_DESC  "Check for EnhancedPAC2 and FPAC   "
+#define TEST_DESC  "Check PAuth2, FPAC & FPACCOMBINE  "
 
 static void payload(void)
 {
-    uint64_t data = 0;
+    /* Read ID_AA64ISAR1_EL1 and ID_AA64ISAR2_EL1 for EnhancedPAC2 and FPAC support */
+    uint64_t data1 = val_pe_reg_read(ID_AA64ISAR1_EL1);
+    uint32_t data2 = val_pe_reg_read(ID_AA64ISAR2_EL1);
     uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
+    uint32_t primary_pe_idx = val_pe_get_primary_index();
 
     if (g_sbsa_level < 7) {
         val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
         return;
     }
 
-    /* ID_AA64ISAR1_EL1.APA[7:4] = 0b0101 indicate EnhancedPAC2 and FPAC support */
-    data = VAL_EXTRACT_BITS(val_pe_reg_read(ID_AA64ISAR1_EL1), 4, 7);
+    if (index == primary_pe_idx) {
+        val_print(AVS_PRINT_DEBUG, "\n       ID_AA64ISAR1_EL1.APA[7:4]    = %llx",
+                 VAL_EXTRACT_BITS(data1, 4, 7));
+        val_print(AVS_PRINT_DEBUG, "\n       ID_AA64ISAR2_EL1.APA3[15:12] = %llx",
+                 VAL_EXTRACT_BITS(data2, 12, 15));
+     }
 
-    if (data == 5)
+    /* Read ID_AA64ISAR1_EL1.APA[7:4] and ID_AA64ISAR2_EL1.APA3[15:12] == 0b0101 indicates
+     * PAuth2, EnhancedPAC2 and FPAC support of standard QARMA3 and QARMA5 algorithms
+     */
+    if ((VAL_EXTRACT_BITS(data1, 4, 7) == 5) || (VAL_EXTRACT_BITS(data2, 12, 15) == 5))
         val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
     else
         val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
