@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2023, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2024, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -148,6 +148,8 @@ val_pe_reg_read(uint32_t reg_id)
           return AA64ReadIsar0();
       case ID_AA64ISAR1_EL1:
           return AA64ReadIsar1();
+      case ID_AA64ISAR2_EL1:
+          return AA64ReadIsar2();
       case SCTLR_EL3:
           return AA64ReadSctlr3();
       case SCTLR_EL2:
