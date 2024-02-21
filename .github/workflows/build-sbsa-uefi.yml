@@ -39,13 +39,13 @@ jobs:
         run: |
           mkdir -p /opt/cross
           cd /opt/cross
-          wget https://developer.arm.com/-/media/Files/downloads/gnu-a/10.3-2021.07/binrel/gcc-arm-10.3-2021.07-x86_64-aarch64-none-linux-gnu.tar.xz
-          tar -xf gcc-arm-10.3-2021.07-x86_64-aarch64-none-linux-gnu.tar.xz
+          wget https://developer.arm.com/-/media/Files/downloads/gnu/13.2.rel1/binrel/arm-gnu-toolchain-13.2.rel1-x86_64-aarch64-none-linux-gnu.tar.xz
+          tar -xf arm-gnu-toolchain-13.2.rel1-x86_64-aarch64-none-linux-gnu.tar.xz
 
       - name: Set up EDK2 environment and build Sbsa.efi
         run: |
           cd edk2
-          export GCC49_AARCH64_PREFIX=/opt/cross/gcc-arm-10.3-2021.07-x86_64-aarch64-none-linux-gnu/bin/aarch64-none-linux-gnu-
+          export GCC49_AARCH64_PREFIX=/opt/cross/arm-gnu-toolchain-13.2.Rel1-x86_64-aarch64-none-linux-gnu/bin/aarch64-none-linux-gnu-
           export PACKAGES_PATH=$PWD/edk2-libc
           source edksetup.sh
           make -C BaseTools/Source/C
