@@ -35,4 +35,5 @@ extern uint32_t g_num_tests;
 extern uint32_t *g_execute_modules;
 extern uint32_t g_num_modules;
 extern uint32_t g_sys_last_lvl_cache;
+extern uint32_t g_el1physkip;
 #endif
