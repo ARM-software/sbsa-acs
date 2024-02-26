@@ -53,6 +53,10 @@ UINT64  g_ret_addr;
 UINT32  g_wakeup_timeout;
 UINT32 g_sys_last_lvl_cache;
 SHELL_FILE_HANDLE g_sbsa_log_file_handle;
+/* VE systems run acs at EL1 and in some systems crash is observed during acess
+   of EL1 phy and virt timer, Below command line option is added only for debug
+   purpose to complete SBSA run on these systems */
+UINT32  g_el1physkip = FALSE;
 
 STATIC VOID FlushImage (VOID)
 {
@@ -448,7 +452,8 @@ HelpMsg (
          "        1 - min value  5 - max value\n"
          "-slc    Provide system last level cache type\n"
          "        1 - PPTT PE-side cache,  2 - HMAT mem-side cache\n"
-         "        defaults to 0, if not set depicting SLC type unknown\n"
+         "         defaults to 0, if not set depicting SLC type unknown\n"
+         "-el1physkip Skips EL1 register checks\n"
   );
 }
 
@@ -467,6 +472,7 @@ STATIC CONST SHELL_PARAM_ITEM ParamList[] = {
   {L"-cache", TypeFlag},     // -cache# PCIe address translation cache is supported
   {L"-timeout" , TypeValue}, // -timeout # Set timeout multiple for wakeup tests
   {L"-slc"  , TypeValue},    // -slc  # system last level cache type
+  {L"-el1physkip", TypeFlag}, // -el1physkip # Skips EL1 register checks
   {NULL     , TypeMax}
   };
 
@@ -641,6 +647,11 @@ ShellAppMainsbsa (
     g_execute_nist = TRUE;
   } else {
     g_execute_nist = FALSE;
+  }
+
+  // Options with Flags
+  if (ShellCommandLineGetFlag (ParamPackage, L"-el1physkip")) {
+    g_el1physkip = TRUE;
   }
 
   if (g_sbsa_level == 7)
