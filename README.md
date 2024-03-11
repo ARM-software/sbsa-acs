@@ -189,14 +189,16 @@ The patch for the kernel tree and the Linux PAL are hosted separately on [linux-
 - Linux kernel source version 5.11, 5.13, 5.15, 6.0, 6.4
 - Install GCC-ARM 12.2 or higher from [toolchain]([https://developer.arm.com/downloads/-/arm-gnu-toolchain-downloads])
 - Build environment for AArch64 Linux kernel.<br />
+
 NOTE: <br />
-- Linux version 6.4 is the recommended version.
-- GCC 12.2 is recommended toolchain
+Linux version 6.4 is the recommended version.
 
 ### 1.1 Building the kernel module
-Download the below repository to the local workspace directory
+Download the below repository to the local <workspace_dir> directory
 > git clone https://gitlab.arm.com/linux-arm/linux-acs
+
 > git clone https://github.com/ARM-software/sbsa-acs.git
+
 > git clone https://github.com/torvalds/linux.git -b v6.4
 
 1. export CROSS_COMPILE=<GCC12.2 or higher toolchain path> pointing to /bin/aarch64-linux-gnu-
