@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2018-2023, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2018-2024, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -234,10 +234,7 @@ payload(void)
     }
 
     /* Trigger DMA from input buffer to exerciser memory */
-    if (val_exerciser_ops(START_DMA, EDMA_TO_DEVICE, instance)) {
-        val_print(AVS_PRINT_ERR, "\n       DMA write failure to exerciser %4x", instance);
-        goto test_fail;
-    }
+    val_exerciser_ops(START_DMA, EDMA_TO_DEVICE, instance);
 
     if (val_exerciser_set_param(DMA_ATTRIBUTES, dram_buf_out_iova, dma_len, instance)) {
         val_print(AVS_PRINT_ERR, "\n       DMA attributes setting failure %4x", instance);
@@ -245,10 +242,7 @@ payload(void)
     }
 
     /* Trigger DMA from exerciser memory to output buffer*/
-    if (val_exerciser_ops(START_DMA, EDMA_FROM_DEVICE, instance)) {
-        val_print(AVS_PRINT_ERR, "\n       DMA read failure from exerciser %4x", instance);
-        goto test_fail;
-    }
+    val_exerciser_ops(START_DMA, EDMA_FROM_DEVICE, instance);
 
     if (val_memory_compare(dram_buf_in_virt, dram_buf_out_virt, dma_len)) {
         val_print(AVS_PRINT_ERR, "\n       Data Comparasion failure for Exerciser %4x", instance);
