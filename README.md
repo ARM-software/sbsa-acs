@@ -185,40 +185,44 @@ Certain PCIe and SMMU tests require Linux operating system.This chapter provides
 This section lists the porting and build steps for the kernel module.
 The patch for the kernel tree and the Linux PAL are hosted separately on [linux-acs](https://gitlab.arm.com/linux-arm/linux-acs) repository.
 
-### 1.1 Building the kernel module
 #### Prerequisites
 - Linux kernel source version 5.11, 5.13, 5.15, 6.0, 6.4
-- Install GCC-ARM 10.3 [toolchain](https://developer.arm.com/tools-and-software/open-source-software/developer-tools/gnu-toolchain/gnu-a/downloads).
+- Install GCC-ARM 12.2 or higher from [toolchain]([https://developer.arm.com/downloads/-/arm-gnu-toolchain-downloads])
 - Build environment for AArch64 Linux kernel.<br />
 NOTE: <br />
-- Linux version 6.4 is recommened version.
-- GCC 10.3 is recommended toolchain
+- Linux version 6.4 is the recommended version.
+- GCC 12.2 is recommended toolchain
 
-#### Porting steps for Linux kernel
-1. git clone https://gitlab.arm.com/linux-arm/linux-acs sbsa-acs-drv
-2. git clone https://github.com/ARM-software/sbsa-acs.git sbsa-acs
-3. git clone https://github.com/torvalds/linux.git -b v6.4
-4. export CROSS_COMPILE=<GCC10.3 toolchain path> pointing to /bin/aarch64-linux-gnu-
-5. git apply <local_dir>/sbsa-acs-drv/kernel/src/0001-BSA-ACS-Linux-6.4.patch to your kernel source tree.
-6. make ARCH=arm64 defconfig && make -j $(nproc) ARCH=arm64
+### 1.1 Building the kernel module
+Download the below repository to the local workspace directory
+> git clone https://gitlab.arm.com/linux-arm/linux-acs
+> git clone https://github.com/ARM-software/sbsa-acs.git
+> git clone https://github.com/torvalds/linux.git -b v6.4
+
+1. export CROSS_COMPILE=<GCC12.2 or higher toolchain path> pointing to /bin/aarch64-linux-gnu-
+2. cd <workspace_dir>/linux
+3. git apply <workspace_dir>/linux-acs/kernel/src/0001-BSA-ACS-Linux-6.4.patch to your kernel source tree.
+4. make ARCH=arm64 defconfig && make -j $(nproc) ARCH=arm64
+
+Successful completion of above steps will generate **Image**  in <workspace_dir>/linux/arch/arm64/boot/
 
 NOTE: The steps mentions Linux version 6.4, as it is latest version which is verified at ACS end.
 
 #### 1.2 Build steps for SBSA kernel module
-1. cd <local_dir>/sbsa-acs-drv/files
-2. export CROSS_COMPILE=<ARM64 toolchain path>/bin/aarch64-linux-gnu-
-3. export KERNEL_SRC=<linux kernel path>
+1. cd <workspace_dir>/linux-acs/sbsa-acs-drv/files
+2. export CROSS_COMPILE=<GCC12.2 or higher toolchain path> pointing to /bin/aarch64-linux-gnu-
+3. export KERNEL_SRC=<workspace_dir>/linux
 4. ./setup.sh <local_dir/sbsa-acs>
 5. ./linux_sbsa_acs.sh
 
-Successful completion of above steps will generate sbsa_acs.ko
+Successful completion of above steps will generate **sbsa_acs.ko**  in <workspace_dir>/linux-acs/sbsa-acs-drv/files
 
 #### 1.3 SBSA Linux application build
-1. cd <sbsa-acs path>/linux_app/sbsa-acs-app
+1. cd <workspace_dir>/sbsa-acs/linux_app/sbsa-acs-app
 2. export CROSS_COMPILE=<ARM64 toolchain path>/bin/aarch64-linux-gnu-
 3. make
 
-Successful completion of above steps will generate executable file sbsa
+Successful completion of above steps will generate executable file **sbsa**  in <workspace_dir>/sbsa-acs/linux_app/sbsa-acs-app
 
 ### 2. Loading the kernel module
 Before the SBSA ACS Linux application can be run, load the SBSA ACS kernel module using the insmod command.
