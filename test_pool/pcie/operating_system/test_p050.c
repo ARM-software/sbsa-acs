@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2020-2023, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2024, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -60,9 +60,8 @@ payload(void)
       bdf = bdf_tbl_ptr->device[tbl_index++].bdf;
       dp_type = val_pcie_device_port_type(bdf);
 
-      /* Check entry is RCiEP/ RCEC/ iEP. Else move to next BDF. */
-      if ((dp_type != iEP_EP) && (dp_type != iEP_RP)
-          && (dp_type != RCEC) && (dp_type != RCiEP))
+      /* Check entry is RCiEP/ RCEC. Else move to next BDF. */
+      if ((dp_type != RCEC) && (dp_type != RCiEP))
           continue;
 
       val_print(AVS_PRINT_DEBUG, "\n       BDF - 0x%x", bdf);
