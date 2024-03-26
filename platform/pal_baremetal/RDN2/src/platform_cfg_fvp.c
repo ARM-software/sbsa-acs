@@ -44,6 +44,7 @@ uint32_t  g_module_array[] = {};
 uint32_t  g_num_skip         = sizeof(g_skip_array)/sizeof(g_skip_array[0]);
 uint32_t  g_num_tests        = sizeof(g_test_array)/sizeof(g_test_array[0]);
 uint32_t  g_num_modules      = sizeof(g_module_array)/sizeof(g_module_array[0]);
+uint32_t  g_el1physkip       = FALSE;
 
 PE_INFO_TABLE platform_pe_cfg = {
 

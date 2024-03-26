@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2023, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2024, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -92,6 +92,7 @@ uint32_t val_pe_get_uid(uint64_t mpidr);
 uint32_t val_pe_install_esr(uint32_t exception_type, void (*esr)(uint64_t, void *));
 uint32_t val_pe_get_gmain_gsiv(uint32_t index);
 uint32_t val_pe_feat_check(PE_FEAT_NAME pe_feature);
+uint32_t val_pe_get_primary_index(void);
 
 void     val_execute_on_pe(uint32_t index, void (*payload)(void), uint64_t args);
 void     val_suspend_pe(uint32_t power_state, uint64_t entry, uint32_t context_id);
@@ -461,6 +462,7 @@ typedef enum {
   MPAM_MSC_BASE_ADDR,
   MPAM_MSC_ADDR_LEN,
   MPAM_MSC_RSRC_DESC1,
+  MPAM_MSC_RSRC_DESC2,
   MPAM_MSC_NRDY
 } MPAM_INFO_e;
 

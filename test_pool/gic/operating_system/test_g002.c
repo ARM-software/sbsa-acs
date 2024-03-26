@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2023, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2023-2024, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -41,24 +41,25 @@ payload()
       return;
   }
 
-  /* Check non-secure physical timer interrupt */
-  intid = val_timer_get_info(TIMER_INFO_PHY_EL1_INTID, 0);
-  if (IS_PPI_RESERVED(intid))
-  {
-      val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
-      val_print(AVS_PRINT_ERR, "\n       Interrupt ID is reserved for future SBSA usage ", 0);
-      return;
-  }
+  if (!g_el1physkip) {
+      /* Check non-secure physical timer interrupt */
+      intid = val_timer_get_info(TIMER_INFO_PHY_EL1_INTID, 0);
+      if (IS_PPI_RESERVED(intid))
+      {
+          val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
+          val_print(AVS_PRINT_ERR, "\n       Interrupt ID is reserved for future SBSA usage ", 0);
+          return;
+      }
 
-  /* Check non-secure virtual timer interrupt */
-  intid = val_timer_get_info(TIMER_INFO_VIR_EL1_INTID, 0);
-  if (IS_PPI_RESERVED(intid))
-  {
-      val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
-      val_print(AVS_PRINT_ERR, "\n       Interrupt ID is reserved for future SBSA usage ", 0);
-      return;
+      /* Check non-secure virtual timer interrupt */
+      intid = val_timer_get_info(TIMER_INFO_VIR_EL1_INTID, 0);
+      if (IS_PPI_RESERVED(intid))
+      {
+          val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
+          val_print(AVS_PRINT_ERR, "\n       Interrupt ID is reserved for future SBSA usage ", 0);
+          return;
+      }
   }
-
   /* Check for EL2 virtual timer interrupt  */
   intid = val_timer_get_info(TIMER_INFO_VIR_EL2_INTID, 0);
   if (IS_PPI_RESERVED(intid))

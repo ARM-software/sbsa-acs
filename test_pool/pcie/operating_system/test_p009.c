@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, 2021-2023 Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018, 2021-2024, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -107,7 +107,7 @@ payload (void)
           while(mvec) {
               if(mvec->vector.vector_irq_base < LPI_BASE) {
                  val_print(AVS_PRINT_ERR,
-                    "       MSI vector irq %d is not an LPI\n", mvec->vector.vector_irq_base);
+                    "       MSI vector irq %llx is not an LPI\n", mvec->vector.vector_irq_base);
                  val_set_status (index, RESULT_FAIL (g_sbsa_level, TEST_NUM, mvec->vector.vector_irq_base));
                  status = 1;
               }

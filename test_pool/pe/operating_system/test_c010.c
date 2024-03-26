@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, 2020-2023 Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018, 2020-2024, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,43 +20,51 @@
 
 #define TEST_NUM   (AVS_PE_TEST_NUM_BASE  +  10)
 #define TEST_RULE  "S_L5PE_02"
-#define TEST_DESC  "Check for pointer signing         "
+#define TEST_DESC  "Check for addr and generic auth   "
 
-static void check_pointer_signing_algorithm(uint32_t index, uint64_t data)
+
+static void check_pointer_signing_algorithm(uint32_t index, uint64_t data1, uint64_t data2)
 {
-    /* Read ID_AA64ISAR1_EL1[7:4] for pointer signing using standard algorithm
-     * defined by Arm architecture
+    /* Read ID_AA64ISAR1_EL1.APA[7:4] and ID_AA64ISAR1_EL1.GPA[27:24]  ! = 0 indicates
+     * address and generic authentication support using QARMA5
+     *
+     * Read ID_AA64ISAR2_EL1.APA3[15:12] and ID_AA64ISAR2_EL1.GPA3[11:8] ! = 0 indicates
+     * address and generic authentication support using QARMA3
      */
-    if (VAL_EXTRACT_BITS(data, 4, 7) == 0)
-        val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
+
+    if (((VAL_EXTRACT_BITS(data1, 4, 7) != 0) && (VAL_EXTRACT_BITS(data1, 24, 27) != 0)) ||
+       ((VAL_EXTRACT_BITS(data2, 8, 11) != 0) && (VAL_EXTRACT_BITS(data2, 12, 15) != 0)))
+       val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
     else
-        val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
+       val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
 }
+
 static void payload(void)
 {
-    uint64_t data = val_pe_reg_read(ID_AA64ISAR1_EL1);
     uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
+    uint32_t primary_pe_idx = val_pe_get_primary_index();
 
-    if (g_sbsa_level < 4) {
+    /* Read ID_AA64ISAR1_EL1 and ID_AA64ISAR2_EL1 for PAuth support */
+    uint64_t data1 = val_pe_reg_read(ID_AA64ISAR1_EL1);
+    uint64_t data2 = val_pe_reg_read(ID_AA64ISAR2_EL1);
+
+    if (index == primary_pe_idx) {
+       val_print(AVS_PRINT_DEBUG, "\n       ID_AA64ISAR1_EL1.APA[7:4]    = %llx",
+                 VAL_EXTRACT_BITS(data1, 4, 7));
+       val_print(AVS_PRINT_DEBUG, "\n       ID_AA64ISAR1_EL1.GPA[27:24]  = %llx",
+                 VAL_EXTRACT_BITS(data1, 24, 27));
+       val_print(AVS_PRINT_DEBUG, "\n       ID_AA64ISAR2_EL1.APA3[15:12] = %llx",
+                 VAL_EXTRACT_BITS(data2, 12, 15));
+       val_print(AVS_PRINT_DEBUG, "\n       ID_AA64ISAR2_EL1.GPA3[11:8]  = %llx",
+                 VAL_EXTRACT_BITS(data2, 8, 11));
+    }
+
+    if (g_sbsa_level < 5) {
         val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
         return;
-
-    } else if (g_sbsa_level < 5) {
-
-        /* Pointer signing is optional, Check if Pointer signing is implemented */
-        if ((VAL_EXTRACT_BITS(data, 4, 7) == 0) && (VAL_EXTRACT_BITS(data, 8, 11) == 0) &&
-            (VAL_EXTRACT_BITS(data, 24, 27) == 0) && (VAL_EXTRACT_BITS(data, 28, 31) == 0)) {
-            /* Pointer signing not implemented, Skip the test */
-            val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
-            return;
-        }
-
-        /* Implemented, Check for pointer signing using standard algorithm */
-        check_pointer_signing_algorithm(index, data);
-
     } else {
-        /* Pointer signing is mandatory, Check for pointer signing using standard algorithm */
-        check_pointer_signing_algorithm(index, data);
+        /* Pointer signing is mandatory, Check for pointer signing using standard arm algorithm */
+        check_pointer_signing_algorithm(index, data1, data2);
     }
 }
 

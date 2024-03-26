@@ -89,56 +89,6 @@ sctlr_el1_write:
     isb
     ret
 
-    .global val_esr_el1_read
-val_esr_el1_read:
-    mrs     x0, esr_el1
-    ret
-
-    .global val_elr_el1_read
-val_elr_el1_read:
-    mrs     x0, elr_el1
-    ret
-
-    .global val_elr_el1_write
-val_elr_el1_write:
-    msr     elr_el1, x0
-    ret
-
-    .global val_far_el1_read
-val_far_el1_read:
-    mrs     x0, far_el1
-    ret
-
-    .global val_hpfar_el2_read
-val_hpfar_el2_read:
-    mrs     x0, hpfar_el2
-    ret
-
-    .global val_id_aa64mmfr0_el1_read
-val_id_aa64mmfr0_el1_read:
-    mrs     x0, id_aa64mmfr0_el1
-    ret
-
-    .global val_id_aa64mmfr1_el1_read
-val_id_aa64mmfr1_el1_read:
-        mrs x0, ID_AA64MMFR1_EL1
-        ret
-
-    .global val_esr_el2_read
-val_esr_el2_read:
-    mrs     x0, esr_el2
-    ret
-
-    .global val_elr_el2_read
-val_elr_el2_read:
-    mrs     x0, elr_el2
-    ret
-
-    .global val_read_mpidr
-val_read_mpidr:
-    mrs     x0, mpidr_el1
-    ret
-
     .global val_read_current_el
 val_read_current_el:
     mrs     x0, CurrentEL

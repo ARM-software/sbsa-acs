@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, 2022-2023 Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018, 2022-2024, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,12 +20,13 @@
 
 #define TEST_NUM   (AVS_PE_TEST_NUM_BASE  +  14)
 #define TEST_RULE  "S_L5PE_07"
-#define TEST_DESC  "Check for nested virtualization   "
+#define TEST_DESC  "Check for FEAT_NV2 support        "
 
 static void payload(void)
 {
     uint64_t data = 0;
     uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
+    uint32_t primary_pe_idx = val_pe_get_primary_index();
 
     if (g_sbsa_level < 5) {
         val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
@@ -34,7 +35,17 @@ static void payload(void)
 
     /* Read ID_AA64MMFR2_EL1[27:24] for enhanced Nested Virtualization support */
     data = VAL_EXTRACT_BITS(val_pe_reg_read(ID_AA64MMFR2_EL1), 24, 27);
-    if (data == 0x2)
+    if (index == primary_pe_idx) {
+        val_print(AVS_PRINT_DEBUG, "\n       ID_AA64MMFR2_EL1.NV  = %llx", data);
+    }
+
+    /* Read ID_AA64MMFR2_EL1.NV[27:24] == 2 indicates FEAT_NV2 support
+     * Value 1 indicates FEAT_NV support
+     * Value 0 indicates nested virtualization not supported
+     */
+    if (data == 0)
+        val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 02));
+    else if (data == 0x2)
         val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
     else
         val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));

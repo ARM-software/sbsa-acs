@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2023, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2024, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -403,7 +403,7 @@ typedef struct {
   UINT32         vector_lower_addr; ///< Base Address of the controller
   UINT32         vector_data;       ///< Base Address of the controller
   UINT32         vector_control;    ///< IRQ to install an ISR
-  UINT32         vector_irq_base;   ///< Base IRQ for the vectors in the block
+  UINT64         vector_irq_base;   ///< Base IRQ for the vectors in the block
   UINT32         vector_n_irqs;     ///< Number of irq vectors in the block
   UINT32         vector_mapped_irq_base; ///< Mapped IRQ number base for this MSI
 }PERIPHERAL_VECTOR_BLOCK;

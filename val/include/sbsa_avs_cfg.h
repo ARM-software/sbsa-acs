@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, 2021-2023, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018, 2021-2024, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -34,4 +34,6 @@ extern uint32_t *g_execute_tests;
 extern uint32_t g_num_tests;
 extern uint32_t *g_execute_modules;
 extern uint32_t g_num_modules;
+extern uint32_t g_sys_last_lvl_cache;
+extern uint32_t g_el1physkip;
 #endif

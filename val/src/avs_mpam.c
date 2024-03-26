@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2023, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2023-2024, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -180,6 +180,8 @@ val_mpam_get_info(MPAM_INFO_e type, uint32_t msc_index, uint32_t rsrc_index)
               return msc_entry->rsrc_node[rsrc_index].locator_type;
           case MPAM_MSC_RSRC_DESC1:
               return msc_entry->rsrc_node[rsrc_index].descriptor1;
+          case MPAM_MSC_RSRC_DESC2:
+              return msc_entry->rsrc_node[rsrc_index].descriptor2;
           case MPAM_MSC_BASE_ADDR:
               return msc_entry->msc_base_addr;
           case MPAM_MSC_ADDR_LEN:
