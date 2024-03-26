@@ -15,12 +15,15 @@
  * limitations under the License.
 **/
 
-#include "val/include/val_interface.h"
-#include "val/include/sbsa_avs_pe.h"
-#include "val/include/sbsa_avs_val.h"
-#include "val/include/sbsa_avs_memory.h"
+#include "val/common/include/val_interface.h"
+#include "val/common/include/pal_interface.h"
+#include "val/common/include/acs_val.h"
+#include "val/common/include/acs_memory.h"
+#include "val/common/include/acs_pe.h"
+#include "val/sbsa/include/sbsa_val_interface.h"
+#include "val/sbsa/include/sbsa_acs_pe.h"
 
-#include "SbsaAvs.h"
+#include "SbsaAcs.h"
 
 uint32_t  g_sbsa_level;
 uint32_t  g_print_level;
@@ -28,9 +31,9 @@ uint32_t  g_execute_nist;
 uint32_t  g_print_mmio;
 uint32_t  g_curr_module;
 uint32_t  g_enable_module;
-uint32_t  g_sbsa_tests_total;
-uint32_t  g_sbsa_tests_pass;
-uint32_t  g_sbsa_tests_fail;
+uint32_t  g_acs_tests_total;
+uint32_t  g_acs_tests_pass;
+uint32_t  g_acs_tests_fail;
 uint64_t  g_stack_pointer;
 uint64_t  g_exception_ret_addr;
 uint64_t  g_ret_addr;
@@ -239,9 +242,9 @@ createInfoTable(
 {
   uint64_t      *InfoTable;
 
-  val_print(AVS_PRINT_DEBUG, "\n Allocating memory for ", 0);
-  val_print(AVS_PRINT_DEBUG, table_name, 0);
-  val_print(AVS_PRINT_DEBUG, " info table", 0);
+  val_print(ACS_PRINT_DEBUG, "\n Allocating memory for ", 0);
+  val_print(ACS_PRINT_DEBUG, table_name, 0);
+  val_print(ACS_PRINT_DEBUG, " info table", 0);
 
   InfoTable = val_aligned_alloc(SIZE_4K, info_table_size);
 
@@ -296,26 +299,26 @@ ShellAppMainsbsa(
   uint32_t             Status;
   void                 *branch_label;
 
-  g_print_level = PLATFORM_OVERRIDE_PRINT_LEVEL;
-  if (g_print_level < AVS_PRINT_INFO)
+  g_print_level = PLATFORM_OVERRIDE_SBSA_PRINT_LEVEL;
+  if (g_print_level < ACS_PRINT_INFO)
   {
-      val_print(AVS_PRINT_ERR, "Print Level %d is not supported.\n", g_print_level);
-      val_print(AVS_PRINT_ERR, "Setting Print level to %d\n", AVS_PRINT_INFO);
-      g_print_level = AVS_PRINT_INFO;
-  } else if (g_print_level > AVS_PRINT_ERR) {
-      val_print(AVS_PRINT_ERR, "Print Level %d is not supported.\n", g_print_level);
-      val_print(AVS_PRINT_ERR, "Setting Print level to %d\n", AVS_PRINT_ERR);
-      g_print_level = AVS_PRINT_ERR;
+      val_print(ACS_PRINT_ERR, "Print Level %d is not supported.\n", g_print_level);
+      val_print(ACS_PRINT_ERR, "Setting Print level to %d\n", ACS_PRINT_INFO);
+      g_print_level = ACS_PRINT_INFO;
+  } else if (g_print_level > ACS_PRINT_ERR) {
+      val_print(ACS_PRINT_ERR, "Print Level %d is not supported.\n", g_print_level);
+      val_print(ACS_PRINT_ERR, "Setting Print level to %d\n", ACS_PRINT_ERR);
+      g_print_level = ACS_PRINT_ERR;
   }
 
 #ifdef TARGET_BM_BOOT
   /* Write page tables */
   if (val_setup_mmu())
-      return AVS_STATUS_FAIL;
+      return ACS_STATUS_FAIL;
 
   /* Enable Stage-1 MMU */
   if (val_enable_mmu())
-      return AVS_STATUS_FAIL;
+      return ACS_STATUS_FAIL;
 #endif
 
   g_sbsa_level = PLATFORM_OVERRIDE_SBSA_LEVEL;
@@ -330,15 +333,15 @@ ShellAppMainsbsa(
       g_sbsa_level = SBSA_MAX_LEVEL_SUPPORTED;
   }
 
-  val_print(AVS_PRINT_TEST, "\n\n SBSA Architecture Compliance Suite\n", 0);
-  val_print(AVS_PRINT_TEST, "    Version %d.", SBSA_ACS_MAJOR_VER);
-  val_print(AVS_PRINT_TEST, "%d.", SBSA_ACS_MINOR_VER);
-  val_print(AVS_PRINT_TEST, "%d\n", SBSA_ACS_SUBMINOR_VER);
+  val_print(ACS_PRINT_TEST, "\n\n SBSA Architecture Compliance Suite\n", 0);
+  val_print(ACS_PRINT_TEST, "    Version %d.", SBSA_ACS_MAJOR_VER);
+  val_print(ACS_PRINT_TEST, "%d.", SBSA_ACS_MINOR_VER);
+  val_print(ACS_PRINT_TEST, "%d\n", SBSA_ACS_SUBMINOR_VER);
 
-  val_print(AVS_PRINT_TEST, "\n Starting tests for level %2d", g_sbsa_level);
-  val_print(AVS_PRINT_TEST, " (Print level is %2d)\n\n", g_print_level);
+  val_print(ACS_PRINT_TEST, "\n Starting tests for level %2d", g_sbsa_level);
+  val_print(ACS_PRINT_TEST, " (Print level is %2d)\n\n", g_print_level);
 
-  val_print(AVS_PRINT_TEST, " Creating Platform Information Tables\n", 0);
+  val_print(ACS_PRINT_TEST, " Creating Platform Information Tables\n", 0);
 
   g_skip_test_num   = &g_skip_array[0];
   if (g_num_tests) {
@@ -357,9 +360,9 @@ ShellAppMainsbsa(
   //
   // Initialize global counters
   //
-  g_sbsa_tests_total = 0;
-  g_sbsa_tests_pass  = 0;
-  g_sbsa_tests_fail  = 0;
+  g_acs_tests_total = 0;
+  g_acs_tests_pass  = 0;
+  g_acs_tests_fail  = 0;
 
   Status = createPeInfoTable();
   if (Status)
@@ -401,52 +404,52 @@ ShellAppMainsbsa(
   val_pe_initialize_default_exception_handler(val_pe_default_esr);
 
   /***         Starting PE tests                     ***/
-  Status = val_pe_execute_tests(g_sbsa_level, val_pe_get_num());
+  Status = val_sbsa_pe_execute_tests(g_sbsa_level, val_pe_get_num());
 
   /***         Starting Memory tests                 ***/
-  Status |= val_memory_execute_tests(g_sbsa_level, val_pe_get_num());
+  Status |= val_sbsa_memory_execute_tests(g_sbsa_level, val_pe_get_num());
 
   /***         Starting GIC tests                    ***/
-  Status |= val_gic_execute_tests(g_sbsa_level, val_pe_get_num());
+  Status |= val_sbsa_gic_execute_tests(g_sbsa_level, val_pe_get_num());
 
   /***         Starting SMMU tests                   ***/
   if (g_sbsa_level > 3)
-    Status |= val_smmu_execute_tests(g_sbsa_level, val_pe_get_num());
+    Status |= val_sbsa_smmu_execute_tests(g_sbsa_level, val_pe_get_num());
 
   /***         Starting Watchdog tests               ***/
   if (g_sbsa_level > 5)
-    Status |= val_wd_execute_tests(g_sbsa_level, val_pe_get_num());
+    Status |= val_sbsa_wd_execute_tests(g_sbsa_level, val_pe_get_num());
 
   /***         Starting PCIe tests                   ***/
-  Status |= val_pcie_execute_tests(g_sbsa_level, val_pe_get_num());
+  Status |= val_sbsa_pcie_execute_tests(g_sbsa_level, val_pe_get_num());
 
   /***         Starting Exerciser tests              ***/
-  Status |= val_exerciser_execute_tests(g_sbsa_level);
+  Status |= val_sbsa_exerciser_execute_tests(g_sbsa_level);
 
   /***         Starting MPAM tests                   ***/
   if (g_sbsa_level > 6)
-    Status |= val_mpam_execute_tests(g_sbsa_level, val_pe_get_num());
+    Status |= val_sbsa_mpam_execute_tests(g_sbsa_level, val_pe_get_num());
 
   /***         Starting PMU tests                    ***/
   if (g_sbsa_level > 6)
-    Status |= val_pmu_execute_tests(g_sbsa_level, val_pe_get_num());
+    Status |= val_sbsa_pmu_execute_tests(g_sbsa_level, val_pe_get_num());
 
   /***         Starting RAS tests                    ***/
   if (g_sbsa_level > 6)
-    Status |= val_ras_execute_tests(g_sbsa_level, val_pe_get_num());
+    Status |= val_sbsa_ras_execute_tests(g_sbsa_level, val_pe_get_num());
 
 print_test_status:
-  val_print(AVS_PRINT_TEST, "\n     -------------------------------------------------------\n", 0);
-  val_print(AVS_PRINT_TEST, "     Total Tests run  = %4d;", g_sbsa_tests_total);
-  val_print(AVS_PRINT_TEST, "  Tests Passed  = %4d", g_sbsa_tests_pass);
-  val_print(AVS_PRINT_TEST, "  Tests Failed = %4d\n", g_sbsa_tests_fail);
-  val_print(AVS_PRINT_TEST, "     ---------------------------------------------------------\n", 0);
+  val_print(ACS_PRINT_TEST, "\n     -------------------------------------------------------\n", 0);
+  val_print(ACS_PRINT_TEST, "     Total Tests run  = %4d;", g_acs_tests_total);
+  val_print(ACS_PRINT_TEST, "  Tests Passed  = %4d", g_acs_tests_pass);
+  val_print(ACS_PRINT_TEST, "  Tests Failed = %4d\n", g_acs_tests_fail);
+  val_print(ACS_PRINT_TEST, "     ---------------------------------------------------------\n", 0);
 
   freeSbsaAvsMem();
 
-  val_print(AVS_PRINT_TEST, "\n      **  For complete SBSA test coverage, it is ", 0);
-  val_print(AVS_PRINT_TEST, "\n            necessary to also run the BSA test    **\n\n", 0);
-  val_print(AVS_PRINT_TEST, "\n      *** SBSA tests complete. Reset the system. ***\n\n", 0);
+  val_print(ACS_PRINT_TEST, "\n      **  For complete SBSA test coverage, it is ", 0);
+  val_print(ACS_PRINT_TEST, "\n            necessary to also run the BSA test    **\n\n", 0);
+  val_print(ACS_PRINT_TEST, "\n      *** SBSA tests complete. Reset the system. ***\n\n", 0);
 
 
   val_pe_context_restore(AA64WriteSp(g_stack_pointer));

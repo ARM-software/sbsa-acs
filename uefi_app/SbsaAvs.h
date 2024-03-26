@@ -27,7 +27,7 @@
   #define G_SBSA_LEVEL  4
   #define SBSA_MIN_LEVEL_SUPPORTED 3
   #define SBSA_MAX_LEVEL_SUPPORTED 7
-  #define G_PRINT_LEVEL AVS_PRINT_TEST
+  #define G_PRINT_LEVEL ACS_PRINT_TEST
 
   /* Note 1: Total Size Required for Info tables ~ 1200 KB
    * Table size is required to be updated whenever new members

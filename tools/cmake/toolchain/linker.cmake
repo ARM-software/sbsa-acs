@@ -1,5 +1,5 @@
 ## @file
- # Copyright (c) 2023, Arm Limited or its affiliates. All rights reserved.
+ # Copyright (c) 2023-2024, Arm Limited or its affiliates. All rights reserved.
  # SPDX-License-Identifier : Apache-2.0
  #
  # Licensed under the Apache License, Version 2.0 (the "License");
@@ -36,13 +36,13 @@ set(GNUARM_OBJDUMP_FLAGS    "-dSx")
 set(GNUARM_OBJCOPY_FLAGS    "-Obinary")
 
 function (create_executable EXE_NAME OUTPUT_DIR TEST)
-    set(SCATTER_INPUT_FILE "${ROOT_DIR}/tools/cmake/${EXE_NAME}/image.ld.S")
+    set(SCATTER_INPUT_FILE "${SBSA_DIR}/tools/cmake/sbsa/image.ld.S")
     set(SCATTER_OUTPUT_FILE "${OUTPUT_DIR}/${EXE_NAME}_image.ld")
 
     # Preprocess the scatter file for image layout symbols
     add_custom_command(OUTPUT CPP-LD--${EXE_NAME}${TEST}
-                    COMMAND ${CROSS_COMPILE}gcc -E -P -I${ROOT_DIR}/platform/pal_baremetal/${TARGET}/include -I${ROOT_DIR}/baremetal_app/ -I${ROOT_DIR} ${SCATTER_INPUT_FILE} -o ${SCATTER_OUTPUT_FILE} -DCMAKE_BUILD={CMAKE_BUILD}
-                    DEPENDS ${VAL_LIB} ${PAL_LIB} ${TEST_LIB})
+                    COMMAND ${CROSS_COMPILE}gcc -E -P -I${SBSA_DIR}/baremetal_app/ -I${ROOT_DIR}/pal/baremetal/target/${TARGET}/common/include -I${ROOT_DIR}/pal/baremetal/target/${TARGET}/sbsa/include -I${ROOT_DIR} ${SCATTER_INPUT_FILE} -o ${SCATTER_OUTPUT_FILE} -DCMAKE_BUILD={CMAKE_BUILD}
+                     DEPENDS ${VAL_LIB} ${PAL_LIB} ${TEST_LIB})
     add_custom_target(CPP-LD-${EXE_NAME}${TEST} ALL DEPENDS CPP-LD--${EXE_NAME}${TEST})
 
     # Link the objects

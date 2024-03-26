@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2022-2023, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2022-2024, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,6 +20,7 @@
 
 #include "platform_image_def.h"
 #include "platform_override_fvp.h"
+#include "platform_override_sbsa_fvp.h"
 
 #define SBSA_ACS_MAJOR_VER     7
 #define SBSA_ACS_MINOR_VER     1

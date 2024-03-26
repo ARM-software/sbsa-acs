@@ -15,31 +15,29 @@
  # limitations under the License.
  ##
 
- # get testsuite directory list
-set(TEST_DIR_PATH ${ROOT_DIR}/test)
-if(SUITE STREQUAL "all")
-    # Get all the test pool components
-    _get_sub_dir_list(TEST_SUITE_LIST ${TEST_DIR_PATH})
-else()
-    set(TEST_SUITE_LIST ${SUITE})
-endif()
-
 set(TEST_INCLUDE ${CMAKE_CURRENT_BINARY_DIR})
 list(APPEND TEST_INCLUDE
     ${ROOT_DIR}/
-    ${ROOT_DIR}/val/include/
-    ${ROOT_DIR}/val/src/
-    ${ROOT_DIR}/platform/pal_baremetal/common/include/
-    ${ROOT_DIR}/platform/pal_baremetal/common/src/
-    ${ROOT_DIR}/platform/pal_baremetal/${TARGET}/include/
-    ${ROOT_DIR}/platform/pal_baremetal/${TARGET}/src/
+    ${ROOT_DIR}/val/
+    ${ROOT_DIR}/val/common/include/
+    ${ROOT_DIR}/val/common/src/
+    ${ROOT_DIR}/val/sbsa/include/
+    ${ROOT_DIR}/val/sbsa/src/
+    ${ROOT_DIR}/pal/baremetal/common/include/
+    ${ROOT_DIR}/pal/baremetal/common/src/
+    ${ROOT_DIR}/pal/baremetal/sbsa/include/
+    ${ROOT_DIR}/pal/baremetal/sbsa/src/
+    ${ROOT_DIR}/pal/baremetal/target/${TARGET}/common/include/
+    ${ROOT_DIR}/pal/baremetal/target/${TARGET}/common/src/
+    ${ROOT_DIR}/pal/baremetal/target/${TARGET}/sbsa/include/
+    ${ROOT_DIR}/pal/baremetal/target/${TARGET}/sbsa/src/
 )
 
 set(TEST_LIB ${EXE_NAME}_test_lib)
 
 # Compile all .c/.S files from test directory
 file(GLOB TEST_SRC
-    "${ROOT_DIR}/test_pool/*/*/test*.c"
+    "${SBSA_DIR}/test_pool/*/*/test_*.c"
 )
 
 # Create TEST library

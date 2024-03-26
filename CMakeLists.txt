@@ -1,5 +1,5 @@
 ## @file
- # Copyright (c) 2023, Arm Limited or its affiliates. All rights reserved.
+ # Copyright (c) 2023-2024, Arm Limited or its affiliates. All rights reserved.
  # SPDX-License-Identifier : Apache-2.0
  #
  # Licensed under the Apache License, Version 2.0 (the "License");
@@ -25,7 +25,7 @@ cmake_policy(SET CMP0001 NEW)
 
 ### Tool dependency check - end ###
 
-get_filename_component(ROOT_DIR . ABSOLUTE)
+get_filename_component(SBSA_DIR . ABSOLUTE)
 
 # Set internal build directory variable
 set(BUILD ${CMAKE_CURRENT_BINARY_DIR} CACHE INTERNAL "Setting build directory to ${BUILD}" FORCE)
@@ -35,8 +35,8 @@ file(MAKE_DIRECTORY ${BUILD}/output/)
 set(COMPILE_LIST "")
 
 #### Include cmake support module ###
-include(${ROOT_DIR}/tools/cmake/toolchain/utils.cmake)
-include(${ROOT_DIR}/tools/cmake/toolchain/default.cmake)
+include(${SBSA_DIR}/tools/cmake/toolchain/utils.cmake)
+include(${SBSA_DIR}/tools/cmake/toolchain/default.cmake)
 ####
 
 
@@ -45,9 +45,15 @@ include(${ROOT_DIR}/tools/cmake/toolchain/default.cmake)
 list(APPEND ARM_ARCH_MAJOR_LIST 8 9)
 
 ###
+if(NOT DEFINED BSA_DIR)
+    set(ROOT_DIR ${BSA_DIR_DFLT} CACHE INTERNAL "Defaulting BSA_DIR to ${BSA_DIR}" FORCE)
+else()
+    set(ROOT_DIR ${BSA_DIR} CACHE INTERNAL "BSA_DIR is set to ${BSA_DIR}" FORCE)
+endif()
+message(STATUS "[ACS] : BSA_DIR is set to ${ROOT_DIR}")
 
 # Check for valid targets
-_get_sub_dir_list(TARGET_LIST ${ROOT_DIR}/platform/pal_baremetal/)
+_get_sub_dir_list(TARGET_LIST ${ROOT_DIR}/pal/baremetal/target/)
 if(NOT DEFINED TARGET)
     set(TARGET ${TARGET_DFLT} CACHE INTERNAL "Defaulting target to ${TARGET}" FORCE)
 else()
@@ -80,7 +86,7 @@ else()
 endif()
 
 # Setup toolchain parameters for compilation and link
-include(${ROOT_DIR}/tools/cmake/toolchain/common.cmake)
+include(${SBSA_DIR}/tools/cmake/toolchain/common.cmake)
 
 
 ### Cmake clean target ###
@@ -95,12 +101,12 @@ foreach(clean_item ${CLEAN_LIST})
 endforeach()
 ###
 
-add_subdirectory(${ROOT_DIR}/tools/cmake/acs_host)
+add_subdirectory(${SBSA_DIR}/tools/cmake/sbsa)
 
 ### Throw waring for the files which is not compiled ###
 
-list(REMOVE_DUPLICATES COMPILE_LIST)
-execute_process(COMMAND python ${ROOT_DIR}/tools/scripts/compile_check.py "${COMPILE_LIST}" "${ROOT_DIR}" "${TARGET}" OUTPUT_VARIABLE NOT_COMPILED_FILES)
-if(NOT ${NOT_COMPILED_FILES} MATCHES NULL)
-    message(WARNING "Following files are not compiled ${NOT_COMPILED_FILES}")
-endif()
+# list(REMOVE_DUPLICATES COMPILE_LIST)
+# execute_process(COMMAND python ${SBSA_DIR}/tools/scripts/compile_check.py "${COMPILE_LIST}" "${SBSA_DIR}" "${TARGET}" OUTPUT_VARIABLE NOT_COMPILED_FILES)
+# if(NOT ${NOT_COMPILED_FILES} MATCHES NULL)
+#     message(WARNING "Following files are not compiled ${NOT_COMPILED_FILES}")
+# endif()

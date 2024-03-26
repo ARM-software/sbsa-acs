@@ -68,7 +68,6 @@ main (int argc, char **argv)
     int   c = 0,i=0;
     char *endptr, *pt;
     int   status;
-    int   run_exerciser = 0;
 
     struct option long_opt[] =
     {
@@ -102,9 +101,6 @@ main (int argc, char **argv)
            pt = strtok(NULL, ",");
          }
          break;
-       case 'e':
-         run_exerciser = 1;
-         break;
        case '?':
          if (isprint (optopt))
            fprintf (stderr, "Unknown option `-%c'.\n", optopt);
@@ -135,18 +131,11 @@ main (int argc, char **argv)
 
     if (g_sbsa_level > 6)
     {
-        printf("\n      *** Starting SMMU tests ***\n");
         execute_tests_smmu(1, g_sbsa_level, g_print_level);
     }
-    printf("\n      *** Starting PCIe tests ***\n");
     execute_tests_pcie(1, g_sbsa_level, g_print_level);
 
-    if (run_exerciser) {
-        printf("\n      *** PCIe Exerciser tests only runs on UEFI ***\n");
-        //execute_tests_exerciser(1, g_sbsa_level, g_print_level);
-    }
-    printf("\n                    **  For complete SBSA test coverage, it is ");
-    printf("\n                          necessary to also run the BSA test  **\n\n");
+    printf("\n  ** For complete SBSA test coverage, it is necessary to also run the BSA test **\n");
     printf("\n                    *** SBSA tests complete ***\n\n");
 
     cleanup_test_environment();

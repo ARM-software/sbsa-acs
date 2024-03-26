@@ -23,9 +23,11 @@
 #include  <Library/CacheMaintenanceLib.h>
 #include  <Protocol/LoadedImage.h>
 
-#include "val/include/val_interface.h"
-#include "val/include/sbsa_avs_pe.h"
-#include "val/include/sbsa_avs_val.h"
+#include "val/sbsa/include/sbsa_val_interface.h"
+#include "val/common/include/val_interface.h"
+#include "val/sbsa/include/sbsa_acs_pe.h"
+#include "val/common/include/acs_pe.h"
+#include "val/common/include/acs_val.h"
 
 #include "SbsaAvs.h"
 
@@ -44,15 +46,15 @@ UINT32  *g_execute_tests;
 UINT32  g_num_tests = 0;
 UINT32  *g_execute_modules;
 UINT32  g_num_modules = 0;
-UINT32  g_sbsa_tests_total;
-UINT32  g_sbsa_tests_pass;
-UINT32  g_sbsa_tests_fail;
+UINT32  g_acs_tests_total;
+UINT32  g_acs_tests_pass;
+UINT32  g_acs_tests_fail;
 UINT64  g_stack_pointer;
 UINT64  g_exception_ret_addr;
 UINT64  g_ret_addr;
 UINT32  g_wakeup_timeout;
 UINT32 g_sys_last_lvl_cache;
-SHELL_FILE_HANDLE g_sbsa_log_file_handle;
+SHELL_FILE_HANDLE g_acs_log_file_handle;
 /* VE systems run acs at EL1 and in some systems crash is observed during acess
    of EL1 phy and virt timer, Below command line option is added only for debug
    purpose to complete SBSA run on these systems */
@@ -382,9 +384,9 @@ createInfoTable(
   UINT64      *InfoTable;
   EFI_STATUS  Status;
 
-  val_print(AVS_PRINT_DEBUG, "\n Allocating memory for ", 0);
-  val_print(AVS_PRINT_DEBUG, table_name, 0);
-  val_print(AVS_PRINT_DEBUG, " info table", 0);
+  val_print(ACS_PRINT_DEBUG, "\n Allocating memory for ", 0);
+  val_print(ACS_PRINT_DEBUG, table_name, 0);
+  val_print(ACS_PRINT_DEBUG, " info table", 0);
 
   Status = gBS->AllocatePool(EfiBootServicesData,
                               info_table_size,
@@ -392,9 +394,9 @@ createInfoTable(
 
   if (EFI_ERROR(Status))
   {
-    val_print(AVS_PRINT_ERR, "\n Allocate memory for ", 0);
-    val_print(AVS_PRINT_ERR, table_name, 0);
-    val_print(AVS_PRINT_ERR, " info table failed : %x", Status);
+    val_print(ACS_PRINT_ERR, "\n Allocate memory for ", 0);
+    val_print(ACS_PRINT_ERR, table_name, 0);
+    val_print(ACS_PRINT_ERR, " info table failed : %x", Status);
     return Status;
   }
 
@@ -585,13 +587,13 @@ ShellAppMainsbsa (
     // Options with Values
   CmdLineArg  = ShellCommandLineGetValue (ParamPackage, L"-f");
   if (CmdLineArg == NULL) {
-    g_sbsa_log_file_handle = NULL;
+    g_acs_log_file_handle = NULL;
   } else {
-    Status = ShellOpenFileByName(CmdLineArg, &g_sbsa_log_file_handle,
+    Status = ShellOpenFileByName(CmdLineArg, &g_acs_log_file_handle,
              EFI_FILE_MODE_WRITE | EFI_FILE_MODE_READ | EFI_FILE_MODE_CREATE, 0x0);
     if(EFI_ERROR(Status)) {
          Print(L"Failed to open log file %s\n", CmdLineArg);
-     g_sbsa_log_file_handle = NULL;
+     g_acs_log_file_handle = NULL;
     }
   }
 
@@ -738,19 +740,19 @@ ShellAppMainsbsa (
   //
   // Initialize global counters
   //
-  g_sbsa_tests_total = 0;
-  g_sbsa_tests_pass  = 0;
-  g_sbsa_tests_fail  = 0;
+  g_acs_tests_total = 0;
+  g_acs_tests_pass  = 0;
+  g_acs_tests_fail  = 0;
 
-  val_print(AVS_PRINT_TEST, "\n\n SBSA Architecture Compliance Suite\n", 0);
-  val_print(AVS_PRINT_TEST, "    Version %d.", SBSA_ACS_MAJOR_VER);
-  val_print(AVS_PRINT_TEST, "%d.", SBSA_ACS_MINOR_VER);
-  val_print(AVS_PRINT_TEST, "%d\n", SBSA_ACS_SUBMINOR_VER);
+  val_print(ACS_PRINT_TEST, "\n\n SBSA Architecture Compliance Suite\n", 0);
+  val_print(ACS_PRINT_TEST, "    Version %d.", SBSA_ACS_MAJOR_VER);
+  val_print(ACS_PRINT_TEST, "%d.", SBSA_ACS_MINOR_VER);
+  val_print(ACS_PRINT_TEST, "%d\n", SBSA_ACS_SUBMINOR_VER);
 
-  val_print(AVS_PRINT_TEST, "\n Starting tests for level %2d", g_sbsa_level);
-  val_print(AVS_PRINT_TEST, " (Print level is %2d)\n\n", g_print_level);
+  val_print(ACS_PRINT_TEST, "\n Starting tests for level %2d", g_sbsa_level);
+  val_print(ACS_PRINT_TEST, " (Print level is %2d)\n\n", g_print_level);
 
-  val_print(AVS_PRINT_TEST, " Creating Platform Information Tables\n", 0);
+  val_print(ACS_PRINT_TEST, " Creating Platform Information Tables\n", 0);
 
   Status = createPeInfoTable();
   if (Status)
@@ -797,39 +799,39 @@ ShellAppMainsbsa (
   FlushImage();
 
   /***         Starting PE tests                     ***/
-  Status = val_pe_execute_tests(g_sbsa_level, val_pe_get_num());
+  Status = val_sbsa_pe_execute_tests(g_sbsa_level, val_pe_get_num());
 
   /***         Starting Memory tests                 ***/
-  Status |= val_memory_execute_tests(g_sbsa_level, val_pe_get_num());
+  Status |= val_sbsa_memory_execute_tests(g_sbsa_level, val_pe_get_num());
 
   /***         Starting GIC tests                    ***/
-  Status |= val_gic_execute_tests(g_sbsa_level, val_pe_get_num());
+  Status |= val_sbsa_gic_execute_tests(g_sbsa_level, val_pe_get_num());
 
   /***         Starting SMMU tests                   ***/
   if (g_sbsa_level > 3)
-    Status |= val_smmu_execute_tests(g_sbsa_level, val_pe_get_num());
+    Status |= val_sbsa_smmu_execute_tests(g_sbsa_level, val_pe_get_num());
 
   /***         Starting Watchdog tests               ***/
   if (g_sbsa_level > 5)
-    Status |= val_wd_execute_tests(g_sbsa_level, val_pe_get_num());
+    Status |= val_sbsa_wd_execute_tests(g_sbsa_level, val_pe_get_num());
 
   /***         Starting PCIe tests                   ***/
-  Status |= val_pcie_execute_tests(g_sbsa_level, val_pe_get_num());
+  Status |= val_sbsa_pcie_execute_tests(g_sbsa_level, val_pe_get_num());
 
   /***         Starting Exerciser tests              ***/
-  Status |= val_exerciser_execute_tests(g_sbsa_level);
+  Status |= val_sbsa_exerciser_execute_tests(g_sbsa_level);
 
   /***         Starting MPAM tests                   ***/
   if (g_sbsa_level > 6)
-    Status |= val_mpam_execute_tests(g_sbsa_level, val_pe_get_num());
+    Status |= val_sbsa_mpam_execute_tests(g_sbsa_level, val_pe_get_num());
 
   /***         Starting PMU tests                    ***/
   if (g_sbsa_level > 6)
-    Status |= val_pmu_execute_tests(g_sbsa_level, val_pe_get_num());
+    Status |= val_sbsa_pmu_execute_tests(g_sbsa_level, val_pe_get_num());
 
   /***         Starting RAS tests                    ***/
   if (g_sbsa_level > 6)
-    Status |= val_ras_execute_tests(g_sbsa_level, val_pe_get_num());
+    Status |= val_sbsa_ras_execute_tests(g_sbsa_level, val_pe_get_num());
 
 #ifdef ENABLE_NIST
   /***         Starting NIST tests                   ***/
@@ -839,20 +841,20 @@ ShellAppMainsbsa (
 #endif
 
 print_test_status:
-  val_print(AVS_PRINT_TEST, "\n     -------------------------------------------------------\n", 0);
-  val_print(AVS_PRINT_TEST, "     Total Tests run  = %4d;", g_sbsa_tests_total);
-  val_print(AVS_PRINT_TEST, "  Tests Passed  = %4d", g_sbsa_tests_pass);
-  val_print(AVS_PRINT_TEST, "  Tests Failed = %4d\n", g_sbsa_tests_fail);
-  val_print(AVS_PRINT_TEST, "     ---------------------------------------------------------\n", 0);
+  val_print(ACS_PRINT_TEST, "\n     -------------------------------------------------------\n", 0);
+  val_print(ACS_PRINT_TEST, "     Total Tests run  = %4d;", g_acs_tests_total);
+  val_print(ACS_PRINT_TEST, "  Tests Passed  = %4d", g_acs_tests_pass);
+  val_print(ACS_PRINT_TEST, "  Tests Failed = %4d\n", g_acs_tests_fail);
+  val_print(ACS_PRINT_TEST, "     ---------------------------------------------------------\n", 0);
 
   freeSbsaAvsMem();
 
-  val_print(AVS_PRINT_TEST, "\n      **  For complete SBSA test coverage, it is ", 0);
-  val_print(AVS_PRINT_TEST, "\n            necessary to also run the BSA test    **\n\n", 0);
-  val_print(AVS_PRINT_TEST, "\n      *** SBSA tests complete. Reset the system. ***\n\n", 0);
+  val_print(ACS_PRINT_TEST, "\n      **  For complete SBSA test coverage, it is ", 0);
+  val_print(ACS_PRINT_TEST, "\n            necessary to also run the BSA test    **\n\n", 0);
+  val_print(ACS_PRINT_TEST, "\n      *** SBSA tests complete. Reset the system. ***\n\n", 0);
 
-  if(g_sbsa_log_file_handle) {
-    ShellCloseFile(&g_sbsa_log_file_handle);
+  if(g_acs_log_file_handle) {
+    ShellCloseFile(&g_acs_log_file_handle);
   }
 
   val_pe_context_restore(AA64WriteSp(g_stack_pointer));
