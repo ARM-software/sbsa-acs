@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2023, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2023-2024, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,13 +15,14 @@
  * limitations under the License.
  **/
 
-#include "val/include/sbsa_avs_val.h"
-#include "val/include/sbsa_avs_common.h"
-#include "val/include/sbsa_avs_pe.h"
-#include "val/include/sbsa_avs_pmu.h"
+#include "val/sbsa/include/sbsa_val_interface.h"
+#include "val/common/include/acs_val.h"
+#include "val/common/include/acs_pe.h"
+#include "val/sbsa/include/sbsa_acs_pe.h"
+#include "val/sbsa/include/sbsa_acs_pmu.h"
+#include "val/common/include/acs_common.h"
 
-
-#define TEST_NUM  (AVS_PMU_TEST_NUM_BASE + 6)
+#define TEST_NUM  (ACS_PMU_TEST_NUM_BASE + 6)
 #define TEST_RULE "PMU_SPE"
 #define TEST_DESC "Check for PMU SPE Requirements    "
 
@@ -31,7 +32,7 @@ static void payload(void)
     uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
 
     if (g_sbsa_level < 7) {
-        val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
+        val_set_status(index, RESULT_SKIP(TEST_NUM, 01));
         return;
     }
 
@@ -45,34 +46,33 @@ static void payload(void)
         data = VAL_EXTRACT_BITS(val_pe_reg_read(PMBIDR_EL1), 5, 5);
 
         if (data == 1) {
-            val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
+            val_set_status(index, RESULT_PASS(TEST_NUM, 01));
             return;
         }
         else {
-            val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
+            val_set_status(index, RESULT_FAIL(TEST_NUM, 01));
             return;
         }
     }
     /* Implementation of PMU_SPE is optional, skipping the test */
     else
-        val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 02));
+        val_set_status(index, RESULT_SKIP(TEST_NUM, 02));
 
     return;
 }
 
 uint32_t pmu006_entry(uint32_t num_pe)
 {
-    uint32_t status = AVS_STATUS_FAIL;
+    uint32_t status = ACS_STATUS_FAIL;
 
-    status = val_initialize_test(TEST_NUM, TEST_DESC, num_pe, g_sbsa_level,
-                                                                TEST_RULE);
+    status = val_initialize_test(TEST_NUM, TEST_DESC, num_pe);
     /* This check is when user is forcing us to skip this test */
-    if (status != AVS_STATUS_SKIP)
+    if (status != ACS_STATUS_SKIP)
         val_run_test_payload(TEST_NUM, num_pe, payload, 0);
 
     /* get the result from all PE and check for failure */
     status = val_check_for_error(TEST_NUM, num_pe, TEST_RULE);
-    val_report_status(0, SBSA_AVS_END(g_sbsa_level, TEST_NUM), TEST_RULE);
+    val_report_status(0, ACS_END(TEST_NUM), TEST_RULE);
 
     return status;
 }

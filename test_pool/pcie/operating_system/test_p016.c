@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, 2021-2023 Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018, 2021-2024, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,12 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  **/
-#include "val/include/sbsa_avs_val.h"
-#include "val/include/val_interface.h"
+#include "val/common/include/acs_val.h"
+#include "val/sbsa/include/sbsa_val_interface.h"
 
-#include "val/include/sbsa_avs_pcie.h"
+#include "val/sbsa/include/sbsa_acs_pcie.h"
 
-#define TEST_NUM   (AVS_PCIE_TEST_NUM_BASE + 16)
+#define TEST_NUM   (ACS_PCIE_TEST_NUM_BASE + 16)
 #define TEST_DESC  "NP type-1 pcie only support 32-bit"
 #define TEST_RULE  "PCI_MM_04"
 
@@ -43,8 +43,8 @@ static void payload(void)
 
     index = val_pe_get_index_mpid(val_pe_get_mpid());
     if (g_sbsa_level < 4) {
-        val_print (AVS_PRINT_DEBUG, "\n       Skipping test as SBSA level < 4  ", 0);
-        val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
+        val_print (ACS_PRINT_DEBUG, "\n       Skipping test as SBSA level < 4  ", 0);
+        val_set_status(index, RESULT_SKIP(TEST_NUM, 01));
         return ;
     }
 
@@ -59,7 +59,7 @@ static void payload(void)
             && (dp_type != RCEC) && (dp_type != RCiEP))
             continue;
 
-        val_print(AVS_PRINT_DEBUG, "\n       BDF - 0x%x", dev_bdf);
+        val_print(ACS_PRINT_DEBUG, "\n       BDF - 0x%x", dev_bdf);
 
         dev_type = val_pcie_get_device_type(dev_bdf);
         /* Allow only type-1 headers and skip others */
@@ -75,8 +75,8 @@ static void payload(void)
                 /* Extract mem type */
                 data = VAL_EXTRACT_BITS(bar_data, 1, 2);
                 if (data != 0) {
-                    val_print(AVS_PRINT_ERR, "\n       NP type-1 pcie is not 32-bit mem type", 0);
-                    val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
+                    val_print(ACS_PRINT_ERR, "\n       NP type-1 pcie is not 32-bit mem type", 0);
+                    val_set_status(index, RESULT_FAIL(TEST_NUM, 01));
                     status = 2;
                     break;
                 }
@@ -84,9 +84,9 @@ static void payload(void)
                 /* Scan the all PCIe bridge devices and check memory type */
                 ret = val_pcie_scan_bridge_devices_and_check_memtype(dev_bdf);
                 if (ret) {
-                    val_print(AVS_PRINT_ERR, "\n       NP type-1 pcie bridge end device"
+                    val_print(ACS_PRINT_ERR, "\n       NP type-1 pcie bridge end device"
                                                                  "is not 32-bit mem type", 0);
-                    val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
+                    val_set_status(index, RESULT_FAIL(TEST_NUM, 01));
                     status = 2;
                     break;
                 }
@@ -100,27 +100,27 @@ static void payload(void)
     }
 
     if (!status) {
-        val_print(AVS_PRINT_DEBUG,
+        val_print(ACS_PRINT_DEBUG,
                   "\n       No Type1 Non Prefetcable BAR Detected. Skipping test", 0);
-        val_set_status(index, RESULT_SKIP (g_sbsa_level, TEST_NUM, 3));
+        val_set_status(index, RESULT_SKIP (TEST_NUM, 3));
     }
     else if (status == 1)
-        val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
+        val_set_status(index, RESULT_PASS(TEST_NUM, 01));
 }
 
 uint32_t p016_entry(uint32_t num_pe)
 {
-    uint32_t status = AVS_STATUS_FAIL;
+    uint32_t status = ACS_STATUS_FAIL;
 
     /* This test is run on single processor */
     num_pe = 1;
-    status = val_initialize_test(TEST_NUM, TEST_DESC, num_pe, g_sbsa_level, TEST_RULE);
-    if (status != AVS_STATUS_SKIP)
+    status = val_initialize_test(TEST_NUM, TEST_DESC, num_pe);
+    if (status != ACS_STATUS_SKIP)
         val_run_test_payload(TEST_NUM, num_pe, payload, 0);
 
     /* get the result from all PE and check for failure */
     status = val_check_for_error(TEST_NUM, num_pe, TEST_RULE);
-    val_report_status(0, SBSA_AVS_END(g_sbsa_level, TEST_NUM), TEST_RULE);
+    val_report_status(0, ACS_END(TEST_NUM), TEST_RULE);
 
     return status;
 }

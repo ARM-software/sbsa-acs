@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2020-2023, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2024, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,13 +15,14 @@
  * limitations under the License.
  **/
 
-#include "val/include/sbsa_avs_val.h"
-#include "val/include/val_interface.h"
+#include "val/common/include/acs_val.h"
+#include "val/common/include/acs_pe.h"
+#include "val/sbsa/include/sbsa_val_interface.h"
 
-#include "val/include/sbsa_avs_pcie.h"
-#include "val/include/sbsa_avs_pe.h"
+#include "val/sbsa/include/sbsa_acs_pcie.h"
+#include "val/sbsa/include/sbsa_acs_pe.h"
 
-#define TEST_NUM   (AVS_PCIE_TEST_NUM_BASE + 48)
+#define TEST_NUM   (ACS_PCIE_TEST_NUM_BASE + 48)
 #define TEST_DESC  "Check RootPort NP Memory Access   "
 #define TEST_RULE  "PCI_IN_13"
 
@@ -40,8 +41,8 @@ esr(uint64_t interrupt_type, void *context)
   /* Update the ELR to return to test specified address */
   val_pe_update_elr(context, (uint64_t)branch_to_test);
 
-  val_print(AVS_PRINT_ERR, "\n       Received exception of type: %d", interrupt_type);
-  val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
+  val_print(ACS_PRINT_ERR, "\n       Received exception of type: %d", interrupt_type);
+  val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 01));
 }
 
 static
@@ -77,7 +78,7 @@ check_bdf_under_rp(uint32_t rp_bdf)
               if ((dev_seg == rp_seg) && ((dev_bus >= rp_sec_bus) && (dev_bus <= rp_sub_bus)))
               {
                   val_pcie_read_cfg(dev_bdf, TYPE01_RIDR, &reg_value);
-                  val_print(AVS_PRINT_DEBUG, "\n       Class code is %x", reg_value);
+                  val_print(ACS_PRINT_DEBUG, "\n       Class code is %x", reg_value);
                   base_cc = reg_value >> TYPE01_BCC_SHIFT;
                   if ((base_cc == CNTRL_CC) || (base_cc == DP_CNTRL_CC) || (base_cc == MAS_CC))
                       return 1;
@@ -117,8 +118,8 @@ payload(void)
   branch_to_test = &&exception_return;
   if (status)
   {
-      val_print(AVS_PRINT_ERR, "\n       Failed in installing the exception handler", 0);
-      val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
+      val_print(ACS_PRINT_ERR, "\n       Failed in installing the exception handler", 0);
+      val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 01));
       return;
   }
 
@@ -151,20 +152,20 @@ payload(void)
 
         /* Read Function's NP Memory Base Limit Register */
         val_pcie_read_cfg(bdf, TYPE1_NP_MEM, &read_value);
-        val_print(AVS_PRINT_DEBUG, "\n       BDF - 0x%x", bdf);
+        val_print(ACS_PRINT_DEBUG, "\n       BDF - 0x%x", bdf);
         if (read_value == 0)
           continue;
 
         mem_base = (read_value & MEM_BA_MASK) << MEM_BA_SHIFT;
         mem_lim = (read_value & MEM_LIM_MASK) | MEM_LIM_LOWER_BITS;
 
-        val_print(AVS_PRINT_DEBUG, "\n       Memory base is 0x%llx", mem_base);
-        val_print(AVS_PRINT_DEBUG, " Memory lim is  0x%llx", mem_lim);
+        val_print(ACS_PRINT_DEBUG, "\n       Memory base is 0x%llx", mem_base);
+        val_print(ACS_PRINT_DEBUG, " Memory lim is  0x%llx", mem_lim);
 
         /* If Memory Limit is programmed with value less the Base, then Skip.*/
         if (mem_lim < mem_base) {
-            val_print(AVS_PRINT_DEBUG, "\n       No NP memory on secondary side of the Bridge", 0);
-            val_print(AVS_PRINT_DEBUG, "\n       Skipping Bdf - 0x%x", bdf);
+            val_print(ACS_PRINT_DEBUG, "\n       No NP memory on secondary side of the Bridge", 0);
+            val_print(ACS_PRINT_DEBUG, "\n       Skipping Bdf - 0x%x", bdf);
             continue;
         }
 
@@ -175,9 +176,9 @@ payload(void)
 
         if ((mem_base + mem_offset) > mem_lim)
         {
-            val_print(AVS_PRINT_ERR, "\n       Memory offset + base 0x%llx", mem_base + mem_offset);
-            val_print(AVS_PRINT_ERR, " exceeds the memory limit 0x%llx", mem_lim);
-            val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
+            val_print(ACS_PRINT_ERR, "\n       Memory offset + base 0x%llx", mem_base + mem_offset);
+            val_print(ACS_PRINT_ERR, " exceeds the memory limit 0x%llx", mem_lim);
+            val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 02));
             return;
         }
 
@@ -195,11 +196,11 @@ payload(void)
 
         if ((old_value != read_value && read_value == PCIE_UNKNOWN_RESPONSE) ||
              val_pcie_is_urd(bdf)) {
-          val_print(AVS_PRINT_DEBUG, "\n       Value written into memory - 0x%x", KNOWN_DATA);
-          val_print(AVS_PRINT_DEBUG, "\n       Value in memory after write - 0x%x", read_value);
-          val_print(AVS_PRINT_ERR, "\n       Memory access check failed for BDF  0x%x", bdf);
+          val_print(ACS_PRINT_DEBUG, "\n       Value written into memory - 0x%x", KNOWN_DATA);
+          val_print(ACS_PRINT_DEBUG, "\n       Value in memory after write - 0x%x", read_value);
+          val_print(ACS_PRINT_ERR, "\n       Memory access check failed for BDF  0x%x", bdf);
 
-          val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
+          val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 02));
           val_pcie_clear_urd(bdf);
           return;
         }
@@ -209,7 +210,7 @@ payload(void)
          **/
         if (check_bdf_under_rp(bdf))
         {
-            val_print(AVS_PRINT_DEBUG, "\n       Skipping for RP BDF %x", bdf);
+            val_print(ACS_PRINT_DEBUG, "\n       Skipping for RP BDF %x", bdf);
             continue;
         }
 
@@ -222,21 +223,21 @@ payload(void)
 
         if ((mem_lim >> MEM_SHIFT) > (mem_base >> MEM_SHIFT))
         {
-           val_print(AVS_PRINT_DEBUG, "\n       Entered Check_2 for bdf %x", bdf);
+           val_print(ACS_PRINT_DEBUG, "\n       Entered Check_2 for bdf %x", bdf);
            new_mem_lim = mem_base + MEM_OFFSET_LARGE;
            mem_base = mem_base | (mem_base  >> 16);
            val_pcie_write_cfg(bdf, TYPE1_NP_MEM, mem_base);
            val_pcie_read_cfg(bdf, TYPE1_NP_MEM, &read_value);
 
            val_pcie_bar_mem_read(bdf, new_mem_lim + MEM_OFFSET_SMALL, &value);
-           val_print(AVS_PRINT_DEBUG, "       Value read is 0x%llx", value);
+           val_print(ACS_PRINT_DEBUG, "       Value read is 0x%llx", value);
            if (value != PCIE_UNKNOWN_RESPONSE)
            {
-               val_print(AVS_PRINT_ERR, "\n       Memory range for bdf 0x%x", bdf);
-               val_print(AVS_PRINT_ERR, " is 0x%x", read_value);
-               val_print(AVS_PRINT_ERR,
+               val_print(ACS_PRINT_ERR, "\n       Memory range for bdf 0x%x", bdf);
+               val_print(ACS_PRINT_ERR, " is 0x%x", read_value);
+               val_print(ACS_PRINT_ERR,
                          "\n       Out of range 0x%x", (new_mem_lim + MEM_OFFSET_SMALL));
-               val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 03));
+               val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 03));
            }
         }
 
@@ -252,7 +253,7 @@ exception_return:
          * So not checking for Read-Write Data mismatch.
         */
         if (IS_TEST_FAIL(val_get_status(pe_index))) {
-          val_print(AVS_PRINT_ERR, "\n       Failed.Exception on Memory Access For Bdf 0x%x", bdf);
+          val_print(ACS_PRINT_ERR, "\n       Failed.Exception on Memory Access For Bdf 0x%x", bdf);
           val_pcie_clear_urd(bdf);
           return;
         }
@@ -261,31 +262,31 @@ exception_return:
   }
 
   if (test_skip == 1) {
-      val_print(AVS_PRINT_DEBUG,
+      val_print(ACS_PRINT_DEBUG,
         "\n       No iEP_RP type device found with valid Memory Base/Limit Reg.", 0);
-      val_print(AVS_PRINT_DEBUG, "\n       Skipping Test", 0);
-      val_set_status(pe_index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
+      val_print(ACS_PRINT_DEBUG, "\n       Skipping Test", 0);
+      val_set_status(pe_index, RESULT_SKIP(TEST_NUM, 01));
   }
   else
-      val_set_status(pe_index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
+      val_set_status(pe_index, RESULT_PASS(TEST_NUM, 01));
 }
 
 uint32_t
 p048_entry(uint32_t num_pe)
 {
 
-  uint32_t status = AVS_STATUS_FAIL;
+  uint32_t status = ACS_STATUS_FAIL;
 
   num_pe = 1;  //This test is run on single processor
 
-  status = val_initialize_test(TEST_NUM, TEST_DESC, num_pe, g_sbsa_level, TEST_RULE);
-  if (status != AVS_STATUS_SKIP)
+  status = val_initialize_test(TEST_NUM, TEST_DESC, num_pe);
+  if (status != ACS_STATUS_SKIP)
       val_run_test_payload(TEST_NUM, num_pe, payload, 0);
 
   /* get the result from all PE and check for failure */
   status = val_check_for_error(TEST_NUM, num_pe, TEST_RULE);
 
-  val_report_status(0, SBSA_AVS_END(g_sbsa_level, TEST_NUM), TEST_RULE);
+  val_report_status(0, ACS_END(TEST_NUM), TEST_RULE);
 
   return status;
 }

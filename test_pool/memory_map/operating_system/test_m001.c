@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2023, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2023-2024, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,13 +15,13 @@
  * limitations under the License.
  **/
 
-#include "val/include/sbsa_avs_val.h"
-#include "val/include/sbsa_avs_common.h"
-#include "val/include/sbsa_avs_pe.h"
-#include "val/include/sbsa_avs_peripherals.h"
-#include "val/include/sbsa_avs_memory.h"
+#include "val/common/include/acs_val.h"
+#include "val/common/include/acs_common.h"
+#include "val/sbsa/include/sbsa_acs_pe.h"
+#include "val/common/include/acs_peripherals.h"
+#include "val/sbsa/include/sbsa_acs_memory.h"
 
-#define TEST_NUM (AVS_MEM_MAP_TEST_NUM_BASE + 1)
+#define TEST_NUM (ACS_MEMORY_MAP_TEST_NUM_BASE + 1)
 #define TEST_RULE "S_L3MM_01, S_L3MM_02"
 #define TEST_DESC "Check peripherals addr 64Kb apart "
 
@@ -42,8 +42,8 @@ static void payload(void)
 
             peri_addr1 = val_peripheral_get_info(ANY_BASE0, peri_index);
             peri_addr2 = val_peripheral_get_info(ANY_BASE0, peri_index1);
-            val_print(AVS_PRINT_INFO, "\n   addr of Peripheral 1 is  %llx", peri_addr1);
-            val_print(AVS_PRINT_INFO, "\n   addr of Peripheral 2 is  %llx", peri_addr2);
+            val_print(ACS_PRINT_INFO, "\n   addr of Peripheral 1 is  %llx", peri_addr1);
+            val_print(ACS_PRINT_INFO, "\n   addr of Peripheral 2 is  %llx", peri_addr2);
 
            if ((peri_addr1 == 0) || (peri_addr2 == 0))
                 continue;
@@ -52,7 +52,7 @@ static void payload(void)
                          peri_addr1 - peri_addr2 : peri_addr2 - peri_addr1;
 
             if (addr_diff < MEM_SIZE_64KB) {
-                val_print(AVS_PRINT_ERR,
+                val_print(ACS_PRINT_ERR,
                          "\n  Peripheral base addresses isn't atleast 64Kb apart %llx", addr_diff);
                 fail_cnt++;
             }
@@ -61,28 +61,28 @@ static void payload(void)
 
     if (fail_cnt)
     {
-        val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
+        val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 01));
         return;
     }
 
-    val_set_status(pe_index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
+    val_set_status(pe_index, RESULT_PASS(TEST_NUM, 01));
 }
 
 uint32_t m001_entry(uint32_t num_pe)
 {
-    uint32_t status = AVS_STATUS_FAIL;
+    uint32_t status = ACS_STATUS_FAIL;
 
     /* run on single PE */
     num_pe = 1;
 
-    status = val_initialize_test(TEST_NUM, TEST_DESC, num_pe, g_sbsa_level, TEST_RULE);
+    status = val_initialize_test(TEST_NUM, TEST_DESC, num_pe);
     /* This check is when user is forcing us to skip this test */
-    if (status != AVS_STATUS_SKIP)
+    if (status != ACS_STATUS_SKIP)
         val_run_test_payload(TEST_NUM, num_pe, payload, 0);
 
     /* get the result from all PE and check for failure */
     status = val_check_for_error(TEST_NUM, num_pe, TEST_RULE);
-    val_report_status(0, SBSA_AVS_END(g_sbsa_level, TEST_NUM), TEST_RULE);
+    val_report_status(0, ACS_END(TEST_NUM), TEST_RULE);
 
     return status;
 }

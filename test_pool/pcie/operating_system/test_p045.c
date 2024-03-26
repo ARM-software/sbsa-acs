@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2020-2023, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2024, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,14 +15,14 @@
  * limitations under the License.
  **/
 
-#include "val/include/sbsa_avs_val.h"
-#include "val/include/val_interface.h"
+#include "val/common/include/acs_val.h"
+#include "val/sbsa/include/sbsa_val_interface.h"
 
-#include "val/include/sbsa_avs_pcie.h"
-#include "val/include/sbsa_avs_pe.h"
-#include "val/include/sbsa_avs_memory.h"
+#include "val/sbsa/include/sbsa_acs_pcie.h"
+#include "val/sbsa/include/sbsa_acs_pe.h"
+#include "val/sbsa/include/sbsa_acs_memory.h"
 
-#define TEST_NUM   (AVS_PCIE_TEST_NUM_BASE + 45)
+#define TEST_NUM   (ACS_PCIE_TEST_NUM_BASE + 45)
 #define TEST_DESC  "Check all RP in HB is in same ECAM"
 #define TEST_RULE  "PCI_IN_03"
 
@@ -68,9 +68,9 @@ payload(void)
           val_pcie_read_cfg(bdf, TYPE01_VIDR, &reg_value);
           device_id = (reg_value >> TYPE01_DIDR_SHIFT) & TYPE01_DIDR_MASK;
           vendor_id = (reg_value >> TYPE01_VIDR_SHIFT) & TYPE01_VIDR_MASK;
-          val_print(AVS_PRINT_DEBUG, "\n       BDF - 0x%x ", bdf);
-          val_print(AVS_PRINT_DEBUG, "Dev ID: 0x%x ", device_id);
-          val_print(AVS_PRINT_DEBUG, "Vendor ID: 0x%x", vendor_id);
+          val_print(ACS_PRINT_DEBUG, "\n       BDF - 0x%x ", bdf);
+          val_print(ACS_PRINT_DEBUG, "Dev ID: 0x%x ", device_id);
+          val_print(ACS_PRINT_DEBUG, "Vendor ID: 0x%x", vendor_id);
 
           rp_ecam_base = val_pcie_get_ecam_base(bdf);
           rp_segment = PCIE_EXTRACT_BDF_SEG(bdf);
@@ -82,7 +82,7 @@ payload(void)
 
               if (ecam_base == rp_ecam_base && segment == rp_segment)
               {
-                  val_print(AVS_PRINT_DEBUG,
+                  val_print(ACS_PRINT_DEBUG,
                             "\n       ECAM base 0x%x matches with RPs base address ", ecam_base);
                   goto next_bdf;
               }
@@ -90,37 +90,37 @@ payload(void)
               ecam_index++;
           }
 
-          val_print(AVS_PRINT_ERR, "\n       RP BDF 0x%x not under any HB", bdf);
+          val_print(ACS_PRINT_ERR, "\n       RP BDF 0x%x not under any HB", bdf);
           test_fail++;
       }
   }
 
   if (test_skip == 1) {
-      val_print(AVS_PRINT_DEBUG, "\n       No iEP_RP type device found. Skipping test", 0);
-      val_set_status(pe_index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
+      val_print(ACS_PRINT_DEBUG, "\n       No iEP_RP type device found. Skipping test", 0);
+      val_set_status(pe_index, RESULT_SKIP(TEST_NUM, 01));
   }
   else if (test_fail)
-      val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, test_fail));
+      val_set_status(pe_index, RESULT_FAIL(TEST_NUM, test_fail));
   else
-      val_set_status(pe_index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
+      val_set_status(pe_index, RESULT_PASS(TEST_NUM, 01));
 }
 
 uint32_t
 p045_entry(uint32_t num_pe)
 {
 
-  uint32_t status = AVS_STATUS_FAIL;
+  uint32_t status = ACS_STATUS_FAIL;
 
   num_pe = 1;  //This test is run on single processor
 
-  status = val_initialize_test(TEST_NUM, TEST_DESC, num_pe, g_sbsa_level, TEST_RULE);
-  if (status != AVS_STATUS_SKIP)
+  status = val_initialize_test(TEST_NUM, TEST_DESC, num_pe);
+  if (status != ACS_STATUS_SKIP)
       val_run_test_payload(TEST_NUM, num_pe, payload, 0);
 
   /* get the result from all PE and check for failure */
   status = val_check_for_error(TEST_NUM, num_pe, TEST_RULE);
 
-  val_report_status(0, SBSA_AVS_END(g_sbsa_level, TEST_NUM), TEST_RULE);
+  val_report_status(0, ACS_END(TEST_NUM), TEST_RULE);
 
   return status;
 }

@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, 2021-2023, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018, 2021-2024, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,14 +15,15 @@
  * limitations under the License.
  **/
 
-#include "val/include/sbsa_avs_val.h"
-#include "val/include/val_interface.h"
+#include "val/common/include/acs_val.h"
+#include "val/common/include/acs_pe.h"
+#include "val/sbsa/include/sbsa_val_interface.h"
 
-#include "val/include/sbsa_avs_pe.h"
-#include "val/include/sbsa_avs_smmu.h"
-#include "val/include/sbsa_avs_pcie.h"
+#include "val/sbsa/include/sbsa_acs_pe.h"
+#include "val/sbsa/include/sbsa_acs_smmu.h"
+#include "val/sbsa/include/sbsa_acs_pcie.h"
 
-#define TEST_NUM   (AVS_SMMU_TEST_NUM_BASE + 8)
+#define TEST_NUM   (ACS_SMMU_TEST_NUM_BASE + 8)
 #define TEST_RULE  "B_SMMU_23"
 #define TEST_DESC  "Check SMMU 16 Bit VMID Support    "
 
@@ -41,47 +42,47 @@ payload()
 
   num_smmu = val_smmu_get_info(SMMU_NUM_CTRL, 0);
   if (num_smmu == 0) {
-      val_print(AVS_PRINT_ERR, "\n       No SMMU Controllers are discovered ", 0);
-      val_set_status(index, RESULT_SKIP(6, TEST_NUM, 1));
+      val_print(ACS_PRINT_ERR, "\n       No SMMU Controllers are discovered ", 0);
+      val_set_status(index, RESULT_SKIP(TEST_NUM, 1));
       return;
   }
 
   while (num_smmu--) {
       if (val_smmu_get_info(SMMU_CTRL_ARCH_MAJOR_REV, num_smmu) == 2) {
-          val_print(AVS_PRINT_WARN, "\n       Not valid for SMMU v2           ", 0);
-          val_set_status(index, RESULT_SKIP(6, TEST_NUM, 2));
+          val_print(ACS_PRINT_WARN, "\n       Not valid for SMMU v2           ", 0);
+          val_set_status(index, RESULT_SKIP(TEST_NUM, 2));
           return;
       }
 
       data = VAL_EXTRACT_BITS(val_smmu_read_cfg(SMMUv3_IDR0, num_smmu), 18, 18);
 
       if (!data && pe_vmid) {
-          val_set_status(index, RESULT_FAIL(6, TEST_NUM, 1));
-          val_print(AVS_PRINT_ERR, "\n       16 bit VMID not "
+          val_set_status(index, RESULT_FAIL(TEST_NUM, 1));
+          val_print(ACS_PRINT_ERR, "\n       16 bit VMID not "
                                    "supported for SMMU %x", num_smmu);
           return;
       }
   }
 
-  val_set_status(index, RESULT_PASS(6, TEST_NUM, 1));
+  val_set_status(index, RESULT_PASS(TEST_NUM, 1));
 }
 
 uint32_t
 i008_entry(uint32_t num_pe)
 {
 
-  uint32_t status = AVS_STATUS_FAIL;
+  uint32_t status = ACS_STATUS_FAIL;
 
   num_pe = 1;  //This test is run on single processor
 
-  status = val_initialize_test(TEST_NUM, TEST_DESC, num_pe, 6, TEST_RULE);
-  if (status != AVS_STATUS_SKIP)
+  status = val_initialize_test(TEST_NUM, TEST_DESC, num_pe);
+  if (status != ACS_STATUS_SKIP)
       val_run_test_payload(TEST_NUM, num_pe, payload, 0);
 
   /* get the result from all PE and check for failure */
   status = val_check_for_error(TEST_NUM, num_pe, TEST_RULE);
 
-  val_report_status(0, SBSA_AVS_END(6, TEST_NUM), TEST_RULE);
+  val_report_status(0, ACS_END(TEST_NUM), TEST_RULE);
 
   return status;
 }

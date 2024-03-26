@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2018-2019, 2022-2023 Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2018-2019, 2022-2024, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,14 +15,14 @@
  * limitations under the License.
  **/
 
-#include "val/include/sbsa_avs_val.h"
-#include "val/include/val_interface.h"
+#include "val/common/include/acs_val.h"
+#include "val/sbsa/include/sbsa_val_interface.h"
 
-#include "val/include/sbsa_avs_pcie_enumeration.h"
-#include "val/include/sbsa_avs_pcie.h"
-#include "val/include/sbsa_avs_exerciser.h"
+#include "val/common/include/acs_pcie_enumeration.h"
+#include "val/sbsa/include/sbsa_acs_pcie.h"
+#include "val/sbsa/include/sbsa_acs_exerciser.h"
 
-#define TEST_NUM   (AVS_EXERCISER_TEST_NUM_BASE + 1)
+#define TEST_NUM   (ACS_EXERCISER_TEST_NUM_BASE + 1)
 #define TEST_DESC  "Enhanced ECAM Memory access check "
 #define TEST_RULE  ""
 
@@ -49,12 +49,12 @@ payload(void)
           continue;
 
     if (val_exerciser_get_data(EXERCISER_DATA_CFG_SPACE, &e_data, instance)) {
-        val_print(AVS_PRINT_ERR, "\n       Exerciser %d data read error     ", instance);
+        val_print(ACS_PRINT_ERR, "\n       Exerciser %d data read error     ", instance);
         goto check_fail;
     }
 
     bdf = val_exerciser_get_bdf(instance);
-    val_print(AVS_PRINT_DEBUG, "\n       Exerciser BDF - 0x%x", bdf);
+    val_print(ACS_PRINT_DEBUG, "\n       Exerciser BDF - 0x%x", bdf);
 
     /* Check ECAM config register read/write */
     for (reg_index = 0; reg_index < TEST_REG_COUNT; reg_index++) {
@@ -65,12 +65,12 @@ payload(void)
 
             if (val_pcie_read_cfg(bdf, e_data.cfg_space.reg[reg_index].offset, &data)
                                                                    == PCIE_NO_MAPPING) {
-                val_print(AVS_PRINT_ERR, "\n       Exerciser %d cfg reg read error  ", instance);
+                val_print(ACS_PRINT_ERR, "\n       Exerciser %d cfg reg read error  ", instance);
                 goto check_fail;
             }
 
             if (data != e_data.cfg_space.reg[reg_index].value) {
-                val_print(AVS_PRINT_ERR,
+                val_print(ACS_PRINT_ERR,
                           "\n       Exerciser cfg reg read write mismatch %d", data);
                 goto check_fail;
             }
@@ -80,11 +80,11 @@ payload(void)
 
   }
 
-  val_set_status(pe_index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
+  val_set_status(pe_index, RESULT_PASS(TEST_NUM, 01));
   return;
 
 check_fail:
-  val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
+  val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 02));
   return;
 
 }
@@ -93,16 +93,16 @@ uint32_t
 e001_entry(void)
 {
   uint32_t num_pe = 1;
-  uint32_t status = AVS_STATUS_FAIL;
+  uint32_t status = ACS_STATUS_FAIL;
 
-  status = val_initialize_test(TEST_NUM, TEST_DESC, num_pe, g_sbsa_level, TEST_RULE);
-  if (status != AVS_STATUS_SKIP)
+  status = val_initialize_test(TEST_NUM, TEST_DESC, num_pe);
+  if (status != ACS_STATUS_SKIP)
       val_run_test_payload(TEST_NUM, num_pe, payload, 0);
 
   /* Get the result from all PE and check for failure */
   status = val_check_for_error(TEST_NUM, num_pe, TEST_RULE);
 
-  val_report_status(0, SBSA_AVS_END(g_sbsa_level, TEST_NUM), TEST_RULE);
+  val_report_status(0, ACS_END(TEST_NUM), TEST_RULE);
 
   return status;
 }

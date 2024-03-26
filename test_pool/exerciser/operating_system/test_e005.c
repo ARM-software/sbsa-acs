@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2023, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2023-2024, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,17 +15,18 @@
  * limitations under the License.
  **/
 
-#include "val/include/sbsa_avs_val.h"
-#include "val/include/val_interface.h"
+#include "val/common/include/acs_val.h"
+#include "val/sbsa/include/sbsa_val_interface.h"
 
-#include "val/include/sbsa_avs_pcie_enumeration.h"
-#include "val/include/sbsa_avs_pcie.h"
-#include "val/include/sbsa_avs_pe.h"
-#include "val/include/sbsa_avs_smmu.h"
-#include "val/include/sbsa_avs_memory.h"
-#include "val/include/sbsa_avs_exerciser.h"
+#include "val/common/include/acs_pcie_enumeration.h"
+#include "val/common/include/acs_pe.h"
+#include "val/sbsa/include/sbsa_acs_pcie.h"
+#include "val/sbsa/include/sbsa_acs_pe.h"
+#include "val/sbsa/include/sbsa_acs_smmu.h"
+#include "val/sbsa/include/sbsa_acs_memory.h"
+#include "val/sbsa/include/sbsa_acs_exerciser.h"
 
-#define TEST_NUM   (AVS_EXERCISER_TEST_NUM_BASE + 5)
+#define TEST_NUM   (ACS_EXERCISER_TEST_NUM_BASE + 5)
 #define TEST_DESC  "PE 2/4/8B writes to PCIe as 2/4/8B"
 #define TEST_RULE  "S_PCIe_03"
 
@@ -41,7 +42,7 @@ static uint32_t test_sequence_check(uint32_t instance, uint64_t write_value)
   for (idx = 0; idx < transaction_size; idx++) {
       val_exerciser_get_param(DATA_ATTRIBUTES, &transaction_data, &idx, instance);
       if (transaction_data !=  write_value) {
-          val_print(AVS_PRINT_ERR, "\n       Exerciser %d arrival order check failed", instance);
+          val_print(ACS_PRINT_ERR, "\n       Exerciser %d arrival order check failed", instance);
           return 1;
       }
   }
@@ -60,9 +61,9 @@ static uint32_t test_sequence_2B(uint16_t *addr, uint32_t instance)
 
   /* Start monitoring exerciser transactions */
   if (val_exerciser_ops(START_TXN_MONITOR, CFG_READ, instance)) {
-      val_print(AVS_PRINT_DEBUG,
+      val_print(ACS_PRINT_DEBUG,
                "\n       Exerciser BDF 0x%x - Unable to start transaction monitoring", e_bdf);
-      return AVS_STATUS_SKIP;
+      return ACS_STATUS_SKIP;
   }
 
   run_flag = 1;
@@ -91,9 +92,9 @@ static uint32_t test_sequence_4B(uint32_t *addr, uint32_t instance)
 
   /* Start monitoring exerciser transactions */
   if (val_exerciser_ops(START_TXN_MONITOR, CFG_READ, instance)) {
-      val_print(AVS_PRINT_DEBUG,
+      val_print(ACS_PRINT_DEBUG,
                "\n       Exerciser BDF 0x%x - Unable to start transaction monitoring", e_bdf);
-      return AVS_STATUS_SKIP;
+      return ACS_STATUS_SKIP;
   }
 
   run_flag = 1;
@@ -121,9 +122,9 @@ static uint32_t test_sequence_8B(uint64_t *addr, uint32_t instance)
 
   /* Start monitoring exerciser transactions */
   if (val_exerciser_ops(START_TXN_MONITOR, CFG_READ, instance)) {
-      val_print(AVS_PRINT_DEBUG,
+      val_print(ACS_PRINT_DEBUG,
                "\n       Exerciser BDF 0x%x - Unable to start transaction monitoring", e_bdf);
-      return AVS_STATUS_SKIP;
+      return ACS_STATUS_SKIP;
   }
 
   run_flag = 1;
@@ -163,17 +164,17 @@ barspace_transactions_order_check(void)
     /* Get BAR 0 details for this instance */
     status = val_exerciser_get_data(EXERCISER_DATA_MMIO_SPACE, &e_data, instance);
     if (status == NOT_IMPLEMENTED) {
-        val_print(AVS_PRINT_ERR, "\n       pal_exerciser_get_data() for MMIO not implemented", 0);
+        val_print(ACS_PRINT_ERR, "\n       pal_exerciser_get_data() for MMIO not implemented", 0);
         continue;
     } else if (status) {
-        val_print(AVS_PRINT_ERR, "\n       Exerciser %d data read error     ", instance);
+        val_print(ACS_PRINT_ERR, "\n       Exerciser %d data read error     ", instance);
         continue;
     }
 
     /* Map mmio space to ARM device memory in MMU page tables */
     baseptr = (char *)e_data.bar_space.base_addr;
     if (!baseptr) {
-        val_print(AVS_PRINT_ERR, "\n       Failed in BAR ioremap for instance %x", instance);
+        val_print(ACS_PRINT_ERR, "\n       Failed in BAR ioremap for instance %x", instance);
         continue;
     }
 
@@ -195,30 +196,30 @@ payload(void)
   barspace_transactions_order_check();
 
   if (!run_flag) {
-      val_set_status(pe_index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
+      val_set_status(pe_index, RESULT_SKIP(TEST_NUM, 01));
       return;
   }
 
   if (fail_cnt)
-      val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, fail_cnt));
+      val_set_status(pe_index, RESULT_FAIL(TEST_NUM, fail_cnt));
   else
-      val_set_status(pe_index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
+      val_set_status(pe_index, RESULT_PASS(TEST_NUM, 01));
 }
 
 uint32_t
 e005_entry(void)
 {
   uint32_t num_pe = 1;
-  uint32_t status = AVS_STATUS_FAIL;
+  uint32_t status = ACS_STATUS_FAIL;
 
-  status = val_initialize_test(TEST_NUM, TEST_DESC, num_pe, g_sbsa_level, TEST_RULE);
-  if (status != AVS_STATUS_SKIP)
+  status = val_initialize_test(TEST_NUM, TEST_DESC, num_pe);
+  if (status != ACS_STATUS_SKIP)
       val_run_test_payload(TEST_NUM, num_pe, payload, 0);
 
   /* Get the result from all PE and check for failure */
   status = val_check_for_error(TEST_NUM, num_pe, TEST_RULE);
 
-  val_report_status(0, SBSA_AVS_END(g_sbsa_level, TEST_NUM), TEST_RULE);
+  val_report_status(0, ACS_END(TEST_NUM), TEST_RULE);
 
   return status;
 }

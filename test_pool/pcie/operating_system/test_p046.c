@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2020-2023, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2024, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,13 +15,13 @@
  * limitations under the License.
  **/
 
-#include "val/include/sbsa_avs_val.h"
-#include "val/include/val_interface.h"
+#include "val/common/include/acs_val.h"
+#include "val/sbsa/include/sbsa_val_interface.h"
 
-#include "val/include/sbsa_avs_pcie.h"
-#include "val/include/sbsa_avs_pe.h"
+#include "val/sbsa/include/sbsa_acs_pcie.h"
+#include "val/sbsa/include/sbsa_acs_pe.h"
 
-#define TEST_NUM   (AVS_PCIE_TEST_NUM_BASE + 46)
+#define TEST_NUM   (ACS_PCIE_TEST_NUM_BASE + 46)
 #define TEST_DESC  "Check RP Byte Enable Rules        "
 #define TEST_RULE  "PCI_IN_18"
 
@@ -59,7 +59,7 @@ payload(void)
 
       if (dp_type == iEP_RP) {
 
-        val_print(AVS_PRINT_DEBUG, "\n       BDF - 0x%x", bdf);
+        val_print(ACS_PRINT_DEBUG, "\n       BDF - 0x%x", bdf);
         /* If test runs for atleast an endpoint */
         test_skip = 0;
 
@@ -86,7 +86,7 @@ payload(void)
 
         if ((ecam_cr != ecam_cr_8) || (ecam_cr_8 != ecam_cr_16))
         {
-          val_print(AVS_PRINT_ERR, "\n       Byte Enable Read Failed for Bdf: 0x%x", bdf);
+          val_print(ACS_PRINT_ERR, "\n       Byte Enable Read Failed for Bdf: 0x%x", bdf);
           test_fail++;
         }
 
@@ -102,7 +102,7 @@ payload(void)
             ecam_cr_new = val_mmio_read8(ecam_base + busnum_reg_offset + i);
             if (write_value != ecam_cr_new)
             {
-              val_print(AVS_PRINT_ERR, "\n       8 Bit Write Failed for Bdf: 0x%x", bdf);
+              val_print(ACS_PRINT_ERR, "\n       8 Bit Write Failed for Bdf: 0x%x", bdf);
               test_fail++;
             }
         }
@@ -118,7 +118,7 @@ payload(void)
         ecam_cr_new = val_mmio_read16(ecam_base + busnum_reg_offset);
         if (write_value != ecam_cr_new)
         {
-          val_print(AVS_PRINT_ERR, "\n       16 Bit Write Failed for Bdf: 0x%x", bdf);
+          val_print(ACS_PRINT_ERR, "\n       16 Bit Write Failed for Bdf: 0x%x", bdf);
           test_fail++;
         }
 
@@ -133,31 +133,31 @@ payload(void)
   }
 
   if (test_skip) {
-      val_print(AVS_PRINT_DEBUG, "\n       No iEP_RP type device found. Skipping test", 0);
-      val_set_status(pe_index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
+      val_print(ACS_PRINT_DEBUG, "\n       No iEP_RP type device found. Skipping test", 0);
+      val_set_status(pe_index, RESULT_SKIP(TEST_NUM, 01));
   }
   else if (test_fail)
-      val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
+      val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 01));
   else
-      val_set_status(pe_index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
+      val_set_status(pe_index, RESULT_PASS(TEST_NUM, 01));
 }
 
 uint32_t
 p046_entry(uint32_t num_pe)
 {
 
-  uint32_t status = AVS_STATUS_FAIL;
+  uint32_t status = ACS_STATUS_FAIL;
 
   num_pe = 1;  //This test is run on single processor
 
-  status = val_initialize_test(TEST_NUM, TEST_DESC, num_pe, g_sbsa_level, TEST_RULE);
-  if (status != AVS_STATUS_SKIP)
+  status = val_initialize_test(TEST_NUM, TEST_DESC, num_pe);
+  if (status != ACS_STATUS_SKIP)
       val_run_test_payload(TEST_NUM, num_pe, payload, 0);
 
   /* get the result from all PE and check for failure */
   status = val_check_for_error(TEST_NUM, num_pe, TEST_RULE);
 
-  val_report_status(0, SBSA_AVS_END(g_sbsa_level, TEST_NUM), TEST_RULE);
+  val_report_status(0, ACS_END(TEST_NUM), TEST_RULE);
 
   return status;
 }

@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, 2021-2023 Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018, 2021-2024, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,11 +15,12 @@
  * limitations under the License.
  **/
 
-#include "val/include/sbsa_avs_val.h"
-#include "val/include/sbsa_avs_pe.h"
+#include "val/common/include/acs_val.h"
+#include "val/common/include/acs_pe.h"
+#include "val/sbsa/include/sbsa_acs_pe.h"
+#include "val/common/include/acs_common.h"
 
-
-#define TEST_NUM   (AVS_PMU_TEST_NUM_BASE  +  1)
+#define TEST_NUM   (ACS_PMU_TEST_NUM_BASE  +  1)
 #define TEST_RULE  "PMU_PE_02"
 #define TEST_DESC  "Check PMU Overflow signal         "
 
@@ -51,8 +52,8 @@ isr()
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
   /* We received our interrupt, so disable PMUIRQ from generating further interrupts */
   val_pe_reg_write(PMOVSCLR_EL0, 0x1);
-  val_print(AVS_PRINT_INFO, "\n       Received PMUIRQ ", 0);
-  val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
+  val_print(ACS_PRINT_INFO, "\n       Received PMUIRQ ", 0);
+  val_set_status(index, RESULT_PASS(TEST_NUM, 01));
   val_gic_end_of_interrupt(int_id);
 
   return;
@@ -70,8 +71,8 @@ payload()
 
   if (int_id != 23) {
       timeout = 0;
-      val_print(AVS_PRINT_ERR, "\n       Incorrect PPI value      %d       ", int_id);
-      val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
+      val_print(ACS_PRINT_ERR, "\n       Incorrect PPI value      %d       ", int_id);
+      val_set_status(index, RESULT_FAIL(TEST_NUM, 02));
       return;
   }
 
@@ -84,7 +85,7 @@ payload()
   }
 
   if (timeout == 0)
-      val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
+      val_set_status(index, RESULT_FAIL(TEST_NUM, 01));
 }
 
 /**
@@ -94,18 +95,18 @@ uint32_t
 pmu001_entry(uint32_t num_pe)
 {
 
-  uint32_t status = AVS_STATUS_FAIL;
+  uint32_t status = ACS_STATUS_FAIL;
   num_pe = 1;
 
-  status = val_initialize_test(TEST_NUM, TEST_DESC, val_pe_get_num(), g_sbsa_level, TEST_RULE);
-  if (status != AVS_STATUS_SKIP)
+  status = val_initialize_test(TEST_NUM, TEST_DESC, val_pe_get_num());
+  if (status != ACS_STATUS_SKIP)
       /* execute payload on present PE and then execute on other PE */
       val_run_test_payload(TEST_NUM, num_pe, payload, 0);
 
   /* get the result from all PE and check for failure */
   status = val_check_for_error(TEST_NUM, num_pe, TEST_RULE);
 
-  val_report_status(0, SBSA_AVS_END(g_sbsa_level, TEST_NUM), TEST_RULE);
+  val_report_status(0, ACS_END(TEST_NUM), TEST_RULE);
 
   return status;
 }

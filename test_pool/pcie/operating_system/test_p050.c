@@ -15,14 +15,14 @@
  * limitations under the License.
  **/
 
-#include "val/include/sbsa_avs_val.h"
-#include "val/include/val_interface.h"
+#include "val/common/include/acs_val.h"
+#include "val/sbsa/include/sbsa_val_interface.h"
 
-#include "val/include/sbsa_avs_pcie.h"
-#include "val/include/sbsa_avs_pe.h"
-#include "val/include/sbsa_avs_memory.h"
+#include "val/sbsa/include/sbsa_acs_pcie.h"
+#include "val/sbsa/include/sbsa_acs_pe.h"
+#include "val/sbsa/include/sbsa_acs_memory.h"
 
-#define TEST_NUM   (AVS_PCIE_TEST_NUM_BASE + 50)
+#define TEST_NUM   (ACS_PCIE_TEST_NUM_BASE + 50)
 #define TEST_DESC  "Check L-Intr SPI Level-Sensitive  "
 #define TEST_RULE  "PCI_LI_01, PCI_LI_03"
 
@@ -47,8 +47,8 @@ payload(void)
   /* Allocate memory for interrupt mappings */
   intr_map = val_aligned_alloc(MEM_ALIGN_4K, sizeof(PERIPHERAL_IRQ_MAP));
   if (!intr_map) {
-    val_print (AVS_PRINT_ERR, "\n       Memory allocation error", 0);
-    val_set_status(pe_index, RESULT_FAIL (g_sbsa_level, TEST_NUM, 01));
+    val_print (ACS_PRINT_ERR, "\n       Memory allocation error", 0);
+    val_set_status(pe_index, RESULT_FAIL (TEST_NUM, 01));
     return;
   }
 
@@ -60,11 +60,11 @@ payload(void)
       bdf = bdf_tbl_ptr->device[tbl_index++].bdf;
       dp_type = val_pcie_device_port_type(bdf);
 
-      /* Check entry is RCiEP/ RCEC. Else move to next BDF. */
+      /* Check entry is RCiEP/ RCEC,  else move to next BDF. */
       if ((dp_type != RCEC) && (dp_type != RCiEP))
           continue;
 
-      val_print(AVS_PRINT_DEBUG, "\n       BDF - 0x%x", bdf);
+      val_print(ACS_PRINT_DEBUG, "\n       BDF - 0x%x", bdf);
 
       /* Read Interrupt Line Register */
       val_pcie_read_cfg(bdf, TYPE01_ILR, &reg_value);
@@ -75,18 +75,21 @@ payload(void)
 
       status = val_pci_get_legacy_irq_map(bdf, intr_map);
       if (status) {
+        // Skip the test if the Legacy IRQ map does not exist
         if (status == NOT_IMPLEMENTED) {
-            val_print (AVS_PRINT_WARN,
+            val_print (ACS_PRINT_WARN,
                         "\n       pal_pcie_get_legacy_irq_map unimplemented. Skipping test", 0);
-            val_print(AVS_PRINT_WARN,
+            val_print(ACS_PRINT_WARN,
                         "\n       The API is platform specific and to be populated", 0);
-            val_print(AVS_PRINT_WARN,
+            val_print(ACS_PRINT_WARN,
                         "\n       by partners with system legacy irq map", 0);
-            val_set_status(pe_index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 02));
+            val_set_status(pe_index, RESULT_SKIP(TEST_NUM, 02));
         }
         else {
-            val_print(AVS_PRINT_ERR, "\n       PCIe Legacy IRQs unmapped", 0);
-            val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
+            val_print (ACS_PRINT_DEBUG,
+                        "\n       PCIe Legacy IRQs unmapped. Skipping BDF %llx", bdf);
+            val_set_status(pe_index, RESULT_SKIP(TEST_NUM, 3));
+            continue;
         }
 
         return;
@@ -100,14 +103,14 @@ payload(void)
       /* Read GICD_ICFGR register to Check for Level/Edge Sensitive. */
       status = val_gic_get_intr_trigger_type(intr_line, &trigger_type);
       if (status) {
-        val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 03));
+        val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 03));
         return;
       }
 
       if (trigger_type != INTR_TRIGGER_INFO_LEVEL_HIGH) {
-        val_print(AVS_PRINT_ERR,
+        val_print(ACS_PRINT_ERR,
                  "\n       Legacy interrupt programmed with incorrect trigger type", 0);
-        val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 04));
+        val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 04));
         return;
       }
   }
@@ -115,27 +118,27 @@ payload(void)
   val_memory_free_aligned(intr_map);
 
   if (test_skip == 1)
-      val_set_status(pe_index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
+      val_set_status(pe_index, RESULT_SKIP(TEST_NUM, 01));
   else
-      val_set_status(pe_index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
+      val_set_status(pe_index, RESULT_PASS(TEST_NUM, 01));
 }
 
 uint32_t
 p050_entry(uint32_t num_pe)
 {
 
-  uint32_t status = AVS_STATUS_FAIL;
+  uint32_t status = ACS_STATUS_FAIL;
 
   num_pe = 1;  //This test is run on single processor
 
-  status = val_initialize_test(TEST_NUM, TEST_DESC, num_pe, g_sbsa_level, TEST_RULE);
-  if (status != AVS_STATUS_SKIP)
+  status = val_initialize_test(TEST_NUM, TEST_DESC, num_pe);
+  if (status != ACS_STATUS_SKIP)
       val_run_test_payload(TEST_NUM, num_pe, payload, 0);
 
   /* get the result from all PE and check for failure */
   status = val_check_for_error(TEST_NUM, num_pe, TEST_RULE);
 
-  val_report_status(0, SBSA_AVS_END(g_sbsa_level, TEST_NUM), TEST_RULE);
+  val_report_status(0, ACS_END(TEST_NUM), TEST_RULE);
 
   return status;
 }

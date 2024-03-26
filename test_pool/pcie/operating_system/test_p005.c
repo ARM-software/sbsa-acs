@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2023, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2024, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,15 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  **/
-#include "val/include/sbsa_avs_val.h"
-#include "val/include/val_interface.h"
-
-#include "val/include/sbsa_avs_pe.h"
-#include "val/include/sbsa_avs_pcie.h"
-#include "val/include/sbsa_avs_memory.h"
+#include "val/common/include/acs_val.h"
+#include "val/common/include/acs_pe.h"
+#include "val/common/include/acs_pcie.h"
+#include "val/common/include/acs_memory.h"
 
 /* SBSA-checklist 63 & 64 */
-#define TEST_NUM   (AVS_PCIE_TEST_NUM_BASE + 5)
+#define TEST_NUM   (ACS_PCIE_TEST_NUM_BASE + 5)
 #define TEST_DESC  "PCIe Unaligned access, Norm mem   "
 #define TEST_RULE  "PCI_MM_01, PCI_MM_02, PCI_MM_03, RE_BAR_2, IE_BAR_2"
 
@@ -39,8 +37,8 @@ esr(uint64_t interrupt_type, void *context)
   /* Update the ELR to point to next instrcution */
   val_pe_update_elr(context, (uint64_t)branch_to_test);
 
-  val_print(AVS_PRINT_ERR, "\n       Received Exception %d", interrupt_type);
-  val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
+  val_print(ACS_PRINT_ERR, "\n       Received Exception %d", interrupt_type);
+  val_set_status(index, RESULT_FAIL(TEST_NUM, 02));
 }
 
 static
@@ -69,15 +67,15 @@ payload(void)
   uint32_t max_bar_offset;
   uint32_t msa_en = 0;
 
-  val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 0));
+  val_set_status(index, RESULT_SKIP(TEST_NUM, 0));
 
   /* Install exception handlers */
   status = val_pe_install_esr(EXCEPT_AARCH64_SYNCHRONOUS_EXCEPTIONS, esr);
   status |= val_pe_install_esr(EXCEPT_AARCH64_SERROR, esr);
   if (status)
   {
-      val_print(AVS_PRINT_ERR, "\n       Failed in installing the exception handler", 0);
-      val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
+      val_print(ACS_PRINT_ERR, "\n       Failed in installing the exception handler", 0);
+      val_set_status(index, RESULT_FAIL(TEST_NUM, 01));
       return;
   }
 
@@ -94,7 +92,7 @@ next_bdf:
           && (dp_type != RCEC) && (dp_type != RCiEP))
           continue;
 
-      val_print(AVS_PRINT_DEBUG, "\n       BDF - 0x%x", bdf);
+      val_print(ACS_PRINT_DEBUG, "\n       BDF - 0x%x", bdf);
 
       /* Configure the max BAR offset */
       dev_type = val_pcie_get_device_type(bdf);
@@ -107,29 +105,29 @@ next_bdf:
 
       while(offset <= max_bar_offset) {
           val_pcie_read_cfg(bdf, offset, &bar_value);
-          val_print(AVS_PRINT_DEBUG, "\n       The BAR value of bdf %x", bdf);
-          val_print(AVS_PRINT_DEBUG, " is %x ", bar_value);
+          val_print(ACS_PRINT_DEBUG, "\n       The BAR value of bdf %x", bdf);
+          val_print(ACS_PRINT_DEBUG, " is %x ", bar_value);
           base = 0;
 
           if (bar_value == 0)
           {
               /** This BAR is not implemented **/
-              val_print(AVS_PRINT_DEBUG, "\n       BAR is not implemented for BDF 0x%x", bdf);
+              val_print(ACS_PRINT_DEBUG, "\n       BAR is not implemented for BDF 0x%x", bdf);
               tbl_index++;
               goto next_bdf;
           }
 
           /* Skip for IO address space */
           if (bar_value & 0x1) {
-              val_print(AVS_PRINT_DEBUG, "\n       BAR is used for IO address space request ", 0);
-              val_print(AVS_PRINT_DEBUG, "for BDF 0x%x", bdf);
+              val_print(ACS_PRINT_DEBUG, "\n       BAR is used for IO address space request ", 0);
+              val_print(ACS_PRINT_DEBUG, "for BDF 0x%x", bdf);
               tbl_index++;
               goto next_bdf;
           }
 
           if (BAR_REG(bar_value) == BAR_64_BIT)
           {
-              val_print(AVS_PRINT_INFO,
+              val_print(ACS_PRINT_INFO,
                         "\n       The BAR supports 64-bit address decoding capability", 0);
               val_pcie_read_cfg(bdf, offset+4, &bar_value_1);
               base = bar_value_1;
@@ -153,7 +151,7 @@ next_bdf:
           }
 
           else {
-              val_print(AVS_PRINT_INFO,
+              val_print(ACS_PRINT_INFO,
                          "\n       The BAR supports 32-bit address decoding capability", 0);
 
               /* BAR supports 32-bit address. Write all 1's
@@ -169,12 +167,12 @@ next_bdf:
               base = bar_value;
           }
 
-          val_print(AVS_PRINT_DEBUG, "\n       BAR size is 0x%x", bar_size);
+          val_print(ACS_PRINT_DEBUG, "\n       BAR size is 0x%x", bar_size);
 
           /* Check if bar supports the remap size */
           if (1024 > bar_size) {
-              val_print(AVS_PRINT_ERR, "\n       Bar size less than remap requested size.", 0);
-              val_print(AVS_PRINT_ERR, " Moving to next bar    ", 0);
+              val_print(ACS_PRINT_ERR, "\n       Bar size less than remap requested size.", 0);
+              val_print(ACS_PRINT_ERR, " Moving to next bar    ", 0);
               goto next_bar;
           }
 
@@ -200,12 +198,12 @@ next_bdf:
 exception_return_normal:
           val_memory_unmap(baseptr);
           if (IS_TEST_FAIL(val_get_status(index))) {
-              val_print(AVS_PRINT_ERR, "\n       Normal memory access failed for Bdf: 0x%x", bdf);
+              val_print(ACS_PRINT_ERR, "\n       Normal memory access failed for Bdf: 0x%x", bdf);
 
               /* Setting the status to Pass to enable next check for current BDF.
                * Failure has been recorded with test_fail.
                */
-              val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
+              val_set_status(index, RESULT_PASS(TEST_NUM, 01));
               test_fail++;
           }
 
@@ -225,11 +223,11 @@ exception_return_normal:
 
 exception_return_device:
           if (IS_TEST_FAIL(val_get_status(index))) {
-              val_print(AVS_PRINT_ERR, "\n       Device memory access failed for Bdf: 0x%x", bdf);
+              val_print(ACS_PRINT_ERR, "\n       Device memory access failed for Bdf: 0x%x", bdf);
               /* Setting the status to Pass to enable test for next BDF.
                * Failure has been recorded with test_fail.
                */
-              val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 02));
+              val_set_status(index, RESULT_PASS(TEST_NUM, 02));
               test_fail++;
           }
 
@@ -246,11 +244,11 @@ next_bar:
   }
 
   if (test_skip)
-      val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 0));
+      val_set_status(index, RESULT_SKIP(TEST_NUM, 0));
   else if (test_fail)
-      val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 03));
+      val_set_status(index, RESULT_FAIL(TEST_NUM, 03));
   else
-      val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 03));
+      val_set_status(index, RESULT_PASS(TEST_NUM, 03));
 
 }
 
@@ -258,18 +256,18 @@ uint32_t
 p005_entry(uint32_t num_pe)
 {
 
-  uint32_t status = AVS_STATUS_FAIL;
+  uint32_t status = ACS_STATUS_FAIL;
 
   num_pe = 1;  //This test is run on single processor
 
-  status = val_initialize_test(TEST_NUM, TEST_DESC, num_pe, g_sbsa_level, TEST_RULE);
-  if (status != AVS_STATUS_SKIP)
+  status = val_initialize_test(TEST_NUM, TEST_DESC, num_pe);
+  if (status != ACS_STATUS_SKIP)
       val_run_test_payload(TEST_NUM, num_pe, payload, 0);
 
   /* get the result from all PE and check for failure */
   status = val_check_for_error(TEST_NUM, num_pe, TEST_RULE);
 
-  val_report_status(0, SBSA_AVS_END(g_sbsa_level, TEST_NUM), TEST_RULE);
+  val_report_status(0, ACS_END(TEST_NUM), TEST_RULE);
 
   return status;
 }

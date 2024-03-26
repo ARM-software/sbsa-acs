@@ -15,13 +15,11 @@
  * limitations under the License.
  **/
 
-#include "val/include/sbsa_avs_val.h"
-#include "val/include/val_interface.h"
+#include "val/common/include/acs_val.h"
+#include "val/common/include/acs_pcie.h"
+#include "val/common/include/acs_memory.h"
 
-#include "val/include/sbsa_avs_pcie.h"
-#include "val/include/sbsa_avs_memory.h"
-
-#define TEST_NUM   (AVS_PCIE_TEST_NUM_BASE + 9)
+#define TEST_NUM   (ACS_PCIE_TEST_NUM_BASE + 9)
 #define TEST_DESC  "Check all MSI(X) vectors are LPIs "
 #define TEST_RULE  "S_L3GI_02"
 
@@ -83,7 +81,7 @@ payload (void)
   uint32_t test_skip = 1;
 
   if(!count) {
-     val_set_status (index, RESULT_SKIP (g_sbsa_level, TEST_NUM, 2));
+     val_set_status (index, RESULT_SKIP (TEST_NUM, 2));
      return;
   }
 
@@ -99,16 +97,16 @@ payload (void)
       /* Get BDF of a device */
       dev_bdf = val_peripheral_get_info (ANY_BDF, count - 1);
       if (dev_bdf) {
-        val_print (AVS_PRINT_INFO, "       Checking PCI device with BDF %4X\n", dev_bdf);
+        val_print (ACS_PRINT_INFO, "       Checking PCI device with BDF %4X\n", dev_bdf);
         /* Read MSI(X) vectors */
         if (val_get_msi_vectors (dev_bdf, &dev_mvec)) {
           test_skip = 0;
           mvec = dev_mvec;
           while(mvec) {
               if(mvec->vector.vector_irq_base < LPI_BASE) {
-                 val_print(AVS_PRINT_ERR,
+                 val_print(ACS_PRINT_ERR,
                     "       MSI vector irq %llx is not an LPI\n", mvec->vector.vector_irq_base);
-                 val_set_status (index, RESULT_FAIL (g_sbsa_level, TEST_NUM, mvec->vector.vector_irq_base));
+                 val_set_status (index, RESULT_FAIL (TEST_NUM, mvec->vector.vector_irq_base));
                  status = 1;
               }
 
@@ -124,29 +122,29 @@ payload (void)
   }
 
   if (test_skip) {
-    val_print(AVS_PRINT_DEBUG, "\n       No MSI vectors found ", 0);
-    val_set_status (index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 0));
+    val_print(ACS_PRINT_DEBUG, "\n       No MSI vectors found ", 0);
+    val_set_status (index, RESULT_SKIP(TEST_NUM, 0));
   } else if (!status) {
-    val_set_status (index, RESULT_PASS(g_sbsa_level, TEST_NUM, 0));
+    val_set_status (index, RESULT_PASS(TEST_NUM, 0));
   }
 }
 
 uint32_t
 p009_entry (uint32_t num_pe)
 {
-  uint32_t status = AVS_STATUS_FAIL;
+  uint32_t status = ACS_STATUS_FAIL;
 
   num_pe = 1;  //This test is run on single processor
 
-  status = val_initialize_test(TEST_NUM, TEST_DESC, num_pe, g_sbsa_level, TEST_RULE);
-  if (status != AVS_STATUS_SKIP) {
+  status = val_initialize_test(TEST_NUM, TEST_DESC, num_pe);
+  if (status != ACS_STATUS_SKIP) {
       val_run_test_payload (TEST_NUM, num_pe, payload, 0);
   }
 
   /* get the result from all PE and check for failure */
   status = val_check_for_error(TEST_NUM, num_pe, TEST_RULE);
 
-  val_report_status(0, SBSA_AVS_END(g_sbsa_level, TEST_NUM), TEST_RULE);
+  val_report_status(0, ACS_END(TEST_NUM), TEST_RULE);
 
   return status;
 }

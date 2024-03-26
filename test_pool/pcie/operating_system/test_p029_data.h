@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2019,2023 Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2019,2023-2024, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,7 +15,7 @@
  * limitations under the License.
  **/
 
-#include "val/include/sbsa_avs_pcie.h"
+#include "val/sbsa/include/sbsa_acs_pcie.h"
 
 /**
 * The test table covers bit-field entries for power management control/status

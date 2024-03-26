@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2019-2023, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2019-2024, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,14 +15,14 @@
  * limitations under the License.
  **/
 
-#include "val/include/sbsa_avs_val.h"
-#include "val/include/val_interface.h"
+#include "val/common/include/acs_val.h"
+#include "val/sbsa/include/sbsa_val_interface.h"
 
-#include "val/include/sbsa_avs_pcie.h"
-#include "val/include/sbsa_avs_pe.h"
-#include "val/include/sbsa_avs_memory.h"
+#include "val/sbsa/include/sbsa_acs_pcie.h"
+#include "val/sbsa/include/sbsa_acs_pe.h"
+#include "val/sbsa/include/sbsa_acs_memory.h"
 
-#define TEST_NUM   (AVS_PCIE_TEST_NUM_BASE + 35)
+#define TEST_NUM   (ACS_PCIE_TEST_NUM_BASE + 35)
 #define TEST_DESC  "Check Function level reset rule   "
 #define TEST_RULE  "RE_RST_1, IE_RST_1, PCI_SM_02"
 
@@ -38,7 +38,7 @@ uint32_t is_flr_failed(uint32_t bdf)
   val_pcie_read_cfg(bdf, TYPE01_CR, &reg_value);
   if (((reg_value >> CR_BME_SHIFT) & CR_BME_MASK) != 0)
   {
-      val_print(AVS_PRINT_ERR, "\n       BME is not cleared", 0);
+      val_print(ACS_PRINT_ERR, "\n       BME is not cleared", 0);
       check_failed++;
   }
 
@@ -46,7 +46,7 @@ uint32_t is_flr_failed(uint32_t bdf)
   val_pcie_read_cfg(bdf, TYPE01_CR, &reg_value);
   if (((reg_value >> CR_MSE_SHIFT) & CR_MSE_MASK) != 0)
   {
-      val_print(AVS_PRINT_ERR, "\n       MSE is not cleared", 0);
+      val_print(ACS_PRINT_ERR, "\n       MSE is not cleared", 0);
       check_failed++;
   }
 
@@ -113,15 +113,15 @@ payload(void)
           /* If memory allocation fail, fail the test */
           if (func_config_space == NULL)
           {
-              val_print(AVS_PRINT_ERR, "\n       Memory allocation fail", 0);
-              val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, test_fails));
+              val_print(ACS_PRINT_ERR, "\n       Memory allocation fail", 0);
+              val_set_status(pe_index, RESULT_FAIL(TEST_NUM, test_fails));
               return;
           }
 
           /* Get function configuration space address */
           config_space_addr = val_pcie_get_bdf_config_addr(bdf);
-          val_print(AVS_PRINT_DEBUG, "\n       BDF - 0x%x ", bdf);
-          val_print(AVS_PRINT_INFO, "config space addr 0x%x", config_space_addr);
+          val_print(ACS_PRINT_DEBUG, "\n       BDF - 0x%x ", bdf);
+          val_print(ACS_PRINT_INFO, "config space addr 0x%x", config_space_addr);
 
           /* Save the function config space to restore after FLR */
           for (idx = 0; idx < PCIE_CFG_SIZE / 4; idx ++) {
@@ -137,9 +137,9 @@ payload(void)
           status = val_time_delay_ms(100 * ONE_MILLISECOND);
           if (status)
           {
-              val_print(AVS_PRINT_ERR, "\n       Failed to time delay for BDF 0x%x ", bdf);
+              val_print(ACS_PRINT_ERR, "\n       Failed to time delay for BDF 0x%x ", bdf);
               val_memory_free_aligned(func_config_space);
-              val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
+              val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 01));
               return;
           }
 
@@ -165,7 +165,7 @@ payload(void)
           val_pcie_read_cfg(bdf, 0, &reg_value);
           if ((reg_value & TYPE01_VIDR_MASK) == TYPE01_VIDR_MASK)
           {
-              val_print(AVS_PRINT_ERR, "\n       BDF 0x%x not present", bdf);
+              val_print(ACS_PRINT_ERR, "\n       BDF 0x%x not present", bdf);
               test_fails++;
               val_memory_free_aligned(func_config_space);
               continue;
@@ -184,32 +184,32 @@ payload(void)
   }
 
   if (test_skip == 1) {
-      val_print(AVS_PRINT_DEBUG,
+      val_print(ACS_PRINT_DEBUG,
                "\n       No RCiEP/iEP_EP with FLR Cap found. Skipping test", 0);
-      val_set_status(pe_index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
+      val_set_status(pe_index, RESULT_SKIP(TEST_NUM, 01));
   }
   else if (test_fails)
-      val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, test_fails));
+      val_set_status(pe_index, RESULT_FAIL(TEST_NUM, test_fails));
   else
-      val_set_status(pe_index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
+      val_set_status(pe_index, RESULT_PASS(TEST_NUM, 01));
 }
 
 uint32_t
 p035_entry(uint32_t num_pe)
 {
 
-  uint32_t status = AVS_STATUS_FAIL;
+  uint32_t status = ACS_STATUS_FAIL;
 
   num_pe = 1;  //This test is run on single processor
 
-  status = val_initialize_test(TEST_NUM, TEST_DESC, num_pe, g_sbsa_level, TEST_RULE);
-  if (status != AVS_STATUS_SKIP)
+  status = val_initialize_test(TEST_NUM, TEST_DESC, num_pe);
+  if (status != ACS_STATUS_SKIP)
       val_run_test_payload(TEST_NUM, num_pe, payload, 0);
 
   /* get the result from all PE and check for failure */
   status = val_check_for_error(TEST_NUM, num_pe, TEST_RULE);
 
-  val_report_status(0, SBSA_AVS_END(g_sbsa_level, TEST_NUM), TEST_RULE);
+  val_report_status(0, ACS_END(TEST_NUM), TEST_RULE);
 
   return status;
 }

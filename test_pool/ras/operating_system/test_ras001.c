@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2023 Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2023-2024, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,13 +15,14 @@
  * limitations under the License.
  **/
 
-#include "val/include/sbsa_avs_val.h"
-#include "val/include/val_interface.h"
-#include "val/include/sbsa_avs_memory.h"
-#include "val/include/sbsa_avs_pe.h"
-#include "val/include/sbsa_avs_ras.h"
+#include "val/common/include/acs_val.h"
+#include "val/sbsa/include/sbsa_val_interface.h"
+#include "val/sbsa/include/sbsa_acs_memory.h"
+#include "val/sbsa/include/sbsa_acs_pe.h"
+#include "val/sbsa/include/sbsa_acs_ras.h"
+#include "val/common/include/acs_common.h"
 
-#define TEST_NUM   (AVS_RAS_TEST_NUM_BASE + 1)
+#define TEST_NUM   (ACS_RAS_TEST_NUM_BASE + 1)
 #define TEST_RULE  "RAS_01"
 #define TEST_DESC  "Check Error Counter               "
 
@@ -40,8 +41,8 @@ payload()
   /* Get Number of nodes with RAS Functionality */
   status = val_ras_get_info(RAS_INFO_NUM_NODES, 0, &num_node);
   if (status || (num_node == 0)) {
-    val_print(AVS_PRINT_DEBUG, "\n       RAS Nodes not found. Skipping...", 0);
-    val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
+    val_print(ACS_PRINT_DEBUG, "\n       RAS Nodes not found. Skipping...", 0);
+    val_set_status(index, RESULT_SKIP(TEST_NUM, 01));
     return;
   }
 
@@ -50,7 +51,7 @@ payload()
     /* Get Current Node Type */
     status = val_ras_get_info(RAS_INFO_NODE_TYPE, node_index, &value);
     if (status) {
-      val_print(AVS_PRINT_DEBUG, "\n       Node Type not found index %d", node_index);
+      val_print(ACS_PRINT_DEBUG, "\n       Node Type not found index %d", node_index);
       fail_cnt++;
       break;
     }
@@ -63,7 +64,7 @@ payload()
     if (value == NODE_TYPE_PE) {
       status = val_ras_get_info(RAS_INFO_PE_RES_TYPE, node_index, &value);
       if (status) {
-        val_print(AVS_PRINT_DEBUG, "\n       PE Resource type not found index %d", node_index);
+        val_print(ACS_PRINT_DEBUG, "\n       PE Resource type not found index %d", node_index);
         fail_cnt++;
         break;
       }
@@ -75,7 +76,7 @@ payload()
     /* Read FR register of the first error record */
     value = val_ras_reg_read(node_index, RAS_ERR_FR, 0);
     if (value == INVALID_RAS_REG_VAL) {
-        val_print(AVS_PRINT_ERR,
+        val_print(ACS_PRINT_ERR,
                     "\n       Couldn't read ERR<0>FR register for RAS node index: 0x%lx",
                     node_index);
         fail_cnt++;
@@ -84,37 +85,37 @@ payload()
 
     /* Check ERR_FR.CEC[14:12] != 0 for CEC to be implemented */
     if (!(value & ERR_FR_CEC_MASK)) {
-      val_print(AVS_PRINT_ERR, "\n       CEC not implemented for node_index %d", node_index);
+      val_print(ACS_PRINT_ERR, "\n       CEC not implemented for node_index %d", node_index);
       fail_cnt++;
       continue;
     }
   }
 
   if (fail_cnt) {
-    val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
+    val_set_status(index, RESULT_FAIL(TEST_NUM, 01));
     return;
   }
 
-  val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
+  val_set_status(index, RESULT_PASS(TEST_NUM, 01));
 }
 
 uint32_t
 ras001_entry(uint32_t num_pe)
 {
 
-  uint32_t status = AVS_STATUS_FAIL;
+  uint32_t status = ACS_STATUS_FAIL;
 
   num_pe = 1;  //This test is run on single processor
 
-  status = val_initialize_test(TEST_NUM, TEST_DESC, num_pe, g_sbsa_level, TEST_RULE);
+  status = val_initialize_test(TEST_NUM, TEST_DESC, num_pe);
 
-  if (status != AVS_STATUS_SKIP)
+  if (status != ACS_STATUS_SKIP)
       val_run_test_payload(TEST_NUM, num_pe, payload, 0);
 
   /* get the result from all PE and check for failure */
   status = val_check_for_error(TEST_NUM, num_pe, TEST_RULE);
 
-  val_report_status(0, SBSA_AVS_END(g_sbsa_level, TEST_NUM), TEST_RULE);
+  val_report_status(0, ACS_END(TEST_NUM), TEST_RULE);
 
   return status;
 }
