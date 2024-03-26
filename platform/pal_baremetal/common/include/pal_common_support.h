@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2020-2023, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2024, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -42,6 +42,12 @@ extern uint32_t g_enable_module;
 #define MEM_ALIGN_16K      0x4000
 #define MEM_ALIGN_32K      0x8000
 #define MEM_ALIGN_64K      0x10000
+
+#ifdef TARGET_BM_BOOT
+    #define TRUE 1
+    #define FALSE 0
+#endif
+
 
 void pal_mem_free_aligned(void *Buffer);
 void *pal_aligned_alloc( uint32_t alignment, uint32_t size );
@@ -502,7 +508,7 @@ typedef struct {
   uint32_t  vector_lower_addr; ///< Base Address of the controller
   uint32_t  vector_data;       ///< Base Address of the controller
   uint32_t  vector_control;    ///< IRQ to install an ISR
-  uint32_t  vector_irq_base;   ///< Base IRQ for the vectors in the block
+  uint64_t  vector_irq_base;   ///< Base IRQ for the vectors in the block
   uint32_t  vector_n_irqs;     ///< Number of irq vectors in the block
   uint32_t  vector_mapped_irq_base; ///< Mapped IRQ number base for this MSI
 }PERIPHERAL_VECTOR_BLOCK;

@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2023, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2024, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -433,7 +433,6 @@ uint32_t pal_pcie_mem_get_offset(uint32_t bdf, PCIE_MEM_TYPE_INFO_e mem_type);
 
 uint32_t pal_pcie_bar_mem_read(uint32_t bdf, uint64_t address, uint32_t *data);
 uint32_t pal_pcie_bar_mem_write(uint32_t bdf, uint64_t address, uint32_t data);
-
 /**
   @brief  Instance of SMMU INFO block
 **/
@@ -628,7 +627,7 @@ typedef struct {
   uint32_t         vector_lower_addr; ///< Base Address of the controller
   uint32_t         vector_data;       ///< Base Address of the controller
   uint32_t         vector_control;    ///< IRQ to install an ISR
-  uint32_t         vector_irq_base;   ///< Base IRQ for the vectors in the block
+  uint64_t         vector_irq_base;   ///< Base IRQ for the vectors in the block
   uint32_t         vector_n_irqs;     ///< Number of irq vectors in the block
   uint32_t         vector_mapped_irq_base; ///< Mapped IRQ number base for this MSI
 }PERIPHERAL_VECTOR_BLOCK;

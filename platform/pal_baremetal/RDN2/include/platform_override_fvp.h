@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2020-2023, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2024, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,6 +18,13 @@
 /* Settings */
 #define PLATFORM_OVERRIDE_SBSA_LEVEL   0x7     //The permissible levels are 3,4,5,6 and 7
 #define PLATFORM_OVERRIDE_PRINT_LEVEL  0x3     //The permissible levels are 1,2,3,4 and 5
+
+/* System Last-Level cache info
+   0 - Unknown
+   1 - PPTT PE-side LLC
+   2 - HMAT mem-side LLC
+*/
+#define PLATFORM_OVERRRIDE_SLC 0x0
 
 /* PCIe BAR config parameters*/
 #define PLATFORM_OVERRIDE_PCIE_BAR64_VAL   0x4000100000
