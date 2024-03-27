@@ -22,7 +22,7 @@
 
 #include "val/common/include/acs_val.h"
 #include "val/sbsa/include/sbsa_val_interface.h"
-#include "val/include/sbsa_avs_nist.h"
+#include "val/sbsa/include/sbsa_acs_nist.h"
 
 #define TEST_NUM   (ACS_NIST_TEST_NUM_BASE + 1)
 #define TEST_RULE "S_L7ENT_1"

@@ -836,7 +836,7 @@ ShellAppMainsbsa (
 #ifdef ENABLE_NIST
   /***         Starting NIST tests                   ***/
   if (g_execute_nist == TRUE) {
-    Status |= val_nist_execute_tests(g_sbsa_level, val_pe_get_num());
+    Status |= val_sbsa_nist_execute_tests(g_sbsa_level, val_pe_get_num());
   }
 #endif
 

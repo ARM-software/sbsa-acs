@@ -7,8 +7,8 @@ diff -crB sts-2.1.2_orginal/sts-2.1.2/include/cephes.h sts-2.1.2/sts-2.1.2/inclu
   #ifndef _CEPHES_H_
   #define _CEPHES_H_
   
-+ #include "../../val/include/sbsa_avs_val.h"
-+ #include "../../val/include/sbsa_avs_nist.h"
++ #include "../../../bsa-acs/val/common/include/acs_val.h"
++ #include "../../../bsa-acs/val/sbsa/include/sbsa_acs_nist.h"
 + 
   double cephes_igamc(double a, double x);
   double cephes_igam(double a, double x);
