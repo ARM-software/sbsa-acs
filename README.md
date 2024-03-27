@@ -20,7 +20,7 @@ A few tests are executed by running the SBSA ACS Linux application which in turn
 The tests can also be executed in a Bare-metal environment. The initialization of the Bare-metal environment is specific to the environment and is out of scope of this document.
 
 ## Release details
- - Code Quality: REL v7.1.4
+ - Code Quality: REL v7.1.5
  - The tests are written for version 7.1 of the SBSA specification.
  - For complete coverage of the SBSA rules, availability of an Exerciser is required for Exerciser tests to be run during verficiation at Pre-Silicon level.
  - For complete coverage, both SBSA and BSA ACS should be run.
@@ -42,7 +42,7 @@ The tests can also be executed in a Bare-metal environment. The initialization o
   - For details on the SBSA ACS UEFI Shell Application, Linux Application and PMU Linux Application see the [arm SBSA User Guide Document](docs/arm_sbsa_architecture_compliance_user_guide.pdf).
   - For details on the SBSA ACS Bare-metal support, see the
     - [arm SBSA Bare-metal User Guide Document](docs/arm_sbsa_architecture_compliance_bare-metal_user_guide.pdf).
-    - [Bare-metal Code](platform/pal_baremetal/). <br />
+    - [Bare-metal Code](https://github.com/ARM-software/bsa-acs/tree/main/pal/baremetal). <br />
 Note: The Bare-metal PCIe enumeration code provided as part of the SBSA ACS should be used and should not be replaced. This code is vital in analyzing of the test result.
 
 ### Running Exerciser tests for complete coverage
@@ -72,32 +72,34 @@ If you choose to use the prebuilt image, jump to the test suite execution sectio
 Before starting the build, ensure that the following requirements are met.
 
 - Any mainstream Linux based OS distribution running on a x86 or AArch64 machine.
-- Install GCC-ARM 10.3 [toolchain](https://developer.arm.com/tools-and-software/open-source-software/developer-tools/gnu-toolchain/gnu-a/downloads).
+- Install GCC-ARM 13.2 [toolchain](https://developer.arm.com/downloads/-/arm-gnu-toolchain-downloads).
 - Install the build prerequisite packages to build EDK2.
 Note: The details of the packages are beyond the scope of this document.
 
 ### 1. Build Steps
 
-1.  git clone the edk2-stable202302 tag of EDK2 tree
-> git clone --recursive --branch edk2-stable202302 https://github.com/tianocore/edk2
+1.  git clone the edk2-stable202402 tag of EDK2 tree
+> git clone --recursive --branch edk2-stable202402 https://github.com/tianocore/edk2
 2.  git clone the EDK2 port of libc
 > git clone https://github.com/tianocore/edk2-libc edk2/edk2-libc
 3.  git clone sbsa-acs
 > git clone https://github.com/ARM-software/sbsa-acs edk2/ShellPkg/Application/sbsa-acs
-4.  Add the following to the [LibraryClasses.common] section in edk2/ShellPkg/ShellPkg.dsc
-> SbsaValLib|ShellPkg/Application/sbsa-acs/val/SbsaValLib.inf
+4. git clone bsa-acs
+> git clone https://github.com/ARM-software/bsa-acs.git edk2/ShellPkg/Application/bsa-acs
+5.  Add the following to the [LibraryClasses.common] section in edk2/ShellPkg/ShellPkg.dsc
+> SbsaValLib|ShellPkg/Application/bsa-acs/val/SbsaValLib.inf
 
-> SbsaPalLib|ShellPkg/Application/sbsa-acs/platform/pal_uefi/SbsaPalLib.inf
-5.  Add the following to the [components] section of edk2/ShellPkg/ShellPkg.dsc
+> SbsaPalLib|ShellPkg/Application/bsa-acs/pal/uefi_acpi/SbsaPalLib.inf
+6.  Add the following to the [components] section of edk2/ShellPkg/ShellPkg.dsc
 > ShellPkg/Application/sbsa-acs/uefi_app/SbsaAvs.inf
 
 ### 1.1 On Linux build environment, perform the following steps:
 - On x86 machine
-> wget https://developer.arm.com/-/media/Files/downloads/gnu-a/10.3-2021.07/binrel/gcc-arm-10.3-2021.07-x86_64-aarch64-none-linux-gnu.tar.xz
+> wget https://developer.arm.com/-/media/Files/downloads/gnu/13.2.rel1/binrel/arm-gnu-toolchain-13.2.rel1-x86_64-aarch64-none-linux-gnu.tar.xz
 
-> tar -xf gcc-arm-10.3-2021.07-x86_64-aarch64-none-linux-gnu.tar.xz
+> tar -xf arm-gnu-toolchain-13.2.rel1-x86_64-aarch64-none-linux-gnu.tar.xz
 
-> export GCC49_AARCH64_PREFIX= GCC 10.3 toolchain path pointing to gcc-arm-10.3-2021.07-x86_64-aarch64-none-linux-gnu/bin/aarch64-none-linux-gnu-
+> export GCC49_AARCH64_PREFIX= GCC 13.2 toolchain path pointing to arm-gnu-toolchain-13.2.rel1-x86_64-aarch64-none-linux-gnu/bin/aarch64-none-linux-gnu-
 
 - On AArch64 machine
 > export GCC49_AARCH64_PREFIX=/usr/bin
@@ -110,7 +112,7 @@ Note: The details of the packages are beyond the scope of this document.
 
 > make -C BaseTools/Source/C
 
-> source ShellPkg/Application/sbsa-acs/tools/scripts/avsbuild.sh
+> source ShellPkg/Application/sbsa-acs/tools/scripts/acsbuild.sh
 ### 2. Build output
 
 The EFI executable file is generated at <edk2_path>/Build/Shell/DEBUG_GCC49/AARCH64/Sbsa.efi
@@ -186,12 +188,12 @@ This section lists the porting and build steps for the kernel module.
 The patch for the kernel tree and the Linux PAL are hosted separately on [linux-acs](https://gitlab.arm.com/linux-arm/linux-acs) repository.
 
 #### Prerequisites
-- Linux kernel source version 5.11, 5.13, 5.15, 6.0, 6.4
-- Install GCC-ARM 12.2 or higher from [toolchain]([https://developer.arm.com/downloads/-/arm-gnu-toolchain-downloads])
+- Linux kernel source version 5.11, 5.13, 5.15, 6.0, 6.4, 6.7
+- Install GCC-ARM 13.2 [toolchain](https://developer.arm.com/downloads/-/arm-gnu-toolchain-downloads).
 - Build environment for AArch64 Linux kernel.<br />
 
 NOTE: <br />
-Linux version 6.4 is the recommended version.
+Linux version 6.7 is the recommended version.
 
 ### 1.1 Building the kernel module
 Download the below repository to the local <workspace_dir> directory
@@ -199,25 +201,27 @@ Download the below repository to the local <workspace_dir> directory
 
 > git clone https://github.com/ARM-software/sbsa-acs.git
 
-> git clone https://github.com/torvalds/linux.git -b v6.4
+> git clone https://github.com/ARM-software/bsa-acs.git
 
-1. export CROSS_COMPILE=<GCC12.2 or higher toolchain path> pointing to /bin/aarch64-linux-gnu-
+> git clone https://github.com/torvalds/linux.git -b v6.7
+
+1. export CROSS_COMPILE=<GCC13.2 or higher toolchain path> pointing to /bin/aarch64-linux-gnu-
 2. cd <workspace_dir>/linux
-3. git apply <workspace_dir>/linux-acs/kernel/src/0001-BSA-ACS-Linux-6.4.patch to your kernel source tree.
+3. git apply <workspace_dir>/linux-acs/kernel/src/0001-BSA-ACS-Linux-6.7.patch to your kernel source tree.
 4. make ARCH=arm64 defconfig && make -j $(nproc) ARCH=arm64
 
 Successful completion of above steps will generate **Image**  in <workspace_dir>/linux/arch/arm64/boot/
 
-NOTE: The steps mentions Linux version 6.4, as it is latest version which is verified at ACS end.
+NOTE: The steps mentions Linux version 6.7, as it is latest version which is verified at ACS end.
 
 #### 1.2 Build steps for SBSA kernel module
-1. cd <workspace_dir>/linux-acs/sbsa-acs-drv/files
-2. export CROSS_COMPILE=<GCC12.2 or higher toolchain path> pointing to /bin/aarch64-linux-gnu-
+1. cd <workspace_dir>/linux-acs/acs-drv/files
+2. export CROSS_COMPILE=<GCC13.2 or higher toolchain path> pointing to /bin/aarch64-linux-gnu-
 3. export KERNEL_SRC=<workspace_dir>/linux
-4. ./setup.sh <local_dir/sbsa-acs>
+4. ./sbsa_setup.sh <local_dir/sbsa-acs> <local_dir/bsa-acs>
 5. ./linux_sbsa_acs.sh
 
-Successful completion of above steps will generate **sbsa_acs.ko**  in <workspace_dir>/linux-acs/sbsa-acs-drv/files
+Successful completion of above steps will generate **sbsa_acs.ko**  in <workspace_dir>/linux-acs/acs-drv/files
 
 #### 1.3 SBSA Linux application build
 1. cd <workspace_dir>/sbsa-acs/linux_app/sbsa-acs-app
@@ -244,7 +248,29 @@ The Bare-metal build environment is platform specific.
 
 To execute the Bare-metal code from UEFI Shell, checkout to [bare-metal](https://github.com/ARM-software/sbsa-acs/tree/baremetal_reference) branch of SBSA and the build steps to integrate and run the same from UEFI shell are provided in the [README.md](https://github.com/ARM-software/sbsa-acs/blob/baremetal_reference/README.md)
 
-For details on generating the binaries to run on Bare-metal environment, refer [README.md](platform/pal_baremetal/README.md)
+For generating SBSA binary to run on Bare-metal environment, perform the following steps
+1. cd sbsa-acs
+2. export CROSS_COMPILE=<path_to_the_toolchain>/bin/aarch64-none-elf-
+3. mkdir build
+4. cd build
+5. cmake ../ -G"Unix Makefiles" -DCROSS_COMPILE=$CROSS_COMPILE -DTARGET="Target platform" -DBSA_DIR=<bsa-acs_path>
+6. make
+
+Note: Reference Cmake file for SBSA is present at [CMakeLists.txt](CMakeLists.txt).
+
+*Recommended*: CMake v3.17, GCC v12.2
+```
+CMake Command Line Options:
+ -DARM_ARCH_MAJOR = Arch major version. Default value is 9.
+ -DARM_ARCH_MINOR = Arch minor version. Default value is 0.
+ -DCROSS_COMPILE  = Cross compiler path
+ -DTARGET         = Target platform. Should be same as folder under baremetal/target/
+ -DBSA_DIR        = BSA path for SBSA compilation
+```
+
+On a successful build, *.bin, *.elf, *.img and debug binaries are generated at *build/output* directory. The output library files will be generated at *build/tools/cmake/* of the sbsa-acs directory.
+
+For more details on running the generated binaries on Bare-metal environment, refer [README.md](https://github.com/ARM-software/bsa-acs/tree/main/pal/baremetal/README.md)
 
 ## Security implication
 SBSA ACS test suite may run at higher privilege level. An attacker may utilize these tests as a means to elevate privilege which can potentially reveal the platform security assets. To prevent the leakage of secure information, it is strongly recommended that the ACS test suite is run only on development platforms. If it is run on production systems, the system should be scrubbed after running the test suite.
@@ -285,6 +311,7 @@ The details of the hardware or Verification IP which enable these exerciser test
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 |   SBSA Spec Version   |   ACS Coverage Mapping   |   SBSA ACS Version   |        SBSA Tag ID         |   BSA ACS Version   |        BSA Tag ID        |    Pre-Si Support    |
 |-----------------------|:------------------------:|:--------------------:|:--------------------------:|:-------------------:|:------------------------:|:--------------------:|
+|       SBSA v7.1       |    BSA ACS + SBSA ACS    |      v7.1.5          |   v24.03_REL7.1.5          |        v1.0.8       |   v24.03_REL1.0.8        |       Yes            |
 |       SBSA v7.1       |    BSA ACS + SBSA ACS    |      v7.1.4          |   v23.12_REL7.1.4          |        v1.0.7       |   v23.12_REL1.0.7        |       Yes            |
 |       SBSA v7.1       |    BSA ACS + SBSA ACS    |      v7.1.3          |   v23.11_BootFramework     |        v1.0.6       |   v23.11_BootFramework   |       Yes            |
 |       SBSA v7.1       |    BSA ACS + SBSA ACS    |      v7.1.3          |   v23.09_REL7.1.3          |        v1.0.6       |   v23.09_REL1.0.6        |       Yes            |
@@ -311,4 +338,4 @@ SBSA ACS is distributed under Apache v2.0 License.
 
 --------------
 
-*Copyright (c) 2018-2023 Arm Limited and Contributors. All rights reserved.*
+*Copyright (c) 2018-2024 Arm Limited and Contributors. All rights reserved.*

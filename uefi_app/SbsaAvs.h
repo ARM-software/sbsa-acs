@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2023, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2024, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,7 +22,7 @@
 
   #define SBSA_ACS_MAJOR_VER      7
   #define SBSA_ACS_MINOR_VER      1
-  #define SBSA_ACS_SUBMINOR_VER   4
+  #define SBSA_ACS_SUBMINOR_VER   5
 
   #define G_SBSA_LEVEL  4
   #define SBSA_MIN_LEVEL_SUPPORTED 3
