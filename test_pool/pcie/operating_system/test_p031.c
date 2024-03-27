@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2019-2023, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2019-2024, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,13 +15,13 @@
  * limitations under the License.
  **/
 
-#include "val/include/sbsa_avs_val.h"
-#include "val/include/val_interface.h"
+#include "val/common/include/acs_val.h"
+#include "val/sbsa/include/sbsa_val_interface.h"
 
-#include "val/include/sbsa_avs_pcie.h"
-#include "val/include/sbsa_avs_pe.h"
+#include "val/sbsa/include/sbsa_acs_pcie.h"
+#include "val/sbsa/include/sbsa_acs_pe.h"
 
-#define TEST_NUM   (AVS_PCIE_TEST_NUM_BASE + 31)
+#define TEST_NUM   (ACS_PCIE_TEST_NUM_BASE + 31)
 #define TEST_DESC  "Check Type0/1 BIST Register rule  "
 #define TEST_RULE  "RE_REG_1, IE_REG_1, IE_REG_3"
 
@@ -71,36 +71,36 @@ payload(void)
       if (((reg_value & BIST_BC_MASK) == 0x00) &&
          (((reg_value & BIST_CC_MASK) != 0x00) || ((reg_value & BIST_SB_MASK) != 0x00)))
       {
-          val_print(AVS_PRINT_ERR, "\n       BDF - 0x%x", bdf);
-          val_print(AVS_PRINT_ERR, " BIST Reg Value : %d", reg_value);
+          val_print(ACS_PRINT_ERR, "\n       BDF - 0x%x", bdf);
+          val_print(ACS_PRINT_ERR, " BIST Reg Value : %d", reg_value);
           test_fails++;
       }
   }
 
   if (test_skip == 1)
-      val_set_status(pe_index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
+      val_set_status(pe_index, RESULT_SKIP(TEST_NUM, 01));
   else if (test_fails)
-      val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, test_fails));
+      val_set_status(pe_index, RESULT_FAIL(TEST_NUM, test_fails));
   else
-      val_set_status(pe_index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
+      val_set_status(pe_index, RESULT_PASS(TEST_NUM, 01));
 }
 
 uint32_t
 p031_entry(uint32_t num_pe)
 {
 
-  uint32_t status = AVS_STATUS_FAIL;
+  uint32_t status = ACS_STATUS_FAIL;
 
   num_pe = 1;  //This test is run on single processor
 
-  status = val_initialize_test(TEST_NUM, TEST_DESC, num_pe, g_sbsa_level, TEST_RULE);
-  if (status != AVS_STATUS_SKIP)
+  status = val_initialize_test(TEST_NUM, TEST_DESC, num_pe);
+  if (status != ACS_STATUS_SKIP)
       val_run_test_payload(TEST_NUM, num_pe, payload, 0);
 
   /* get the result from all PE and check for failure */
   status = val_check_for_error(TEST_NUM, num_pe, TEST_RULE);
 
-  val_report_status(0, SBSA_AVS_END(g_sbsa_level, TEST_NUM), TEST_RULE);
+  val_report_status(0, ACS_END(TEST_NUM), TEST_RULE);
 
   return status;
 }

@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2023, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2023-2024, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,19 +15,20 @@
  * limitations under the License.
  **/
 
-#include "val/include/sbsa_avs_val.h"
-#include "val/include/val_interface.h"
+#include "val/common/include/acs_val.h"
+#include "val/sbsa/include/sbsa_val_interface.h"
 
-#include "val/include/sbsa_avs_pcie_enumeration.h"
-#include "val/include/sbsa_avs_pcie.h"
-#include "val/include/sbsa_avs_pe.h"
-#include "val/include/sbsa_avs_gic.h"
-#include "val/include/sbsa_avs_iovirt.h"
-#include "val/include/sbsa_avs_smmu.h"
-#include "val/include/sbsa_avs_memory.h"
-#include "val/include/sbsa_avs_exerciser.h"
+#include "val/common/include/acs_pcie_enumeration.h"
+#include "val/sbsa/include/sbsa_acs_pcie.h"
+#include "val/sbsa/include/sbsa_acs_pe.h"
+#include "val/sbsa/include/sbsa_acs_gic.h"
+#include "val/sbsa/include/sbsa_acs_iovirt.h"
+#include "val/common/include/acs_iovirt.h"
+#include "val/sbsa/include/sbsa_acs_smmu.h"
+#include "val/sbsa/include/sbsa_acs_memory.h"
+#include "val/sbsa/include/sbsa_acs_exerciser.h"
 
-#define TEST_NUM   (AVS_EXERCISER_TEST_NUM_BASE + 6)
+#define TEST_NUM   (ACS_EXERCISER_TEST_NUM_BASE + 6)
 #define TEST_DESC  "RP's must support AER feature          "
 #define TEST_RULE  "PCI_ER_01, PCI_ER_02, PCI_ER_03, PCI_ER_04"
 
@@ -46,7 +47,7 @@ intr_handler(void)
   /* Clear the interrupt pending state */
   irq_pending = 0;
 
-  val_print(AVS_PRINT_INFO, "\n       Received MSI interrupt %x       ", lpi_int_id);
+  val_print(ACS_PRINT_INFO, "\n       Received MSI interrupt %x       ", lpi_int_id);
   val_gic_end_of_interrupt(lpi_int_id);
   return;
 }
@@ -89,7 +90,7 @@ correctable_err_status_chk(uint32_t e_bdf, uint32_t aer_offset, uint32_t err_cod
     val_pcie_read_cfg(e_bdf, aer_offset + AER_CORR_STATUS_OFFSET, &value);
     if (!((value >> err_bit) & 0x1))
     {
-        val_print(AVS_PRINT_ERR, "\n       Err bit for error not set", 0);
+        val_print(ACS_PRINT_ERR, "\n       Err bit for error not set", 0);
         fail_cnt++;
     }
 
@@ -97,13 +98,13 @@ correctable_err_status_chk(uint32_t e_bdf, uint32_t aer_offset, uint32_t err_cod
     val_pcie_read_cfg(erp_bdf, rp_aer_offset + AER_ROOT_ERR_OFFSET, &value);
     if ((mask_value == 0) && ((value & 0x1) == 0))
     {
-        val_print(AVS_PRINT_ERR, "\n       Root error status not set", 0);
+        val_print(ACS_PRINT_ERR, "\n       Root error status not set", 0);
         fail_cnt++;
     }
 
     if ((mask_value == 1) && ((value & 0x1) == 1))
     {
-        val_print(AVS_PRINT_ERR, "\n       Root error status set when error is masked", 0);
+        val_print(ACS_PRINT_ERR, "\n       Root error status set when error is masked", 0);
         fail_cnt++;
     }
 
@@ -112,7 +113,7 @@ correctable_err_status_chk(uint32_t e_bdf, uint32_t aer_offset, uint32_t err_cod
     reg_bdf = PCIE_CREATE_BDF_PACKED(e_bdf);
     if ((mask_value == 0) && ((value & AER_SOURCE_ID_MASK) != reg_bdf))
     {
-        val_print(AVS_PRINT_ERR, "\n       Error source Identification failed", 0);
+        val_print(ACS_PRINT_ERR, "\n       Error source Identification failed", 0);
         fail_cnt++;
     }
 
@@ -121,7 +122,7 @@ correctable_err_status_chk(uint32_t e_bdf, uint32_t aer_offset, uint32_t err_cod
     val_pcie_read_cfg(e_bdf, pciecs_base + DCTLR_OFFSET, &reg_value);
     if (!((reg_value >> DSTS_SHIFT) & 0x1))
     {
-        val_print(AVS_PRINT_ERR, "\n       Device reg of EP not set %x ", reg_value);
+        val_print(ACS_PRINT_ERR, "\n       Device reg of EP not set %x ", reg_value);
         fail_cnt++;
     }
 
@@ -130,7 +131,7 @@ correctable_err_status_chk(uint32_t e_bdf, uint32_t aer_offset, uint32_t err_cod
     val_pcie_read_cfg(erp_bdf, rp_aer_offset + AER_ROOT_ERR_OFFSET, &value);
     if ((value & 0x1))
     {
-        val_print(AVS_PRINT_ERR, "\n       Err bit is not cleared %x ", value);
+        val_print(ACS_PRINT_ERR, "\n       Err bit is not cleared %x ", value);
         fail_cnt++;
     }
 
@@ -156,7 +157,7 @@ uncorrectable_error_chk(uint32_t e_bdf, uint32_t aer_offset, uint32_t err_code)
     val_pcie_read_cfg(e_bdf, aer_offset + AER_UNCORR_STATUS_OFFSET, &value);
     if (!((value >> err_bit) & 0x1))
     {
-        val_print(AVS_PRINT_ERR, "\n       Err bit not set %x", value);
+        val_print(ACS_PRINT_ERR, "\n       Err bit not set %x", value);
         fail_cnt++;
     }
 
@@ -164,13 +165,13 @@ uncorrectable_error_chk(uint32_t e_bdf, uint32_t aer_offset, uint32_t err_code)
     val_pcie_read_cfg(erp_bdf, rp_aer_offset + AER_ROOT_ERR_OFFSET, &value);
     if ((mask_value == 0) && ((value & 0x4) == 0))
     {
-        val_print(AVS_PRINT_ERR, "\n       Root Error status not set", 0);
+        val_print(ACS_PRINT_ERR, "\n       Root Error status not set", 0);
         fail_cnt++;
     }
 
     if ((mask_value == 1) && ((value & 0x4) == 0x4))
     {
-        val_print(AVS_PRINT_ERR, "\n       Root error status set when error is masked", 0);
+        val_print(ACS_PRINT_ERR, "\n       Root error status set when error is masked", 0);
         fail_cnt++;
     }
 
@@ -179,7 +180,7 @@ uncorrectable_error_chk(uint32_t e_bdf, uint32_t aer_offset, uint32_t err_code)
     reg_bdf = PCIE_CREATE_BDF_PACKED(e_bdf);
     if ((mask_value == 0) && (((value >> AER_SOURCE_ID_SHIFT) & AER_SOURCE_ID_MASK) != reg_bdf))
     {
-        val_print(AVS_PRINT_ERR, "\n       Error source Identification failed", 0);
+        val_print(ACS_PRINT_ERR, "\n       Error source Identification failed", 0);
         fail_cnt++;
     }
 
@@ -188,7 +189,7 @@ uncorrectable_error_chk(uint32_t e_bdf, uint32_t aer_offset, uint32_t err_code)
     val_pcie_read_cfg(e_bdf, pciecs_base + DCTLR_OFFSET, &reg_value);
     if (!((reg_value >> DSTS_SHIFT) & DS_UNCORR_MASK))
     {
-        val_print(AVS_PRINT_ERR, "\n       Device reg of EP not set", 0);
+        val_print(ACS_PRINT_ERR, "\n       Device reg of EP not set", 0);
         fail_cnt++;
     }
 
@@ -197,7 +198,7 @@ uncorrectable_error_chk(uint32_t e_bdf, uint32_t aer_offset, uint32_t err_code)
     val_pcie_read_cfg(erp_bdf, rp_aer_offset + AER_ROOT_ERR_OFFSET, &value);
     if ((value & 0x7F))
     {
-        val_print(AVS_PRINT_ERR, "\n       Err bit is not cleared %x", value);
+        val_print(ACS_PRINT_ERR, "\n       Err bit is not cleared %x", value);
         fail_cnt++;
     }
 
@@ -232,7 +233,7 @@ inject_error(uint32_t e_bdf, uint32_t instance, uint32_t aer_offset)
             if (timeout == 0)
             {
                 val_gic_free_irq(irq_pending, 0);
-                val_print(AVS_PRINT_ERR,
+                val_print(ACS_PRINT_ERR,
                           "\n       Intr not trigerred on err injection bdf 0x%x", e_bdf);
                 return 1;
             }
@@ -240,20 +241,20 @@ inject_error(uint32_t e_bdf, uint32_t instance, uint32_t aer_offset)
 
         /* Check if error injected is correctable or uncorrectable*/
         if (status == ERR_CORR) {
-            val_print(AVS_PRINT_INFO, "\n       Correctable error recieved", 0);
+            val_print(ACS_PRINT_INFO, "\n       Correctable error recieved", 0);
             res = correctable_err_status_chk(e_bdf, aer_offset, value);
             if (res) {
-                val_print(AVS_PRINT_ERR,
+                val_print(ACS_PRINT_ERR,
                           "\n       Correctable error check failed for bdf %x", e_bdf);
                 return 1;
             }
         }
 
         else if (status == ERR_UNCORR) {
-            val_print(AVS_PRINT_INFO, "\n       UnCorrectable error recieved", 0);
+            val_print(ACS_PRINT_INFO, "\n       UnCorrectable error recieved", 0);
             res = uncorrectable_error_chk(e_bdf, aer_offset, value);
             if (res) {
-                val_print(AVS_PRINT_ERR,
+                val_print(ACS_PRINT_ERR,
                           "\n       Uncorrectable error check failed for bdf %x", e_bdf);
                 return 1;
             }
@@ -297,7 +298,7 @@ payload(void)
           continue;
 
      e_bdf = val_exerciser_get_bdf(instance);
-     val_print(AVS_PRINT_DEBUG, "\n       Exerciser BDF - 0x%x", e_bdf);
+     val_print(ACS_PRINT_DEBUG, "\n       Exerciser BDF - 0x%x", e_bdf);
 
      val_pcie_enable_eru(e_bdf);
      if (val_pcie_get_rootport(e_bdf, &erp_bdf))
@@ -307,13 +308,13 @@ payload(void)
 
      /*Check AER capability for exerciser and its RP */
       if (val_pcie_find_capability(e_bdf, PCIE_ECAP, ECID_AER, &aer_offset) != PCIE_SUCCESS) {
-          val_print(AVS_PRINT_ERR, "\n       No AER Capability, Skipping for Bdf : 0x%x", e_bdf);
+          val_print(ACS_PRINT_ERR, "\n       No AER Capability, Skipping for Bdf : 0x%x", e_bdf);
           continue;
       }
 
       if (val_pcie_find_capability(erp_bdf, PCIE_ECAP, ECID_AER, &rp_aer_offset) != PCIE_SUCCESS) {
-          val_print(AVS_PRINT_ERR, "\n       AER Capability not supported for RP : 0x%x", erp_bdf);
-          val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
+          val_print(ACS_PRINT_ERR, "\n       AER Capability not supported for RP : 0x%x", erp_bdf);
+          val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 01));
           return;
       }
 
@@ -321,26 +322,26 @@ payload(void)
       status = val_pcie_find_capability(erp_bdf, PCIE_ECAP, ECID_DPC, &dpc_cap_base);
       if (status == PCIE_CAP_NOT_FOUND)
       {
-          val_print(AVS_PRINT_ERR, "\n       ECID_DPC not found", 0);
-          val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
+          val_print(ACS_PRINT_ERR, "\n       ECID_DPC not found", 0);
+          val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 01));
           return;
       }
 
       /* Warn if DPC enabled */
       val_pcie_read_cfg(erp_bdf, dpc_cap_base + DPC_CTRL_OFFSET, &reg_value);
       if ((reg_value & 0x3) != 0)
-          val_print(AVS_PRINT_WARN, "\n       DPC enabled for bdf : 0x%x", erp_bdf);
+          val_print(ACS_PRINT_WARN, "\n       DPC enabled for bdf : 0x%x", erp_bdf);
 
 
       /* Search for MSI-X Capability */
       if (val_pcie_find_capability(e_bdf, PCIE_CAP, CID_MSIX, &msi_cap_offset)) {
-          val_print(AVS_PRINT_ERR, "\n       No MSI-X Capability, Skipping for Bdf 0x%x", e_bdf);
+          val_print(ACS_PRINT_ERR, "\n       No MSI-X Capability, Skipping for Bdf 0x%x", e_bdf);
           continue;
       }
 
       if (val_pcie_find_capability(erp_bdf, PCIE_CAP, CID_MSIX, &msi_cap_offset)) {
-          val_print(AVS_PRINT_ERR, "\n       No MSI-X Capability for RP Bdf 0x%x", erp_bdf);
-          val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
+          val_print(ACS_PRINT_ERR, "\n       No MSI-X Capability for RP Bdf 0x%x", erp_bdf);
+          val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 01));
           return;
       }
 
@@ -350,24 +351,24 @@ payload(void)
                                         &stream_id, &its_id);
 
       if (status) {
-          val_print(AVS_PRINT_ERR, "\n       iovirt_get_device failed for bdf 0x%x", e_bdf);
-          val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
+          val_print(ACS_PRINT_ERR, "\n       iovirt_get_device failed for bdf 0x%x", e_bdf);
+          val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 01));
           return;
       }
 
       /* MSI assignment */
       status = val_gic_request_msi(erp_bdf, device_id, its_id, lpi_int_id + instance, msi_index);
       if (status) {
-          val_print(AVS_PRINT_ERR, "\n       MSI Assignment failed for bdf : 0x%x", erp_bdf);
-          val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
+          val_print(ACS_PRINT_ERR, "\n       MSI Assignment failed for bdf : 0x%x", erp_bdf);
+          val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 02));
           return;
       }
 
       status = val_gic_install_isr(lpi_int_id + instance, intr_handler);
 
       if (status) {
-          val_print(AVS_PRINT_ERR, "\n       Intr handler registration failed: 0x%x", lpi_int_id);
-          val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
+          val_print(ACS_PRINT_ERR, "\n       Intr handler registration failed: 0x%x", lpi_int_id);
+          val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 02));
           return;
       }
 
@@ -381,7 +382,7 @@ payload(void)
       clear_status_bits(e_bdf, aer_offset, 0, 0);
       if (inject_error(e_bdf, instance, aer_offset))
       {
-          val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 03));
+          val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 03));
           return;
       }
 
@@ -390,7 +391,7 @@ payload(void)
       clear_status_bits(e_bdf, aer_offset, AER_ERROR_MASK, 0);
       if (inject_error(e_bdf, instance, aer_offset))
       {
-          val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 04));
+          val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 04));
           return;
       }
       mask_value = 0;
@@ -399,7 +400,7 @@ payload(void)
       clear_status_bits(e_bdf, aer_offset, 0, AER_UNCORR_SEVR_FATAL);
       if (inject_error(e_bdf, instance, aer_offset))
       {
-          val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 05));
+          val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 05));
           return;
       }
 
@@ -416,9 +417,9 @@ payload(void)
   }
 
   if (test_skip == 1)
-      val_set_status(pe_index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
+      val_set_status(pe_index, RESULT_SKIP(TEST_NUM, 01));
   else
-      val_set_status(pe_index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
+      val_set_status(pe_index, RESULT_PASS(TEST_NUM, 01));
 
   return;
 
@@ -428,16 +429,16 @@ uint32_t
 e006_entry(void)
 {
   uint32_t num_pe = 1;
-  uint32_t status = AVS_STATUS_FAIL;
+  uint32_t status = ACS_STATUS_FAIL;
 
-  status = val_initialize_test(TEST_NUM, TEST_DESC, num_pe, g_sbsa_level, TEST_RULE);
-  if (status != AVS_STATUS_SKIP)
+  status = val_initialize_test(TEST_NUM, TEST_DESC, num_pe);
+  if (status != ACS_STATUS_SKIP)
       val_run_test_payload(TEST_NUM, num_pe, payload, 0);
 
   /* Get the result from all PE and check for failure */
   status = val_check_for_error(TEST_NUM, num_pe, TEST_RULE);
 
-  val_report_status(0, SBSA_AVS_END(g_sbsa_level, TEST_NUM), TEST_RULE);
+  val_report_status(0, ACS_END(TEST_NUM), TEST_RULE);
 
   return status;
 }

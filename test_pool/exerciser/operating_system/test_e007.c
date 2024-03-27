@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2023, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2023-2024, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,19 +15,19 @@
  * limitations under the License.
  **/
 
-#include "val/include/sbsa_avs_val.h"
-#include "val/include/val_interface.h"
+#include "val/common/include/acs_val.h"
+#include "val/sbsa/include/sbsa_val_interface.h"
 
-#include "val/include/sbsa_avs_pcie_enumeration.h"
-#include "val/include/sbsa_avs_pcie.h"
-#include "val/include/sbsa_avs_pcie_spec.h"
-#include "val/include/sbsa_avs_pe.h"
-#include "val/include/sbsa_avs_smmu.h"
-#include "val/include/sbsa_avs_iovirt.h"
-#include "val/include/sbsa_avs_memory.h"
-#include "val/include/sbsa_avs_exerciser.h"
+#include "val/common/include/acs_pcie_enumeration.h"
+#include "val/sbsa/include/sbsa_acs_pcie.h"
+#include "val/sbsa/include/sbsa_acs_pe.h"
+#include "val/sbsa/include/sbsa_acs_smmu.h"
+#include "val/common/include/acs_iovirt.h"
+#include "val/sbsa/include/sbsa_acs_iovirt.h"
+#include "val/sbsa/include/sbsa_acs_memory.h"
+#include "val/sbsa/include/sbsa_acs_exerciser.h"
 
-#define TEST_NUM   (AVS_EXERCISER_TEST_NUM_BASE + 7)
+#define TEST_NUM   (ACS_EXERCISER_TEST_NUM_BASE + 7)
 #define TEST_DESC  "RP's must support DPC                  "
 #define TEST_RULE  "PCI_ER_05, PCI_ER_06"
 
@@ -50,7 +50,7 @@ intr_handler(void)
   /* Clear the interrupt pending state */
   irq_pending = 0;
 
-  val_print(AVS_PRINT_INFO, "\n       Received MSI interrupt %x       ", lpi_int_id);
+  val_print(ACS_PRINT_INFO, "\n       Received MSI interrupt %x       ", lpi_int_id);
   val_gic_end_of_interrupt(lpi_int_id);
   return;
 }
@@ -102,10 +102,10 @@ save_config_space(uint32_t rp_bdf)
   pcie_device_bdf_table *bdf_tbl_ptr;
   bdf_tbl_ptr = val_pcie_bdf_table_ptr();
   if (bdf_tbl_ptr->num_entries > MAX_DEVICES) {
-      val_print(AVS_PRINT_WARN, "\n WARNING: Memory is allocated only for %d devices", MAX_DEVICES);
-      val_print(AVS_PRINT_WARN, "\n The number of PCIe devices is %d", bdf_tbl_ptr->num_entries);
-      val_print(AVS_PRINT_WARN, "\n for which the additional memory is not allocated", 0);
-      val_print(AVS_PRINT_WARN, "\n and test may fail\n", 0);
+      val_print(ACS_PRINT_WARN, "\n WARNING: Memory is allocated only for %d devices", MAX_DEVICES);
+      val_print(ACS_PRINT_WARN, "\n The number of PCIe devices is %d", bdf_tbl_ptr->num_entries);
+      val_print(ACS_PRINT_WARN, "\n for which the additional memory is not allocated", 0);
+      val_print(ACS_PRINT_WARN, "\n and test may fail\n", 0);
   }
 
   while (tbl_index < bdf_tbl_ptr->num_entries)
@@ -125,8 +125,8 @@ save_config_space(uint32_t rp_bdf)
       cfg_space_buf[tbl_index] = val_aligned_alloc(MEM_ALIGN_4K, PCIE_CFG_SIZE);
       if (cfg_space_buf[tbl_index] == NULL)
       {
-          val_print(AVS_PRINT_ERR, "\n       Memory allocation failed.", 0);
-          val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
+          val_print(ACS_PRINT_ERR, "\n       Memory allocation failed.", 0);
+          val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 02));
           return 1;
       }
 
@@ -177,7 +177,7 @@ payload(void)
           continue;
 
       e_bdf = val_exerciser_get_bdf(instance);
-      val_print(AVS_PRINT_DEBUG, "\n       Exerciser BDF - 0x%x", e_bdf);
+      val_print(ACS_PRINT_DEBUG, "\n       Exerciser BDF - 0x%x", e_bdf);
 
       val_pcie_enable_eru(e_bdf);
 
@@ -189,7 +189,7 @@ payload(void)
       status = val_pcie_find_capability(erp_bdf, PCIE_ECAP, ECID_DPC, &rp_dpc_cap_base);
       if (status == PCIE_CAP_NOT_FOUND)
       {
-          val_print(AVS_PRINT_ERR, "\n       ECID_DPC not found", 0);
+          val_print(ACS_PRINT_ERR, "\n       ECID_DPC not found", 0);
           continue;
       }
 
@@ -197,18 +197,18 @@ payload(void)
 
       /* Check AER capability for both exerciser and RP */
       if (val_pcie_find_capability(e_bdf, PCIE_ECAP, ECID_AER, &aer_offset) != PCIE_SUCCESS) {
-          val_print(AVS_PRINT_ERR, "\n       AER Capability not supported, Bdf : 0x%x", e_bdf);
+          val_print(ACS_PRINT_ERR, "\n       AER Capability not supported, Bdf : 0x%x", e_bdf);
           continue;
       }
 
       if (val_pcie_find_capability(erp_bdf, PCIE_ECAP, ECID_AER, &rp_aer_offset) != PCIE_SUCCESS) {
-          val_print(AVS_PRINT_ERR, "\n       AER Capability not supported for RP : 0x%x", erp_bdf);
+          val_print(ACS_PRINT_ERR, "\n       AER Capability not supported for RP : 0x%x", erp_bdf);
           fail_cnt++;
       }
 
       /* Search for MSI-X Capability */
       if (val_pcie_find_capability(e_bdf, PCIE_CAP, CID_MSIX, &msi_cap_offset)) {
-        val_print(AVS_PRINT_ERR, "\n       No MSI-X Capability, Skipping for Bdf 0x%x", e_bdf);
+        val_print(ACS_PRINT_ERR, "\n       No MSI-X Capability, Skipping for Bdf 0x%x", e_bdf);
         continue;
       }
 
@@ -218,30 +218,30 @@ payload(void)
                                         &stream_id, &its_id);
 
       if (status) {
-          val_print(AVS_PRINT_ERR, "\n       iovirt_get_device failed for bdf 0x%x", e_bdf);
-          val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
+          val_print(ACS_PRINT_ERR, "\n       iovirt_get_device failed for bdf 0x%x", e_bdf);
+          val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 01));
           return;
       }
 
        /* Get DeviceID & ITS_ID for this device */
       status = val_gic_request_msi(erp_bdf, device_id, its_id, lpi_int_id + instance, msi_index);
       if (status) {
-          val_print(AVS_PRINT_ERR, "\n       MSI Assignment failed for bdf : 0x%x", erp_bdf);
-          val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 2));
+          val_print(ACS_PRINT_ERR, "\n       MSI Assignment failed for bdf : 0x%x", erp_bdf);
+          val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 2));
           return;
       }
 
       status = val_gic_install_isr(lpi_int_id + instance, intr_handler);
 
       if (status) {
-          val_print(AVS_PRINT_ERR, "\n       Intr handler registration failed: 0x%x", lpi_int_id);
-          val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
+          val_print(ACS_PRINT_ERR, "\n       Intr handler registration failed: 0x%x", lpi_int_id);
+          val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 02));
           return;
       }
 
       status = val_exerciser_set_param(ERROR_INJECT_TYPE, UNCORR_CMPT_TO, 1, instance);
       if (status != ERR_UNCORR) {
-          val_print(AVS_PRINT_ERR, "\n       Error Injection failed, Bdf : 0x%x", e_bdf);
+          val_print(ACS_PRINT_ERR, "\n       Error Injection failed, Bdf : 0x%x", e_bdf);
           continue;
       }
 
@@ -253,7 +253,7 @@ payload(void)
           /* Save the config space of all the devices connected to the RP
            to restore after Secondary Bus Reset (SBR)*/
           save_config_space(erp_bdf);
-          val_print(AVS_PRINT_INFO, "       EP BDF : 0x%x\n", e_bdf);
+          val_print(ACS_PRINT_INFO, "       EP BDF : 0x%x\n", e_bdf);
 
           irq_pending = 1;
           val_pcie_read_cfg(erp_bdf, rp_dpc_cap_base + DPC_CTRL_OFFSET, &reg_value);
@@ -280,7 +280,7 @@ payload(void)
           val_pcie_read_cfg(e_bdf, CFG_READ, &reg_value);
           if (reg_value != PCIE_UNKNOWN_RESPONSE)
           {
-              val_print(AVS_PRINT_ERR, "\n       EP not contained due to DPC", 0);
+              val_print(ACS_PRINT_ERR, "\n       EP not contained due to DPC", 0);
               fail_cnt++;
           }
 
@@ -289,7 +289,7 @@ payload(void)
           /* Check DPC Trigger status */
           if ((reg_value & 1) == 0)
           {
-              val_print(AVS_PRINT_ERR, "\n       DPC Trigger status bit not set %x", reg_value);
+              val_print(ACS_PRINT_ERR, "\n       DPC Trigger status bit not set %x", reg_value);
               fail_cnt++;
           }
 
@@ -298,13 +298,13 @@ payload(void)
           {
               if (dpc_trigger_reason != 2)
               {
-                  val_print(AVS_PRINT_ERR, "\n       DPC Trigger reason incorrect", 0);
+                  val_print(ACS_PRINT_ERR, "\n       DPC Trigger reason incorrect", 0);
                   fail_cnt++;
               }
           } else {
               if (dpc_trigger_reason != 1)
               {
-                  val_print(AVS_PRINT_ERR, "\n       DPC Trigger reason incorrect", 0);
+                  val_print(ACS_PRINT_ERR, "\n       DPC Trigger reason incorrect", 0);
                   fail_cnt++;
               }
           }
@@ -313,7 +313,7 @@ payload(void)
           error_source_id = (reg_value >> DPC_SOURCE_ID_SHIFT);
           if (source_id != error_source_id)
           {
-              val_print(AVS_PRINT_ERR, "\n       DPC Error source Identification failed", 0);
+              val_print(ACS_PRINT_ERR, "\n       DPC Error source Identification failed", 0);
               fail_cnt++;
           }
 
@@ -323,7 +323,7 @@ payload(void)
 
           if (timeout == 0) {
               val_gic_free_irq(irq_pending, 0);
-              val_print(AVS_PRINT_ERR, "\n       Interrupt trigger failed for bdf 0x%lx", e_bdf);
+              val_print(ACS_PRINT_ERR, "\n       Interrupt trigger failed for bdf 0x%lx", e_bdf);
               fail_cnt++;
               continue;
           }
@@ -357,10 +357,10 @@ payload(void)
                   uint32_t delay_status = val_time_delay_ms(100 * ONE_MILLISECOND);
                   if (!delay_status)
                   {
-                      val_print(AVS_PRINT_ERR,
+                      val_print(ACS_PRINT_ERR,
                                "\n       Failed to time delay for BDF 0x%x ", erp_bdf);
                       val_memory_free_aligned(cfg_space_buf);
-                      val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
+                      val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 02));
                       return;
                   }
 
@@ -370,7 +370,7 @@ payload(void)
 
           if (status == PCIE_DLL_LINK_STATUS_NOT_ACTIVE)
           {
-              val_print(AVS_PRINT_ERR,
+              val_print(ACS_PRINT_ERR,
                        "\n       The link not active after reset for BDF 0x%x: ", erp_bdf);
               return ;
           }
@@ -391,7 +391,7 @@ payload(void)
           val_pcie_read_cfg(e_bdf, CFG_READ, &reg_value);
           if (reg_value == PCIE_UNKNOWN_RESPONSE)
           {
-              val_print(AVS_PRINT_ERR, "\n       EP not recovered from DPC %x", e_bdf);
+              val_print(ACS_PRINT_ERR, "\n       EP not recovered from DPC %x", e_bdf);
               fail_cnt++;
           }
 
@@ -400,11 +400,11 @@ payload(void)
   }
 
   if (test_skip)
-      val_set_status(pe_index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
+      val_set_status(pe_index, RESULT_SKIP(TEST_NUM, 01));
   else if (fail_cnt)
-      val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, fail_cnt));
+      val_set_status(pe_index, RESULT_FAIL(TEST_NUM, fail_cnt));
   else
-      val_set_status(pe_index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
+      val_set_status(pe_index, RESULT_PASS(TEST_NUM, 01));
 
   return;
 
@@ -414,16 +414,16 @@ uint32_t
 e007_entry(void)
 {
   uint32_t num_pe = 1;
-  uint32_t status = AVS_STATUS_FAIL;
+  uint32_t status = ACS_STATUS_FAIL;
 
-  status = val_initialize_test(TEST_NUM, TEST_DESC, num_pe, g_sbsa_level, TEST_RULE);
-  if (status != AVS_STATUS_SKIP)
+  status = val_initialize_test(TEST_NUM, TEST_DESC, num_pe);
+  if (status != ACS_STATUS_SKIP)
       val_run_test_payload(TEST_NUM, num_pe, payload, 0);
 
   /* Get the result from all PE and check for failure */
   status = val_check_for_error(TEST_NUM, num_pe, TEST_RULE);
 
-  val_report_status(0, SBSA_AVS_END(g_sbsa_level, TEST_NUM), TEST_RULE);
+  val_report_status(0, ACS_END(TEST_NUM), TEST_RULE);
 
   return status;
 }

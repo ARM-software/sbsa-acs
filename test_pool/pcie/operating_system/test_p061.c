@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2023 Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2023-2024, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,13 +15,14 @@
  * limitations under the License.
  **/
 
-#include "val/include/sbsa_avs_val.h"
-#include "val/include/val_interface.h"
+#include "val/common/include/acs_val.h"
+#include "val/common/include/acs_pe.h"
+#include "val/sbsa/include/sbsa_val_interface.h"
 
-#include "val/include/sbsa_avs_pcie.h"
-#include "val/include/sbsa_avs_pe.h"
+#include "val/sbsa/include/sbsa_acs_pcie.h"
+#include "val/sbsa/include/sbsa_acs_pe.h"
 
-#define TEST_NUM   (AVS_PCIE_TEST_NUM_BASE + 61)
+#define TEST_NUM   (ACS_PCIE_TEST_NUM_BASE + 61)
 #define TEST_DESC  "Check RootPort P&NP Memory Access "
 #define TEST_RULE  "S_PCIe_02"
 
@@ -38,8 +39,8 @@ esr(uint64_t interrupt_type, void *context)
   /* Update the ELR to return to test specified address */
   val_pe_update_elr(context, (uint64_t)branch_to_test);
 
-  val_print(AVS_PRINT_INFO, "\n       Received exception of type: %d", interrupt_type);
-  val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
+  val_print(ACS_PRINT_INFO, "\n       Received exception of type: %d", interrupt_type);
+  val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 01));
 }
 
 static uint32_t test_sequence_1B(uint8_t *addr)
@@ -54,8 +55,8 @@ static uint32_t test_sequence_1B(uint8_t *addr)
       read_value = val_mmio_read8((addr_t)addr);
 
       if ((old_value != read_value && read_value == PCIE_UNKNOWN_RESPONSE)) {
-        val_print(AVS_PRINT_ERR, "\n       Error in read and write 1B", 0);
-        val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
+        val_print(ACS_PRINT_ERR, "\n       Error in read and write 1B", 0);
+        val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 02));
         return 1;
       }
 
@@ -78,8 +79,8 @@ uint32_t test_sequence_2B(uint16_t *addr)
       read_value = val_mmio_read16((addr_t)addr);
 
       if ((old_value != read_value && read_value == PCIE_UNKNOWN_RESPONSE)) {
-        val_print(AVS_PRINT_ERR, "\n       Error in read and write 2B", 0);
-        val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 03));
+        val_print(ACS_PRINT_ERR, "\n       Error in read and write 2B", 0);
+        val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 03));
         return 1;
       }
 
@@ -113,8 +114,8 @@ payload(void)
   status |= val_pe_install_esr(EXCEPT_AARCH64_SERROR, esr);
   if (status)
   {
-      val_print(AVS_PRINT_ERR, "\n       Failed in installing the exception handler", 0);
-      val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
+      val_print(ACS_PRINT_ERR, "\n       Failed in installing the exception handler", 0);
+      val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 01));
       return;
   }
 
@@ -128,7 +129,7 @@ payload(void)
   {
       bdf = bdf_tbl_ptr->device[tbl_index++].bdf;
 
-      val_print(AVS_PRINT_DEBUG, "\n       BDF - 0x%x", bdf);
+      val_print(ACS_PRINT_DEBUG, "\n       BDF - 0x%x", bdf);
       /*
        * For Function with Type 1 config space header, obtain
        * base address of the its own BAR address.
@@ -146,12 +147,12 @@ payload(void)
       bar_data = val_mmio_read(bar_base);
 
       if (test_sequence_1B((uint8_t *)bar_base)) {
-          val_print(AVS_PRINT_ERR, "\n       Failed check for Bdf 0x%x", bdf);
+          val_print(ACS_PRINT_ERR, "\n       Failed check for Bdf 0x%x", bdf);
           test_fails++;
       }
 
       if (test_sequence_2B((uint16_t *)bar_base)) {
-          val_print(AVS_PRINT_ERR, "\n       Failed check for Bdf 0x%x", bdf);
+          val_print(ACS_PRINT_ERR, "\n       Failed check for Bdf 0x%x", bdf);
           test_fails++;
       }
 
@@ -160,7 +161,7 @@ payload(void)
 exception_return:
 
       if (IS_TEST_FAIL(val_get_status(pe_index))) {
-        val_print(AVS_PRINT_ERR, "\n       Failed. Exception on Memory Access For Bdf 0x%x", bdf);
+        val_print(ACS_PRINT_ERR, "\n       Failed. Exception on Memory Access For Bdf 0x%x", bdf);
         val_pcie_clear_urd(bdf);
         test_fails++;
       }
@@ -170,31 +171,31 @@ exception_return:
   }
 
   if (test_skip == 1) {
-      val_print(AVS_PRINT_DEBUG, "\n       No MMIO BARs detected. Skipping test", 0);
-      val_set_status(pe_index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
+      val_print(ACS_PRINT_DEBUG, "\n       No MMIO BARs detected. Skipping test", 0);
+      val_set_status(pe_index, RESULT_SKIP(TEST_NUM, 01));
   }
   else if (test_fails)
-      val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, test_fails));
+      val_set_status(pe_index, RESULT_FAIL(TEST_NUM, test_fails));
   else
-      val_set_status(pe_index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
+      val_set_status(pe_index, RESULT_PASS(TEST_NUM, 01));
 }
 
 uint32_t
 p061_entry(uint32_t num_pe)
 {
 
-  uint32_t status = AVS_STATUS_FAIL;
+  uint32_t status = ACS_STATUS_FAIL;
 
   num_pe = 1;  //This test is run on single processor
 
-  status = val_initialize_test(TEST_NUM, TEST_DESC, num_pe, g_sbsa_level, TEST_RULE);
-  if (status != AVS_STATUS_SKIP)
+  status = val_initialize_test(TEST_NUM, TEST_DESC, num_pe);
+  if (status != ACS_STATUS_SKIP)
       val_run_test_payload(TEST_NUM, num_pe, payload, 0);
 
   /* get the result from all PE and check for failure */
   status = val_check_for_error(TEST_NUM, num_pe, TEST_RULE);
 
-  val_report_status(0, SBSA_AVS_END(g_sbsa_level, TEST_NUM), TEST_RULE);
+  val_report_status(0, ACS_END(TEST_NUM), TEST_RULE);
 
   return status;
 }

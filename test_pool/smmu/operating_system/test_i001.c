@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, 2020-2023, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018, 2020-2024, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,12 +15,12 @@
  * limitations under the License.
  **/
 
-#include "val/include/sbsa_avs_val.h"
-#include "val/include/val_interface.h"
+#include "val/common/include/acs_val.h"
+#include "val/sbsa/include/sbsa_val_interface.h"
 
-#include "val/include/sbsa_avs_smmu.h"
+#include "val/sbsa/include/sbsa_acs_smmu.h"
 
-#define TEST_NUM   (AVS_SMMU_TEST_NUM_BASE + 1)
+#define TEST_NUM   (ACS_SMMU_TEST_NUM_BASE + 1)
 #define TEST_RULE  "S_L4SM_01, S_L4SM_02"
 #define TEST_DESC  "Check SMMU Compatibility          "
 
@@ -36,46 +36,46 @@ payload(void)
     num_smmu = val_smmu_get_info(SMMU_NUM_CTRL, 0);
 
     if (num_smmu == 0) {
-        val_print(AVS_PRINT_ERR, "\n       No SMMU Controllers are discovered ", 0);
-        val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
+        val_print(ACS_PRINT_ERR, "\n       No SMMU Controllers are discovered ", 0);
+        val_set_status(index, RESULT_SKIP(TEST_NUM, 01));
         return;
     }
 
     while (num_smmu--)
     {
         if (val_smmu_get_info(SMMU_CTRL_ARCH_MAJOR_REV, num_smmu) < 3) {
-            val_print(AVS_PRINT_ERR,
+            val_print(ACS_PRINT_ERR,
                      "\n       SMMUv3, or higher must be supported by level 4 or higher systems",
                         0);
-            val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
+            val_set_status(index, RESULT_FAIL(TEST_NUM, 01));
             return;
         } else {
-            val_print(AVS_PRINT_INFO, "\n       Detected SMMUv3, or higher implementation ", 0);
+            val_print(ACS_PRINT_INFO, "\n       Detected SMMUv3, or higher implementation ", 0);
             data = val_smmu_read_cfg(SMMUv3_IDR0, num_smmu);
             /* Check Stage 2 translation support */
             if ((data & BIT0) == 0) {
-                val_print(AVS_PRINT_ERR, "\n       Stage 2 translation not supported ", 0);
-                val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
+                val_print(ACS_PRINT_ERR, "\n       Stage 2 translation not supported ", 0);
+                val_set_status(index, RESULT_FAIL(TEST_NUM, 02));
                 return;
             }
 
             /* Check Stage 1 translation support */
             if ((data & BIT1) == 0) {
-                val_print(AVS_PRINT_ERR, "\n       Stage 1 translation not supported ", 0);
-                val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 03));
+                val_print(ACS_PRINT_ERR, "\n       Stage 1 translation not supported ", 0);
+                val_set_status(index, RESULT_FAIL(TEST_NUM, 03));
                 return;
             }
 
             /* Check I/O coherent, (SMMU_IDR0.COHACC == 1) */
             if ((data & BIT4) == 0) {
-                val_print(AVS_PRINT_ERR, "\n       IO-Coherent access not supported  ", 0);
-                val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 04));
+                val_print(ACS_PRINT_ERR, "\n       IO-Coherent access not supported  ", 0);
+                val_set_status(index, RESULT_FAIL(TEST_NUM, 04));
                 return;
             }
         }
     }
 
-    val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
+    val_set_status(index, RESULT_PASS(TEST_NUM, 01));
 
 }
 
@@ -83,18 +83,18 @@ uint32_t
 i001_entry(uint32_t num_pe)
 {
 
-  uint32_t status = AVS_STATUS_FAIL;
+  uint32_t status = ACS_STATUS_FAIL;
 
   num_pe = 1;  /* This test is run on single processor */
 
-  status = val_initialize_test(TEST_NUM, TEST_DESC, num_pe, g_sbsa_level, TEST_RULE);
-  if (status != AVS_STATUS_SKIP)
+  status = val_initialize_test(TEST_NUM, TEST_DESC, num_pe);
+  if (status != ACS_STATUS_SKIP)
       val_run_test_payload(TEST_NUM, num_pe, payload, 0);
 
   /* get the result from all PE and check for failure */
   status = val_check_for_error(TEST_NUM, num_pe, TEST_RULE);
 
-  val_report_status(0, SBSA_AVS_END(g_sbsa_level, TEST_NUM), TEST_RULE);
+  val_report_status(0, ACS_END(TEST_NUM), TEST_RULE);
 
   return status;
 }

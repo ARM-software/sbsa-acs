@@ -1,5 +1,5 @@
 ## @file
- # Copyright (c) 2023, Arm Limited or its affiliates. All rights reserved.
+ # Copyright (c) 2023-2024, Arm Limited or its affiliates. All rights reserved.
  # SPDX-License-Identifier : Apache-2.0
  #
  # Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,3 +18,4 @@
 set(ARM_ARCH_MAJOR_DFLT 9)
 set(ARM_ARCH_MINOR_DFLT 0)
 set(TARGET_DFLT RDN2)
+set(BSA_DIR_DFLT ${SBSA_DIR}/../bsa-acs)

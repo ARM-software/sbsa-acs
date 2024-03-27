@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2023, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2023-2024, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,13 +15,15 @@
  * limitations under the License.
  **/
 
-#include "val/include/sbsa_avs_val.h"
-#include "val/include/sbsa_avs_common.h"
-#include "val/include/sbsa_avs_pe.h"
-#include "val/include/sbsa_avs_mpam.h"
-#include "val/include/sbsa_avs_memory.h"
+#include "val/sbsa/include/sbsa_val_interface.h"
+#include "val/common/include/acs_val.h"
+#include "val/common/include/acs_pe.h"
+#include "val/common/include/acs_common.h"
+#include "val/sbsa/include/sbsa_acs_pe.h"
+#include "val/sbsa/include/sbsa_acs_mpam.h"
+#include "val/sbsa/include/sbsa_acs_memory.h"
 
-#define TEST_NUM (AVS_MPAM_TEST_NUM_BASE + 6)
+#define TEST_NUM (ACS_MPAM_TEST_NUM_BASE + 6)
 #define TEST_RULE "S_L7MP_03"
 #define TEST_DESC "Check PMG storage by CPOR nodes   "
 
@@ -55,39 +57,39 @@ static void payload(void)
     uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
 
    if (g_sbsa_level < 7) {
-        val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
+        val_set_status(index, RESULT_SKIP(TEST_NUM, 01));
         return;
     }
 
    /* Check if PE implements FEAT_MPAM */
     if (!((VAL_EXTRACT_BITS(val_pe_reg_read(ID_AA64PFR0_EL1), 40, 43) > 0) ||
         (VAL_EXTRACT_BITS(val_pe_reg_read(ID_AA64PFR1_EL1), 16, 19) > 0))) {
-            val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 02));
+            val_set_status(index, RESULT_SKIP(TEST_NUM, 02));
             return;
     }
 
    /* Get the Index for LLC */
     llc_index = val_cache_get_llc_index();
     if (llc_index == CACHE_TABLE_EMPTY) {
-        val_print(AVS_PRINT_ERR, "\n       Cache info table empty", 0);
-        val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
+        val_print(ACS_PRINT_ERR, "\n       Cache info table empty", 0);
+        val_set_status(index, RESULT_FAIL(TEST_NUM, 01));
         return;
     }
 
     /* Get the cache identifier for LLC */
     cache_identifier = val_cache_get_info(CACHE_ID, llc_index);
     if (cache_identifier == INVALID_CACHE_INFO) {
-        val_print(AVS_PRINT_ERR, "\n       LLC invalid in PPTT", 0);
-        val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
+        val_print(ACS_PRINT_ERR, "\n       LLC invalid in PPTT", 0);
+        val_set_status(index, RESULT_FAIL(TEST_NUM, 02));
         return;
     }
 
     /* Get total number of MSCs reported by MPAM ACPI table */
     msc_node_cnt = val_mpam_get_msc_count();
-    val_print(AVS_PRINT_DEBUG, "\n       MSC count = %d", msc_node_cnt);
+    val_print(ACS_PRINT_DEBUG, "\n       MSC count = %d", msc_node_cnt);
 
     if (msc_node_cnt == 0) {
-        val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 03));
+        val_set_status(index, RESULT_FAIL(TEST_NUM, 03));
         return;
     }
 
@@ -114,14 +116,14 @@ static void payload(void)
         }
     }
 
-    val_print(AVS_PRINT_DEBUG, "\n       CPOR Nodes = %d", cpor_nodes);
-    val_print(AVS_PRINT_DEBUG, "\n       Max PMG = %d", max_pmg);
-    val_print(AVS_PRINT_DEBUG, "\n       Max PARTID = %d", max_partid);
-    val_print(AVS_PRINT_DEBUG, "\n       Cache Size = 0x%x", cache_size);
-    val_print(AVS_PRINT_DEBUG, "\n       Number of CSU Monitors = %d", csumon_count);
+    val_print(ACS_PRINT_DEBUG, "\n       CPOR Nodes = %d", cpor_nodes);
+    val_print(ACS_PRINT_DEBUG, "\n       Max PMG = %d", max_pmg);
+    val_print(ACS_PRINT_DEBUG, "\n       Max PARTID = %d", max_partid);
+    val_print(ACS_PRINT_DEBUG, "\n       Cache Size = 0x%x", cache_size);
+    val_print(ACS_PRINT_DEBUG, "\n       Number of CSU Monitors = %d", csumon_count);
 
     if (csumon_count == 0 || cpor_nodes == 0) {
-        val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 03));
+        val_set_status(index, RESULT_SKIP(TEST_NUM, 03));
         return;
     }
 
@@ -155,8 +157,8 @@ static void payload(void)
     for (msc_index = 0; msc_index < msc_node_cnt; msc_index++) {
         rsrc_node_cnt = val_mpam_get_info(MPAM_MSC_RSRC_COUNT, msc_index, 0);
 
-        val_print(AVS_PRINT_DEBUG, "\n       msc index  = %d", msc_index);
-        val_print(AVS_PRINT_DEBUG, "\n       Resource count %d = ", rsrc_node_cnt);
+        val_print(ACS_PRINT_DEBUG, "\n       msc index  = %d", msc_index);
+        val_print(ACS_PRINT_DEBUG, "\n       Resource count %d = ", rsrc_node_cnt);
 
         for (rsrc_index = 0; rsrc_index < rsrc_node_cnt; rsrc_index++) {
 
@@ -174,11 +176,11 @@ static void payload(void)
                     src_buf = (void *)val_aligned_alloc(MEM_ALIGN_4K, buf_size);
                     dest_buf = (void *)val_aligned_alloc(MEM_ALIGN_4K, buf_size);
 
-                    val_print(AVS_PRINT_DEBUG, "\n       buf_size            = 0x%x", buf_size);
+                    val_print(ACS_PRINT_DEBUG, "\n       buf_size            = 0x%x", buf_size);
 
                     if ((src_buf == NULL) || (dest_buf == NULL)) {
-                        val_print(AVS_PRINT_ERR, "\n       Mem allocation failed", 0);
-                        val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 04));
+                        val_print(ACS_PRINT_ERR, "\n       Mem allocation failed", 0);
+                        val_set_status(index, RESULT_FAIL(TEST_NUM, 04));
                     }
 
                     /* Clear the PARTID_D & PMG_D bits in mpam2_el2 before writing to them */
@@ -212,7 +214,7 @@ static void payload(void)
                     /* Read Cache storage value */
                     storage_value1 = val_mpam_read_csumon(msc_index);
 
-                    val_print(AVS_PRINT_DEBUG, "\n       Storage Value 1 = 0x%x", storage_value1);
+                    val_print(ACS_PRINT_DEBUG, "\n       Storage Value 1 = 0x%x", storage_value1);
 
                     /*Restore initial MPAM_EL2 settings */
                     mpam2_el2 = mpam2_el2_temp;
@@ -247,14 +249,14 @@ static void payload(void)
                     /* Read Cache storage value for PMG1 */
                     storage_value2 = val_mpam_read_csumon(msc_index);
 
-                    val_print(AVS_PRINT_DEBUG, "\n       Storage Value 1 = 0x%x", storage_value2);
+                    val_print(ACS_PRINT_DEBUG, "\n       Storage Value 1 = 0x%x", storage_value2);
 
                     /* Disable the monitor */
                     val_mpam_csumon_disable(msc_index);
 
                     /* Test fails if storage_value1 is non zero or storage_value2 is zero */
                     if (storage_value1 || !storage_value2) {
-                        val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 05));
+                        val_set_status(index, RESULT_FAIL(TEST_NUM, 05));
 
                         /*Restore MPAM2_EL2 settings */
                         val_mpam_reg_write(MPAM2_EL2, mpam2_el2_temp);
@@ -277,23 +279,23 @@ static void payload(void)
         }
     }
 
-    val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
+    val_set_status(index, RESULT_PASS(TEST_NUM, 01));
     return;
 }
 
 uint32_t mpam006_entry(uint32_t num_pe)
 {
-    uint32_t status = AVS_STATUS_FAIL;
+    uint32_t status = ACS_STATUS_FAIL;
 
     num_pe = 1;
-    status = val_initialize_test(TEST_NUM, TEST_DESC, num_pe, g_sbsa_level, TEST_RULE);
+    status = val_initialize_test(TEST_NUM, TEST_DESC, num_pe);
     /* This check is when user is forcing us to skip this test */
-    if (status != AVS_STATUS_SKIP)
+    if (status != ACS_STATUS_SKIP)
         val_run_test_payload(TEST_NUM, num_pe, payload, 0);
 
     /* get the result from all PE and check for failure */
     status = val_check_for_error(TEST_NUM, num_pe, TEST_RULE);
-    val_report_status(0, SBSA_AVS_END(g_sbsa_level, TEST_NUM), TEST_RULE);
+    val_report_status(0, ACS_END(TEST_NUM), TEST_RULE);
 
     return status;
 }

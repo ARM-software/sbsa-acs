@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2020-2023, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2024, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,14 +15,14 @@
  * limitations under the License.
  **/
 
-#include "val/include/sbsa_avs_val.h"
-#include "val/include/val_interface.h"
+#include "val/common/include/acs_val.h"
+#include "val/sbsa/include/sbsa_val_interface.h"
 
-#include "val/include/sbsa_avs_pcie.h"
-#include "val/include/sbsa_avs_pe.h"
-#include "val/include/sbsa_avs_memory.h"
+#include "val/sbsa/include/sbsa_acs_pcie.h"
+#include "val/sbsa/include/sbsa_acs_pe.h"
+#include "val/sbsa/include/sbsa_acs_memory.h"
 
-#define TEST_NUM   (AVS_PCIE_TEST_NUM_BASE + 51)
+#define TEST_NUM   (ACS_PCIE_TEST_NUM_BASE + 51)
 #define TEST_DESC  "Check Sec Bus Reset For iEP_RP    "
 #define TEST_RULE  "IE_RST_2"
 
@@ -75,7 +75,7 @@ is_sbr_failed (uint32_t bdf)
 
       val_pcie_read_cfg(bdf, TYPE01_BAR + (index * BAR_BASE_SHIFT), &reg_value);
       if ((reg_value >> BAR_BASE_SHIFT) != 0) {
-          val_print(AVS_PRINT_ERR, "\n       BAR%d base addr not cleared", index);
+          val_print(ACS_PRINT_ERR, "\n       BAR%d base addr not cleared", index);
           check_failed++;
       }
   }
@@ -87,7 +87,7 @@ is_sbr_failed (uint32_t bdf)
   if ((((reg_value >> CR_BME_SHIFT) & CR_BME_MASK) != 0) ||
       (((reg_value >> CR_MSE_SHIFT) & CR_MSE_MASK) != 0))
   {
-      val_print(AVS_PRINT_ERR, "\n       BME/MSE not cleared", 0);
+      val_print(ACS_PRINT_ERR, "\n       BME/MSE not cleared", 0);
       check_failed++;
   }
 
@@ -136,8 +136,8 @@ payload(void)
           /* Get BDF for iEP_EP under iEP_RP */
           iep_bdf = get_iep_bdf_under_rp(bdf);
           if (iep_bdf == 0x0) {
-              val_print(AVS_PRINT_ERR, "\n       Could Not Find iEP_EP under iEP_RP.", 0);
-              val_set_status(pe_index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
+              val_print(ACS_PRINT_ERR, "\n       Could Not Find iEP_EP under iEP_RP.", 0);
+              val_set_status(pe_index, RESULT_SKIP(TEST_NUM, 01));
               return;
           }
 
@@ -146,15 +146,15 @@ payload(void)
           cfg_space_buf = val_aligned_alloc(MEM_ALIGN_4K, PCIE_CFG_SIZE);
           if (cfg_space_buf == NULL)
           {
-              val_print(AVS_PRINT_ERR, "\n       Memory allocation failed.", 0);
-              val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
+              val_print(ACS_PRINT_ERR, "\n       Memory allocation failed.", 0);
+              val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 02));
               return;
           }
 
           /* Get configuration space address for iEP_EP */
           cfg_space_addr = val_pcie_get_bdf_config_addr(iep_bdf);
-          val_print(AVS_PRINT_DEBUG, "\n       BDF - 0x%x : ", iep_bdf);
-          val_print(AVS_PRINT_INFO, "Config space addr 0x%x", cfg_space_addr);
+          val_print(ACS_PRINT_DEBUG, "\n       BDF - 0x%x : ", iep_bdf);
+          val_print(ACS_PRINT_INFO, "Config space addr 0x%x", cfg_space_addr);
 
           /* Save the iEP_EP config space to restore after Secondary Bus Reset */
           for (idx = 0; idx < PCIE_CFG_SIZE / 4; idx ++) {
@@ -172,9 +172,9 @@ payload(void)
           delay_status = val_time_delay_ms(100 * ONE_MILLISECOND);
           if (delay_status)
           {
-              val_print(AVS_PRINT_ERR, "\n       Failed to time delay for BDF 0x%x ", bdf);
+              val_print(ACS_PRINT_ERR, "\n       Failed to time delay for BDF 0x%x ", bdf);
               val_memory_free_aligned(cfg_space_buf);
-              val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
+              val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 01));
               return;
           }
 
@@ -187,9 +187,9 @@ payload(void)
                   delay_status = val_time_delay_ms(100 * ONE_MILLISECOND);
                   if (delay_status)
                   {
-                      val_print(AVS_PRINT_ERR, "\n       Failed to time delay for BDF 0x%x ", bdf);
+                      val_print(ACS_PRINT_ERR, "\n       Failed to time delay for BDF 0x%x ", bdf);
                       val_memory_free_aligned(cfg_space_buf);
-                      val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
+                      val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 02));
                       return;
                   }
 
@@ -199,7 +199,7 @@ payload(void)
 
           if (status == PCIE_DLL_LINK_STATUS_NOT_ACTIVE)
           {
-              val_print(AVS_PRINT_ERR,
+              val_print(ACS_PRINT_ERR,
                         "\n       The link is not active after reset for BDF 0x%x : ", bdf);
               test_fails++;
               goto free_cfg;
@@ -222,31 +222,31 @@ free_cfg:
 
   /* Skip the test if no iEP_RP found */
   if (iep_rp_found == 0) {
-      val_print(AVS_PRINT_DEBUG, "\n       No iEP_RP type device found. Skipping test", 0);
-      val_set_status(pe_index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 02));
+      val_print(ACS_PRINT_DEBUG, "\n       No iEP_RP type device found. Skipping test", 0);
+      val_set_status(pe_index, RESULT_SKIP(TEST_NUM, 02));
   }
   else if (test_fails)
-      val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, test_fails));
+      val_set_status(pe_index, RESULT_FAIL(TEST_NUM, test_fails));
   else
-      val_set_status(pe_index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
+      val_set_status(pe_index, RESULT_PASS(TEST_NUM, 01));
 }
 
 uint32_t
 p051_entry(uint32_t num_pe)
 {
 
-  uint32_t status = AVS_STATUS_FAIL;
+  uint32_t status = ACS_STATUS_FAIL;
 
   num_pe = 1;  //This test is run on single processor
 
-  status = val_initialize_test(TEST_NUM, TEST_DESC, num_pe, g_sbsa_level, TEST_RULE);
-  if (status != AVS_STATUS_SKIP)
+  status = val_initialize_test(TEST_NUM, TEST_DESC, num_pe);
+  if (status != ACS_STATUS_SKIP)
       val_run_test_payload(TEST_NUM, num_pe, payload, 0);
 
   /* get the result from all PE and check for failure */
   status = val_check_for_error(TEST_NUM, num_pe, TEST_RULE);
 
-  val_report_status(0, SBSA_AVS_END(g_sbsa_level, TEST_NUM), TEST_RULE);
+  val_report_status(0, ACS_END(TEST_NUM), TEST_RULE);
 
   return status;
 }

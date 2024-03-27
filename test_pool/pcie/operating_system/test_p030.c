@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2019-2023, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2019-2024, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,13 +15,14 @@
  * limitations under the License.
  **/
 
-#include "val/include/sbsa_avs_val.h"
-#include "val/include/val_interface.h"
+#include "val/common/include/acs_val.h"
+#include "val/common/include/acs_pe.h"
+#include "val/sbsa/include/sbsa_val_interface.h"
 
-#include "val/include/sbsa_avs_pcie.h"
-#include "val/include/sbsa_avs_pe.h"
+#include "val/sbsa/include/sbsa_acs_pcie.h"
+#include "val/sbsa/include/sbsa_acs_pe.h"
 
-#define TEST_NUM   (AVS_PCIE_TEST_NUM_BASE + 30)
+#define TEST_NUM   (ACS_PCIE_TEST_NUM_BASE + 30)
 #define TEST_DESC  "Check Cmd Reg memory space enable "
 #define TEST_RULE  "RE_REG_1, IE_REG_1, IE_REG_3"
 
@@ -38,8 +39,8 @@ esr(uint64_t interrupt_type, void *context)
   /* Update the ELR to return to test specified address */
   val_pe_update_elr(context, (uint64_t)branch_to_test);
 
-  val_print(AVS_PRINT_DEBUG, "\n       Received exception of type: %d", interrupt_type);
-  val_set_status(pe_index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
+  val_print(ACS_PRINT_DEBUG, "\n       Received exception of type: %d", interrupt_type);
+  val_set_status(pe_index, RESULT_PASS(TEST_NUM, 01));
 }
 
 static
@@ -69,8 +70,8 @@ payload(void)
   status |= val_pe_install_esr(EXCEPT_AARCH64_SERROR, esr);
   if (status)
   {
-      val_print(AVS_PRINT_ERR, "\n       Failed in installing the exception handler", 0);
-      val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
+      val_print(ACS_PRINT_ERR, "\n       Failed in installing the exception handler", 0);
+      val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 01));
       return;
   }
 
@@ -83,7 +84,7 @@ payload(void)
   while (tbl_index < bdf_tbl_ptr->num_entries)
   {
       bdf = bdf_tbl_ptr->device[tbl_index++].bdf;
-      val_print(AVS_PRINT_DEBUG, "\n       tbl_index %x", tbl_index - 1);
+      val_print(ACS_PRINT_DEBUG, "\n       tbl_index %x", tbl_index - 1);
 
       dp_type = val_pcie_device_port_type(bdf);
 
@@ -92,7 +93,7 @@ payload(void)
           && (dp_type != RCEC) && (dp_type != RCiEP))
           continue;
 
-      val_print(AVS_PRINT_DEBUG, "\n       BDF - 0x%x", bdf);
+      val_print(ACS_PRINT_DEBUG, "\n       BDF - 0x%x", bdf);
 
       /*
        * For a Function with type 0 config space header, obtain
@@ -108,7 +109,7 @@ payload(void)
           val_pcie_get_mmio_bar(bdf, &bar_base);
 
       /* Skip this function if it doesn't have mmio BAR */
-      val_print(AVS_PRINT_DEBUG, "       Bar Base %x", bar_base);
+      val_print(ACS_PRINT_DEBUG, "       Bar Base %x", bar_base);
       if (!bar_base)
          continue;
 
@@ -130,7 +131,7 @@ payload(void)
       val_pcie_disable_msa(bdf);
 
       /* Set test status as FAIL, update to PASS in exception handler */
-      val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
+      val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 02));
 
       /* If test runs for atleast an endpoint */
       test_skip = 0;
@@ -148,10 +149,10 @@ exception_return:
       /*
        * Check if either of UR response or abort isn't received.
        */
-      val_print(AVS_PRINT_DEBUG, "       bar_data %x ", bar_data);
+      val_print(ACS_PRINT_DEBUG, "       bar_data %x ", bar_data);
       if (!(IS_TEST_PASS(val_get_status(pe_index)) || (bar_data == PCIE_UNKNOWN_RESPONSE)))
       {
-          val_print(AVS_PRINT_ERR, "\n       BDF %x MSE functionality failure", bdf);
+          val_print(ACS_PRINT_ERR, "\n       BDF %x MSE functionality failure", bdf);
           test_fails++;
       }
 
@@ -163,32 +164,32 @@ exception_return:
   }
 
   if (test_skip == 1) {
-      val_print(AVS_PRINT_DEBUG,
+      val_print(ACS_PRINT_DEBUG,
                "\n       Found no RCiEP/ RCEC/ iEP type device with MMIO Bar. Skipping test.", 0);
-      val_set_status(pe_index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
+      val_set_status(pe_index, RESULT_SKIP(TEST_NUM, 01));
   }
   else if (test_fails)
-      val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, test_fails));
+      val_set_status(pe_index, RESULT_FAIL(TEST_NUM, test_fails));
   else
-      val_set_status(pe_index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
+      val_set_status(pe_index, RESULT_PASS(TEST_NUM, 01));
 }
 
 uint32_t
 p030_entry(uint32_t num_pe)
 {
 
-  uint32_t status = AVS_STATUS_FAIL;
+  uint32_t status = ACS_STATUS_FAIL;
 
   num_pe = 1;  //This test is run on single processor
 
-  status = val_initialize_test(TEST_NUM, TEST_DESC, num_pe, g_sbsa_level, TEST_RULE);
-  if (status != AVS_STATUS_SKIP)
+  status = val_initialize_test(TEST_NUM, TEST_DESC, num_pe);
+  if (status != ACS_STATUS_SKIP)
       val_run_test_payload(TEST_NUM, num_pe, payload, 0);
 
   /* get the result from all PE and check for failure */
   status = val_check_for_error(TEST_NUM, num_pe, TEST_RULE);
 
-  val_report_status(0, SBSA_AVS_END(g_sbsa_level, TEST_NUM), TEST_RULE);
+  val_report_status(0, ACS_END(TEST_NUM), TEST_RULE);
 
   return status;
 }

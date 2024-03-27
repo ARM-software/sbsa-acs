@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2019, 2021-2023, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2019, 2021-2024, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,13 +15,13 @@
  * limitations under the License.
  **/
 
-#include "val/include/sbsa_avs_val.h"
-#include "val/include/val_interface.h"
+#include "val/common/include/acs_val.h"
+#include "val/sbsa/include/sbsa_val_interface.h"
 
-#include "val/include/sbsa_avs_pcie.h"
-#include "val/include/sbsa_avs_pe.h"
+#include "val/sbsa/include/sbsa_acs_pcie.h"
+#include "val/sbsa/include/sbsa_acs_pe.h"
 
-#define TEST_NUM   (AVS_PCIE_TEST_NUM_BASE + 34)
+#define TEST_NUM   (ACS_PCIE_TEST_NUM_BASE + 34)
 #define TEST_DESC  "Check BAR memory space & Type rule"
 #define TEST_RULE  "RE_BAR_3, IE_BAR_3"
 
@@ -58,10 +58,10 @@ payload(void)
       /* Check for RCiEP, iEP, RCEC*/
       if (dp_type == RCiEP || dp_type == iEP_EP || dp_type == iEP_RP || dp_type == RCEC)
       {
-          val_print(AVS_PRINT_DEBUG, "\n       BDF - 0x%x ", bdf);
+          val_print(ACS_PRINT_DEBUG, "\n       BDF - 0x%x ", bdf);
           /* Extract Hdr Type */
           hdr_type = val_pcie_function_header_type(bdf);
-          val_print(AVS_PRINT_INFO, "\n       HDR TYPE 0x%x ", hdr_type);
+          val_print(ACS_PRINT_INFO, "\n       HDR TYPE 0x%x ", hdr_type);
 
           max_bar = 0;
           /* For Type0 header max bars 6, type1 header max bars 2 */
@@ -69,7 +69,7 @@ payload(void)
              max_bar = TYPE0_MAX_BARS;
           else if (hdr_type == TYPE1_HEADER)
              max_bar = TYPE1_MAX_BARS;
-          val_print(AVS_PRINT_INFO, "\n       MAX BARS 0x%x ", max_bar);
+          val_print(ACS_PRINT_INFO, "\n       MAX BARS 0x%x ", max_bar);
 
           for (bar_index = 0; bar_index < max_bar; bar_index++)
           {
@@ -87,8 +87,8 @@ payload(void)
               addr_type = (reg_value >> BAR_MDT_SHIFT) & BAR_MDT_MASK;
               if ((addr_type != BITS_32) && (addr_type != BITS_64))
               {
-                  val_print(AVS_PRINT_ERR, "\n       BDF 0x%x ", bdf);
-                  val_print(AVS_PRINT_ERR, " Addr Type: 0x%x", addr_type);
+                  val_print(ACS_PRINT_ERR, "\n       BDF 0x%x ", bdf);
+                  val_print(ACS_PRINT_ERR, " Addr Type: 0x%x", addr_type);
                   test_fails++;
                   continue;
               }
@@ -100,7 +100,7 @@ payload(void)
               /* Check BAR must be MMIO */
               if (reg_value & BAR_MIT_MASK)
               {
-                 val_print(AVS_PRINT_ERR, "\n       BDF 0x%x Not MMIO", 0);
+                 val_print(ACS_PRINT_ERR, "\n       BDF 0x%x Not MMIO", 0);
                  test_fails++;
               }
            }
@@ -108,29 +108,29 @@ payload(void)
   }
 
   if (test_skip == 1)
-      val_set_status(pe_index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
+      val_set_status(pe_index, RESULT_SKIP(TEST_NUM, 01));
   else if (test_fails)
-      val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, test_fails));
+      val_set_status(pe_index, RESULT_FAIL(TEST_NUM, test_fails));
   else
-      val_set_status(pe_index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
+      val_set_status(pe_index, RESULT_PASS(TEST_NUM, 01));
 }
 
 uint32_t
 p034_entry(uint32_t num_pe)
 {
 
-  uint32_t status = AVS_STATUS_FAIL;
+  uint32_t status = ACS_STATUS_FAIL;
 
   num_pe = 1;  //This test is run on single processor
 
-  status = val_initialize_test(TEST_NUM, TEST_DESC, num_pe, g_sbsa_level, TEST_RULE);
-  if (status != AVS_STATUS_SKIP)
+  status = val_initialize_test(TEST_NUM, TEST_DESC, num_pe);
+  if (status != ACS_STATUS_SKIP)
       val_run_test_payload(TEST_NUM, num_pe, payload, 0);
 
   /* get the result from all PE and check for failure */
   status = val_check_for_error(TEST_NUM, num_pe, TEST_RULE);
 
-  val_report_status(0, SBSA_AVS_END(g_sbsa_level, TEST_NUM), TEST_RULE);
+  val_report_status(0, ACS_END(TEST_NUM), TEST_RULE);
 
   return status;
 }

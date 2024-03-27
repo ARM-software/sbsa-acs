@@ -33,11 +33,11 @@ To start the ACS build with NIST STS, perform the following steps:
     UefiRuntimeLib|MdePkg/Library/UefiRuntimeLib/UefiRuntimeLib.inf
     !ifdef $(ENABLE_NIST)
         SbsaNistLib|ShellPkg/Application/sbsa-acs/test_pool/nist_sts/SbsaNistLib.inf
-        SbsaValNistLib|ShellPkg/Application/sbsa-acs/val/SbsaValNistLib.inf
-        SbsaPalNistLib|ShellPkg/Application/sbsa-acs/platform/pal_uefi/SbsaPalNistLib.inf
+        SbsaValNistLib|ShellPkg/Application/bsa-acs/val/SbsaValNistLib.inf
+        SbsaPalNistLib|ShellPkg/Application/bsa-acs/pal/uefi_acpi/SbsaPalNistLib.inf
     !else
-        SbsaValLib|ShellPkg/Application/sbsa-acs/val/SbsaValLib.inf
-        SbsaPalLib|ShellPkg/Application/sbsa-acs/platform/pal_uefi/SbsaPalLib.inf
+        SbsaValLib|ShellPkg/Application/bsa-acs/val/SbsaValLib.inf
+        SbsaPalLib|ShellPkg/Application/bsa-acs/pal/uefi_acpi/SbsaPalLib.inf
     !endif
 ```
 2.  Add the following in the [components] section of ShellPkg/ShellPkg.dsc
@@ -84,7 +84,7 @@ To start the ACS build with NIST STS, perform the following steps:
 To build the SBSA test suite with NIST STS, execute the following commands:
 ***Linux build environment***
 ```
-source ShellPkg/Application/sbsa-acs/tools/scripts/avsbuild.sh NIST
+source ShellPkg/Application/sbsa-acs/tools/scripts/acsbuild.sh NIST
 ```
 
 ***Windows build environment***
@@ -174,4 +174,4 @@ For more details on NIST STS, see: <https://doi.org/10.6028/NIST.SP.800-22r1a>
 
 --------------
 
-*Copyright (c) 2020, 2023, Arm Limited and Contributors. All rights reserved.*
+*Copyright (c) 2020, 2023-2024, Arm Limited and Contributors. All rights reserved.*

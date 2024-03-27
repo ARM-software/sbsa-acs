@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2023, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2023-2024, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,15 +15,15 @@
  * limitations under the License.
  **/
 
-#include "val/include/sbsa_avs_val.h"
-#include "val/include/sbsa_avs_common.h"
-#include "val/include/sbsa_avs_pe.h"
-#include "val/include/sbsa_avs_pmu.h"
-#include "val/include/sbsa_avs_pcie.h"
-#include "val/include/sbsa_avs_mpam.h"
+#include "val/sbsa/include/sbsa_val_interface.h"
+#include "val/common/include/acs_val.h"
+#include "val/sbsa/include/sbsa_acs_pe.h"
+#include "val/sbsa/include/sbsa_acs_pmu.h"
+#include "val/sbsa/include/sbsa_acs_pcie.h"
+#include "val/sbsa/include/sbsa_acs_mpam.h"
+#include "val/common/include/acs_common.h"
 
-
-#define TEST_NUM  (AVS_PMU_TEST_NUM_BASE + 8)
+#define TEST_NUM  (ACS_PMU_TEST_NUM_BASE + 8)
 #define TEST_RULE "PMU_SYS_5"
 #define TEST_DESC "Check System PMU for NUMA systems "
 
@@ -44,7 +44,7 @@ static void payload1(void)
 {
     val_memcpy(src_buf, dest_buf, BUFFER_SIZE / 2);
 
-    val_set_status(remote_pe_index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
+    val_set_status(remote_pe_index, RESULT_PASS(TEST_NUM, 01));
 }
 
 /* This payload generates remote PE traffic for 4 MB*/
@@ -52,7 +52,7 @@ static void payload2(void)
 {
     val_memcpy(src_buf, dest_buf, BUFFER_SIZE);
 
-    val_set_status(remote_pe_index, RESULT_PASS(g_sbsa_level, TEST_NUM, 02));
+    val_set_status(remote_pe_index, RESULT_PASS(TEST_NUM, 02));
 }
 
 static uint32_t generate_traffic(uint64_t prox_domain, uint32_t size, void (*remote_traffic)(void))
@@ -64,7 +64,7 @@ static uint32_t generate_traffic(uint64_t prox_domain, uint32_t size, void (*rem
     addr_len = val_srat_get_info(SRAT_MEM_ADDR_LEN, prox_domain);
     if ((prox_base_addr == SRAT_INVALID_INFO) || (addr_len == SRAT_INVALID_INFO) ||
         (addr_len <= 2 * BUFFER_SIZE)) {
-        val_print(AVS_PRINT_ERR,
+        val_print(ACS_PRINT_ERR,
                     "\n       Invalid base address for proximity domain : 0x%lx",
                     prox_domain);
         return 1;
@@ -113,24 +113,24 @@ static void payload(void)
     uint64_t value2[NUM_PMU_MON];
 
     if (g_sbsa_level < 7) {
-        val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
+        val_set_status(index, RESULT_SKIP(TEST_NUM, 01));
         return;
     }
 
     node_count = val_pmu_get_info(PMU_NODE_COUNT, 0);
-    val_print(AVS_PRINT_DEBUG, "\n       PMU NODES = %d", node_count);
+    val_print(ACS_PRINT_DEBUG, "\n       PMU NODES = %d", node_count);
 
     if (node_count == 0) {
-        val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 1));
-        val_print(AVS_PRINT_ERR, "\n       No PMU nodes found", 0);
+        val_set_status(index, RESULT_FAIL(TEST_NUM, 1));
+        val_print(ACS_PRINT_ERR, "\n       No PMU nodes found", 0);
         return;
     }
 
     /*Get number of memory ranges from SRAT table */
     num_mem_range = val_srat_get_info(SRAT_MEM_NUM_MEM_RANGE, 0);
     if (num_mem_range == 0 || num_mem_range == SRAT_INVALID_INFO) {
-        val_print(AVS_PRINT_ERR, "\n       No Proximity domains in the system", 0);
-        val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 2));
+        val_print(ACS_PRINT_ERR, "\n       No Proximity domains in the system", 0);
+        val_set_status(index, RESULT_FAIL(TEST_NUM, 2));
         return;
     }
 
@@ -138,23 +138,23 @@ static void payload(void)
     pe_uid = val_pe_get_uid(index);
     pe_prox_domain = val_srat_get_info(SRAT_GICC_PROX_DOMAIN, pe_uid);
     if (pe_prox_domain == SRAT_INVALID_INFO) {
-        val_print(AVS_PRINT_ERR, "\n       Could not get proximity domain info for given PE", 0);
-        val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 3));
+        val_print(ACS_PRINT_ERR, "\n       Could not get proximity domain info for given PE", 0);
+        val_set_status(index, RESULT_FAIL(TEST_NUM, 3));
         return;
     }
     /* Get memory controller local to the primary PE */
     mc_node_index = val_pmu_get_node_index(pe_prox_domain);
     if (mc_node_index == PMU_INVALID_INDEX) {
-        val_print(AVS_PRINT_ERR, "\n       PMU node not found", 0);
-        val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 4));
+        val_print(ACS_PRINT_ERR, "\n       PMU node not found", 0);
+        val_set_status(index, RESULT_FAIL(TEST_NUM, 4));
         return;
     }
 
     /* Check if the PMU supports atleast 3 counters */
     data = val_pmu_get_monitor_count(mc_node_index);
     if (data < 3) {
-        val_print(AVS_PRINT_ERR, "\n       PMU node must support atleast 3 counter", 0);
-        val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 5));
+        val_print(ACS_PRINT_ERR, "\n       PMU node must support atleast 3 counter", 0);
+        val_set_status(index, RESULT_FAIL(TEST_NUM, 5));
         return;
     }
 
@@ -162,10 +162,10 @@ static void payload(void)
     for (i = 0; i < NUM_PMU_MON; i++) {
         status = val_pmu_configure_monitor(mc_node_index, config_events[i], i);
         if (status) {
-            val_print(AVS_PRINT_ERR,
+            val_print(ACS_PRINT_ERR,
                         "\n       Required PMU Event 0x%x not supported", config_events[i]);
-            val_print(AVS_PRINT_ERR, " at node %d", mc_node_index);
-            val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 6));
+            val_print(ACS_PRINT_ERR, " at node %d", mc_node_index);
+            val_set_status(index, RESULT_FAIL(TEST_NUM, 6));
             return;
         }
     }
@@ -177,8 +177,8 @@ static void payload(void)
     /* Get remote PE details */
     remote_pe_prox_domain = val_srat_get_info(SRAT_GICC_REMOTE_PROX_DOMAIN, pe_prox_domain);
     if (remote_pe_prox_domain == SRAT_INVALID_INFO) {
-        val_print(AVS_PRINT_ERR, "\n       Could not get remote PE proximity domain", 0);
-        val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 7));
+        val_print(ACS_PRINT_ERR, "\n       Could not get remote PE proximity domain", 0);
+        val_set_status(index, RESULT_FAIL(TEST_NUM, 7));
         return;
     }
     remote_pe_uid = val_srat_get_info(SRAT_GICC_PROC_UID, remote_pe_prox_domain);
@@ -190,8 +190,8 @@ static void payload(void)
     /* Generate remote and local traffic for 2 MB */
     status = generate_traffic(pe_prox_domain, BUFFER_SIZE / 2, payload1);
     if (status) {
-        val_print(AVS_PRINT_ERR, "\n       Memory allocation failed", 0);
-            val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 8));
+        val_print(ACS_PRINT_ERR, "\n       Memory allocation failed", 0);
+            val_set_status(index, RESULT_FAIL(TEST_NUM, 8));
             return;
     }
 
@@ -209,8 +209,8 @@ static void payload(void)
     status = generate_traffic(pe_prox_domain, BUFFER_SIZE, payload2);
 
     if (status) {
-    val_print(AVS_PRINT_ERR, "\n       Memory allocation failed", 0);
-        val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 9));
+    val_print(ACS_PRINT_ERR, "\n       Memory allocation failed", 0);
+        val_set_status(index, RESULT_FAIL(TEST_NUM, 9));
         return;
     }
 
@@ -221,7 +221,7 @@ static void payload(void)
     /*Consider delta for results*/
     for (i = 0 ; i < NUM_PMU_MON ; i++) {
         if (value2[i] <= value1[i]) {
-            val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 10));
+            val_set_status(index, RESULT_FAIL(TEST_NUM, 10));
             return;
         }
     }
@@ -229,25 +229,24 @@ static void payload(void)
     /* Disable PMU monitors */
     val_pmu_disable_all_monitors(mc_node_index);
 
-    val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 03));
+    val_set_status(index, RESULT_PASS(TEST_NUM, 03));
 }
 
 uint32_t
 pmu008_entry(uint32_t num_pe)
 {
-    uint32_t status = AVS_STATUS_FAIL;
+    uint32_t status = ACS_STATUS_FAIL;
 
     num_pe = 1; /* This test is run on a single PE */
 
-    status = val_initialize_test(TEST_NUM, TEST_DESC, num_pe, g_sbsa_level,
-                                                                TEST_RULE);
+    status = val_initialize_test(TEST_NUM, TEST_DESC, num_pe);
     /* This check is when user is forcing us to skip this test */
-    if (status != AVS_STATUS_SKIP)
+    if (status != ACS_STATUS_SKIP)
         val_run_test_payload(TEST_NUM, num_pe, payload, 0);
 
     /* get the result from all PE and check for failure */
     status = val_check_for_error(TEST_NUM, num_pe, TEST_RULE);
-    val_report_status(0, SBSA_AVS_END(g_sbsa_level, TEST_NUM), TEST_RULE);
+    val_report_status(0, ACS_END(TEST_NUM), TEST_RULE);
 
     return status;
 }

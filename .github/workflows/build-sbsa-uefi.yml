@@ -30,6 +30,11 @@ jobs:
         with:
           path: 'edk2/ShellPkg/Application/sbsa-acs'
 
+      - name: Checkout bsa-acs repository
+        run: |
+          cd edk2
+          git clone https://github.com/ARM-software/bsa-acs.git ShellPkg/Application/bsa-acs
+
       - name: Apply edk2 sbsa patch
         run: |
           cd edk2
@@ -49,7 +54,7 @@ jobs:
           export PACKAGES_PATH=$PWD/edk2-libc
           source edksetup.sh
           make -C BaseTools/Source/C
-          source ShellPkg/Application/sbsa-acs/tools/scripts/avsbuild.sh
+          source ShellPkg/Application/sbsa-acs/tools/scripts/acsbuild.sh
           ls Build/Shell/DEBUG_GCC49/AARCH64/Sbsa.efi
       - name: Save Sbsa.efi as an artifact
         uses: actions/upload-artifact@v3.1.2

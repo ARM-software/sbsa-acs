@@ -15,19 +15,21 @@
  * limitations under the License.
  **/
 
-#include "val/include/sbsa_avs_val.h"
-#include "val/include/val_interface.h"
+#include "val/common/include/acs_val.h"
+#include "val/sbsa/include/sbsa_val_interface.h"
 
-#include "val/include/sbsa_avs_pe.h"
-#include "val/include/sbsa_avs_smmu.h"
-#include "val/include/sbsa_avs_pgt.h"
-#include "val/include/sbsa_avs_iovirt.h"
-#include "val/include/sbsa_avs_memory.h"
-#include "val/include/sbsa_avs_pcie_enumeration.h"
-#include "val/include/sbsa_avs_pcie.h"
-#include "val/include/sbsa_avs_exerciser.h"
+#include "val/sbsa/include/sbsa_acs_pe.h"
+#include "val/sbsa/include/sbsa_acs_smmu.h"
+#include "val/common/include/acs_pgt.h"
+#include "val/common/include/acs_pe.h"
+#include "val/sbsa/include/sbsa_acs_iovirt.h"
+#include "val/common/include/acs_iovirt.h"
+#include "val/sbsa/include/sbsa_acs_memory.h"
+#include "val/common/include/acs_pcie_enumeration.h"
+#include "val/sbsa/include/sbsa_acs_pcie.h"
+#include "val/sbsa/include/sbsa_acs_exerciser.h"
 
-#define TEST_NUM   (AVS_EXERCISER_TEST_NUM_BASE + 3)
+#define TEST_NUM   (ACS_EXERCISER_TEST_NUM_BASE + 3)
 #define TEST_DESC  "ATS Functionality Check           "
 #define TEST_RULE  "RE_SMU_2"
 
@@ -108,8 +110,8 @@ payload(void)
    */
   pgt_base_array = val_aligned_alloc(MEM_ALIGN_4K, sizeof(uint64_t) * num_exercisers);
   if (!pgt_base_array) {
-      val_print(AVS_PRINT_ERR, "\n       mem alloc failure", 0);
-      val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
+      val_print(ACS_PRINT_ERR, "\n       mem alloc failure", 0);
+      val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 02));
       return;
   }
 
@@ -118,9 +120,9 @@ payload(void)
   /* Allocate a buffer to perform DMA tests on */
   dram_buf_in_virt = val_memory_alloc_pages(TEST_DATA_NUM_PAGES);
   if (!dram_buf_in_virt) {
-      val_print(AVS_PRINT_ERR, "\n       Cacheable mem alloc failure", 0);
+      val_print(ACS_PRINT_ERR, "\n       Cacheable mem alloc failure", 0);
       val_memory_free_aligned(pgt_base_array);
-      val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 03));
+      val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 03));
       return;
   }
 
@@ -133,13 +135,13 @@ payload(void)
   /* Get translation attributes via TCR and translation table base via TTBR */
   if (val_pe_reg_read_tcr(0 /*for TTBR0*/,
                           &pgt_desc.tcr)) {
-    val_print(AVS_PRINT_ERR, "\n       TCR read failure", 0);
+    val_print(ACS_PRINT_ERR, "\n       TCR read failure", 0);
     goto test_fail;
   }
 
   if (val_pe_reg_read_ttbr(0 /*for TTBR0*/,
                            &ttbr)) {
-    val_print(AVS_PRINT_ERR, "\n       TTBR0 read failure", 0);
+    val_print(ACS_PRINT_ERR, "\n       TTBR0 read failure", 0);
     goto test_fail;
   }
 
@@ -155,7 +157,7 @@ payload(void)
 
     /* Get exerciser bdf */
     e_bdf = val_exerciser_get_bdf(instance);
-    val_print(AVS_PRINT_DEBUG, "\n       Exerciser BDF - 0x%x", e_bdf);
+    val_print(ACS_PRINT_DEBUG, "\n       Exerciser BDF - 0x%x", e_bdf);
 
     /* If ATS Capability Not Present, Skip. */
     if (val_pcie_find_capability(e_bdf, PCIE_ECAP, ECID_ATS, &cap_base) != PCIE_SUCCESS)
@@ -167,7 +169,7 @@ payload(void)
 
     /* Get index for RC in IOVIRT mapping*/
     rc_index = val_iovirt_get_rc_index(PCIE_EXTRACT_BDF_SEG(erp_bdf));
-    if (rc_index == AVS_INVALID_INDEX)
+    if (rc_index == ACS_INVALID_INDEX)
         continue;
 
     /* Continue further only if RC supports ATS - this is not standard but information
@@ -187,7 +189,7 @@ payload(void)
      * our own page table later.
      */
     if (val_pgt_get_attributes(pgt_desc, (uint64_t)dram_buf_in_virt, &mem_desc->attributes)) {
-        val_print(AVS_PRINT_ERR, "\n       Unable to get memory attributes of the test buffer", 0);
+        val_print(ACS_PRINT_ERR, "\n       Unable to get memory attributes of the test buffer", 0);
         goto test_fail;
     }
 
@@ -199,7 +201,7 @@ payload(void)
 
     dram_buf_in_iova = dram_buf_in_phys;
     dram_buf_out_iova = dram_buf_out_phys;
-    if (master.smmu_index != AVS_INVALID_INDEX &&
+    if (master.smmu_index != ACS_INVALID_INDEX &&
         val_iovirt_get_smmu_info(SMMU_CTRL_ARCH_MAJOR_REV, master.smmu_index) == 3) {
         if (val_iovirt_get_device_info(PCIE_CREATE_BDF_PACKED(e_bdf),
                                        PCIE_EXTRACT_BDF_SEG(e_bdf),
@@ -220,14 +222,14 @@ payload(void)
         /* Need to know input and output address sizes before creating page table */
         pgt_desc.ias = val_smmu_get_info(SMMU_IN_ADDR_SIZE, master.smmu_index);
         if ((pgt_desc.ias) == 0) {
-            val_print(AVS_PRINT_ERR,
+            val_print(ACS_PRINT_ERR,
                           "\n       Input address size of SMMU %d is 0", master.smmu_index);
             goto test_fail;
         }
 
         pgt_desc.oas = val_smmu_get_info(SMMU_OUT_ADDR_SIZE, master.smmu_index);
         if ((pgt_desc.oas) == 0) {
-            val_print(AVS_PRINT_ERR,
+            val_print(ACS_PRINT_ERR,
                           "\n       Output address size of SMMU %d is 0", master.smmu_index);
             goto test_fail;
         }
@@ -236,7 +238,7 @@ payload(void)
            will update pgt_desc.pgt_base to point to created translation table */
         pgt_desc.pgt_base = (uint64_t) NULL;
         if (val_pgt_create(mem_desc, &pgt_desc)) {
-            val_print(AVS_PRINT_ERR,
+            val_print(ACS_PRINT_ERR,
                       "\n       Unable to create page table with given attributes", 0);
             goto test_fail;
         }
@@ -247,7 +249,7 @@ payload(void)
            for VA to PA translations*/
         if (val_smmu_map(master, pgt_desc))
         {
-            val_print(AVS_PRINT_ERR, "\n       SMMU mapping failed (%x)     ", e_bdf);
+            val_print(ACS_PRINT_ERR, "\n       SMMU mapping failed (%x)     ", e_bdf);
             goto test_fail;
         }
 
@@ -263,20 +265,20 @@ payload(void)
     /* Send an ATS Translation Request for the VA */
     if (val_exerciser_ops(ATS_TXN_REQ, (uint64_t)dram_buf_in_virt + instance * test_data_blk_size,
                           instance)) {
-        val_print(AVS_PRINT_ERR, "\n       ATS Translation Req Failed exerciser %4x", instance);
+        val_print(ACS_PRINT_ERR, "\n       ATS Translation Req Failed exerciser %4x", instance);
         goto test_fail;
     }
 
     /* Get ATS Translation Response */
     m_vir_addr = (uint64_t)dram_buf_in_virt + instance * test_data_blk_size;
     if (val_exerciser_get_param(ATS_RES_ATTRIBUTES, &translated_addr, &m_vir_addr, instance)) {
-        val_print(AVS_PRINT_ERR, "\n       ATS Response failure %4x", instance);
+        val_print(ACS_PRINT_ERR, "\n       ATS Response failure %4x", instance);
         goto test_fail;
     }
 
     /* Compare Translated Addr with Physical Address from the Mappings */
     if (translated_addr != dram_buf_in_phys) {
-        val_print(AVS_PRINT_ERR, "\n       ATS Translation failure %4x", instance);
+        val_print(ACS_PRINT_ERR, "\n       ATS Translation failure %4x", instance);
         goto test_fail;
     }
 
@@ -287,7 +289,7 @@ payload(void)
     val_exerciser_set_param(CFG_TXN_ATTRIBUTES, TXN_ADDR_TYPE, AT_TRANSLATED, instance);
 
     if (val_exerciser_set_param(DMA_ATTRIBUTES, dram_buf_in_phys, dma_len, instance)) {
-        val_print(AVS_PRINT_ERR, "\n       DMA attributes setting failure %4x", instance);
+        val_print(ACS_PRINT_ERR, "\n       DMA attributes setting failure %4x", instance);
         goto test_fail;
     }
 
@@ -295,7 +297,7 @@ payload(void)
     val_exerciser_ops(START_DMA, EDMA_TO_DEVICE, instance);
 
     if (val_exerciser_set_param(DMA_ATTRIBUTES, dram_buf_out_iova, dma_len, instance)) {
-        val_print(AVS_PRINT_ERR, "\n       DMA attributes setting failure %4x", instance);
+        val_print(ACS_PRINT_ERR, "\n       DMA attributes setting failure %4x", instance);
         goto test_fail;
     }
 
@@ -303,7 +305,7 @@ payload(void)
     val_exerciser_ops(START_DMA, EDMA_FROM_DEVICE, instance);
 
     if (val_memory_compare(dram_buf_in_virt, dram_buf_out_virt, dma_len)) {
-        val_print(AVS_PRINT_ERR, "\n       Data Comparasion failure for Exerciser %4x", instance);
+        val_print(ACS_PRINT_ERR, "\n       Data Comparasion failure for Exerciser %4x", instance);
         goto test_fail;
     }
 
@@ -313,14 +315,14 @@ payload(void)
   }
 
   if (test_skip)
-    val_set_status(pe_index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
+    val_set_status(pe_index, RESULT_SKIP(TEST_NUM, 01));
   else
-    val_set_status(pe_index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
+    val_set_status(pe_index, RESULT_PASS(TEST_NUM, 01));
 
   goto test_clean;
 
 test_fail:
-  val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
+  val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 01));
 
 test_clean:
   /* Return the pages to the heap manager */
@@ -366,16 +368,16 @@ uint32_t
 e003_entry(void)
 {
   uint32_t num_pe = 1;
-  uint32_t status = AVS_STATUS_FAIL;
+  uint32_t status = ACS_STATUS_FAIL;
 
-  status = val_initialize_test(TEST_NUM, TEST_DESC, num_pe, g_sbsa_level, TEST_RULE);
-  if (status != AVS_STATUS_SKIP)
+  status = val_initialize_test(TEST_NUM, TEST_DESC, num_pe);
+  if (status != ACS_STATUS_SKIP)
       val_run_test_payload(TEST_NUM, num_pe, payload, 0);
 
   /* Get the result from all PE and check for failure */
   status = val_check_for_error(TEST_NUM, num_pe, TEST_RULE);
 
-  val_report_status(0, SBSA_AVS_END(g_sbsa_level, TEST_NUM), TEST_RULE);
+  val_report_status(0, ACS_END(TEST_NUM), TEST_RULE);
 
   return status;
 }

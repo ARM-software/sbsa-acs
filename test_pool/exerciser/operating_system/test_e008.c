@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2023, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2023-2024, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,18 +15,18 @@
  * limitations under the License.
  **/
 
-#include "val/include/sbsa_avs_val.h"
-#include "val/include/val_interface.h"
+#include "val/common/include/acs_val.h"
+#include "val/sbsa/include/sbsa_val_interface.h"
 
-#include "val/include/sbsa_avs_pcie_enumeration.h"
-#include "val/include/sbsa_avs_pcie.h"
-#include "val/include/sbsa_avs_pe.h"
-#include "val/include/sbsa_avs_smmu.h"
-#include "val/include/sbsa_avs_memory.h"
-#include "val/include/sbsa_avs_exerciser.h"
-#include "val/include/sbsa_avs_pcie.h"
+#include "val/common/include/acs_pcie_enumeration.h"
+#include "val/sbsa/include/sbsa_acs_pcie.h"
+#include "val/sbsa/include/sbsa_acs_pe.h"
+#include "val/sbsa/include/sbsa_acs_smmu.h"
+#include "val/sbsa/include/sbsa_acs_memory.h"
+#include "val/sbsa/include/sbsa_acs_exerciser.h"
+#include "val/sbsa/include/sbsa_acs_pcie.h"
 
-#define TEST_NUM   (AVS_EXERCISER_TEST_NUM_BASE + 8)
+#define TEST_NUM   (ACS_EXERCISER_TEST_NUM_BASE + 8)
 #define TEST_DESC  "Check 2/4/8 Bytes targeted writes"
 #define TEST_RULE  "S_PCIe_04"
 
@@ -69,7 +69,7 @@ get_target_exer_bdf(uint32_t req_rp_bdf, uint32_t *tgt_e_bdf,
           status = val_pcie_get_ecam_index(req_rp_bdf, &req_rp_ecam_index);
           if (status)
           {
-             val_print(AVS_PRINT_ERR,
+             val_print(ACS_PRINT_ERR,
                        "\n       Error Ecam index for req RP BDF: 0x%x", req_rp_bdf);
              goto clean_fail;
           }
@@ -77,7 +77,7 @@ get_target_exer_bdf(uint32_t req_rp_bdf, uint32_t *tgt_e_bdf,
           status = val_pcie_get_ecam_index(erp_bdf, &erp_ecam_index);
           if (status)
           {
-             val_print(AVS_PRINT_ERR, "\n       Error Ecam index for tgt RP BDF: 0x%x", erp_bdf);
+             val_print(ACS_PRINT_ERR, "\n       Error Ecam index for tgt RP BDF: 0x%x", erp_bdf);
              goto clean_fail;
           }
 
@@ -94,7 +94,7 @@ get_target_exer_bdf(uint32_t req_rp_bdf, uint32_t *tgt_e_bdf,
 
           *tgt_instance = instance;
 
-          return AVS_STATUS_PASS;
+          return ACS_STATUS_PASS;
       }
   }
 
@@ -103,7 +103,7 @@ clean_fail:
   *tgt_e_bdf = 0;
   *tgt_rp_bdf = 0;
   *bar_base = 0;
-  return AVS_STATUS_FAIL;
+  return ACS_STATUS_FAIL;
 }
 
 static
@@ -126,7 +126,7 @@ check_sequence(uint64_t dma_buffer, uint32_t tgt_instance, uint32_t req_instance
   status = val_exerciser_ops(START_TXN_MONITOR, CFG_READ, tgt_instance);
   if (status == PCIE_CAP_NOT_FOUND)
   {
-      val_print(AVS_PRINT_ERR, "\n       Transaction Monitoring capability not found", 0);
+      val_print(ACS_PRINT_ERR, "\n       Transaction Monitoring capability not found", 0);
       return 1;
   }
 
@@ -137,7 +137,7 @@ check_sequence(uint64_t dma_buffer, uint32_t tgt_instance, uint32_t req_instance
   status = val_exerciser_ops(STOP_TXN_MONITOR, CFG_READ, tgt_instance);
   if (status == PCIE_CAP_NOT_FOUND)
   {
-      val_print(AVS_PRINT_ERR, "\n       Transaction Monitoring capability not found", 0);
+      val_print(ACS_PRINT_ERR, "\n       Transaction Monitoring capability not found", 0);
       return 1;
   }
 
@@ -145,9 +145,9 @@ check_sequence(uint64_t dma_buffer, uint32_t tgt_instance, uint32_t req_instance
   val_exerciser_get_param(DATA_ATTRIBUTES, &transaction_data, &idx, tgt_instance);
   if (val_memory_compare(&transaction_data, &dma_buffer, size))
   {
-      val_print(AVS_PRINT_ERR,
+      val_print(ACS_PRINT_ERR,
                 "\n       Data mismatch for target exerciser instance: %x", tgt_instance);
-      val_print(AVS_PRINT_ERR, " with value: %x", transaction_data);
+      val_print(ACS_PRINT_ERR, " with value: %x", transaction_data);
       return 1;
   }
 
@@ -177,8 +177,8 @@ payload(void)
   status = val_pcie_p2p_support();
   /* Check If PCIe Hierarchy supports P2P. */
   if (status) {
-    val_print(AVS_PRINT_DEBUG, "\n       PCIe hierarchy does not support P2P: %x", status);
-    val_set_status(pe_index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
+    val_print(ACS_PRINT_DEBUG, "\n       PCIe hierarchy does not support P2P: %x", status);
+    val_set_status(pe_index, RESULT_SKIP(TEST_NUM, 01));
     return;
   }
 
@@ -191,7 +191,7 @@ payload(void)
           continue;
 
       req_e_bdf = val_exerciser_get_bdf(req_instance);
-      val_print(AVS_PRINT_DEBUG, "\n       Requester exerciser BDF - 0x%x", req_e_bdf);
+      val_print(ACS_PRINT_DEBUG, "\n       Requester exerciser BDF - 0x%x", req_e_bdf);
 
       /* Get RP of the exerciser */
       if (val_pcie_get_rootport(req_e_bdf, &req_rp_bdf))
@@ -207,7 +207,7 @@ payload(void)
       status = check_sequence(dma_buffer, tgt_instance, req_instance, bar_base, 2);
       if (status)
       {
-          val_print(AVS_PRINT_ERR,
+          val_print(ACS_PRINT_ERR,
                     "\n       Failed for 2B transaction from exerciser: %x", req_instance);
           fail_cnt++;
       }
@@ -215,7 +215,7 @@ payload(void)
       status = check_sequence(dma_buffer, tgt_instance, req_instance, bar_base, 4);
       if (status)
       {
-          val_print(AVS_PRINT_ERR,
+          val_print(ACS_PRINT_ERR,
                     "\n       Failed for 4B transaction from exerciser: %x", req_instance);
           fail_cnt++;
       }
@@ -223,7 +223,7 @@ payload(void)
       status = check_sequence(dma_buffer, tgt_instance, req_instance, bar_base, 8);
       if (status)
       {
-          val_print(AVS_PRINT_ERR,
+          val_print(ACS_PRINT_ERR,
                    "\n       Failed for 8B transaction from exerciser: %x", req_instance);
           fail_cnt++;
       }
@@ -231,11 +231,11 @@ payload(void)
   }
 
   if (test_skip == 1)
-      val_set_status(pe_index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 02));
+      val_set_status(pe_index, RESULT_SKIP(TEST_NUM, 02));
   else if (fail_cnt)
-      val_set_status(pe_index, RESULT_FAIL(g_sbsa_level, TEST_NUM, fail_cnt));
+      val_set_status(pe_index, RESULT_FAIL(TEST_NUM, fail_cnt));
   else
-      val_set_status(pe_index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
+      val_set_status(pe_index, RESULT_PASS(TEST_NUM, 01));
 
   return;
 
@@ -245,16 +245,16 @@ uint32_t
 e008_entry(void)
 {
   uint32_t num_pe = 1;
-  uint32_t status = AVS_STATUS_FAIL;
+  uint32_t status = ACS_STATUS_FAIL;
 
-  status = val_initialize_test(TEST_NUM, TEST_DESC, num_pe, g_sbsa_level, TEST_RULE);
-  if (status != AVS_STATUS_SKIP)
+  status = val_initialize_test(TEST_NUM, TEST_DESC, num_pe);
+  if (status != ACS_STATUS_SKIP)
       val_run_test_payload(TEST_NUM, num_pe, payload, 0);
 
   /* Get the result from all PE and check for failure */
   status = val_check_for_error(TEST_NUM, num_pe, TEST_RULE);
 
-  val_report_status(0, SBSA_AVS_END(g_sbsa_level, TEST_NUM), TEST_RULE);
+  val_report_status(0, ACS_END(TEST_NUM), TEST_RULE);
 
   return status;
 }

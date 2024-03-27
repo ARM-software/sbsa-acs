@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2023, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2023-2024, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,15 +15,15 @@
  * limitations under the License.
  **/
 
-#include "val/include/sbsa_avs_val.h"
-#include "val/include/sbsa_avs_common.h"
-#include "val/include/sbsa_avs_pe.h"
-#include "val/include/sbsa_avs_pmu.h"
-#include "val/include/sbsa_avs_memory.h"
-#include "val/include/sbsa_avs_mpam.h"
+#include "val/sbsa/include/sbsa_val_interface.h"
+#include "val/common/include/acs_val.h"
+#include "val/sbsa/include/sbsa_acs_pe.h"
+#include "val/sbsa/include/sbsa_acs_pmu.h"
+#include "val/sbsa/include/sbsa_acs_memory.h"
+#include "val/sbsa/include/sbsa_acs_mpam.h"
+#include "val/common/include/acs_common.h"
 
-
-#define TEST_NUM  (AVS_PMU_TEST_NUM_BASE + 5)
+#define TEST_NUM  (ACS_PMU_TEST_NUM_BASE + 5)
 #define TEST_RULE "PMU_MEM_1, PMU_SYS_1, PMU_SYS_2"
 #define TEST_DESC "Check memory latency monitors     "
 
@@ -47,24 +47,24 @@ static void payload(void)
     void *dest_buf = 0;
 
     if (g_sbsa_level < 7) {
-        val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
+        val_set_status(index, RESULT_SKIP(TEST_NUM, 01));
         return;
     }
 
     node_count = val_pmu_get_info(PMU_NODE_COUNT, 0);
-    val_print(AVS_PRINT_DEBUG, "\n       PMU NODES = %d", node_count);
+    val_print(ACS_PRINT_DEBUG, "\n       PMU NODES = %d", node_count);
 
     if (node_count == 0) {
-        val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
-        val_print(AVS_PRINT_ERR, "\n       No PMU nodes found", 0);
+        val_set_status(index, RESULT_FAIL(TEST_NUM, 01));
+        val_print(ACS_PRINT_ERR, "\n       No PMU nodes found", 0);
         return;
     }
 
     /*Get number of memory ranges from SRAT table */
     num_mem_range = val_srat_get_info(SRAT_MEM_NUM_MEM_RANGE, 0);
     if (num_mem_range == 0 || num_mem_range == SRAT_INVALID_INFO) {
-        val_print(AVS_PRINT_ERR, "\n       No Proximity domains in the system", 0);
-        val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 02));
+        val_print(ACS_PRINT_ERR, "\n       No Proximity domains in the system", 0);
+        val_set_status(index, RESULT_FAIL(TEST_NUM, 02));
         return;
     }
 
@@ -75,7 +75,7 @@ static void payload(void)
         /* Get proximity domain mapped to the memory range */
         mc_prox_domain = val_srat_get_prox_domain(mem_range_index);
         if (mc_prox_domain == SRAT_INVALID_INFO) {
-            val_print(AVS_PRINT_ERR, "\n       Proximity domain not found", 0);
+            val_print(ACS_PRINT_ERR, "\n       Proximity domain not found", 0);
             fail_cnt++;
             continue;
         }
@@ -83,7 +83,7 @@ static void payload(void)
         /* Get PMU node index corresponding to the proximity domain */
         node_index = val_pmu_get_node_index(mc_prox_domain);
         if (node_index == PMU_INVALID_INDEX) {
-            val_print(AVS_PRINT_ERR,
+            val_print(ACS_PRINT_ERR,
                     "\n       Proximity domain %d has no PMU associated with it", mc_prox_domain);
             fail_cnt++;
             continue;
@@ -93,7 +93,7 @@ static void payload(void)
         /* Check if the PMU supports atleast 2 counters */
         data = val_pmu_get_monitor_count(node_index);
         if (data < 2) {
-            val_print(AVS_PRINT_ERR, "\n       Number of monitors supported = %d", data);
+            val_print(ACS_PRINT_ERR, "\n       Number of monitors supported = %d", data);
             fail_cnt++;
             continue;
         }
@@ -102,7 +102,7 @@ static void payload(void)
         status1 = val_pmu_configure_monitor(node_index, PMU_EVENT_IB_OPEN_TXN, 0);
         status2 = val_pmu_configure_monitor(node_index, PMU_EVENT_IB_TOTAL_TXN, 1);
         if (status1 || status2) {
-            val_print(AVS_PRINT_ERR,
+            val_print(ACS_PRINT_ERR,
                       "\n       Required events are not supported at node %d", node_index);
             fail_cnt++;
             continue;
@@ -113,7 +113,7 @@ static void payload(void)
         addr_len = val_srat_get_info(SRAT_MEM_ADDR_LEN, mc_prox_domain);
         if ((prox_base_addr == SRAT_INVALID_INFO) || (addr_len == SRAT_INVALID_INFO) ||
             (addr_len <= 2 * BUFFER_SIZE)) {
-            val_print(AVS_PRINT_ERR,
+            val_print(ACS_PRINT_ERR,
                         "\n       Invalid base address for proximity domain : 0x%lx",
                         mc_prox_domain);
             fail_cnt++;
@@ -125,7 +125,7 @@ static void payload(void)
         dest_buf = (void *)val_mem_alloc_at_address(prox_base_addr + BUFFER_SIZE, BUFFER_SIZE);
 
         if ((src_buf == NULL) || (dest_buf == NULL)) {
-            val_print(AVS_PRINT_ERR, "\n       Memory allocation of buffers failed", 0);
+            val_print(ACS_PRINT_ERR, "\n       Memory allocation of buffers failed", 0);
             fail_cnt++;
             continue;
         }
@@ -156,28 +156,27 @@ static void payload(void)
     }
 
     if (fail_cnt) {
-        val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 03));
+        val_set_status(index, RESULT_FAIL(TEST_NUM, 03));
         return;
     }
 
-    val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
+    val_set_status(index, RESULT_PASS(TEST_NUM, 01));
 }
 
 uint32_t pmu005_entry(uint32_t num_pe)
 {
-    uint32_t status = AVS_STATUS_FAIL;
+    uint32_t status = ACS_STATUS_FAIL;
 
     num_pe = 1; /* This test is run on a single PE */
 
-    status = val_initialize_test(TEST_NUM, TEST_DESC, num_pe, g_sbsa_level,
-                                                                TEST_RULE);
+    status = val_initialize_test(TEST_NUM, TEST_DESC, num_pe);
     /* This check is when user is forcing us to skip this test */
-    if (status != AVS_STATUS_SKIP)
+    if (status != ACS_STATUS_SKIP)
         val_run_test_payload(TEST_NUM, num_pe, payload, 0);
 
     /* get the result from all PE and check for failure */
     status = val_check_for_error(TEST_NUM, num_pe, TEST_RULE);
-    val_report_status(0, SBSA_AVS_END(g_sbsa_level, TEST_NUM), TEST_RULE);
+    val_report_status(0, ACS_END(TEST_NUM), TEST_RULE);
 
     return status;
 }

@@ -15,11 +15,12 @@
  * limitations under the License.
  **/
 
-#include "val/include/sbsa_avs_val.h"
-#include "val/include/sbsa_avs_pe.h"
-#include "val/include/val_interface.h"
+#include "val/common/include/acs_val.h"
+#include "val/common/include/acs_pe.h"
+#include "val/sbsa/include/sbsa_acs_pe.h"
+#include "val/sbsa/include/sbsa_val_interface.h"
 
-#define TEST_NUM   (AVS_PE_TEST_NUM_BASE  +  30)
+#define TEST_NUM   (ACS_PE_TEST_NUM_BASE  +  30)
 #define TEST_RULE  "S_L7PE_03"
 #define TEST_DESC  "Check for AMUv1 Support           "
 
@@ -30,34 +31,34 @@ static void payload(void)
     uint32_t primary_pe_idx = val_pe_get_primary_index();
 
     if (g_sbsa_level < 7) {
-        val_set_status(index, RESULT_SKIP(g_sbsa_level, TEST_NUM, 01));
+        val_set_status(index, RESULT_SKIP(TEST_NUM, 01));
         return;
     }
 
     /*  ID_AA64PFR0_EL1.AMU[47:44] >= 0b0001 indicate AMU Support */
     data = VAL_EXTRACT_BITS(val_pe_reg_read(ID_AA64PFR0_EL1), 44, 47);
     if (index == primary_pe_idx) {
-        val_print(AVS_PRINT_DEBUG, "\n       ID_AA64PFR0_EL1.AMU[47:44]  = %llx", data);
+        val_print(ACS_PRINT_DEBUG, "\n       ID_AA64PFR0_EL1.AMU[47:44]  = %llx", data);
     }
 
     if (data >= 1)
-        val_set_status(index, RESULT_PASS(g_sbsa_level, TEST_NUM, 01));
+        val_set_status(index, RESULT_PASS(TEST_NUM, 01));
     else
-        val_set_status(index, RESULT_FAIL(g_sbsa_level, TEST_NUM, 01));
+        val_set_status(index, RESULT_FAIL(TEST_NUM, 01));
 }
 
 uint32_t c030_entry(uint32_t num_pe)
 {
-    uint32_t status = AVS_STATUS_FAIL;
+    uint32_t status = ACS_STATUS_FAIL;
 
-    status = val_initialize_test(TEST_NUM, TEST_DESC, num_pe, g_sbsa_level, TEST_RULE);
+    status = val_initialize_test(TEST_NUM, TEST_DESC, num_pe);
     /* This check is when user is forcing us to skip this test */
-    if (status != AVS_STATUS_SKIP)
+    if (status != ACS_STATUS_SKIP)
         val_run_test_payload(TEST_NUM, num_pe, payload, 0);
 
     /* get the result from all PE and check for failure */
     status = val_check_for_error(TEST_NUM, num_pe, TEST_RULE);
-    val_report_status(0, SBSA_AVS_END(g_sbsa_level, TEST_NUM), TEST_RULE);
+    val_report_status(0, ACS_END(TEST_NUM), TEST_RULE);
 
     return status;
 }
