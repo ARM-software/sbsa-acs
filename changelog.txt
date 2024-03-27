@@ -62,3 +62,11 @@ v23.12_REL7.1.4
 * Bug fixes and enhancements
 * Improvements for better prints
 * Document updates
+
+v24.03_REL7.1.5
+
+* Unified VAL and PAL structures for SBSA and BSA ACS
+* Enhanced PCIe enumeration support for multiple root controllers 
+* Bug fixes and enhancements
+* Improvements for better prints
+* Document updates
