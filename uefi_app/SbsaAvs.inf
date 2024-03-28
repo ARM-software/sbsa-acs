@@ -1,5 +1,5 @@
 ## @file
-#  Copyright (c) 2016-2023 Arm Limited or its affiliates. All rights reserved.
+#  Copyright (c) 2016-2024, Arm Limited or its affiliates. All rights reserved.
 #  SPDX-License-Identifier : Apache-2.0
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
@@ -68,6 +68,12 @@
   ../test_pool/pe/operating_system/test_c035.c
   ../test_pool/pe/operating_system/test_c036.c
   ../test_pool/pe/operating_system/test_c037.c
+  ../test_pool/pe/operating_system/test_c038.c
+  ../test_pool/pe/operating_system/test_c039.c
+  ../test_pool/pe/operating_system/test_c040.c
+  ../test_pool/pe/operating_system/test_c041.c
+  ../test_pool/pe/operating_system/test_c042.c
+
 
   ../test_pool/gic/operating_system/test_g001.c
   ../test_pool/gic/operating_system/test_g002.c
@@ -115,6 +121,9 @@
   ../test_pool/pcie/operating_system/test_p061.c
   ../test_pool/pcie/operating_system/test_p062.c
   ../test_pool/pcie/operating_system/test_p063.c
+  ../test_pool/pcie/operating_system/test_p064.c
+  ../test_pool/pcie/operating_system/test_p065.c
+
 
   ../test_pool/smmu/operating_system/test_i001.c
   ../test_pool/smmu/operating_system/test_i002.c
@@ -131,6 +140,8 @@
   ../test_pool/smmu/operating_system/test_i013.c
   ../test_pool/smmu/operating_system/test_i014.c
   ../test_pool/smmu/operating_system/test_i015.c
+  ../test_pool/smmu/operating_system/test_i017.c
+
   ../test_pool/memory_map/operating_system/test_m001.c
   ../test_pool/exerciser/operating_system/test_e001.c
   ../test_pool/exerciser/operating_system/test_e002.c
@@ -140,6 +151,10 @@
   ../test_pool/exerciser/operating_system/test_e006.c
   ../test_pool/exerciser/operating_system/test_e007.c
   ../test_pool/exerciser/operating_system/test_e008.c
+  ../test_pool/exerciser/operating_system/test_e009.c
+  ../test_pool/exerciser/operating_system/test_e010.c
+  ../test_pool/exerciser/operating_system/test_e011.c
+  ../test_pool/exerciser/operating_system/test_e012.c
 
   ../test_pool/mpam/operating_system/test_mpam001.c
   ../test_pool/mpam/operating_system/test_mpam002.c
@@ -170,6 +185,16 @@
   ../test_pool/ras/operating_system/test_ras010.c
   ../test_pool/ras/operating_system/test_ras011.c
   ../test_pool/ras/operating_system/test_ras012.c
+  ../test_pool/ras/operating_system/test_ras013.c
+
+  ../test_pool/ete/operating_system/test_ete001.c
+  ../test_pool/ete/operating_system/test_ete002.c
+  ../test_pool/ete/operating_system/test_ete003.c
+  ../test_pool/ete/operating_system/test_ete004.c
+  ../test_pool/ete/operating_system/test_ete005.c
+  ../test_pool/ete/operating_system/test_ete006.c
+  ../test_pool/ete/operating_system/test_ete007.c
+  ../test_pool/ete/operating_system/test_ete008.c
 
 [Packages]
   StdLib/StdLib.dec

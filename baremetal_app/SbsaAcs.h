@@ -23,13 +23,16 @@
 #include "platform_override_sbsa_fvp.h"
 
 #define SBSA_ACS_MAJOR_VER     7
-#define SBSA_ACS_MINOR_VER     1
-#define SBSA_ACS_SUBMINOR_VER  5
+#define SBSA_ACS_MINOR_VER     2
+#define SBSA_ACS_SUBMINOR_VER  0
 
 #define SIZE_4K 0x1000
 
 #define SBSA_MIN_LEVEL_SUPPORTED 3
 #define SBSA_MAX_LEVEL_SUPPORTED 7
+
+#define SBSA_FR_LEVEL           0x8    // SBSA level to be set to 8 to run Future Requirement tests
+
 
 #define INVALID_MPIDR     0xffffffff
 

@@ -430,7 +430,7 @@ HelpMsg (
   VOID
   )
 {
-   Print (L"\nUsage: Sbsa.efi [-v <n>] | [-l <n>] | [-f <filename>] | "
+   Print (L"\nUsage: Sbsa.efi [-v <n>] | [-l <n>] | [-fr] | [-f <filename>] | "
          "[-skip <n>] | [-nist] | [-t <n>] | [-m <n>]\n"
          "Options:\n"
          "-v      Verbosity of the Prints\n"
@@ -441,6 +441,8 @@ HelpMsg (
          "-l      Level of compliance to be tested for\n"
          "        As per SBSA spec, 3 to 7\n"
          "-f      Name of the log file to record the test results in\n"
+         "-fr     Should be passed without level option to run future requirement tests\n"
+         "        If level option is passed, then fr option is ignored\n"
          "-skip   Test(s) to be skipped\n"
          "        Refer to section 4 of SBSA_ACS_User_Guide\n"
          "        To skip a module, use Module ID as mentioned in user guide\n"
@@ -463,6 +465,7 @@ STATIC CONST SHELL_PARAM_ITEM ParamList[] = {
   {L"-v"    , TypeValue},    // -v    # Verbosity of the Prints. 1 shows all prints, 5 shows Errors
   {L"-l"    , TypeValue},    // -l    # Level of compliance to be tested for.
   {L"-f"    , TypeValue},    // -f    # Name of the log file to record the test results in.
+  {L"-fr"   , TypeValue},    // -fr   # To run SBSA ACS till SBSA Future Requirement tests
   {L"-skip" , TypeValue},    // -skip # test(s) to skip execution
   {L"-help" , TypeFlag},     // -help # help : info about commands
   {L"-h"    , TypeFlag},     // -h    # help : info about commands
@@ -549,6 +552,8 @@ ShellAppMainsbsa (
   CmdLineArg  = ShellCommandLineGetValue (ParamPackage, L"-l");
   if (CmdLineArg == NULL) {
     g_sbsa_level = G_SBSA_LEVEL;
+    if (ShellCommandLineGetFlag (ParamPackage, L"-fr"))
+        g_sbsa_level = SBSA_MAX_LEVEL_SUPPORTED + 1;
   } else {
     g_sbsa_level = StrDecimalToUintn(CmdLineArg);
     if (g_sbsa_level > SBSA_MAX_LEVEL_SUPPORTED) {
@@ -559,7 +564,6 @@ ShellAppMainsbsa (
       HelpMsg();
       return SHELL_INVALID_PARAMETER;
     }
-
   }
 
     // Options with Values
@@ -839,6 +843,10 @@ ShellAppMainsbsa (
     Status |= val_sbsa_nist_execute_tests(g_sbsa_level, val_pe_get_num());
   }
 #endif
+
+  /***         Starting ETE tests                    ***/
+  if (g_sbsa_level > 7)
+    Status |= val_sbsa_ete_execute_tests(g_sbsa_level, val_pe_get_num());
 
 print_test_status:
   val_print(ACS_PRINT_TEST, "\n     -------------------------------------------------------\n", 0);

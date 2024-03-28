@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2023-2024, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2024, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,14 +19,15 @@
 #include "val/common/include/acs_pe.h"
 #include "val/sbsa/include/sbsa_acs_pe.h"
 #include "val/sbsa/include/sbsa_val_interface.h"
+#include "val/sbsa/include/sbsa_acs_gic.h"
 
-#define TEST_NUM   (ACS_PE_TEST_NUM_BASE + 37)
-#define TEST_RULE  "S_L8PE_04"
-#define TEST_DESC  "Check for enhanced PAN feature    "
+#define TEST_NUM   (ACS_ETE_TEST_NUM_BASE + 8)
+#define TEST_RULE  "ETE_10"
+#define TEST_DESC  "Check GICC TRBE Interrupt field   "
 
 static void payload(void)
 {
-    uint64_t data = 0;
+    uint64_t int_id = 0;
     uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
 
     if (g_sbsa_level < 8) {
@@ -34,16 +35,26 @@ static void payload(void)
         return;
     }
 
-    /* ID_AA64MMFR1_EL1.PAN [23:20] = 0b0011 indicate support for enhanced PAN feature */
-    data = VAL_EXTRACT_BITS(val_pe_reg_read(ID_AA64MMFR1_EL1), 20, 23);
+    /* Check for GICC TRBE GISV Interrupt is PPI */
+    int_id = val_pe_get_gicc_trbe_interrupt(index);
 
-    if (data == 3)
+    if (int_id == 1) {
+      val_print_primary_pe(ACS_PRINT_DEBUG,
+                    "\n       GICC TRBE interrupt field needs at least 6.5 ACPI table", 0, index);
+      val_set_status(index, RESULT_FAIL(TEST_NUM, 01));
+      return;
+    }
+
+    val_print_primary_pe(ACS_PRINT_DEBUG, "\n       GICC TRBE INTERRUPT GISV = %d", int_id,
+                                                                                       index);
+    if (val_gic_is_valid_ppi(int_id))
         val_set_status(index, RESULT_PASS(TEST_NUM, 01));
     else
-        val_set_status(index, RESULT_FAIL(TEST_NUM, 01));
+        val_set_status(index, RESULT_FAIL(TEST_NUM, 02));
+
 }
 
-uint32_t c037_entry(uint32_t num_pe)
+uint32_t ete008_entry(uint32_t num_pe)
 {
     uint32_t status = ACS_STATUS_FAIL;
 
@@ -58,3 +69,4 @@ uint32_t c037_entry(uint32_t num_pe)
 
     return status;
 }
+

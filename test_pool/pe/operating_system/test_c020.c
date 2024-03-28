@@ -21,7 +21,7 @@
 #include "val/sbsa/include/sbsa_val_interface.h"
 
 #define TEST_NUM   (ACS_PE_TEST_NUM_BASE  +  20)
-#define TEST_RULE  "S_L6PE_04"
+#define TEST_RULE  "S_L6PE_04, S_L8PE_05"
 #define TEST_DESC  "Check PMU Version Support         "
 
 static void payload(void)
@@ -36,11 +36,23 @@ static void payload(void)
 
     /* Read ID_AA64DFR0_EL1.PMUVer[11:8] >= 0b0110 and != 0xF for PMU v8.5 or higher support */
     data = VAL_EXTRACT_BITS(val_pe_reg_read(ID_AA64DFR0_EL1), 8, 11);
+    val_print_primary_pe(ACS_PRINT_DEBUG, "\n       ID_AA64DFR0_EL1.PMUVer = %llx",
+                                                                            data, index);
 
-    if ((data < 6) || (data == 0xF))
-        val_set_status(index, RESULT_FAIL(TEST_NUM, 01));
-    else
-        val_set_status(index, RESULT_PASS(TEST_NUM, 01));
+    if (g_sbsa_level < 8) {
+    /* Read ID_AA64DFR0_EL1.PMUVer[11:8] >= 0b0110 and != 0xF for PMU v8.5 or higher support */
+        if ((data < PE_PMUv3p5) || (data == 0xF)) /* 0xF is PMUv3 not supported */
+            val_set_status(index, RESULT_FAIL(TEST_NUM, 01));
+        else
+            val_set_status(index, RESULT_PASS(TEST_NUM, 01));
+    }
+    else {
+    /* Read ID_AA64DFR0_EL1.PMUVer[11:8] >= 0b0111 and != 0xF for PMU v8.7 or higher support */
+        if ((data >= PE_PMUv3p7) && (data != 0xF))
+            val_set_status(index, RESULT_PASS(TEST_NUM, 01));
+        else
+            val_set_status(index, RESULT_FAIL(TEST_NUM, 01));
+   }
 }
 
 uint32_t c020_entry(uint32_t num_pe)

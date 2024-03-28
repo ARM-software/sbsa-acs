@@ -22,7 +22,7 @@ jobs:
 
       - name: Download edk2 and its submodules
         run: |
-          git clone --recursive --branch edk2-stable202208 https://github.com/tianocore/edk2
+          git clone --recursive --branch edk2-stable202402 https://github.com/tianocore/edk2
           git clone https://github.com/tianocore/edk2-libc edk2/edk2-libc
 
       - name: Checkout sbsa-acs repository

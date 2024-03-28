@@ -142,6 +142,17 @@ static uint32_t test_sequence_8B(uint64_t *addr, uint32_t instance)
   return test_sequence_check(instance, write_val);
 }
 
+void
+reset_base_value(uint64_t *addr)
+{
+  uint64_t idx;
+
+  for (idx = 0; idx < transaction_size; idx++) {
+      val_mmio_write64((addr_t)addr, 0);
+      addr++;
+  }
+}
+
 /* Read and Write on BAR space mapped to Device memory */
 static
 void
@@ -182,6 +193,9 @@ barspace_transactions_order_check(void)
     fail_cnt += test_sequence_2B((uint16_t *)baseptr, instance);
     fail_cnt += test_sequence_4B((uint32_t *)baseptr, instance);
     fail_cnt += test_sequence_8B((uint64_t *)baseptr, instance);
+
+    /* Reset value to original value */
+    reset_base_value((uint64_t *)baseptr);
   }
 }
 

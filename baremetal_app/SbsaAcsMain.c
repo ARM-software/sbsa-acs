@@ -49,6 +49,7 @@ extern uint32_t g_test_array[];
 extern uint32_t g_num_tests;
 extern uint32_t g_module_array[];
 extern uint32_t g_num_modules;
+extern uint32_t g_sbsa_run_fr;
 
 uint32_t
 createPeInfoTable(
@@ -333,6 +334,9 @@ ShellAppMainsbsa(
       g_sbsa_level = SBSA_MAX_LEVEL_SUPPORTED;
   }
 
+  if (g_sbsa_run_fr)
+    g_sbsa_level = SBSA_FR_LEVEL;
+
   val_print(ACS_PRINT_TEST, "\n\n SBSA Architecture Compliance Suite\n", 0);
   val_print(ACS_PRINT_TEST, "    Version %d.", SBSA_ACS_MAJOR_VER);
   val_print(ACS_PRINT_TEST, "%d.", SBSA_ACS_MINOR_VER);
@@ -437,6 +441,10 @@ ShellAppMainsbsa(
   /***         Starting RAS tests                    ***/
   if (g_sbsa_level > 6)
     Status |= val_sbsa_ras_execute_tests(g_sbsa_level, val_pe_get_num());
+
+    /***         Starting ETE tests                    ***/
+  if (g_sbsa_level > 7)
+    Status |= val_sbsa_ete_execute_tests(g_sbsa_level, val_pe_get_num());
 
 print_test_status:
   val_print(ACS_PRINT_TEST, "\n     -------------------------------------------------------\n", 0);
