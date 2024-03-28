@@ -123,7 +123,6 @@
   ../test_pool/pcie/operating_system/test_p061.c
   ../test_pool/pcie/operating_system/test_p062.c
   ../test_pool/pcie/operating_system/test_p063.c
-
   ../test_pool/smmu/operating_system/test_i001.c
   ../test_pool/smmu/operating_system/test_i002.c
   ../test_pool/smmu/operating_system/test_i003.c
@@ -139,6 +138,8 @@
   ../test_pool/smmu/operating_system/test_i013.c
   ../test_pool/smmu/operating_system/test_i014.c
   ../test_pool/smmu/operating_system/test_i015.c
+  ../test_pool/smmu/operating_system/test_i017.c
+
   ../test_pool/memory_map/operating_system/test_m001.c
   ../test_pool/exerciser/operating_system/test_e001.c
   ../test_pool/exerciser/operating_system/test_e002.c
@@ -178,6 +179,7 @@
   ../test_pool/ras/operating_system/test_ras010.c
   ../test_pool/ras/operating_system/test_ras011.c
   ../test_pool/ras/operating_system/test_ras012.c
+  ../test_pool/ras/operating_system/test_ras013.c
 
   ../test_pool/nist_sts/test_n001.c
 
