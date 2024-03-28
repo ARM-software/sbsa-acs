@@ -188,6 +188,15 @@
   ../test_pool/ras/operating_system/test_ras012.c
   ../test_pool/ras/operating_system/test_ras013.c
 
+  ../test_pool/ete/operating_system/test_ete001.c
+  ../test_pool/ete/operating_system/test_ete002.c
+  ../test_pool/ete/operating_system/test_ete003.c
+  ../test_pool/ete/operating_system/test_ete004.c
+  ../test_pool/ete/operating_system/test_ete005.c
+  ../test_pool/ete/operating_system/test_ete006.c
+  ../test_pool/ete/operating_system/test_ete007.c
+  ../test_pool/ete/operating_system/test_ete008.c
+
   ../test_pool/nist_sts/test_n001.c
 
 [Packages]

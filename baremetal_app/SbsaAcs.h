@@ -31,6 +31,9 @@
 #define SBSA_MIN_LEVEL_SUPPORTED 3
 #define SBSA_MAX_LEVEL_SUPPORTED 7
 
+#define SBSA_FR_LEVEL           0x8    // SBSA level to be set to 8 to run Future Requirement tests
+
+
 #define INVALID_MPIDR     0xffffffff
 
 #define STACK_SIZE          0x1000
