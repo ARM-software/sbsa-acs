@@ -70,3 +70,11 @@ v24.03_REL7.1.5
 * Bug fixes and enhancements
 * Improvements for better prints
 * Document updates
+
+v24.03_REL7.2.0_BETA-0
+
+* New Tests added for SBSA Future Requirement Section of SBSA 7.1 Specification
+* New Tests for PE, RAS, SMMU, PCIe, Exerciser Added.
+* Self Hosted Debug ETE Related Tests added.
+* Added Baremetal Support for SBSA Future Requirement
+* Common misc API added

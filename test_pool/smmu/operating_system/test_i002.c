@@ -21,7 +21,7 @@
 #include "val/sbsa/include/sbsa_acs_smmu.h"
 
 #define TEST_NUM   (ACS_SMMU_TEST_NUM_BASE + 2)
-#define TEST_RULE  "S_L5SM_01, S_L5SM_02"
+#define TEST_RULE  "S_L5SM_01, S_L5SM_02, S_L8SM_01"
 #define TEST_DESC  "Check SMMUv3.2 or higher          "
 
 static
@@ -50,12 +50,24 @@ payload(void)
       } else {
           /* Read SMMU minor version */
           data = VAL_EXTRACT_BITS(val_smmu_read_cfg(SMMUv3_AIDR, num_smmu), 0, 7);
-          if (data < 0x2) { /* SMMUv3.2 or higher not implemented */
+
+          if (g_sbsa_level < 8) {
+              if (data < 0x2) { /* SMMUv3.2 or higher not implemented */
                   val_print(ACS_PRINT_ERR,
                             "\n       Level 5 or higher systems must be compliant "
                             "with the Arm SMMUv3.2 or higher  ", 0);
                   val_set_status(index, RESULT_FAIL(TEST_NUM, 02));
                   return;
+              }
+          }
+          else {
+              if (data < 0x3) { /* SMMUv3.3 or higher not implemented */
+                  val_print(ACS_PRINT_ERR,
+                            "\n       Level 8 or higher systems must be compliant "
+                            "with the Arm SMMUv3.3 or higher  ", 0);
+                  val_set_status(index, RESULT_FAIL(TEST_NUM, 03));
+                  return;
+              }
           }
       }
   }

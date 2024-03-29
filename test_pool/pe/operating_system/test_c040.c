@@ -20,9 +20,9 @@
 #include "val/sbsa/include/sbsa_acs_pe.h"
 #include "val/sbsa/include/sbsa_val_interface.h"
 
-#define TEST_NUM   (ACS_PE_TEST_NUM_BASE + 37)
-#define TEST_RULE  "S_L8PE_04"
-#define TEST_DESC  "Check for enhanced PAN feature    "
+#define TEST_NUM   (ACS_PE_TEST_NUM_BASE + 40)
+#define TEST_RULE  "S_L8PE_03"
+#define TEST_DESC  "Check atomic 64 byte store support"
 
 static void payload(void)
 {
@@ -34,16 +34,17 @@ static void payload(void)
         return;
     }
 
-    /* ID_AA64MMFR1_EL1.PAN [23:20] = 0b0011 indicate support for enhanced PAN feature */
-    data = VAL_EXTRACT_BITS(val_pe_reg_read(ID_AA64MMFR1_EL1), 20, 23);
+    /* ID_AA64ISAR1_EL1.LS64[63:60] = 0b0010 indicates FEAT_LS64_V support  */
+    /* FEAT_LS64_V can be implemented only if FEAT_LS64 is implemented */
+    data = VAL_EXTRACT_BITS(val_pe_reg_read(ID_AA64ISAR1_EL1), 60, 63);
 
-    if (data == 3)
+    if (data == 2)
         val_set_status(index, RESULT_PASS(TEST_NUM, 01));
     else
         val_set_status(index, RESULT_FAIL(TEST_NUM, 01));
 }
 
-uint32_t c037_entry(uint32_t num_pe)
+uint32_t c040_entry(uint32_t num_pe)
 {
     uint32_t status = ACS_STATUS_FAIL;
 
@@ -58,3 +59,4 @@ uint32_t c037_entry(uint32_t num_pe)
 
     return status;
 }
+

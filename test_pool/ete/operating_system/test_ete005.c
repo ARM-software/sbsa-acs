@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2023-2024, Arm Limited or its affiliates. All rights reserved.
+* Copyright (c) 2024, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,9 +20,9 @@
 #include "val/sbsa/include/sbsa_acs_pe.h"
 #include "val/sbsa/include/sbsa_val_interface.h"
 
-#define TEST_NUM   (ACS_PE_TEST_NUM_BASE + 37)
-#define TEST_RULE  "S_L8PE_04"
-#define TEST_DESC  "Check for enhanced PAN feature    "
+#define TEST_NUM   (ACS_ETE_TEST_NUM_BASE + 5)
+#define TEST_RULE  "ETE_07"
+#define TEST_DESC  "Check for FEAT_TRBE               "
 
 static void payload(void)
 {
@@ -34,16 +34,20 @@ static void payload(void)
         return;
     }
 
-    /* ID_AA64MMFR1_EL1.PAN [23:20] = 0b0011 indicate support for enhanced PAN feature */
-    data = VAL_EXTRACT_BITS(val_pe_reg_read(ID_AA64MMFR1_EL1), 20, 23);
+    /* ID_AA64DFR0_EL1.TraceBuffer, bits [47:44] non-zero value indicate FEAT_TRBE support */
+    data = VAL_EXTRACT_BITS(val_pe_reg_read(ID_AA64DFR0_EL1), 44, 47);
+    val_print_primary_pe(ACS_PRINT_DEBUG, "\n       ID_AA64DFR0_EL1.TraceBuffer = %llx",
+                                                                                data, index);
 
-    if (data == 3)
-        val_set_status(index, RESULT_PASS(TEST_NUM, 01));
-    else
+    if (data == 0) {
         val_set_status(index, RESULT_FAIL(TEST_NUM, 01));
+        return;
+    }
+
+    val_set_status(index, RESULT_PASS(TEST_NUM, 01));
 }
 
-uint32_t c037_entry(uint32_t num_pe)
+uint32_t ete005_entry(uint32_t num_pe)
 {
     uint32_t status = ACS_STATUS_FAIL;
 
@@ -58,3 +62,4 @@ uint32_t c037_entry(uint32_t num_pe)
 
     return status;
 }
+
