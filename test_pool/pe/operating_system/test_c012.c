@@ -32,6 +32,13 @@ static void payload(void)
         return;
     }
 
+    if (!g_crypto_support) {
+        val_print_primary_pe(ACS_PRINT_DEBUG, "\n       Export Restrictions on crypto extension",
+                                                                                      0, index);
+        val_set_status(index, RESULT_SKIP(TEST_NUM, 1));
+        return;
+  }
+
     /* Read ID_AA64ISAR0_EL1.SHA3[35:32] for cryptography support for SHA3 */
     data = VAL_EXTRACT_BITS(val_pe_reg_read(ID_AA64ISAR0_EL1), 32, 35);
     if (data == 0x1)
