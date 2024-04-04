@@ -1,4 +1,4 @@
-name: SBSA-ACS UEFI application build
+name: SBSA-ACS build
 
 on:
   push:
@@ -26,7 +26,7 @@ jobs:
           git clone https://github.com/tianocore/edk2-libc edk2/edk2-libc
 
       - name: Checkout sbsa-acs repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           path: 'edk2/ShellPkg/Application/sbsa-acs'
 
@@ -57,8 +57,49 @@ jobs:
           source ShellPkg/Application/sbsa-acs/tools/scripts/acsbuild.sh
           ls Build/Shell/DEBUG_GCC49/AARCH64/Sbsa.efi
       - name: Save Sbsa.efi as an artifact
-        uses: actions/upload-artifact@v3.1.2
+        uses: actions/upload-artifact@v4
         with:
           name: Sbsa.efi
           path: edk2/Build/Shell/DEBUG_GCC49/AARCH64/Sbsa.efi
+          if-no-files-found: error
+
+  baremetal-compilation:
+    name: Baremetal CMake compilation check
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checkout sbsa-acs repository
+        uses: actions/checkout@v4
+        with:
+          repository: ARM-software/sbsa-acs
+
+      - name: Git clone BSA-ACS repository
+        run: |
+              git clone https://github.com/ARM-software/bsa-acs.git ../bsa-acs
+
+      - name: Remove build folder if present in SBSA-ACS
+        run: |
+              rm -rf build
+
+      - name: Download Arm GCC cross-compiler
+        run: |
+              mkdir -p /opt/cross
+              cd /opt/cross
+              wget https://developer.arm.com/-/media/Files/downloads/gnu/13.2.rel1/binrel/arm-gnu-toolchain-13.2.rel1-x86_64-aarch64-none-elf.tar.xz
+              tar -xf arm-gnu-toolchain-13.2.rel1-x86_64-aarch64-none-elf.tar.xz
+
+      - name: Compile SBSA Baremetal ACS for RDN2 Platform
+        run: |
+              export CROSS_COMPILE=/opt/cross/arm-gnu-toolchain-13.2.Rel1-x86_64-aarch64-none-elf/bin/aarch64-none-elf-
+              mkdir build
+              cd build
+              cmake ../ -G "Unix Makefiles" -DCROSS_COMPILE=$CROSS_COMPILE -DTARGET=RDN2
+              make
+
+      - name: Save Baremetel sbsa.bin as an artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Sbsa_baremetal_RDN2.bin
+          path: build/output/sbsa.bin
           if-no-files-found: error
