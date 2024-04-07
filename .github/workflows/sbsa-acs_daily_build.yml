@@ -1,12 +1,6 @@
-name: SBSA-ACS build
+name: SBSA-ACS Daily Build
 
 on:
-  push:
-    branches:                # trigger on push to master
-      - master
-  pull_request:              # trigger on pull requests to master
-    branches:
-      - master
   schedule:
     - cron: '30 17 * * *'    # Runs everyday at 11 PM IST (17:30 UTC)
   workflow_dispatch:         # to dispatch from Github Actions
