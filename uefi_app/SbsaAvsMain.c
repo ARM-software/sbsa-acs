@@ -49,6 +49,7 @@ UINT32  g_num_modules = 0;
 UINT32  g_acs_tests_total;
 UINT32  g_acs_tests_pass;
 UINT32  g_acs_tests_fail;
+UINT32  g_crypto_support = TRUE;
 UINT64  g_stack_pointer;
 UINT64  g_exception_ret_addr;
 UINT64  g_ret_addr;
@@ -450,6 +451,7 @@ HelpMsg (
          "-nist   Enable the NIST Statistical test suite\n"
          "-t      If Test ID(s) set, will only run the specified test, all others will be skipped.\n"
          "-m      If Module ID(s) set, will only run the specified module, all others will be skipped.\n"
+         "-no_crypto_ext  Pass this flag if cryptography extension not supported due to export restrictions\n"
          "-p2p    Pass this flag to indicate that PCIe Hierarchy Supports Peer-to-Peer\n"
          "-cache  Pass this flag to indicate that if the test system supports PCIe address translation cache\n"
          "-timeout  Set timeout multiple for wakeup tests\n"
@@ -475,6 +477,7 @@ STATIC CONST SHELL_PARAM_ITEM ParamList[] = {
   {L"-m"    , TypeValue},    // -m    # Module to be run
   {L"-p2p", TypeFlag},       // -p2p  # Peer-to-Peer is supported
   {L"-cache", TypeFlag},     // -cache# PCIe address translation cache is supported
+  {L"-no_crypto_ext", TypeFlag},  //-no_crypto_ext # Skip tests which have export restrictions
   {L"-timeout" , TypeValue}, // -timeout # Set timeout multiple for wakeup tests
   {L"-slc"  , TypeValue},    // -slc  # system last level cache type
   {L"-el1physkip", TypeFlag}, // -el1physkip # Skips EL1 register checks
@@ -659,6 +662,10 @@ ShellAppMainsbsa (
   if (ShellCommandLineGetFlag (ParamPackage, L"-el1physkip")) {
     g_el1physkip = TRUE;
   }
+
+  // Options with Flags
+  if ((ShellCommandLineGetFlag (ParamPackage, L"-no_crypto_ext")))
+     g_crypto_support = FALSE;
 
   if (g_sbsa_level == 7)
       g_execute_nist = TRUE;
