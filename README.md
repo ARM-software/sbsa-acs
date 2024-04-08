@@ -1,7 +1,7 @@
 
 # Server Base System Architecture - Architecture Compliance Suite
 
-[![SBSA-ACS UEFI Build](https://github.com/ARM-software/sbsa-acs/actions/workflows/build-sbsa.yml/badge.svg?event=schedule)](https://github.com/ARM-software/sbsa-acs/actions/workflows/build-sbsa.yml)
+[![SBSA-ACS Build Check](https://github.com/ARM-software/sbsa-acs/actions/workflows/sbsa-acs_build_check.yml/badge.svg)](https://github.com/ARM-software/sbsa-acs/actions/workflows/sbsa-acs_build_check.yml)
 
 ## Server Base System Architecture
 **Server Base System Architecture** (SBSA) specification specifies a hardware system architecture based on the Arm 64-bit architecture.
