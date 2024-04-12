@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2023, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2024, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -25,6 +25,7 @@
 #include <getopt.h>
 
 int  g_sbsa_level = 4;
+int  g_sbsa_only_level = 0;
 int  g_print_level = 3;
 unsigned int g_num_skip = 3;
 unsigned int *g_skip_test_num;

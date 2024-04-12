@@ -35,6 +35,7 @@ UINT32 g_pcie_p2p;
 UINT32 g_pcie_cache_present;
 
 UINT32  g_sbsa_level;
+UINT32  g_sbsa_only_level = 0;
 UINT32  g_print_level;
 UINT32  g_execute_nist;
 UINT32  g_print_mmio = FALSE;
@@ -431,7 +432,7 @@ HelpMsg (
   VOID
   )
 {
-   Print (L"\nUsage: Sbsa.efi [-v <n>] | [-l <n>] | [-fr] | [-f <filename>] | "
+   Print (L"\nUsage: Sbsa.efi [-v <n>] | [-l <n>] | [-only] | [-fr] | [-f <filename>] | "
          "[-skip <n>] | [-nist] | [-t <n>] | [-m <n>]\n"
          "Options:\n"
          "-v      Verbosity of the Prints\n"
@@ -440,7 +441,9 @@ HelpMsg (
          "        Refer to section 4 of SBSA_ACS_User_Guide\n"
          "        To skip a module, use Module ID as mentioned in user guide\n"
          "-l      Level of compliance to be tested for\n"
-         "        As per SBSA spec, 3 to 7\n"
+         "        As per SBSA specification, Valid level are 3 to 7\n"
+         "-only   To only run tests belonging to a specific level of compliance\n"
+         "        -l (level) or -fr option needs to be specified for using this flag\n"
          "-f      Name of the log file to record the test results in\n"
          "-fr     Should be passed without level option to run future requirement tests\n"
          "        If level option is passed, then fr option is ignored\n"
@@ -466,6 +469,7 @@ HelpMsg (
 STATIC CONST SHELL_PARAM_ITEM ParamList[] = {
   {L"-v"    , TypeValue},    // -v    # Verbosity of the Prints. 1 shows all prints, 5 shows Errors
   {L"-l"    , TypeValue},    // -l    # Level of compliance to be tested for.
+  {L"-only" , TypeValue},    // -only # To only run tests for a Specific level of compliance.
   {L"-f"    , TypeValue},    // -f    # Name of the log file to record the test results in.
   {L"-fr"   , TypeValue},    // -fr   # To run SBSA ACS till SBSA Future Requirement tests
   {L"-skip" , TypeValue},    // -skip # test(s) to skip execution
@@ -555,17 +559,25 @@ ShellAppMainsbsa (
   CmdLineArg  = ShellCommandLineGetValue (ParamPackage, L"-l");
   if (CmdLineArg == NULL) {
     g_sbsa_level = G_SBSA_LEVEL;
-    if (ShellCommandLineGetFlag (ParamPackage, L"-fr"))
-        g_sbsa_level = SBSA_MAX_LEVEL_SUPPORTED + 1;
+    if (ShellCommandLineGetFlag (ParamPackage, L"-fr")) {
+      g_sbsa_level = SBSA_MAX_LEVEL_SUPPORTED + 1;
+      if (ShellCommandLineGetFlag (ParamPackage, L"-only"))
+        g_sbsa_only_level = g_sbsa_level;
+    }
   } else {
     g_sbsa_level = StrDecimalToUintn(CmdLineArg);
     if (g_sbsa_level > SBSA_MAX_LEVEL_SUPPORTED) {
-      g_sbsa_level = G_SBSA_LEVEL;
+      Print(L"SBSA Level %d is not supported.\n", g_sbsa_level);
+      HelpMsg();
+      return SHELL_INVALID_PARAMETER;
     }
     if (g_sbsa_level < SBSA_MIN_LEVEL_SUPPORTED) {
       Print(L"SBSA Level %d is not supported.\n", g_sbsa_level);
       HelpMsg();
       return SHELL_INVALID_PARAMETER;
+    }
+    if (ShellCommandLineGetFlag (ParamPackage, L"-only")) {
+        g_sbsa_only_level = g_sbsa_level;
     }
   }
 
@@ -667,7 +679,7 @@ ShellAppMainsbsa (
   if ((ShellCommandLineGetFlag (ParamPackage, L"-no_crypto_ext")))
      g_crypto_support = FALSE;
 
-  if (g_sbsa_level == 7)
+  if ((g_sbsa_level == 7) || (g_sbsa_only_level == 7))
       g_execute_nist = TRUE;
 
   // Options with Values
@@ -760,7 +772,11 @@ ShellAppMainsbsa (
   val_print(ACS_PRINT_TEST, "%d.", SBSA_ACS_MINOR_VER);
   val_print(ACS_PRINT_TEST, "%d\n", SBSA_ACS_SUBMINOR_VER);
 
-  val_print(ACS_PRINT_TEST, "\n Starting tests for level %2d", g_sbsa_level);
+  if (g_sbsa_only_level)
+    val_print(ACS_PRINT_TEST, "\n Starting tests for only level %2d", g_sbsa_level);
+  else
+    val_print(ACS_PRINT_TEST, "\n Starting tests for level %2d", g_sbsa_level);
+
   val_print(ACS_PRINT_TEST, " (Print level is %2d)\n\n", g_print_level);
 
   val_print(ACS_PRINT_TEST, " Creating Platform Information Tables\n", 0);
@@ -819,12 +835,10 @@ ShellAppMainsbsa (
   Status |= val_sbsa_gic_execute_tests(g_sbsa_level, val_pe_get_num());
 
   /***         Starting SMMU tests                   ***/
-  if (g_sbsa_level > 3)
-    Status |= val_sbsa_smmu_execute_tests(g_sbsa_level, val_pe_get_num());
+  Status |= val_sbsa_smmu_execute_tests(g_sbsa_level, val_pe_get_num());
 
   /***         Starting Watchdog tests               ***/
-  if (g_sbsa_level > 5)
-    Status |= val_sbsa_wd_execute_tests(g_sbsa_level, val_pe_get_num());
+  Status |= val_sbsa_wd_execute_tests(g_sbsa_level, val_pe_get_num());
 
   /***         Starting PCIe tests                   ***/
   Status |= val_sbsa_pcie_execute_tests(g_sbsa_level, val_pe_get_num());
@@ -833,16 +847,13 @@ ShellAppMainsbsa (
   Status |= val_sbsa_exerciser_execute_tests(g_sbsa_level);
 
   /***         Starting MPAM tests                   ***/
-  if (g_sbsa_level > 6)
-    Status |= val_sbsa_mpam_execute_tests(g_sbsa_level, val_pe_get_num());
+  Status |= val_sbsa_mpam_execute_tests(g_sbsa_level, val_pe_get_num());
 
   /***         Starting PMU tests                    ***/
-  if (g_sbsa_level > 6)
-    Status |= val_sbsa_pmu_execute_tests(g_sbsa_level, val_pe_get_num());
+  Status |= val_sbsa_pmu_execute_tests(g_sbsa_level, val_pe_get_num());
 
   /***         Starting RAS tests                    ***/
-  if (g_sbsa_level > 6)
-    Status |= val_sbsa_ras_execute_tests(g_sbsa_level, val_pe_get_num());
+  Status |= val_sbsa_ras_execute_tests(g_sbsa_level, val_pe_get_num());
 
 #ifdef ENABLE_NIST
   /***         Starting NIST tests                   ***/
@@ -852,8 +863,7 @@ ShellAppMainsbsa (
 #endif
 
   /***         Starting ETE tests                    ***/
-  if (g_sbsa_level > 7)
-    Status |= val_sbsa_ete_execute_tests(g_sbsa_level, val_pe_get_num());
+  Status |= val_sbsa_ete_execute_tests(g_sbsa_level, val_pe_get_num());
 
 print_test_status:
   val_print(ACS_PRINT_TEST, "\n     -------------------------------------------------------\n", 0);
