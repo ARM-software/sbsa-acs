@@ -342,7 +342,11 @@ ShellAppMainsbsa(
   val_print(ACS_PRINT_TEST, "%d.", SBSA_ACS_MINOR_VER);
   val_print(ACS_PRINT_TEST, "%d\n", SBSA_ACS_SUBMINOR_VER);
 
-  val_print(ACS_PRINT_TEST, "\n Starting tests for level %2d", g_sbsa_level);
+  if (g_sbsa_only_level)
+      val_print(ACS_PRINT_TEST, "\n Starting tests for only level %2d", g_sbsa_level);
+  else
+      val_print(ACS_PRINT_TEST, "\n Starting tests for level %2d", g_sbsa_level);
+
   val_print(ACS_PRINT_TEST, " (Print level is %2d)\n\n", g_print_level);
 
   val_print(ACS_PRINT_TEST, " Creating Platform Information Tables\n", 0);
