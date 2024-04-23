@@ -22,6 +22,19 @@ then
     return 0
 fi
 
+# Get the path of the current shell script. Based on the script path navigate to sbsa-acs path
+script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+
+sbsa_path="$(dirname "$(dirname "$script_dir")")"
+echo "sbsa-acs path is: $(realpath "$sbsa_path")"
+
+# Use the default bsa-acs directory
+bsa_path="$sbsa_path/../bsa-acs"
+
+# Export BSA_PATH to bsa-acs path. This will be used in .inf files with -I compiler option.
+export BSA_PATH=$(realpath "$bsa_path")
+echo "bsa-acs path set to: $(realpath "$bsa_path")"
+
 NISTStatus=1;
 
 function build_with_NIST()
