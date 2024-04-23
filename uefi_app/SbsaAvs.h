@@ -51,7 +51,7 @@
   #define PERIPHERAL_INFO_TBL_SZ 2048   /*Supports maximum 20 PCIe EPs */
                                         /*(USB and SATA controllers only) */
                                         /*[56 B Each + 16 B Header]*/
-  #define PCIE_INFO_TBL_SZ       512    /*Supports maximum 20 RC's*/
+  #define PCIE_INFO_TBL_SZ       1024   /*Supports maximum 40 RC's*/
                                         /*[24 B Each + 4 B Header]*/
   #define PMU_INFO_TBL_SZ        20496  /*Supports maximum 512 PMUs*/
                                         /*[40 B Each + 4 B Header]*/
