@@ -22,7 +22,7 @@
 
 #define TEST_NUM   (ACS_ETE_TEST_NUM_BASE + 2)
 #define TEST_RULE  "ETE_03"
-#define TEST_DESC  "Check trace unit ETE supports     "
+#define TEST_DESC  "Check trace unit ETE supports         "
 
 static void payload(void)
 {

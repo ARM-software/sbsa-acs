@@ -22,7 +22,7 @@
 
 /* SBSA-checklist 63 & 64 */
 #define TEST_NUM   (ACS_PCIE_TEST_NUM_BASE + 5)
-#define TEST_DESC  "PCIe Unaligned access, Norm mem   "
+#define TEST_DESC  "PCIe Unaligned access, Norm mem       "
 #define TEST_RULE  "PCI_MM_01, PCI_MM_02, PCI_MM_03, RE_BAR_2, IE_BAR_2"
 
 #define DATA 0xC0DECAFE

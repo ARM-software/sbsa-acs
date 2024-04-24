@@ -25,7 +25,7 @@
 
 #define TEST_NUM   (ACS_RAS_TEST_NUM_BASE + 6)
 #define TEST_RULE  "RAS_07"
-#define TEST_DESC  "RAS ERR<n>ADDR.AI bit status check"
+#define TEST_DESC  "RAS ERR<n>ADDR.AI bit status check    "
 
 #define ONE_BYTE_BUFFER 0x1
 

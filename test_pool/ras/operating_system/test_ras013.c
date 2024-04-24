@@ -25,7 +25,7 @@
 
 #define TEST_NUM   (ACS_RAS_TEST_NUM_BASE + 13)
 #define TEST_RULE  "SYS_RAS_4"
-#define TEST_DESC  "Check RAS memory mapped view supp "
+#define TEST_DESC  "Check RAS memory mapped view supp     "
 
 #define RESOURCE_FLAG(flag) ((flag >> 1) & 1)
 

@@ -22,7 +22,7 @@
 
 #define TEST_NUM   (ACS_PE_TEST_NUM_BASE  +  19)
 #define TEST_RULE  "S_L6PE_03"
-#define TEST_DESC  "Check Protect Against Timing Fault"
+#define TEST_DESC  "Check Protect Against Timing Fault    "
 
 static void payload(void)
 {

@@ -24,7 +24,7 @@
 
 #define TEST_NUM   (ACS_RAS_TEST_NUM_BASE + 5)
 #define TEST_RULE  "RAS_06"
-#define TEST_DESC  "Check ERI/FHI Connected to GIC    "
+#define TEST_DESC  "Check ERI/FHI Connected to GIC        "
 
 #define IS_NOT_SPI_PPI(int_id) ((int_id < 16) || (int_id > 1019))
 

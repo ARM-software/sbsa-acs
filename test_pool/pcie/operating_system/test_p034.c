@@ -22,7 +22,7 @@
 #include "val/sbsa/include/sbsa_acs_pe.h"
 
 #define TEST_NUM   (ACS_PCIE_TEST_NUM_BASE + 34)
-#define TEST_DESC  "Check BAR memory space & Type rule"
+#define TEST_DESC  "Check BAR memory space & Type rule    "
 #define TEST_RULE  "RE_BAR_3, IE_BAR_3"
 
 static

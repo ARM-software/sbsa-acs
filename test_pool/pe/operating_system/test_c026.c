@@ -22,7 +22,7 @@
 
 #define TEST_NUM   (ACS_PE_TEST_NUM_BASE  +  26)
 #define TEST_RULE  "B_SEC_04"
-#define TEST_DESC  "Check PEs Implement SB Barrier    "
+#define TEST_DESC  "Check PEs Implement SB Barrier        "
 
 static void payload(void)
 {

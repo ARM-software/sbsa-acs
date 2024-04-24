@@ -22,7 +22,7 @@
 
 #define TEST_NUM   (ACS_PE_TEST_NUM_BASE  + 8)
 #define TEST_RULE  "S_L4PE_04"
-#define TEST_DESC  "Check for Virtual host extensions "
+#define TEST_DESC  "Check for Virtual host extensions     "
 
 static void payload(void)
 {

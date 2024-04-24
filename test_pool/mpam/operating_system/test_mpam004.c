@@ -24,9 +24,9 @@
 #include "val/sbsa/include/sbsa_acs_mpam.h"
 
 
-#define TEST_NUM  (ACS_MPAM_TEST_NUM_BASE + 4)
-#define TEST_RULE "S_L7MP_07"
-#define TEST_DESC "Check for MBWU counter size       "
+#define TEST_NUM   (ACS_MPAM_TEST_NUM_BASE + 4)
+#define TEST_RULE  "S_L7MP_07"
+#define TEST_DESC  "Check for MBWU counter size           "
 
 #define MBWU_COUNTER_44BIT 0
 #define MAX_44BIT_COUNTER_BW 1677722 /* this is in MB (1.6 TB) */

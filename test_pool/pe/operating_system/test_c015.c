@@ -23,7 +23,7 @@
 
 #define TEST_NUM   (ACS_PE_TEST_NUM_BASE  +  15)
 #define TEST_RULE  "S_MPAM_PE"
-#define TEST_DESC  "Check MPAM PE Requirements        "
+#define TEST_DESC  "Check MPAM PE Requirements            "
 
 static void payload(void)
 {

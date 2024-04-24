@@ -24,7 +24,7 @@
 
 #define TEST_NUM   (ACS_RAS_TEST_NUM_BASE + 3)
 #define TEST_RULE  "RAS_03"
-#define TEST_DESC  "Check FHI in Error Record Group   "
+#define TEST_DESC  "Check FHI in Error Record Group       "
 
 static
 void

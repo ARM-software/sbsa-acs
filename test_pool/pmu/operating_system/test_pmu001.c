@@ -22,7 +22,7 @@
 
 #define TEST_NUM   (ACS_PMU_TEST_NUM_BASE  +  1)
 #define TEST_RULE  "PMU_PE_02"
-#define TEST_DESC  "Check PMU Overflow signal         "
+#define TEST_DESC  "Check PMU Overflow signal             "
 
 static uint32_t int_id;
 

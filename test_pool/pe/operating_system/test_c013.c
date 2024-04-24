@@ -21,7 +21,7 @@
 
 #define TEST_NUM   (ACS_PE_TEST_NUM_BASE  +  13)
 #define TEST_RULE  "S_L5PE_06"
-#define TEST_DESC  "Stage 2 control of mem and cache  "
+#define TEST_DESC  "Stage 2 control of mem and cache      "
 
 static void payload(void)
 {

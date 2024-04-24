@@ -29,7 +29,7 @@
 #include "val/sbsa/include/sbsa_acs_exerciser.h"
 
 #define TEST_NUM   (ACS_EXERCISER_TEST_NUM_BASE + 10)
-#define TEST_DESC  "DPC trig when RP-PIO unimplemented"
+#define TEST_DESC  "DPC trig when RP-PIO unimplemented    "
 #define TEST_RULE  "PCI_ER_10"
 
 #define ERR_UNCORR   0x3

@@ -23,7 +23,7 @@
 
 #define TEST_NUM   (ACS_SMMU_TEST_NUM_BASE + 6)
 #define TEST_RULE  "S_L6SM_02"
-#define TEST_DESC  "Check SMMU HTTU Support           "
+#define TEST_DESC  "Check SMMU HTTU Support               "
 
 static
 void

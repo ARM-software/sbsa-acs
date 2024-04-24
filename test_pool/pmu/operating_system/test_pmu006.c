@@ -22,9 +22,9 @@
 #include "val/sbsa/include/sbsa_acs_pmu.h"
 #include "val/common/include/acs_common.h"
 
-#define TEST_NUM  (ACS_PMU_TEST_NUM_BASE + 6)
-#define TEST_RULE "PMU_SPE"
-#define TEST_DESC "Check for PMU SPE Requirements    "
+#define TEST_NUM   (ACS_PMU_TEST_NUM_BASE + 6)
+#define TEST_RULE  "PMU_SPE"
+#define TEST_DESC  "Check for PMU SPE Requirements        "
 
 static void payload(void)
 {

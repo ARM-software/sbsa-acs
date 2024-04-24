@@ -22,7 +22,7 @@
 
 #define TEST_NUM   (ACS_PCIE_TEST_NUM_BASE + 58)
 #define TEST_RULE  "RE_BAR_1, IE_BAR_1"
-#define TEST_DESC  "Read and write to BAR reg         "
+#define TEST_DESC  "Read and write to BAR reg             "
 
 #define TEST_DATA_1  0xDEADDAED
 #define TEST_DATA_2  0xABABABAB

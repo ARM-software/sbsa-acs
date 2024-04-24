@@ -19,7 +19,7 @@
 #include "val/sbsa/include/sbsa_acs_pcie.h"
 
 #define TEST_NUM   (ACS_PCIE_TEST_NUM_BASE + 1)
-#define TEST_DESC  "Check ECAM Presence               "
+#define TEST_DESC  "Check ECAM Presence                   "
 #define TEST_RULE  "PCI_IN_01"
 
 static

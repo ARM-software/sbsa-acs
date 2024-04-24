@@ -23,7 +23,7 @@
 
 #define TEST_NUM   (ACS_GIC_TEST_NUM_BASE + 2)
 #define TEST_RULE  "S_L5PP_01"
-#define TEST_DESC  "Check Reserved PPI Assignments    "
+#define TEST_DESC  "Check Reserved PPI Assignments        "
 
 /* PPI IDs 1056-1071 and 1088-1103 are reserved for future SBSA usage */
 #define IS_PPI_RESERVED(id) ((id > 1055 && id < 1072) || (id > 1087 && id < 1104))

@@ -22,7 +22,7 @@
 #include "val/sbsa/include/sbsa_acs_pe.h"
 
 #define TEST_NUM   (ACS_PCIE_TEST_NUM_BASE + 31)
-#define TEST_DESC  "Check Type0/1 BIST Register rule  "
+#define TEST_DESC  "Check Type0/1 BIST Register rule      "
 #define TEST_RULE  "RE_REG_1, IE_REG_1, IE_REG_3"
 
 static

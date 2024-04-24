@@ -22,7 +22,7 @@
 #include "val/common/include/acs_pe.h"
 
 #define TEST_NUM   (ACS_PCIE_TEST_NUM_BASE + 65)
-#define TEST_DESC  "Check RP Extensions for DPC       "
+#define TEST_DESC  "Check RP Extensions for DPC           "
 #define TEST_RULE  "PCI_ER_09"
 
 static

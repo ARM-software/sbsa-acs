@@ -22,7 +22,7 @@
 
 #define TEST_NUM   (ACS_PE_TEST_NUM_BASE  +  20)
 #define TEST_RULE  "S_L6PE_04, S_L8PE_05"
-#define TEST_DESC  "Check PMU Version Support         "
+#define TEST_DESC  "Check PMU Version Support             "
 
 static void payload(void)
 {

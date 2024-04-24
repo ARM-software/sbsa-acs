@@ -28,7 +28,7 @@
 #include "val/sbsa/include/sbsa_acs_exerciser.h"
 
 #define TEST_NUM   (ACS_EXERCISER_TEST_NUM_BASE + 7)
-#define TEST_DESC  "RP's must support DPC                  "
+#define TEST_DESC  "RP's must support DPC                 "
 #define TEST_RULE  "PCI_ER_05, PCI_ER_06"
 
 #define ERR_FATAL 1

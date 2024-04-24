@@ -21,7 +21,7 @@
 
 #define TEST_NUM   (ACS_PE_TEST_NUM_BASE  +  9)
 #define TEST_RULE  "S_L5PE_01"
-#define TEST_DESC  "Support Page table map size change"
+#define TEST_DESC  "Support Page table map size change    "
 
 static void payload(void)
 {

@@ -22,7 +22,7 @@
 
 #define TEST_NUM   (ACS_PE_TEST_NUM_BASE  +  22)
 #define TEST_RULE  "S_L6PE_06"
-#define TEST_DESC  "Check Enhanced Virtualization Trap"
+#define TEST_DESC  "Check Enhanced Virtualization Trap    "
 
 static void payload(void)
 {

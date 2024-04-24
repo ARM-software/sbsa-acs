@@ -23,7 +23,7 @@
 #include "val/sbsa/include/sbsa_acs_pe.h"
 
 #define TEST_NUM   (ACS_PCIE_TEST_NUM_BASE + 30)
-#define TEST_DESC  "Check Cmd Reg memory space enable "
+#define TEST_DESC  "Check Cmd Reg memory space enable     "
 #define TEST_RULE  "RE_REG_1, IE_REG_1, IE_REG_3"
 
 static void *branch_to_test;

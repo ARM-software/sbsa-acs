@@ -22,7 +22,7 @@
 
 #define TEST_NUM   (ACS_PE_TEST_NUM_BASE + 37)
 #define TEST_RULE  "S_L8PE_04"
-#define TEST_DESC  "Check for enhanced PAN feature    "
+#define TEST_DESC  "Check for enhanced PAN feature        "
 
 static void payload(void)
 {

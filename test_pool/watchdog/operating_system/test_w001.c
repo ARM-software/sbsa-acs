@@ -22,7 +22,7 @@
 
 #define TEST_NUM   (ACS_WD_TEST_NUM_BASE + 1)
 #define TEST_RULE  "S_L6WD_01"
-#define TEST_DESC  "Check NS Watchdog Revision        "
+#define TEST_DESC  "Check NS Watchdog Revision            "
 
 static
 void

@@ -22,7 +22,7 @@
 
 #define TEST_NUM   (ACS_PE_TEST_NUM_BASE  +  11)
 #define TEST_RULE  "S_L5PE_04"
-#define TEST_DESC  "Check Activity monitors extension "
+#define TEST_DESC  "Check Activity monitors extension     "
 
 static void payload(void)
 {

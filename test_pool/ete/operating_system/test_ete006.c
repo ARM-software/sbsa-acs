@@ -22,7 +22,7 @@
 
 #define TEST_NUM   (ACS_ETE_TEST_NUM_BASE + 6)
 #define TEST_RULE  "ETE_08"
-#define TEST_DESC  "Check trace buffers flag updates  "
+#define TEST_DESC  "Check trace buffers flag updates      "
 
 static uint32_t primary_pe_flag_updates;
 

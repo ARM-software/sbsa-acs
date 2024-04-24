@@ -23,7 +23,7 @@
 
 #define TEST_NUM   (ACS_SMMU_TEST_NUM_BASE + 15)
 #define TEST_RULE  "S_L7SM_01"
-#define TEST_DESC  "Check if all DMA reqs behind SMMU "
+#define TEST_DESC  "Check if all DMA reqs behind SMMU     "
 
 static
 void

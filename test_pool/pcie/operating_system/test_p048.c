@@ -23,7 +23,7 @@
 #include "val/sbsa/include/sbsa_acs_pe.h"
 
 #define TEST_NUM   (ACS_PCIE_TEST_NUM_BASE + 48)
-#define TEST_DESC  "Check RootPort NP Memory Access   "
+#define TEST_DESC  "Check RootPort NP Memory Access       "
 #define TEST_RULE  "PCI_IN_13"
 
 #define KNOWN_DATA  0xABABABAB

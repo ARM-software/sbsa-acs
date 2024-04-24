@@ -23,7 +23,7 @@
 
 #define TEST_NUM   (ACS_SMMU_TEST_NUM_BASE + 17)
 #define TEST_RULE  "GPU_04"
-#define TEST_DESC  "Check ATS and Page Req Support    "
+#define TEST_DESC  "Check ATS and Page Req Support        "
 
 static void payload(void)
 {

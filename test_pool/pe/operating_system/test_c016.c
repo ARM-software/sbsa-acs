@@ -23,7 +23,7 @@
 
 #define TEST_NUM   (ACS_PE_TEST_NUM_BASE  +  16)
 #define TEST_RULE  "S_MPAM_PE"
-#define TEST_DESC  "Check MPAM LLC Requirements       "
+#define TEST_DESC  "Check MPAM LLC Requirements           "
 
 #define MEM_CACHE_LEVEL_1      1
 #define SLC_TYPE_UNKNOWN       0

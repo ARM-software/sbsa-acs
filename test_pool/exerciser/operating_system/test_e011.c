@@ -26,7 +26,7 @@
 
 #define TEST_NUM   (ACS_EXERCISER_TEST_NUM_BASE + 11)
 #define TEST_RULE  "PCI_ER_08"
-#define TEST_DESC  "RAS ERR record for poisoned data  "
+#define TEST_DESC  "RAS ERR record for poisoned data      "
 
 static
 void

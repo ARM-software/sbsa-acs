@@ -22,7 +22,7 @@
 
 #define TEST_NUM   (ACS_PE_TEST_NUM_BASE  +  28)
 #define TEST_RULE  "S_L7PE_01"
-#define TEST_DESC  "Check Fine Grain Trap Support     "
+#define TEST_DESC  "Check Fine Grain Trap Support         "
 
 static void payload(void)
 {

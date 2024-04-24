@@ -22,9 +22,9 @@
 #include "val/sbsa/include/sbsa_acs_mpam.h"
 #include "val/common/include/acs_peripherals.h"
 
-#define TEST_NUM (ACS_MPAM_TEST_NUM_BASE + 5)
-#define TEST_RULE "S_L7MP_08"
-#define TEST_DESC "Check for MPAM MSC address overlap"
+#define TEST_NUM   (ACS_MPAM_TEST_NUM_BASE + 5)
+#define TEST_RULE  "S_L7MP_08"
+#define TEST_DESC  "Check for MPAM MSC address overlap    "
 
 static void payload(void)
 {

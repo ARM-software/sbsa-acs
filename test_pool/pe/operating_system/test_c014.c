@@ -21,7 +21,7 @@
 
 #define TEST_NUM   (ACS_PE_TEST_NUM_BASE  +  14)
 #define TEST_RULE  "S_L5PE_07"
-#define TEST_DESC  "Check for FEAT_NV2 support        "
+#define TEST_DESC  "Check for FEAT_NV2 support            "
 
 static void payload(void)
 {

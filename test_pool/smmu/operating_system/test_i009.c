@@ -24,7 +24,7 @@
 
 #define TEST_NUM   (ACS_SMMU_TEST_NUM_BASE + 9)
 #define TEST_RULE  "B_SMMU_03"
-#define TEST_DESC  "Check SMMU Large VA Support       "
+#define TEST_DESC  "Check SMMU Large VA Support           "
 
 static
 void

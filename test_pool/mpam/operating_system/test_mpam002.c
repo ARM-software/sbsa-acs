@@ -23,9 +23,9 @@
 #include "val/sbsa/include/sbsa_acs_mpam.h"
 
 
-#define TEST_NUM (ACS_MPAM_TEST_NUM_BASE + 2)
-#define TEST_RULE "S_L7MP_03, S_L7MP_04"
-#define TEST_DESC "Check for MPAM LLC CSU            "
+#define TEST_NUM   (ACS_MPAM_TEST_NUM_BASE + 2)
+#define TEST_RULE  "S_L7MP_03, S_L7MP_04"
+#define TEST_DESC  "Check for MPAM LLC CSU                "
 
 static void payload(void)
 {

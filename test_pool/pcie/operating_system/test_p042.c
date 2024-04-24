@@ -23,7 +23,7 @@
 #include "val/sbsa/include/sbsa_acs_memory.h"
 
 #define TEST_NUM   (ACS_PCIE_TEST_NUM_BASE + 42)
-#define TEST_DESC  "Check Power Management rules      "
+#define TEST_DESC  "Check Power Management rules          "
 #define TEST_RULE  "RE_PWR_1, IE_PWR_1"
 
 static

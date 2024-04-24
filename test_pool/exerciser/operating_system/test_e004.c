@@ -26,7 +26,7 @@
 #include "val/sbsa/include/sbsa_acs_exerciser.h"
 
 #define TEST_NUM   (ACS_EXERCISER_TEST_NUM_BASE + 4)
-#define TEST_DESC  "Arrival order & Gathering Check   "
+#define TEST_DESC  "Arrival order & Gathering Check       "
 #define TEST_RULE  "RE_ORD_1, RE_ORD_2, IE_ORD_1, IE_ORD_2"
 
 /* 0 means read transction, 1 means write transaction */

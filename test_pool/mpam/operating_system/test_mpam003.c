@@ -24,9 +24,9 @@
 #include "val/sbsa/include/sbsa_acs_mpam.h"
 
 
-#define TEST_NUM  (ACS_MPAM_TEST_NUM_BASE + 3)
-#define TEST_RULE "S_L7MP_05, S_L7MP_06"
-#define TEST_DESC "Check for MPAM MBWUs Monitor func "
+#define TEST_NUM   (ACS_MPAM_TEST_NUM_BASE + 3)
+#define TEST_RULE  "S_L7MP_05, S_L7MP_06"
+#define TEST_DESC  "Check for MPAM MBWUs Monitor func     "
 
 #define BUFFER_SIZE 65536 /* 64 Kilobytes*/
 

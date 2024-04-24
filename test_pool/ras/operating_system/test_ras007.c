@@ -24,7 +24,7 @@
 
 #define TEST_NUM   (ACS_RAS_TEST_NUM_BASE + 7)
 #define TEST_RULE  "RAS_08"
-#define TEST_DESC  "Check Error Group Status          "
+#define TEST_DESC  "Check Error Group Status              "
 
 static
 void

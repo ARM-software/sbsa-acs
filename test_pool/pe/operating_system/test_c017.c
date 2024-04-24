@@ -22,7 +22,7 @@
 
 #define TEST_NUM   (ACS_PE_TEST_NUM_BASE  +  17)
 #define TEST_RULE  "B_PE_17"
-#define TEST_DESC  "Check SPE if implemented          "
+#define TEST_DESC  "Check SPE if implemented              "
 
 static
 void payload(void)

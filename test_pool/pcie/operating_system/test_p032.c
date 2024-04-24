@@ -22,7 +22,7 @@
 #include "val/sbsa/include/sbsa_acs_pe.h"
 
 #define TEST_NUM   (ACS_PCIE_TEST_NUM_BASE + 32)
-#define TEST_DESC  "Check HDR CapPtr Register rule    "
+#define TEST_DESC  "Check HDR CapPtr Register rule        "
 #define TEST_RULE  "RE_REG_1, IE_REG_1, IE_REG_3"
 
 static

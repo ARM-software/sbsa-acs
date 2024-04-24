@@ -23,9 +23,9 @@
 #include "val/sbsa/include/sbsa_acs_mpam.h"
 
 
-#define TEST_NUM (ACS_MPAM_TEST_NUM_BASE + 1)
-#define TEST_RULE "S_L7MP_01, S_L7MP_02"
-#define TEST_DESC "Check for MPAM extension          "
+#define TEST_NUM   (ACS_MPAM_TEST_NUM_BASE + 1)
+#define TEST_RULE  "S_L7MP_01, S_L7MP_02"
+#define TEST_DESC  "Check for MPAM extension              "
 
 static void payload(void)
 {

@@ -22,7 +22,7 @@
 
 #define TEST_NUM   (ACS_PE_TEST_NUM_BASE + 35)
 #define TEST_RULE  "S_L7PE_08"
-#define TEST_DESC  "Check for data gathering hint     "
+#define TEST_DESC  "Check for data gathering hint         "
 
 static void payload(void)
 {

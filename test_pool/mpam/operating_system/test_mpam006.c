@@ -23,9 +23,9 @@
 #include "val/sbsa/include/sbsa_acs_mpam.h"
 #include "val/sbsa/include/sbsa_acs_memory.h"
 
-#define TEST_NUM (ACS_MPAM_TEST_NUM_BASE + 6)
-#define TEST_RULE "S_L7MP_03"
-#define TEST_DESC "Check PMG storage by CPOR nodes   "
+#define TEST_NUM   (ACS_MPAM_TEST_NUM_BASE + 6)
+#define TEST_RULE  "S_L7MP_03"
+#define TEST_DESC  "Check PMG storage by CPOR nodes       "
 
 #define PARTITION_PERCENTAGE 75
 #define CACHE_PERCENTAGE 50

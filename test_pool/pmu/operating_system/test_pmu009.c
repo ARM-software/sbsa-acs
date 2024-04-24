@@ -25,7 +25,7 @@
 
 #define TEST_NUM  (ACS_PMU_TEST_NUM_BASE + 9)
 #define TEST_RULE "PMU_SYS_6"
-#define TEST_DESC "Check multiple types of traffic measurement"
+#define TEST_DESC "Check multiple type traffic measurement"
 
 #define NUM_TRAFFIC_TYPE 2 /* To atleast check 2 different types of traffic */
 

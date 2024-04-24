@@ -25,7 +25,7 @@
 
 #define TEST_NUM   (ACS_SMMU_TEST_NUM_BASE + 3)
 #define TEST_RULE  "B_SMMU_09"
-#define TEST_DESC  "Check S-EL2 & SMMU Stage1 support "
+#define TEST_DESC  "Check S-EL2 & SMMU Stage1 support     "
 
 static
 void

@@ -22,7 +22,7 @@
 
 #define TEST_NUM   (ACS_PE_TEST_NUM_BASE  +  29)
 #define TEST_RULE  "S_L7PE_02"
-#define TEST_DESC  "Check for ECV support             "
+#define TEST_DESC  "Check for ECV support                 "
 
 static void payload(void)
 {
