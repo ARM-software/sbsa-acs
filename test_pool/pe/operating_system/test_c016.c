@@ -29,6 +29,8 @@
 #define SLC_TYPE_UNKNOWN       0
 #define SLC_TYPE_PPTT_CACHE    1
 #define SLC_TYPE_MEMSIDE_CACHE 2
+#define MEM_CACHE_LVL_MASK     0xFF
+#define MEM_CACHE_LVL_SHIFT    56
 
 static void payload(void)
 {
@@ -155,7 +157,8 @@ static void payload(void)
                 /* check if mem-side cache matches with PE proximity domain
                    and cache level == 1 for mem-side LLC (based on assumption that
            mem-cache nearer to memory is LLC) */
-                if ((desc2 == pe_prox_domain) && (desc1 == MEM_CACHE_LEVEL_1)) {
+                if ((desc2 == pe_prox_domain) &&
+                   ((desc1 >> MEM_CACHE_LVL_SHIFT) & MEM_CACHE_LVL_MASK) == MEM_CACHE_LEVEL_1) {
                     mem_llc_msc_found = 1;
                     /* Select resource instance if RIS feature implemented */
                     if (ris_supported)
