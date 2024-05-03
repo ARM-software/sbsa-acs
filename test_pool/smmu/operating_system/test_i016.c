@@ -22,6 +22,7 @@
 #include "val/sbsa/include/sbsa_acs_iovirt.h"
 #include "val/common/include/acs_smmu.h"
 #include "val/common/include/acs_memory.h"
+#include "val/sbsa/include/sbsa_acs_smmu.h"
 
 #define TEST_NUM   (ACS_SMMU_TEST_NUM_BASE + 16)
 #define TEST_RULE  "S_L7SM_02"

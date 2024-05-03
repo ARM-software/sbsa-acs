@@ -18,6 +18,7 @@
 #include "val/common/include/acs_pe.h"
 #include "val/common/include/acs_pcie.h"
 #include "val/common/include/acs_memory.h"
+#include "val/sbsa/include/sbsa_acs_pcie.h"
 
 /* SBSA-checklist 63 & 64 */
 #define TEST_NUM   (ACS_PCIE_TEST_NUM_BASE + 5)
