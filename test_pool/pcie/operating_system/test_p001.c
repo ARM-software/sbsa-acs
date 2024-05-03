@@ -16,6 +16,7 @@
  **/
 #include "val/common/include/acs_val.h"
 #include "val/common/include/acs_pcie.h"
+#include "val/sbsa/include/sbsa_acs_pcie.h"
 
 #define TEST_NUM   (ACS_PCIE_TEST_NUM_BASE + 1)
 #define TEST_DESC  "Check ECAM Presence               "
