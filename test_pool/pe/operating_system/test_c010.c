@@ -37,7 +37,7 @@ static void check_pointer_signing_algorithm(uint32_t index, uint64_t data1, uint
        ((VAL_EXTRACT_BITS(data2, 8, 11) != 0) && (VAL_EXTRACT_BITS(data2, 12, 15) != 0)))
        val_set_status(index, RESULT_PASS(TEST_NUM, 01));
     else
-        val_set_status(index, RESULT_PASS(TEST_NUM, 01));
+        val_set_status(index, RESULT_FAIL(TEST_NUM, 01));
 }
 static void payload(void)
 {
