@@ -88,11 +88,17 @@ payload(void)
       dp_type = val_pcie_device_port_type(bdf);
 
       /* Skip check for Storage devices as the
-       * logs will not be stored if FLR is done*/
+       * logs will not be stored if FLR is done
+       * Skip for ethernet controller as device
+       * init can get corrupted when FLR is done */
       val_pcie_read_cfg(bdf, TYPE01_RIDR, &reg_value);
       base_cc = reg_value >> TYPE01_BCC_SHIFT;
-      if (base_cc == MAS_CC)
+      if ((base_cc == MAS_CC) || (base_cc == CNTRL_CC))
+      {
+          val_print(ACS_PRINT_DEBUG, "\n       Skipping for BDF - 0x%x ", bdf);
+          val_print(ACS_PRINT_DEBUG, " Classcode is : 0x%x ", base_cc);
           continue;
+      }
 
       /* Check entry is  RCiEP or iEP endpoint or normal EP */
       if ((dp_type == RCiEP) || (dp_type == iEP_EP))
