@@ -22,7 +22,7 @@
 
 #define TEST_NUM   (ACS_PE_TEST_NUM_BASE  +  23)
 #define TEST_RULE  "B_SEC_01"
-#define TEST_DESC  "Check Speculation Restriction     "
+#define TEST_DESC  "Check Speculation Restriction         "
 
 static void payload(void)
 {

@@ -23,7 +23,7 @@
 #include "val/sbsa/include/sbsa_acs_memory.h"
 
 #define TEST_NUM   (ACS_PCIE_TEST_NUM_BASE + 45)
-#define TEST_DESC  "Check all RP in HB is in same ECAM"
+#define TEST_DESC  "Check all RP in HB is in same ECAM    "
 #define TEST_RULE  "PCI_IN_03"
 
 

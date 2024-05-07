@@ -24,7 +24,7 @@
 
 #define TEST_NUM   (ACS_SMMU_TEST_NUM_BASE + 10)
 #define TEST_RULE  "B_SMMU_04, B_SMMU_05"
-#define TEST_DESC  "Check TLB Range Invalidation      "
+#define TEST_DESC  "Check TLB Range Invalidation          "
 
 static
 void

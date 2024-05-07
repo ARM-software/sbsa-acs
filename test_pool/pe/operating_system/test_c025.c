@@ -22,7 +22,7 @@
 
 #define TEST_NUM   (ACS_PE_TEST_NUM_BASE  + 25)
 #define TEST_RULE  "B_SEC_03"
-#define TEST_DESC  "Check PEs Impl CSDB,SSBB,PSSBB    "
+#define TEST_DESC  "Check PEs Impl CSDB,SSBB,PSSBB        "
 
 static
 void

@@ -22,7 +22,7 @@
 
 #define TEST_NUM   (ACS_SMMU_TEST_NUM_BASE + 1)
 #define TEST_RULE  "S_L4SM_01, S_L4SM_02"
-#define TEST_DESC  "Check SMMU Compatibility          "
+#define TEST_DESC  "Check SMMU Compatibility              "
 
 static
 void

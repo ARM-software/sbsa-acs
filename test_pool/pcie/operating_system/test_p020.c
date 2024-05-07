@@ -21,7 +21,7 @@
 #include "test_p020_data.h"
 
 #define TEST_NUM   (ACS_PCIE_TEST_NUM_BASE + 20)
-#define TEST_DESC  "Check Type 0/1 common config rules"
+#define TEST_DESC  "Check Type 0/1 common config rules    "
 #define TEST_RULE  "RE_REG_1, IE_REG_1, IE_REG_3"
 
 static

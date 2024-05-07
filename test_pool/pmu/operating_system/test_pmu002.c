@@ -22,7 +22,7 @@
 
 #define TEST_NUM    (ACS_PMU_TEST_NUM_BASE  +  2)
 #define TEST_RULE  " PMU_PE_03"
-#define TEST_DESC  "Check number of PMU counters      "
+#define TEST_DESC  "Check number of PMU counters          "
 
 static
 void

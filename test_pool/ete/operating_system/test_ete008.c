@@ -23,7 +23,7 @@
 
 #define TEST_NUM   (ACS_ETE_TEST_NUM_BASE + 8)
 #define TEST_RULE  "ETE_10"
-#define TEST_DESC  "Check GICC TRBE Interrupt field   "
+#define TEST_DESC  "Check GICC TRBE Interrupt field       "
 
 static void payload(void)
 {

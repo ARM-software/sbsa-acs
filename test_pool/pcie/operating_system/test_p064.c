@@ -23,7 +23,7 @@
 #include "val/sbsa/include/sbsa_acs_pe.h"
 
 #define TEST_NUM   (ACS_PCIE_TEST_NUM_BASE + 64)
-#define TEST_DESC  "Check ATS & Page Req for all RP   "
+#define TEST_DESC  "Check ATS & Page Req for all RP       "
 #define TEST_RULE  "GPU_04"
 
 static void payload(void)

@@ -23,7 +23,7 @@
 #include "val/sbsa/include/sbsa_acs_memory.h"
 
 #define TEST_NUM   (ACS_PCIE_TEST_NUM_BASE + 41)
-#define TEST_DESC  "Check MSI and MSI-X support rule  "
+#define TEST_DESC  "Check MSI and MSI-X support rule      "
 #define TEST_RULE  "RE_INT_1, IE_INT_1"
 
 static

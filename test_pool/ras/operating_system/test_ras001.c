@@ -24,7 +24,7 @@
 
 #define TEST_NUM   (ACS_RAS_TEST_NUM_BASE + 1)
 #define TEST_RULE  "RAS_01"
-#define TEST_DESC  "Check Error Counter               "
+#define TEST_DESC  "Check Error Counter                   "
 
 static
 void

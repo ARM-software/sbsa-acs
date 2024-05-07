@@ -22,7 +22,7 @@
 
 #define TEST_NUM   (ACS_PE_TEST_NUM_BASE + 36)
 #define TEST_RULE  "S_L7PE_09"
-#define TEST_DESC  "Check WFE Fine tune delay feature "
+#define TEST_DESC  "Check WFE Fine tune delay feature     "
 
 static void payload(void)
 {

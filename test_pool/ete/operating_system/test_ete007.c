@@ -22,7 +22,7 @@
 
 #define TEST_NUM   (ACS_ETE_TEST_NUM_BASE + 7)
 #define TEST_RULE  "ETE_09"
-#define TEST_DESC  "Check TRBE trace buffers alignment"
+#define TEST_DESC  "Check TRBE trace buffers alignment    "
 
 static uint32_t min_trace_alignment;
 

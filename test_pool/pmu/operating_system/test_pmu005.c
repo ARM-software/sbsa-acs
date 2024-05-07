@@ -25,7 +25,7 @@
 
 #define TEST_NUM  (ACS_PMU_TEST_NUM_BASE + 5)
 #define TEST_RULE "PMU_MEM_1, PMU_SYS_1, PMU_SYS_2"
-#define TEST_DESC "Check memory latency monitors     "
+#define TEST_DESC "Check memory latency monitors          "
 
 #define BUFFER_SIZE 4194304 /* 4 Megabytes*/
 

@@ -25,7 +25,7 @@
 
 #define TEST_NUM   (ACS_RAS_TEST_NUM_BASE + 11)
 #define TEST_RULE  "SYS_RAS_2,SYS_RAS_3"
-#define TEST_DESC  "Check Poison Storage & Forwarding "
+#define TEST_DESC  "Check Poison Storage & Forwarding     "
 
 static uint32_t esr_pending = 1;
 static uint64_t int_id;

@@ -22,7 +22,7 @@
 
 #define TEST_NUM   (ACS_PE_TEST_NUM_BASE  +  18)
 #define TEST_RULE  "S_L6PE_02"
-#define TEST_DESC  "Check Branch Target Support       "
+#define TEST_DESC  "Check Branch Target Support           "
 
 static void payload(void)
 {

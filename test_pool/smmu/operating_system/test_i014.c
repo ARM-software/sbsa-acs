@@ -24,7 +24,7 @@
 
 #define TEST_NUM   (ACS_SMMU_TEST_NUM_BASE + 14)
 #define TEST_RULE  "S_L7SM_03, S_L7SM_04"
-#define TEST_DESC  "Check SMMU PMU Extension          "
+#define TEST_DESC  "Check SMMU PMU Extension              "
 
 static
 void

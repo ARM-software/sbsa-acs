@@ -23,7 +23,7 @@
 #include "val/sbsa/include/sbsa_acs_memory.h"
 
 #define TEST_NUM   (ACS_PCIE_TEST_NUM_BASE + 50)
-#define TEST_DESC  "Check L-Intr SPI Level-Sensitive  "
+#define TEST_DESC  "Check L-Intr SPI Level-Sensitive      "
 #define TEST_RULE  "PCI_LI_01, PCI_LI_03"
 
 static

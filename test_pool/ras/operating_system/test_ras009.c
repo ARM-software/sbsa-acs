@@ -26,7 +26,7 @@
 
 #define TEST_NUM   (ACS_RAS_TEST_NUM_BASE + 9)
 #define TEST_RULE  "S_L7RAS_1"
-#define TEST_DESC  "Data abort on Containable err     "
+#define TEST_DESC  "Data abort on Containable err         "
 
 #define ONE_BYTE_BUFFER 0x1
 

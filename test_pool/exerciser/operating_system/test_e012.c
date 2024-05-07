@@ -26,7 +26,7 @@
 #include "val/sbsa/include/sbsa_acs_exerciser.h"
 
 #define TEST_NUM   (ACS_EXERCISER_TEST_NUM_BASE + 12)
-#define TEST_DESC  "RAS ERR record for external abort "
+#define TEST_DESC  "RAS ERR record for external abort     "
 #define TEST_RULE  "PCI_ER_07"
 
 static void *branch_to_test;

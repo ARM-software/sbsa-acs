@@ -22,9 +22,9 @@
 #include "val/sbsa/include/sbsa_acs_pmu.h"
 #include "val/common/include/acs_common.h"
 
-#define TEST_NUM  (ACS_PMU_TEST_NUM_BASE + 3)
-#define TEST_RULE "PMU_EV_11"
-#define TEST_DESC "Check for multi-threaded PMU ext  "
+#define TEST_NUM   (ACS_PMU_TEST_NUM_BASE + 3)
+#define TEST_RULE  "PMU_EV_11"
+#define TEST_DESC  "Check for multi-threaded PMU ext      "
 
 static void payload(void)
 {

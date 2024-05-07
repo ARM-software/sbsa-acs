@@ -23,7 +23,7 @@
 #include "val/sbsa/include/sbsa_acs_exerciser.h"
 
 #define TEST_NUM   (ACS_EXERCISER_TEST_NUM_BASE + 1)
-#define TEST_DESC  "Enhanced ECAM Memory access check "
+#define TEST_DESC  "Enhanced ECAM Memory access check     "
 #define TEST_RULE  ""
 
 static

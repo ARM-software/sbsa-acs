@@ -21,7 +21,7 @@
 
 #define TEST_NUM   (ACS_PE_TEST_NUM_BASE  +  3)
 #define TEST_RULE  "S_L3PE_03"
-#define TEST_DESC  "Check AARCH64 implementation      "
+#define TEST_DESC  "Check AARCH64 implementation          "
 
 static
 void

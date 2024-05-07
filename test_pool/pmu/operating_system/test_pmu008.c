@@ -25,7 +25,7 @@
 
 #define TEST_NUM  (ACS_PMU_TEST_NUM_BASE + 8)
 #define TEST_RULE "PMU_SYS_5"
-#define TEST_DESC "Check System PMU for NUMA systems "
+#define TEST_DESC "Check System PMU for NUMA systems      "
 
 #define BUFFER_SIZE 4194304 /* 4 Megabytes*/
 

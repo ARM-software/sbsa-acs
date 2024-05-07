@@ -22,7 +22,7 @@
 
 #define TEST_NUM   (ACS_ETE_TEST_NUM_BASE + 5)
 #define TEST_RULE  "ETE_07"
-#define TEST_DESC  "Check for FEAT_TRBE               "
+#define TEST_DESC  "Check for FEAT_TRBE                   "
 
 static void payload(void)
 {

@@ -30,7 +30,7 @@
 #include "val/sbsa/include/sbsa_acs_exerciser.h"
 
 #define TEST_NUM   (ACS_EXERCISER_TEST_NUM_BASE + 2)
-#define TEST_DESC  "PCIe Address translation check    "
+#define TEST_DESC  "PCIe Address translation check        "
 #define TEST_RULE  "RE_SMU_2"
 
 #define TEST_DATA_NUM_PAGES  4

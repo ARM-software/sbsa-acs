@@ -21,7 +21,7 @@
 #include "test_p023_data.h"
 
 #define TEST_NUM   (ACS_PCIE_TEST_NUM_BASE + 23)
-#define TEST_DESC  "Check PCIe capability rules       "
+#define TEST_DESC  "Check PCIe capability rules           "
 #define TEST_RULE  "IE_REG_4"
 
 static

@@ -27,7 +27,7 @@
 #include "val/sbsa/include/sbsa_acs_pcie.h"
 
 #define TEST_NUM   (ACS_EXERCISER_TEST_NUM_BASE + 8)
-#define TEST_DESC  "Check 2/4/8 Bytes targeted writes"
+#define TEST_DESC  "Check 2/4/8 Bytes targeted writes     "
 #define TEST_RULE  "S_PCIe_04"
 
 

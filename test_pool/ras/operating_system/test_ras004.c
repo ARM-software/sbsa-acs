@@ -24,7 +24,7 @@
 
 #define TEST_NUM   (ACS_RAS_TEST_NUM_BASE + 4)
 #define TEST_RULE  "RAS_04"
-#define TEST_DESC  "Check ERI in Error Record Group   "
+#define TEST_DESC  "Check ERI in Error Record Group       "
 
 static
 void

@@ -21,7 +21,7 @@
 #include "val/sbsa/include/sbsa_acs_pcie.h"
 
 #define TEST_NUM   (ACS_PCIE_TEST_NUM_BASE + 9)
-#define TEST_DESC  "Check all MSI(X) vectors are LPIs "
+#define TEST_DESC  "Check all MSI(X) vectors are LPIs     "
 #define TEST_RULE  "S_L3GI_02"
 
 #define LPI_BASE 8192

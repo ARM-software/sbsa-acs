@@ -21,7 +21,7 @@
 
 #define TEST_NUM   (ACS_PE_TEST_NUM_BASE  +  01)
 #define TEST_RULE  "S_L3PE_01"
-#define TEST_DESC  "Check PE Granule Support          "
+#define TEST_DESC  "Check PE Granule Support              "
 
 static
 void

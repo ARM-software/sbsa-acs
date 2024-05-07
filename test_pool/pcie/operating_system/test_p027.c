@@ -21,7 +21,7 @@
 #include "test_p027_data.h"
 
 #define TEST_NUM   (ACS_PCIE_TEST_NUM_BASE + 27)
-#define TEST_DESC  "Check Device control 2 reg rules  "
+#define TEST_DESC  "Check Device control 2 reg rules      "
 #define TEST_RULE  "RE_REG_3, RE_REC_1, IE_REG_2, IE_REG_4"
 
 static

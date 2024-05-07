@@ -25,7 +25,7 @@
 
 #define TEST_NUM   (ACS_RAS_TEST_NUM_BASE + 12)
 #define TEST_RULE  "SYS_RAS_2"
-#define TEST_DESC  "Check Pseudo Fault Injection      "
+#define TEST_DESC  "Check Pseudo Fault Injection          "
 
 static void *branch_to_test;
 

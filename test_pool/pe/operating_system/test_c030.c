@@ -22,7 +22,7 @@
 
 #define TEST_NUM   (ACS_PE_TEST_NUM_BASE  +  30)
 #define TEST_RULE  "S_L7PE_03"
-#define TEST_DESC  "Check for AMUv1 Support           "
+#define TEST_DESC  "Check for AMUv1 Support               "
 
 static void payload(void)
 {

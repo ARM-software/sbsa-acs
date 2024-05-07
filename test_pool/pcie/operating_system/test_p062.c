@@ -22,7 +22,7 @@
 #include "val/sbsa/include/sbsa_acs_pe.h"
 
 #define TEST_NUM   (ACS_PER_TEST_NUM_BASE + 01)
-#define TEST_DESC  "Check EA Capability               "
+#define TEST_DESC  "Check EA Capability                   "
 #define TEST_RULE  "S_L4PCI_2"
 
 static

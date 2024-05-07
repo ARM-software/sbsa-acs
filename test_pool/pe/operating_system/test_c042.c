@@ -22,7 +22,7 @@
 
 #define TEST_NUM   (ACS_PE_TEST_NUM_BASE + 42)
 #define TEST_RULE  "S_L8PE_07"
-#define TEST_DESC  "Check for unsupported PBHA bits   "
+#define TEST_DESC  "Check for unsupported PBHA bits       "
 
 static void payload(void)
 {

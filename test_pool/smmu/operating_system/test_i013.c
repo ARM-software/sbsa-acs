@@ -23,7 +23,7 @@
 
 #define TEST_NUM   (ACS_SMMU_TEST_NUM_BASE + 13)
 #define TEST_RULE  "S_L6SM_01"
-#define TEST_DESC  "Check SMMU Coherent Access Support"
+#define TEST_DESC  "Check SMMU Coherent Access Support    "
 
 static
 void

@@ -24,7 +24,7 @@
 
 #define TEST_NUM   (ACS_ETE_TEST_NUM_BASE + 4)
 #define TEST_RULE  "ETE_05"
-#define TEST_DESC  "Check Trace Same Timestamp Source "
+#define TEST_DESC  "Check Trace Same Timestamp Source     "
 
 volatile uint64_t trace_buffer_addr;
 

@@ -23,7 +23,7 @@
 #include "val/sbsa/include/sbsa_acs_memory.h"
 
 #define TEST_NUM   (ACS_PCIE_TEST_NUM_BASE + 51)
-#define TEST_DESC  "Check Sec Bus Reset For iEP_RP    "
+#define TEST_DESC  "Check Sec Bus Reset For iEP_RP        "
 #define TEST_RULE  "IE_RST_2"
 
 static

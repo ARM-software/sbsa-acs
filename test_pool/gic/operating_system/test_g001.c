@@ -22,7 +22,7 @@
 
 #define TEST_NUM   (ACS_GIC_TEST_NUM_BASE + 1)
 #define TEST_RULE  "S_L3GI_01"
-#define TEST_DESC  "Check GIC version                 "
+#define TEST_DESC  "Check GIC version                     "
 
 static
 void

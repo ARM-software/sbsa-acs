@@ -22,7 +22,7 @@
 
 #define TEST_NUM   (ACS_PE_TEST_NUM_BASE + 41)
 #define TEST_RULE  "S_L8PE_06"
-#define TEST_DESC  "Check for FEAT_BRBE support     "
+#define TEST_DESC  "Check for FEAT_BRBE support         "
 
 static void payload(void)
 {

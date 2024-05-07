@@ -29,7 +29,7 @@
 #include "val/sbsa/include/sbsa_acs_exerciser.h"
 
 #define TEST_NUM   (ACS_EXERCISER_TEST_NUM_BASE + 6)
-#define TEST_DESC  "RP's must support AER feature          "
+#define TEST_DESC  "RP's must support AER feature         "
 #define TEST_RULE  "PCI_ER_01, PCI_ER_02, PCI_ER_03, PCI_ER_04"
 
 #define ERR_CORR     0x2

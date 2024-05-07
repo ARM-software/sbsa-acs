@@ -22,7 +22,7 @@
 #include "val/sbsa/include/sbsa_acs_pe.h"
 
 #define TEST_NUM   (ACS_PCIE_TEST_NUM_BASE + 33)
-#define TEST_DESC  "Check Max payload size supported  "
+#define TEST_DESC  "Check Max payload size supported      "
 #define TEST_RULE  "RE_REC_1, IE_REG_2, IE_REG_4"
 
 static

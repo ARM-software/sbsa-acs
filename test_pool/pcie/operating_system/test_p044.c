@@ -22,7 +22,7 @@
 #include "val/sbsa/include/sbsa_acs_pe.h"
 
 #define TEST_NUM   (ACS_PCIE_TEST_NUM_BASE + 44)
-#define TEST_DESC  "Check device under RP in same ECAM"
+#define TEST_DESC  "Check device under RP in same ECAM    "
 #define TEST_RULE  "PCI_IN_04"
 
 

@@ -23,7 +23,7 @@
 #include "val/sbsa/include/sbsa_acs_pe.h"
 
 #define TEST_NUM   (ACS_PCIE_TEST_NUM_BASE + 3)
-#define TEST_DESC  "Check ECAM Memory accessibility   "
+#define TEST_DESC  "Check ECAM Memory accessibility       "
 #define TEST_RULE  "PCI_IN_02"
 
 static void *branch_to_test;

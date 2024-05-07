@@ -22,7 +22,7 @@
 
 #define TEST_NUM   (ACS_PE_TEST_NUM_BASE + 34)
 #define TEST_RULE  "S_L7PE_07"
-#define TEST_DESC  "Check for SVE Int8 matrix multiplc"
+#define TEST_DESC  "Check for SVE Int8 matrix multiplc    "
 
 static void payload(void)
 {

@@ -20,7 +20,7 @@
 #include "val/sbsa/include/sbsa_acs_pcie.h"
 
 #define TEST_NUM   (ACS_PCIE_TEST_NUM_BASE + 16)
-#define TEST_DESC  "NP type-1 pcie only support 32-bit"
+#define TEST_DESC  "NP type-1 pcie only support 32-bit    "
 #define TEST_RULE  "PCI_MM_04"
 
 #define BAR0    0x10

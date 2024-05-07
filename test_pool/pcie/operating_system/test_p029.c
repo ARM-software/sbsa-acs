@@ -21,7 +21,7 @@
 #include "test_p029_data.h"
 
 #define TEST_NUM   (ACS_PCIE_TEST_NUM_BASE + 29)
-#define TEST_DESC  "Check Power management/status rule"
+#define TEST_DESC  "Check Power management/status rule    "
 #define TEST_RULE  "RE_REG_2, IE_REG_5"
 
 static

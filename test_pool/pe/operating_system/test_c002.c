@@ -21,7 +21,7 @@
 
 #define TEST_NUM   (ACS_PE_TEST_NUM_BASE  +  02)
 #define TEST_RULE  "S_L3PE_02"
-#define TEST_DESC  "Check for 16-bit ASID support     "
+#define TEST_DESC  "Check for 16-bit ASID support         "
 
 static
 void

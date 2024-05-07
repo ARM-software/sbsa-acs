@@ -23,7 +23,7 @@
 
 #define TEST_NUM   (ACS_PE_TEST_NUM_BASE + 4)
 #define TEST_RULE  "S_L3PE_04"
-#define TEST_DESC  "Check FEAT_LPA Requirements       "
+#define TEST_DESC  "Check FEAT_LPA Requirements           "
 
 #define FEAT_LPA_IMPL 0x6
 /* Retuns true if addr is greater than 48 bits */

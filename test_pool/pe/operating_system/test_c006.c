@@ -23,7 +23,7 @@
 
 #define TEST_NUM   (ACS_PE_TEST_NUM_BASE + 6)
 #define TEST_RULE  "S_L4PE_02"
-#define TEST_DESC  "Check DC CVAP support             "
+#define TEST_DESC  "Check DC CVAP support                 "
 
 static void payload(void)
 {

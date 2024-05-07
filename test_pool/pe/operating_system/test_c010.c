@@ -21,7 +21,7 @@
 
 #define TEST_NUM   (ACS_PE_TEST_NUM_BASE  +  10)
 #define TEST_RULE  "S_L5PE_02"
-#define TEST_DESC  "Check for addr and generic auth   "
+#define TEST_DESC  "Check for addr and generic auth       "
 
 
 static void check_pointer_signing_algorithm(uint32_t index, uint64_t data1, uint64_t data2)

@@ -23,7 +23,7 @@
 #include "val/sbsa/include/sbsa_acs_memory.h"
 
 #define TEST_NUM   (ACS_PCIE_TEST_NUM_BASE + 56)
-#define TEST_DESC  "Check iEP-RootPort P2P Support    "
+#define TEST_DESC  "Check iEP-RootPort P2P Support        "
 #define TEST_RULE  "IE_ACS_2"
 
 static

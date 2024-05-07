@@ -24,7 +24,7 @@
 
 #define TEST_NUM   (ACS_RAS_TEST_NUM_BASE + 2)
 #define TEST_RULE  "RAS_02"
-#define TEST_DESC  "Check CFI, DUI, UI Controls       "
+#define TEST_DESC  "Check CFI, DUI, UI Controls           "
 
 static
 void

@@ -22,7 +22,7 @@
 #include "val/sbsa/include/sbsa_acs_pe.h"
 
 #define TEST_NUM   (ACS_PCIE_TEST_NUM_BASE + 46)
-#define TEST_DESC  "Check RP Byte Enable Rules        "
+#define TEST_DESC  "Check RP Byte Enable Rules            "
 #define TEST_RULE  "PCI_IN_18"
 
 static

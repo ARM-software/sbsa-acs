@@ -23,7 +23,7 @@
 
 #define TEST_NUM (ACS_MEMORY_MAP_TEST_NUM_BASE + 1)
 #define TEST_RULE "S_L3MM_01, S_L3MM_02"
-#define TEST_DESC "Check peripherals addr 64Kb apart "
+#define TEST_DESC "Check peripherals addr 64Kb apart     "
 
 static void payload(void)
 {

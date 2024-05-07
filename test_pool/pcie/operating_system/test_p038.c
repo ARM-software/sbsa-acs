@@ -23,7 +23,7 @@
 #include "val/sbsa/include/sbsa_acs_memory.h"
 
 #define TEST_NUM   (ACS_PCIE_TEST_NUM_BASE + 38)
-#define TEST_DESC  "Check CTRS and CTDS rule          "
+#define TEST_DESC  "Check CTRS and CTDS rule              "
 #define TEST_RULE  "IE_REG_4"
 
 static

@@ -23,7 +23,7 @@
 #include "val/sbsa/include/sbsa_acs_memory.h"
 
 #define TEST_NUM   (ACS_PCIE_TEST_NUM_BASE + 36)
-#define TEST_DESC  "Check ARI forwarding support rule "
+#define TEST_DESC  "Check ARI forwarding support rule     "
 #define TEST_RULE  "PCI_IN_17"
 
 static

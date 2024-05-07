@@ -27,7 +27,7 @@
 #include "val/sbsa/include/sbsa_acs_exerciser.h"
 
 #define TEST_NUM   (ACS_EXERCISER_TEST_NUM_BASE + 9)
-#define TEST_DESC  "Check Relaxed Ordering of writes  "
+#define TEST_DESC  "Check Relaxed Ordering of writes      "
 #define TEST_RULE  "S_PCIe_07, S_PCIe_08"
 
 #define DMA_BUFF_LEN 0x8

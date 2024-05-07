@@ -26,7 +26,7 @@
 
 #define TEST_NUM   (ACS_NIST_TEST_NUM_BASE + 1)
 #define TEST_RULE "S_L7ENT_1"
-#define TEST_DESC  "NIST Statistical Test Suite       "
+#define TEST_DESC  "NIST Statistical Test Suite           "
 
 #define BUFFER_SIZE     1000
 #define RND_FILE_SIZE   36428

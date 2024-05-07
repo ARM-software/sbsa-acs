@@ -21,7 +21,7 @@
 
 #define TEST_NUM   (ACS_PE_TEST_NUM_BASE  + 5)
 #define TEST_RULE  "S_L4PE_01"
-#define TEST_DESC  "Check for RAS extension           "
+#define TEST_DESC  "Check for RAS extension               "
 
 static
 void payload(void)

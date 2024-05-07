@@ -26,7 +26,7 @@
 
 #define TEST_NUM  (ACS_PMU_TEST_NUM_BASE + 4)
 #define TEST_RULE "PMU_BM_1, PMU_SYS_1, PMU_SYS_2"
-#define TEST_DESC "Check memory bandwidth monitors   "
+#define TEST_DESC "Check memory bandwidth monitors        "
 
 #define BUFFER_SIZE 4194304 /* 4 Megabytes*/
 #define NUM_PMU_MON 3       /* Minimum required monitors */

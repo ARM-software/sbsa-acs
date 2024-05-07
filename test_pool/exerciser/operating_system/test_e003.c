@@ -30,7 +30,7 @@
 #include "val/sbsa/include/sbsa_acs_exerciser.h"
 
 #define TEST_NUM   (ACS_EXERCISER_TEST_NUM_BASE + 3)
-#define TEST_DESC  "ATS Functionality Check           "
+#define TEST_DESC  "ATS Functionality Check               "
 #define TEST_RULE  "RE_SMU_2"
 
 #define TEST_DATA_NUM_PAGES  1

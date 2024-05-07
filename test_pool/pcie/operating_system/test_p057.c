@@ -24,7 +24,7 @@
 
 #define TEST_NUM   (ACS_PCIE_TEST_NUM_BASE + 57)
 #define TEST_RULE  "IE_ACS_1, RE_ACS_1, RE_ACS_2"
-#define TEST_DESC  "Check RCiEP, iEP_EP P2P Supp      "
+#define TEST_DESC  "Check RCiEP, iEP_EP P2P Supp          "
 
 static
 void

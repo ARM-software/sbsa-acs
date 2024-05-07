@@ -20,7 +20,7 @@
 
 #define TEST_NUM   (ACS_PE_TEST_NUM_BASE  +  12)
 #define TEST_RULE  "S_L5PE_05"
-#define TEST_DESC  "Check for SHA3 and SHA512 support "
+#define TEST_DESC  "Check for SHA3 and SHA512 support     "
 
 static void payload(void)
 {

@@ -21,7 +21,7 @@
 #include "test_p063_data.h"
 
 #define TEST_NUM   (ACS_PCIE_TEST_NUM_BASE + 63)
-#define TEST_DESC  "Slot Cap, Control and Status register rules      "
+#define TEST_DESC  "Slot Cap, Control and Status reg rules"
 #define TEST_RULE  "IE_REG_4"
 
 static

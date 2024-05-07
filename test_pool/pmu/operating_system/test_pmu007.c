@@ -24,7 +24,7 @@
 
 #define TEST_NUM  (ACS_PMU_TEST_NUM_BASE + 7)
 #define TEST_RULE "PMU_BM_2, PMU_SYS_1, PMU_SYS_2"
-#define TEST_DESC "Check PCIe bandwidth monitors     "
+#define TEST_DESC "Check PCIe bandwidth monitors          "
 
 #define NUM_TOTAL_PMU_MON 6 /* Minimum required bandwidth monitors */
 

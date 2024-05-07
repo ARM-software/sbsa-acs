@@ -22,7 +22,7 @@
 
 #define TEST_NUM   (ACS_PE_TEST_NUM_BASE + 32)
 #define TEST_RULE  "S_L7PE_05"
-#define TEST_DESC  "Check for BFLOAT16 extension      "
+#define TEST_DESC  "Check for BFLOAT16 extension          "
 
 static void payload(void)
 {

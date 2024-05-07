@@ -27,7 +27,7 @@
 
 #define TEST_NUM   (ACS_ETE_TEST_NUM_BASE + 3)
 #define TEST_RULE  "ETE_04, ETE_06"
-#define TEST_DESC  "Check ETE Trace Timestamp Source  "
+#define TEST_DESC  "Check ETE Trace Timestamp Source      "
 
 volatile uint64_t buffer_addr;
 volatile uint64_t *start_timestamp;

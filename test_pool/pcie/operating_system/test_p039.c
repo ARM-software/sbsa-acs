@@ -23,7 +23,7 @@
 #include "val/sbsa/include/sbsa_acs_memory.h"
 
 #define TEST_NUM   (ACS_PCIE_TEST_NUM_BASE + 39)
-#define TEST_DESC  "Check i-EP AtomicOp rule          "
+#define TEST_DESC  "Check i-EP AtomicOp rule              "
 #define TEST_RULE  "IE_REG_2"
 
 static

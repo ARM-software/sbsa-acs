@@ -22,7 +22,7 @@
 
 #define TEST_NUM   (ACS_PE_TEST_NUM_BASE  +  24)
 #define TEST_RULE  "B_SEC_02"
-#define TEST_DESC  "Check Speculative Str Bypass Safe "
+#define TEST_DESC  "Check Speculative Str Bypass Safe     "
 
 static void payload(void)
 {

@@ -23,7 +23,7 @@
 
 #define TEST_NUM   (ACS_PCIE_TEST_NUM_BASE + 60)
 #define TEST_RULE  "RE_PCI_1"
-#define TEST_DESC  "Check RCiEP Hdr type & link Cap   "
+#define TEST_DESC  "Check RCiEP Hdr type & link Cap       "
 
 static
 void

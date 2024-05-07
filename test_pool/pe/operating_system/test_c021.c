@@ -22,7 +22,7 @@
 
 #define TEST_NUM   (ACS_PE_TEST_NUM_BASE  +  21)
 #define TEST_RULE  "S_L6PE_05"
-#define TEST_DESC  "Check AccessFlag DirtyState Update"
+#define TEST_DESC  "Check AccessFlag DirtyState Update    "
 
 static void payload(void)
 {

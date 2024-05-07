@@ -22,7 +22,7 @@
 
 #define TEST_NUM   (ACS_SMMU_TEST_NUM_BASE + 2)
 #define TEST_RULE  "S_L5SM_01, S_L5SM_02, S_L8SM_01"
-#define TEST_DESC  "Check SMMUv3.2 or higher          "
+#define TEST_DESC  "Check SMMUv3.2 or higher              "
 
 static
 void

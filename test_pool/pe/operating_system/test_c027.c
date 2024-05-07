@@ -22,7 +22,7 @@
 
 #define TEST_NUM   (ACS_PE_TEST_NUM_BASE  +  27)
 #define TEST_RULE  "B_SEC_05"
-#define TEST_DESC  "Check PE Impl CFP,DVP,CPP RCTX    "
+#define TEST_DESC  "Check PE Impl CFP,DVP,CPP RCTX        "
 
 static void payload(void)
 {

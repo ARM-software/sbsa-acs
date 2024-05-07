@@ -25,7 +25,7 @@
 
 #define TEST_NUM   (ACS_SMMU_TEST_NUM_BASE + 8)
 #define TEST_RULE  "B_SMMU_23"
-#define TEST_DESC  "Check SMMU 16 Bit VMID Support    "
+#define TEST_DESC  "Check SMMU 16 Bit VMID Support        "
 
 static
 void
