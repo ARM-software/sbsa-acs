@@ -35,17 +35,19 @@ static void payload(void)
         return;
     }
 
-    /* ID_AA64PFR0_EL1.CSV2[59:56] = 0b0010 Speculative use of Out of Ctxt Branch Targets */
+    /* ID_AA64PFR0_EL1.CSV2[59:56] = 0b0010 or 0b0011 indicates Speculative use of Out of
+       Ctxt Branch Targets and use of SCXTNUM_ELx registers */
     /* ID_AA64PFR0_EL1.CSV3[63:60] = 0b0001 Speculative use of Faulting data */
     data_csv2 = VAL_EXTRACT_BITS(val_pe_reg_read(ID_AA64PFR0_EL1), 56, 59);
     data_csv3 = VAL_EXTRACT_BITS(val_pe_reg_read(ID_AA64PFR0_EL1), 60, 63);
 
-    if (data_csv2 != 2)
-        val_set_status(index, RESULT_FAIL(TEST_NUM, 01));
-    else if (data_csv3 != 1)
-        val_set_status(index, RESULT_FAIL(TEST_NUM, 02));
-    else
+    val_print_primary_pe(ACS_PRINT_DEBUG, "\n       ID_AA64PFR0_EL1.CSV2 = %llx", data_csv2, index);
+    val_print_primary_pe(ACS_PRINT_DEBUG, "\n       ID_AA64PFR0_EL1.CSV3 = %llx", data_csv3, index);
+
+    if (((data_csv2 == 2) || (data_csv2 == 3)) && (data_csv3 == 1))
         val_set_status(index, RESULT_PASS(TEST_NUM, 01));
+    else
+        val_set_status(index, RESULT_FAIL(TEST_NUM, 01));
 }
 
 uint32_t c023_entry(uint32_t num_pe)
