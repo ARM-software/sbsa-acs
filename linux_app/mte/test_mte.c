@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2023 Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2023-2024, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -29,6 +29,7 @@
 #define TEST_DESC "Check for MTE support     "
 
 #define HWCAP2_MTE              (1 << 18)
+#define HWCAP2_MTE3             (1 << 22)
 #define PROT_MTE                 0x20
 #define PR_SET_TAGGED_ADDR_CTRL 55
 #define PR_TAGGED_ADDR_ENABLE  (1UL << 0)
@@ -66,8 +67,8 @@ uint32_t payload(void)
     uint64_t timeout = 100000;
 
     /* check if MTE is supported */
-    if (!(hwcap2 & HWCAP2_MTE)) {
-        perror("\n      Memory tagging extension(MTE) not supported.");
+    if (!((hwcap2 & HWCAP2_MTE) || (hwcap2 & HWCAP2_MTE3))) {
+        perror("\n      Memory tagging extension(MTE2 and MTE3) not supported.");
         return EXIT_SKIPPED;
     }
 
