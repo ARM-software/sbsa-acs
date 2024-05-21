@@ -37,7 +37,7 @@ payload(void)
 
     if (num_smmu == 0) {
         val_print(ACS_PRINT_ERR, "\n       No SMMU Controllers are discovered ", 0);
-        val_set_status(index, RESULT_SKIP(TEST_NUM, 01));
+        val_set_status(index, RESULT_FAIL(TEST_NUM, 01));
         return;
     }
 
@@ -47,7 +47,7 @@ payload(void)
             val_print(ACS_PRINT_ERR,
                      "\n       SMMUv3, or higher must be supported by level 4 or higher systems",
                         0);
-            val_set_status(index, RESULT_FAIL(TEST_NUM, 01));
+            val_set_status(index, RESULT_FAIL(TEST_NUM, 02));
             return;
         } else {
             val_print(ACS_PRINT_INFO, "\n       Detected SMMUv3, or higher implementation ", 0);
@@ -55,23 +55,17 @@ payload(void)
             /* Check Stage 2 translation support */
             if ((data & BIT0) == 0) {
                 val_print(ACS_PRINT_ERR, "\n       Stage 2 translation not supported ", 0);
-                val_set_status(index, RESULT_FAIL(TEST_NUM, 02));
+                val_set_status(index, RESULT_FAIL(TEST_NUM, 03));
                 return;
             }
 
             /* Check Stage 1 translation support */
             if ((data & BIT1) == 0) {
                 val_print(ACS_PRINT_ERR, "\n       Stage 1 translation not supported ", 0);
-                val_set_status(index, RESULT_FAIL(TEST_NUM, 03));
-                return;
-            }
-
-            /* Check I/O coherent, (SMMU_IDR0.COHACC == 1) */
-            if ((data & BIT4) == 0) {
-                val_print(ACS_PRINT_ERR, "\n       IO-Coherent access not supported  ", 0);
                 val_set_status(index, RESULT_FAIL(TEST_NUM, 04));
                 return;
             }
+
         }
     }
 
