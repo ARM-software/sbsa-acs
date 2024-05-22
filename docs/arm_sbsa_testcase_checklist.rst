@@ -1,17 +1,15 @@
-#############
+############################
 SBSA ACS Testcase checklist
-#############
+############################
 
 The below table provides the following details
 
 #. SBSA Level at which test run.
 #. SBSA rules covered by a test.
-#. SystemReady certification band for which test is required.
-#. Runtime environment where test executes.
+#. SystemReady certification band(SR) for which test is required.
+#. Runtime environment(UEFI, BareMetal and Linux) where test executes.
 #. Tests for which exerciser is required.
 
-+-------+--------------------------------------------+-----+----------------------------------------------------+----------------+---------------------+-------------------+
-|       |                                            |     |                                                    |SystemReady band|Runtime Environment  |                   |
 +-------+--------------------------------------------+-----+----------------------------------------------------+----------------+----+----------+-----+-------------------+
 |Test No|Test Description                            |Level|Rule ID                                             |SR              |UEFI|BareMetal*|Linux|Exerciser Required?|
 +=======+============================================+=====+====================================================+================+====+==========+=====+===================+
@@ -238,7 +236,7 @@ The below table provides the following details
 |864    |Check ATS & Page Req for all RP             |FR   |GPU_04                                              |Yes             |Yes |Yes       |No   |No                 |
 +-------+--------------------------------------------+-----+----------------------------------------------------+----------------+----+----------+-----+-------------------+
 |865    |Check RP Extensions for DPC                 |FR   |PCI_ER_09                                           |Yes             |Yes |Yes       |No   |No                 |
-+-------+--------------------------------------------+-----+--------------------------------------- ------------+----------------+----+----------+-----+-------------------+
++-------+--------------------------------------------+-----+----------------------------------------------------+----------------+----+----------+-----+-------------------+
 |901    |Enhanced ECAM Memory access check           |L3   |None                                                |No              |Yes |Yes       |No   |Yes                |
 +-------+--------------------------------------------+-----+----------------------------------------------------+----------------+----+----------+-----+-------------------+
 |902    |PCIe Address translation check              |L6   |RE_SMU_2                                            |No              |Yes |Yes       |No   |Yes                |
@@ -356,6 +354,5 @@ The below table provides the following details
 |PMU app|Latency events                              |L7   |PMU_EV_10                                           |Yes             |No  |No        |Yes  |No                 |
 +-------+--------------------------------------------+-----+----------------------------------------------------+----------------+----+----------+-----+-------------------+
 
-*For running tests on a bare-metal environment, integration of ACS with platform boot code is required. See `arm SBSA Bare-metal User Guide <arm_sbsa_architecture_compliance_bare-metal_user_guide.pdf>`_
-
+For running tests on a bare-metal environment, integration of ACS with platform boot code is required. See `arm SBSA Bare-metal User Guide <arm_sbsa_architecture_compliance_bare-metal_user_guide.pdf>`_
 
