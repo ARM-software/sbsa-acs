@@ -17,7 +17,7 @@ To build the RDN2 software stack and download the pre-built model for the FVP, f
    cd rdn2_path
    ```
 
-2. Download the required sources for setting up the RDN2 software stack by following the steps outlined in the [Setup Workspace](https://neoverse-reference-design.docs.arm.com/en/latest/platforms/common/setup-workspace.html#setup-workspace-label) documentation.
+2. Download the required sources for setting up the RDN2 software stack by following the steps outlined in the [Setup Workspace](https://neoverse-reference-design.docs.arm.com/en/latest/user_guides/getting_started.html) documentation.
 
 3. Download the latest version of RDN2 FVP from [Arm Ecosystem FVPs](https://developer.arm.com/downloads/-/arm-ecosystem-fvps) and set the MODEL PATH
    ```
@@ -73,4 +73,4 @@ To run Exerciser test 905 - PE 2/4/8B writes to PCIe as 2/4/8B, please make the 
 - For information on configuring the [PCIe Hierarchy](PCIeConfigurableHierarchy.md)
 - For more information on PCIe capabilities that exerciser supports, refer [Exerciser.md](Exerciser.md)
 
-*Copyright (c) 2023 Arm Limited and Contributors. All rights reserved.*
+*Copyright (c) 2023-2024 Arm Limited and Contributors. All rights reserved.*
