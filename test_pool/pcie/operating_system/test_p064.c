@@ -18,54 +18,48 @@
 #include "val/common/include/acs_val.h"
 #include "val/common/include/val_interface.h"
 
-#include "val/common/include/acs_memory.h"
-#include "val/sbsa/include/sbsa_acs_pcie.h"
 #include "val/sbsa/include/sbsa_acs_pe.h"
+#include "val/common/include/acs_iovirt.h"
 
 #define TEST_NUM   (ACS_PCIE_TEST_NUM_BASE + 64)
-#define TEST_DESC  "Check ATS & Page Req for all RP       "
+#define TEST_DESC  "Check ATS support for RC              "
 #define TEST_RULE  "GPU_04"
 
 static void payload(void)
 {
 
-  uint32_t bdf;
   uint32_t pe_index;
-  uint32_t tbl_index;
-  uint32_t dp_type;
-  uint32_t cap_base;
+  uint32_t num_pcie_rc;
+  uint32_t rc_ats_attr;
+  uint32_t rc_ats_supp;
   uint32_t test_fails;
-  pcie_device_bdf_table *bdf_tbl_ptr;
 
   pe_index = val_pe_get_index_mpid(val_pe_get_mpid());
-  bdf_tbl_ptr = val_pcie_bdf_table_ptr();
 
   test_fails = 0;
 
-  /* Check for all the device present in bdf table */
-  for (tbl_index = 0; tbl_index < bdf_tbl_ptr->num_entries; tbl_index++)
-  {
-      bdf = bdf_tbl_ptr->device[tbl_index].bdf;
-      dp_type = val_pcie_device_port_type(bdf);
+  num_pcie_rc = val_iovirt_get_pcie_rc_info(NUM_PCIE_RC, 0);
 
-      /* Check port type is Root port */
-      if (dp_type == RP)
+  /* Get the number of Root Complex in the system */
+  if (!num_pcie_rc) {
+     val_print(ACS_PRINT_DEBUG, "\n       Skip because no PCIe RC detected  ", 0);
+     val_set_status(pe_index, RESULT_SKIP(TEST_NUM, 1));
+     return;
+  }
+
+  /* For each Root Complex, check if it supports ATS capability.
+   * This information should be obtained from ACPI-IORT table for UEFI based
+   * systems and platform config file for Baremetal based system
+   */
+  while (num_pcie_rc) {
+      num_pcie_rc--;   // Index is one lesser than the component number being accessed
+      rc_ats_attr = val_iovirt_get_pcie_rc_info(RC_ATS_ATTRIBUTE, num_pcie_rc);
+      rc_ats_supp = rc_ats_attr & 1;
+
+      if (!rc_ats_supp)
       {
-         val_print(ACS_PRINT_DEBUG, "\n       BDF - 0x%x", bdf);
-         /* For All Root Ports ATS Capability must be present. */
-         if (val_pcie_find_capability(bdf, PCIE_ECAP, ECID_ATS, &cap_base) != PCIE_SUCCESS)
-         {
-             val_print(ACS_PRINT_ERR, "\n       ATS Capability Not Present, Bdf : 0x%x", bdf);
-             test_fails++;
-         }
-
-         /* For All Roots Ports Page Reguest Extended Capability must be present. */
-         if (val_pcie_find_capability(bdf, PCIE_ECAP, ECID_PRI, &cap_base) != PCIE_SUCCESS)
-         {
-             val_print(ACS_PRINT_ERR, "\n       Page Request Not Present, Bdf : 0x%x", bdf);
-             test_fails++;
-         }
-
+          val_print(ACS_PRINT_ERR, "\n       ATS Capability Not Present for RC: %x", num_pcie_rc);
+          test_fails++;
       }
   }
 

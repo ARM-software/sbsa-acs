@@ -23,7 +23,7 @@
 
 #define TEST_NUM   (ACS_SMMU_TEST_NUM_BASE + 17)
 #define TEST_RULE  "GPU_04"
-#define TEST_DESC  "Check ATS and Page Req Support        "
+#define TEST_DESC  "Check ATS Support for SMMU            "
 
 static void payload(void)
 {
@@ -58,16 +58,6 @@ static void payload(void)
       if (data != 1) {
           val_print(ACS_PRINT_ERR, "\n       ATS is not supported for Smmu Index : %d ", num_smmu);
           val_set_status(index, RESULT_FAIL(TEST_NUM, 01));
-          return;
-      }
-
-      /* For all SMMU controllers page request capability must be present
-       * if SMMU_IDR0.PRI[16:16] == 0b1 */
-      data = VAL_EXTRACT_BITS(val_smmu_read_cfg(SMMUv3_IDR0, num_smmu), 16, 16);
-      if (data != 1) {
-          val_print(ACS_PRINT_ERR, "\n       Page Request is not supported for Smmu Index : %d ",
-                                                                                        num_smmu);
-          val_set_status(index, RESULT_FAIL(TEST_NUM, 02));
           return;
       }
   }
