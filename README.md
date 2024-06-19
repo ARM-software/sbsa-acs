@@ -218,7 +218,7 @@ NOTE: The steps mentions Linux version 6.7, as it is latest version which is ver
 1. cd <workspace_dir>/linux-acs/acs-drv/files
 2. export CROSS_COMPILE=<GCC13.2 or higher toolchain path> pointing to /bin/aarch64-linux-gnu-
 3. export KERNEL_SRC=<workspace_dir>/linux
-4. ./sbsa_setup.sh <local_dir/sbsa-acs> <local_dir/bsa-acs>
+4. ./sbsa_setup.sh <local_dir/bsa-acs> <local_dir/sbsa-acs>
 5. ./linux_sbsa_acs.sh
 
 Successful completion of above steps will generate **sbsa_acs.ko**  in <workspace_dir>/linux-acs/acs-drv/files
