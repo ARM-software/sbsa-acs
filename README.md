@@ -276,8 +276,10 @@ For more details on running the generated binaries on Bare-metal environment, re
 SBSA ACS test suite may run at higher privilege level. An attacker may utilize these tests as a means to elevate privilege which can potentially reveal the platform security assets. To prevent the leakage of secure information, it is strongly recommended that the ACS test suite is run only on development platforms. If it is run on production systems, the system should be scrubbed after running the test suite.
 
 ## Limitations
-Validating the compliance of certain PCIe rules defined in the SBSA specification requires the PCIe end-point to generate specific stimulus during the runtime of the test. Examples of such stimulus are  P2P, PASID, ATC, etc. The tests that requires these stimuli are grouped together in the exerciser module. The exerciser layer is an abstraction layer that enables the integration of hardware capable of generating such stimuli to the test framework.
+- Validating the compliance of certain PCIe rules defined in the SBSA specification requires the PCIe end-point to generate specific stimulus during the runtime of the test. Examples of such stimulus are  P2P, PASID, ATC, etc. The tests that requires these stimuli are grouped together in the exerciser module. The exerciser layer is an abstraction layer that enables the integration of hardware capable of generating such stimuli to the test framework.
 The details of the hardware or Verification IP which enable these exerciser tests are platform specific and are beyond the scope of this document.
+
+- The MPAM MSC PCC (ACPI Platform Communication Channel) support has been implemented but not yet verified on any platform. Please raise an issue if any failures or errors are encountered during the ACS run.
 
 ### SBSA Tests dependencies
  - MPAM tests will require EL3 firmware to enable access to MPAM registers from lower EL's.

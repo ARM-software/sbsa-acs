@@ -366,6 +366,27 @@ createSratInfoTable(
   return Status;
 }
 
+EFI_STATUS
+createPccInfoTable(
+)
+{
+  UINT64      *PccInfoTable;
+  EFI_STATUS  Status;
+
+  Status = gBS->AllocatePool(EfiBootServicesData,
+                              PCC_INFO_TBL_SZ,
+                              (VOID **) &PccInfoTable);
+
+  if (EFI_ERROR(Status))
+  {
+    Print(L"Allocate Pool failed %x\n", Status);
+    return Status;
+  }
+  val_pcc_create_info_table(PccInfoTable);
+
+  return Status;
+}
+
 /**
   @brief  This API allocates memory for info table and
           calls create info table function passed as parameter.
@@ -425,6 +446,7 @@ freeSbsaAvsMem()
   val_srat_free_info_table();
   val_ras2_free_info_table();
   val_free_shared_mem();
+  val_pcc_free_info_table();
 }
 
 VOID
@@ -784,6 +806,9 @@ ShellAppMainsbsa (
   Status = createPeInfoTable();
   if (Status)
     return Status;
+
+  /* required before calling createMpamInfoTable() */
+  createPccInfoTable();
 
   Status = createGicInfoTable();
   if (Status)

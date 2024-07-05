@@ -67,6 +67,8 @@
                                         /*[24+(24*5) B Each + 4 B Header]*/
   #define HMAT_INFO_TBL_SZ       12288  /*Supports maximum of 400 Proximity domains*/
                                         /*[24 B Each + 8 B Header]*/
+  #define PCC_INFO_TBL_SZ        262144 /*Supports maximum of  PCC info entries*/
+                                        /*[112 B Each + 4B Header]*/
 
   #ifdef _AARCH64_BUILD_
   unsigned long __stack_chk_guard = 0xBAAAAAAD;
