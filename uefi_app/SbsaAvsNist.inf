@@ -123,6 +123,7 @@
   ../test_pool/pcie/operating_system/test_p063.c
   ../test_pool/pcie/operating_system/test_p064.c
   ../test_pool/pcie/operating_system/test_p065.c
+  ../test_pool/pcie/operating_system/test_p067.c
 
   ../test_pool/smmu/operating_system/test_i001.c
   ../test_pool/smmu/operating_system/test_i002.c
