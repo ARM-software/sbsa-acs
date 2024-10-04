@@ -224,6 +224,17 @@ createSratInfoTable(
 
 }
 
+void
+createPccInfoTable(
+)
+{
+  uint64_t      *PccInfoTable;
+
+  PccInfoTable = val_aligned_alloc(SIZE_4K,
+                                    PLATFORM_PCC_SUBSPACE_COUNT * sizeof(PCC_INFO));
+  val_pcc_create_info_table(PccInfoTable);
+}
+
 /**
   @brief  This API allocates memory for info table and
           calls create info table function passed as parameter.
@@ -281,6 +292,7 @@ freeSbsaAvsMem()
   val_hmat_free_info_table();
   val_srat_free_info_table();
   val_ras2_free_info_table();
+  val_pcc_free_info_table();
   val_free_shared_mem();
 }
 
@@ -385,6 +397,9 @@ ShellAppMainsbsa(
   createWatchdogInfoTable();
 
   createCacheInfoTable();
+
+  /* required before calling createMpamInfoTable() */
+  createPccInfoTable();
 
   createMpamInfoTable();
 

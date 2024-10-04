@@ -366,6 +366,27 @@ createSratInfoTable(
   return Status;
 }
 
+EFI_STATUS
+createPccInfoTable(
+)
+{
+  UINT64      *PccInfoTable;
+  EFI_STATUS  Status;
+
+  Status = gBS->AllocatePool(EfiBootServicesData,
+                              PCC_INFO_TBL_SZ,
+                              (VOID **) &PccInfoTable);
+
+  if (EFI_ERROR(Status))
+  {
+    Print(L"Allocate Pool failed %x\n", Status);
+    return Status;
+  }
+  val_pcc_create_info_table(PccInfoTable);
+
+  return Status;
+}
+
 /**
   @brief  This API allocates memory for info table and
           calls create info table function passed as parameter.
@@ -424,6 +445,7 @@ freeSbsaAvsMem()
   val_hmat_free_info_table();
   val_srat_free_info_table();
   val_ras2_free_info_table();
+  val_pcc_free_info_table();
   val_free_shared_mem();
 }
 
@@ -794,23 +816,28 @@ ShellAppMainsbsa (
 
   Status = createCacheInfoTable();
   if (Status)
-    Print(L" Failed to created Cache info table\n");
+    Print(L" Failed to create Cache info table\n");
+
+  /* required before calling createMpamInfoTable() */
+  Status = createPccInfoTable();
+  if (Status)
+    Print(L" Failed to create PCC info table\n");
 
   Status = createMpamInfoTable();
   if (Status)
-    Print(L" Failed to created Mpam info table\n");
+    Print(L" Failed to create Mpam info table\n");
 
   Status = createHmatInfoTable();
   if (Status)
-    Print(L" Failed to created HMAT info table\n");
+    Print(L" Failed to create HMAT info table\n");
 
   Status = createSratInfoTable();
   if (Status)
-    Print(L" Failed to created SRAT info table\n");
+    Print(L" Failed to create SRAT info table\n");
 
   Status = createInfoTable(val_ras2_create_info_table, RAS2_FEAT_INFO_TBL_SZ, "RAS2");
   if (Status)
-    Print(L" Failed to created RAS2 feature info table\n");
+    Print(L" Failed to create RAS2 feature info table\n");
 
   createPcieVirtInfoTable();
   createPeripheralInfoTable();
