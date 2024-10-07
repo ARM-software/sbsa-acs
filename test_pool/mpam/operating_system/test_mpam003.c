@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2024, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2024-2025, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -25,7 +25,7 @@
 
 
 #define TEST_NUM   (ACS_MPAM_TEST_NUM_BASE + 3)
-#define TEST_RULE  "S_L7MP_05, S_L7MP_06"
+#define TEST_RULE  "S_L7MP_05"
 #define TEST_DESC  "Check for MPAM MBWUs Monitor func     "
 
 #define BUFFER_SIZE 65536 /* 64 Kilobytes*/
@@ -67,14 +67,6 @@ static void payload(void)
     if (!msc_node_cnt) {
         val_set_status(pe_index, RESULT_SKIP(TEST_NUM, 03));
         return;
-    }
-
-    /* MSC must implement MPAM v1.1 version */
-    for (msc_index = 0; msc_index < msc_node_cnt; msc_index++) {
-        if (val_mpam_msc_get_version(msc_index) != MPAM_VERSION_1_1) {
-            val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 03));
-            return;
-        }
     }
 
     /* read MPAM2_EL2 and store the value for restoring later */

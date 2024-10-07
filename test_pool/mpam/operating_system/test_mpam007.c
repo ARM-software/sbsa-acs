@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2024-2024, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2025, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,8 +21,8 @@
 #include "val/sbsa/include/sbsa_val_interface.h"
 #include "val/sbsa/include/sbsa_acs_mpam.h"
 
-#define TEST_NUM   (ACS_PE_TEST_NUM_BASE  +  16)
-#define TEST_RULE  "S_MPAM_PE"
+#define TEST_NUM   (ACS_MPAM_TEST_NUM_BASE + 7)
+#define TEST_RULE  "S_L7MP_03"
 #define TEST_DESC  "Check MPAM LLC Requirements           "
 
 #define MEM_CACHE_LEVEL_1      1
@@ -49,15 +49,15 @@ static void payload(void)
     uint64_t desc1;
     uint64_t desc2;
 
-    if (g_sbsa_level < 5) {
+    if (g_sbsa_level < 7) {
         val_set_status(index, RESULT_SKIP(TEST_NUM, 01));
         return;
     }
 
-    /* If PE not implements FEAT_MPAM, Skip the test */
+    /* If PE not implements FEAT_MPAM, FAIL the test */
     if (!((VAL_EXTRACT_BITS(val_pe_reg_read(ID_AA64PFR0_EL1), 40, 43) > 0) ||
         (VAL_EXTRACT_BITS(val_pe_reg_read(ID_AA64PFR1_EL1), 16, 19) > 0))) {
-            val_set_status(index, RESULT_SKIP(TEST_NUM, 02));
+            val_set_status(index, RESULT_FAIL(TEST_NUM, 01));
             return;
     }
 
@@ -68,7 +68,7 @@ static void payload(void)
 
     if (msc_node_cnt == 0) {
         val_print(ACS_PRINT_ERR, "\n       MSC count is 0", 0);
-        val_set_status(index, RESULT_FAIL(TEST_NUM, 01));
+        val_set_status(index, RESULT_FAIL(TEST_NUM, 02));
         return;
     }
 
@@ -194,7 +194,7 @@ static void payload(void)
         if (g_sys_last_lvl_cache == SLC_TYPE_UNKNOWN) {
             val_print(ACS_PRINT_ERR, "\n       PPTT and memside LLC MSC found, Please provide"
                       "System Last-Level cache info via -slc cmdline option \n", 0);
-            val_set_status(index, RESULT_FAIL(TEST_NUM, 02));
+            val_set_status(index, RESULT_FAIL(TEST_NUM, 03));
             return;
         } else if (g_sys_last_lvl_cache == SLC_TYPE_PPTT_CACHE && pptt_llc_cpor_supported) {
             val_set_status(index, RESULT_PASS(TEST_NUM, 01));
@@ -203,7 +203,7 @@ static void payload(void)
             val_set_status(index, RESULT_PASS(TEST_NUM, 02));
             return;
         } else {
-            val_set_status(index, RESULT_FAIL(TEST_NUM, 03));
+            val_set_status(index, RESULT_FAIL(TEST_NUM, 04));
             val_print(ACS_PRINT_ERR, "\n       CPOR unsupported by System last-level cache", 0);
             return;
         }
@@ -214,13 +214,13 @@ static void payload(void)
         val_set_status(index, RESULT_PASS(TEST_NUM, 03));
     }
     else {
-        val_set_status(index, RESULT_FAIL(TEST_NUM, 04));
+        val_set_status(index, RESULT_FAIL(TEST_NUM, 05));
     }
 
     return;
 }
 
-uint32_t c016_entry(uint32_t num_pe)
+uint32_t mpam007_entry(uint32_t num_pe)
 {
     uint32_t status = ACS_STATUS_FAIL;
 
