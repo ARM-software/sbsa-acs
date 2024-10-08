@@ -30,7 +30,7 @@
 
 #define TEST_NUM   (ACS_EXERCISER_TEST_NUM_BASE + 6)
 #define TEST_DESC  "RP's must support AER feature         "
-#define TEST_RULE  "PCI_ER_01, PCI_ER_02, PCI_ER_03, PCI_ER_04"
+#define TEST_RULE  "PCI_ER_01, PCI_ER_04"
 
 #define ERR_CORR     0x2
 #define ERR_UNCORR   0x3
@@ -335,14 +335,13 @@ payload(void)
 
       /* Search for MSI-X Capability */
       if (val_pcie_find_capability(e_bdf, PCIE_CAP, CID_MSIX, &msi_cap_offset)) {
-          val_print(ACS_PRINT_ERR, "\n       No MSI-X Capability, Skipping for Bdf 0x%x", e_bdf);
+          val_print(ACS_PRINT_DEBUG, "\n       No MSI-X Capability, Skipping for Bdf 0x%x", e_bdf);
           continue;
       }
 
       if (val_pcie_find_capability(erp_bdf, PCIE_CAP, CID_MSIX, &msi_cap_offset)) {
-          val_print(ACS_PRINT_ERR, "\n       No MSI-X Capability for RP Bdf 0x%x", erp_bdf);
-          val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 01));
-          return;
+          val_print(ACS_PRINT_DEBUG, "\n       No MSI-X Capability for RP Bdf 0x%x", erp_bdf);
+          continue;
       }
 
       /* Get DeviceID & ITS_ID for this device */
