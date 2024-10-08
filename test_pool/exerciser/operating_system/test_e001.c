@@ -24,7 +24,7 @@
 
 #define TEST_NUM   (ACS_EXERCISER_TEST_NUM_BASE + 1)
 #define TEST_DESC  "Enhanced ECAM Memory access check     "
-#define TEST_RULE  ""
+#define TEST_RULE  "PCI_IN_01, PCI_IN_02"
 
 static
 void
