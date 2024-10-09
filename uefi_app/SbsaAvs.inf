@@ -168,7 +168,6 @@
   ../test_pool/pmu/operating_system/test_pmu005.c
   ../test_pool/pmu/operating_system/test_pmu006.c
   ../test_pool/pmu/operating_system/test_pmu007.c
-  ../test_pool/pmu/operating_system/test_pmu008.c
   ../test_pool/pmu/operating_system/test_pmu009.c
 
   ../test_pool/ras/operating_system/test_ras001.c
