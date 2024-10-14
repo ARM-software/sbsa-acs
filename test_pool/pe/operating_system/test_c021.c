@@ -34,10 +34,10 @@ static void payload(void)
         return;
     }
 
-    /* Read ID_AA64MMFR1_EL1.HAFDBS[3:0] = 0b0010 For Hardware update supported */
+    /* Read ID_AA64MMFR1_EL1.HAFDBS[3:0] >= 0b0010 For Hardware update supported */
     data = VAL_EXTRACT_BITS(val_pe_reg_read(ID_AA64MMFR1_EL1), 0, 3);
 
-    if (data != 2)
+    if (data < 2)
         val_set_status(index, RESULT_FAIL(TEST_NUM, 01));
     else
         val_set_status(index, RESULT_PASS(TEST_NUM, 01));
