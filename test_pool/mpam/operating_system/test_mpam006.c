@@ -122,7 +122,10 @@ static void payload(void)
     val_print(ACS_PRINT_DEBUG, "\n       Cache Size = 0x%x", cache_size);
     val_print(ACS_PRINT_DEBUG, "\n       Number of CSU Monitors = %d", csumon_count);
 
-    if (csumon_count == 0 || cpor_nodes == 0) {
+    /* Skip the test if CSU monitors/ nodes supporting Cache Portion Partitoning are 0
+       Also skip if Max PMG for MSC is less than 2 as the test uses 2 PMGs.
+       Otherwise, will lead to Out-of-range PMG behaviour. */
+    if (csumon_count == 0 || cpor_nodes == 0 || max_pmg < 2) {
         val_set_status(index, RESULT_SKIP(TEST_NUM, 03));
         return;
     }
