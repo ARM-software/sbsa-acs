@@ -46,7 +46,7 @@ static void payload(void)
     else {
         if (index == primary_pe_idx)
             val_print(ACS_PRINT_WARN,
-                "\n       Recommened WFE fine-tuning delay feature not implemented", 0);
+                "\n       Recommended WFE fine-tuning delay feature not implemented", 0);
         val_set_status(index, RESULT_SKIP(TEST_NUM, 02));
     }
 }
