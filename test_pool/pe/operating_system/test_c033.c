@@ -22,7 +22,7 @@
 
 #define TEST_NUM   (ACS_PE_TEST_NUM_BASE + 33)
 #define TEST_RULE  "S_L7PE_06"
-#define TEST_DESC  "Check PAuth2, FPAC & FPACCOMBINE  "
+#define TEST_DESC  "Check PAuth2, FPAC & FPACCOMBINE      "
 
 static void payload(void)
 {
