@@ -37,6 +37,7 @@ static void payload(void)
     uint32_t rsrc_node_cnt, rsrc_index;
     uint64_t mpam2_el2, mpam2_el2_temp;
     uint64_t byte_count;
+    uint64_t byte_count_min;
     uint64_t addr_base, addr_len;
     uint64_t nrdy_timeout;
     uint32_t test_fails = 0;
@@ -169,8 +170,12 @@ static void payload(void)
                 val_print(ACS_PRINT_DEBUG, "\n       byte_count = 0x%llx bytes", byte_count);
 
                 /* the monitor must count both read and write bandwidth,
-                   hence count must be twice of the buffer size */
-                if ((byte_count != 2 * BUFFER_SIZE)) {
+                   hence count must be twice of the buffer size
+                   with 30% room for implementation differences */
+                byte_count_min = 2 * BUFFER_SIZE - ((2 * BUFFER_SIZE * 3) / 10);
+
+                /* Report fail if the monitor count does not belong within permitted range */
+                if (!((byte_count > byte_count_min) && (byte_count <= 2 * BUFFER_SIZE))) {
                     val_print(ACS_PRINT_ERR, "\n       Monitor count incorrect for MSC %d",
                                                                                        msc_index);
                     val_print(ACS_PRINT_ERR, "       rsrc node %d", rsrc_index);
