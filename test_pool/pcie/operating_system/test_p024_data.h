@@ -61,7 +61,7 @@ pcie_cfgreg_bitfield_entry bf_info_table24[] = {
        0x10,                                    // Capability id
        0,                                       // Not applicable
        0x04,                                    // Offset from capability id base
-       (RCEC | RCiEP | iEP_EP | iEP_RP),        // Applicable to all onchip peripherals and RCEC
+       iEP_RP,                                  // Applicable only for RP's
        6,                                       // Start bit position
        8,                                       // End bit position
        0,                                       // Hardwired to 0b
@@ -76,7 +76,7 @@ pcie_cfgreg_bitfield_entry bf_info_table24[] = {
        0x10,                                    // Capability id
        0,                                       // Not applicable
        0x04,                                    // Offset from capability id base
-       (RCEC | RCiEP | iEP_EP | iEP_RP),        // Applicable to all onchip peripherals and RCEC
+       iEP_RP,                                  // Applicable only for RP's
        9,                                       // Start bit position
        11,                                      // End bit position
        0,                                       // Hardwired to 0b
