@@ -60,13 +60,10 @@
   ../test_pool/pe/operating_system/test_c027.c
   ../test_pool/pe/operating_system/test_c028.c
   ../test_pool/pe/operating_system/test_c029.c
-  ../test_pool/pe/operating_system/test_c030.c
   ../test_pool/pe/operating_system/test_c031.c
   ../test_pool/pe/operating_system/test_c032.c
   ../test_pool/pe/operating_system/test_c033.c
   ../test_pool/pe/operating_system/test_c034.c
-  ../test_pool/pe/operating_system/test_c035.c
-  ../test_pool/pe/operating_system/test_c036.c
   ../test_pool/pe/operating_system/test_c037.c
   ../test_pool/pe/operating_system/test_c038.c
   ../test_pool/pe/operating_system/test_c039.c
