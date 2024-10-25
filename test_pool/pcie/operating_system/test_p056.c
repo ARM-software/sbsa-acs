@@ -55,13 +55,6 @@ payload(void)
     return;
   }
 
-  if (val_pcie_p2p_support())
-  {
-      val_print(ACS_PRINT_DEBUG, "\n       PCIe P2P unsupported ", 0);
-      val_set_status(pe_index, RESULT_SKIP(TEST_NUM, 02));
-      return;
-  }
-
   bdf_tbl_ptr = val_pcie_bdf_table_ptr();
   test_fails = 0;
 
@@ -161,7 +154,7 @@ payload(void)
   if (test_skip == 1) {
       val_print(ACS_PRINT_DEBUG,
            "\n       No iEP_EP type device found with P2P support. Skipping test", 0);
-      val_set_status(pe_index, RESULT_SKIP(TEST_NUM, 03));
+      val_set_status(pe_index, RESULT_SKIP(TEST_NUM, 02));
   }
   else if (test_fails)
       val_set_status(pe_index, RESULT_FAIL(TEST_NUM, test_fails));
