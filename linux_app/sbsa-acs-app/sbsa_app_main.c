@@ -74,6 +74,7 @@ main (int argc, char **argv)
     {
       {"skip", required_argument, NULL, 'n'},
       {"help", no_argument, NULL, 'h'},
+      {"fr", no_argument, NULL, 'r'},
       {NULL, 0, NULL, 0}
     };
 
@@ -89,6 +90,9 @@ main (int argc, char **argv)
          break;
        case 'l':
          g_sbsa_level = strtol(optarg, &endptr, 10);
+         break;
+       case 'r':
+         g_sbsa_level = 8;
          break;
        case 'h':
          print_help();

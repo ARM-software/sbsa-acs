@@ -27,6 +27,7 @@ obj-m += sbsa_acs_test.o
 sbsa_acs_test-objs += $(TEST_POOL)/pcie/operating_system/test_p001.o \
     $(TEST_POOL)/pcie/operating_system/test_p005.o \
     $(TEST_POOL)/pcie/operating_system/test_p009.o \
+    $(TEST_POOL)/pcie/operating_system/test_p066.o \
     $(TEST_POOL)/smmu/operating_system/test_i016.o
 
 ccflags-y=-I$(PWD)/$(ACS_DIR)/.. -I$(PWD)/$(ACS_DIR)/val/ -I$(PWD)/$(ACS_DIR)/ -DTARGET_LINUX -Wall -Werror
