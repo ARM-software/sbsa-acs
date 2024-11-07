@@ -160,6 +160,7 @@ payload(void)
   uint32_t source_id;
   uint32_t dpc_trigger_reason;
   uint32_t timeout;
+  uint32_t msi_check = 0;
 
   uint32_t device_id = 0;
   uint32_t stream_id = 0;
@@ -193,8 +194,6 @@ payload(void)
           continue;
       }
 
-      test_skip = 0;
-
       /* Check AER capability for both exerciser and RP */
       if (val_pcie_find_capability(e_bdf, PCIE_ECAP, ECID_AER, &aer_offset) != PCIE_SUCCESS) {
           val_print(ACS_PRINT_ERR, "\n       AER Capability not supported, Bdf : 0x%x", e_bdf);
@@ -207,11 +206,12 @@ payload(void)
       }
 
       /* Search for MSI-X Capability */
-      if (val_pcie_find_capability(e_bdf, PCIE_CAP, CID_MSIX, &msi_cap_offset)) {
-        val_print(ACS_PRINT_ERR, "\n       No MSI-X Capability, Skipping for Bdf 0x%x", e_bdf);
-        continue;
+      if (val_pcie_find_capability(erp_bdf, PCIE_CAP, CID_MSIX, &msi_cap_offset)) {
+        val_print(ACS_PRINT_ERR, "\n       No MSI-X Capability for Bdf 0x%x", erp_bdf);
+        goto err_check;
       }
 
+      msi_check = 1;
       /* Get DeviceID & ITS_ID for this device */
       status = val_iovirt_get_device_info(PCIE_CREATE_BDF_PACKED(erp_bdf),
                                         PCIE_EXTRACT_BDF_SEG(erp_bdf), &device_id,
@@ -239,11 +239,14 @@ payload(void)
           return;
       }
 
+err_check:
       status = val_exerciser_set_param(ERROR_INJECT_TYPE, UNCORR_CMPT_TO, 1, instance);
       if (status != ERR_UNCORR) {
           val_print(ACS_PRINT_ERR, "\n       Error Injection failed, Bdf : 0x%x", e_bdf);
           continue;
       }
+
+      test_skip = 0;
 
       /* check for both fatal and non-fatal error */
       for (int i = 0; i < 2; i++)
@@ -317,15 +320,18 @@ payload(void)
               fail_cnt++;
           }
 
-          timeout = TIMEOUT_LARGE;
-          while ((--timeout > 0) && irq_pending)
-          {};
+          if (msi_check == 1)
+          {
+              timeout = TIMEOUT_LARGE;
+              while ((--timeout > 0) && irq_pending)
+              {};
 
-          if (timeout == 0) {
-              val_gic_free_irq(irq_pending, 0);
-              val_print(ACS_PRINT_ERR, "\n       Interrupt trigger failed for bdf 0x%lx", e_bdf);
-              fail_cnt++;
-              continue;
+              if (timeout == 0) {
+                  val_gic_free_irq(irq_pending, 0);
+                  val_print(ACS_PRINT_ERR, "\n       Interrupt trigger failed for bdf 0x%x", e_bdf);
+                  fail_cnt++;
+                  continue;
+              }
           }
 
           val_pcie_read_cfg(erp_bdf, rp_dpc_cap_base + DPC_STATUS_OFFSET, &reg_value);
@@ -396,7 +402,6 @@ payload(void)
           }
 
       }
-
   }
 
   if (test_skip)
