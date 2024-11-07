@@ -136,9 +136,11 @@ createPeripheralInfoTable(
 {
   uint64_t   *PeripheralInfoTable;
   uint64_t   *MemoryInfoTable;
+  uint32_t   per_info_end_index = 1; //Additional index for mem alloc to store the end value(0xff)
 
   PeripheralInfoTable = val_aligned_alloc(SIZE_4K, sizeof(PERIPHERAL_INFO_TABLE)
-                        + (PLATFORM_OVERRIDE_PERIPHERAL_COUNT * sizeof(PERIPHERAL_INFO_BLOCK)));
+                        + ((PLATFORM_OVERRIDE_PERIPHERAL_COUNT + per_info_end_index)
+                            * sizeof(PERIPHERAL_INFO_BLOCK)));
   val_peripheral_create_info_table(PeripheralInfoTable);
 
   MemoryInfoTable = val_aligned_alloc(SIZE_4K, sizeof(MEMORY_INFO_TABLE)
