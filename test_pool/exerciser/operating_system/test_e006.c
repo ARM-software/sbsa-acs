@@ -39,6 +39,7 @@
 static uint32_t irq_pending;
 static uint32_t lpi_int_id = 0x204C;
 static uint32_t mask_value;
+static uint32_t msi_check;
 
 static
 void
@@ -224,18 +225,22 @@ inject_error(uint32_t e_bdf, uint32_t instance, uint32_t aer_offset)
         status = val_exerciser_set_param(ERROR_INJECT_TYPE, err_code, 0, instance);
         value = val_exerciser_ops(INJECT_ERROR, err_code, instance);
 
-        /*Interrupt must be generated on error detection if errors are not masked*/
-        if (mask_value == 0) {
-            timeout = TIMEOUT_LARGE;
-            while ((--timeout > 0) && irq_pending)
-            {};
+        /* If MSI/MSI-X is supported then interrupt must be generated
+         * on error detection if errors are not masked*/
+        if (msi_check == 1)
+        {
+            if (mask_value == 0) {
+                timeout = TIMEOUT_LARGE;
+                while ((--timeout > 0) && irq_pending)
+                {};
 
-            if (timeout == 0)
-            {
-                val_gic_free_irq(irq_pending, 0);
-                val_print(ACS_PRINT_ERR,
-                          "\n       Intr not trigerred on err injection bdf 0x%x", e_bdf);
-                return 1;
+                if (timeout == 0)
+                {
+                    val_gic_free_irq(irq_pending, 0);
+                    val_print(ACS_PRINT_ERR,
+                              "\n       Intr not trigerred on err injection bdf 0x%x", e_bdf);
+                    return 1;
+                }
             }
         }
 
@@ -305,6 +310,7 @@ payload(void)
          continue;
 
      val_pcie_enable_eru(erp_bdf);
+     msi_check = 0;
 
      /*Check AER capability for exerciser and its RP */
       if (val_pcie_find_capability(e_bdf, PCIE_ECAP, ECID_AER, &aer_offset) != PCIE_SUCCESS) {
@@ -335,15 +341,15 @@ payload(void)
 
       /* Search for MSI-X Capability */
       if (val_pcie_find_capability(e_bdf, PCIE_CAP, CID_MSIX, &msi_cap_offset)) {
-          val_print(ACS_PRINT_DEBUG, "\n       No MSI-X Capability, Skipping for Bdf 0x%x", e_bdf);
-          continue;
+          val_print(ACS_PRINT_DEBUG, "\n       No MSI-X Capability for Bdf 0x%x", e_bdf);
       }
 
       if (val_pcie_find_capability(erp_bdf, PCIE_CAP, CID_MSIX, &msi_cap_offset)) {
           val_print(ACS_PRINT_DEBUG, "\n       No MSI-X Capability for RP Bdf 0x%x", erp_bdf);
-          continue;
+          goto err_check;
       }
 
+      msi_check = 1;
       /* Get DeviceID & ITS_ID for this device */
       status = val_iovirt_get_device_info(PCIE_CREATE_BDF_PACKED(erp_bdf),
                                         PCIE_EXTRACT_BDF_SEG(erp_bdf), &device_id,
@@ -371,6 +377,7 @@ payload(void)
           return;
       }
 
+err_check:
       test_skip = 0;
       val_pcie_find_capability(erp_bdf, PCIE_ECAP, ECID_AER, &rp_aer_offset);
       val_pcie_read_cfg(erp_bdf, rp_aer_offset + AER_ROOT_ERR_CMD_OFFSET, &value);
@@ -412,7 +419,10 @@ payload(void)
        * Rootport's Device Status Register to clear any pending urd status.
        */
       val_pcie_clear_urd(erp_bdf);
-      val_gic_free_msi(erp_bdf, device_id, its_id, lpi_int_id + instance, msi_index);
+
+      if (msi_check == 1) {
+        val_gic_free_msi(erp_bdf, device_id, its_id, lpi_int_id + instance, msi_index);
+      }
   }
 
   if (test_skip == 1)
