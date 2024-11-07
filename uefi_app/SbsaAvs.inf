@@ -185,6 +185,7 @@
   ../test_pool/ras/operating_system/test_ras011.c
   ../test_pool/ras/operating_system/test_ras012.c
   ../test_pool/ras/operating_system/test_ras013.c
+  ../test_pool/ras/operating_system/test_ras014.c
 
   ../test_pool/ete/operating_system/test_ete001.c
   ../test_pool/ete/operating_system/test_ete002.c
