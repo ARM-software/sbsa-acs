@@ -33,7 +33,7 @@ payload(void)
     uint32_t num_smmu;
     uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
 
-    num_smmu = val_smmu_get_info(SMMU_NUM_CTRL, 0);
+    num_smmu = val_iovirt_get_smmu_info(SMMU_NUM_CTRL, 0);
 
     if (num_smmu == 0) {
         val_print(ACS_PRINT_ERR, "\n       No SMMU Controllers are discovered ", 0);
