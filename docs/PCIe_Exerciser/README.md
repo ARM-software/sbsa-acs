@@ -68,6 +68,27 @@ To run Exerciser test 905 - PE 2/4/8B writes to PCIe as 2/4/8B, please make the 
 +        "max_transaction_trace_entries": 1,
 ```
 
+### Minimum requirement of PCIe Hierarchy
+
+The diagram below illustrates the minimal PCIe hierarchy structure necessary for comprehensive testing of an exerciser test case.
+
+```
+               ________________________________
+              |            Root Bridge         |
+              |________________________________|
+                   |           |            |
+                   |           |            |
+                ___|__     ____|____    ____|____
+               | RCiEP|   | RootPort|  | RootPort|
+               |______|   |_________|  |_________|
+                               |            |
+                               |            |
+                           ____|_____   ____|____
+                          | Exerciser| |Exerciser|
+                          | EndPoint | |EndPoint |
+                          |__________| |_________|
+```
+
 ## Useful links
 
 - For information on configuring the [PCIe Hierarchy](PCIeConfigurableHierarchy.md)

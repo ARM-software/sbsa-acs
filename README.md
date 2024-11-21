@@ -7,24 +7,24 @@
 **Server Base System Architecture** (SBSA) specification specifies a hardware system architecture based on the Arm 64-bit architecture.
 Server system software such as operating systems, hypervisors, and firmware rely on this. It addresses processing element features and key aspects of system architecture.
 
-For more information, download the [SBSA specification](https://developer.arm.com/documentation/den0029/h/?lang=en)
+For more information, download the [SBSA specification](https://developer.arm.com/documentation/den0029/i/?lang=en)
 
 
 ## SBSA - Architecture Compliance Suite
 
 SBSA **Architecture Compliance Suite** (ACS) is a collection of self-checking, portable C-based tests.
-This suite includes a set of examples of the invariant behaviors that are provided by the [SBSA specification](https://developer.arm.com/documentation/den0029/h/?lang=en), so that implementers can verify if these behaviours have been interpreted correctly.
+This suite includes a set of examples of the invariant behaviors that are provided by the [SBSA specification](https://developer.arm.com/documentation/den0029/i/?lang=en), so that implementers can verify if these behaviours have been interpreted correctly.
 
 Most of the tests are executed from UEFI Shell by executing the SBSA UEFI shell application.
 A few tests are executed by running the SBSA ACS Linux application which in turn depends on the SBSA ACS Linux kernel module.
 The tests can also be executed in a Bare-metal environment. The initialization of the Bare-metal environment is specific to the environment and is out of scope of this document.
 
 ## Release details
- - Code Quality: REL v7.2.0 BETA-0
- - The tests are written for version 7.1 of the SBSA specification.
+ - Code Quality: REL v7.2.1
+ - The tests are written for version 7.2 of the SBSA specification.
  - For complete coverage of the SBSA rules, availability of an Exerciser is required for Exerciser tests to be run during verficiation at Pre-Silicon level.
  - For complete coverage, both SBSA and BSA ACS should be run.
- - The SBSA specification compliments the [BSA specification](https://developer.arm.com/documentation/den0094/c/?lang=en).
+ - The SBSA specification compliments the [BSA specification](https://developer.arm.com/documentation/den0094/d/?lang=en).
  - The tests can be run at both the Pre-Silicon and Silicon level.
  - The compliance suite is not a substitute for design verification.
  - To review the SBSA ACS logs, Arm licensees can contact Arm directly through their partner managers.
@@ -78,8 +78,8 @@ Note: The details of the packages are beyond the scope of this document.
 
 ### 1. Build Steps
 
-1.  git clone the edk2-stable202402 tag of EDK2 tree
-> git clone --recursive --branch edk2-stable202402 https://github.com/tianocore/edk2
+1.  git clone the commit 836942fbadb629050b866a8052e6af755bcdf623 of EDK2 tree
+> git clone --recursive https://github.com/tianocore/edk2
 2.  git clone the EDK2 port of libc
 > git clone https://github.com/tianocore/edk2-libc edk2/edk2-libc
 3.  git clone sbsa-acs
