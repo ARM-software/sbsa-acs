@@ -6,7 +6,7 @@ The below table provides the following details
 
 #. SBSA Level at which test run.
 #. SBSA rules covered by a test.
-#. SystemReady certification band(SR) for which test is required.
+#. SystemReady band(SR) for which test is required.
 #. Runtime environment(UEFI, BareMetal and Linux) where test executes.
 #. Tests for which exerciser is required.
 
