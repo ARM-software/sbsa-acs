@@ -8,7 +8,7 @@ on:
 jobs:
   build:
     name: SBSA-ACS UEFI application build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
 
     steps:
       - name: Install dependencies
@@ -62,7 +62,7 @@ jobs:
 
   baremetal-compilation:
     name: Baremetal CMake compilation check
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
 
     steps:
 
