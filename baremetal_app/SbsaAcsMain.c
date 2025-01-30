@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2022-2024, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2022-2025, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -50,6 +50,12 @@ extern uint32_t g_num_tests;
 extern uint32_t g_module_array[];
 extern uint32_t g_num_modules;
 extern uint32_t g_sbsa_run_fr;
+
+
+#define SBSA_LEVEL_PRINT_FORMAT(level, only) ((level > SBSA_MAX_LEVEL_SUPPORTED) ? \
+    ((only) != 0 ? "\n Starting tests for only level FR " : "\n Starting tests for level FR ") : \
+    ((only) != 0 ? "\n Starting tests for only level %2d " : "\n Starting tests for level %2d "))
+
 
 uint32_t
 createPeInfoTable(
@@ -356,12 +362,10 @@ ShellAppMainsbsa(
   val_print(ACS_PRINT_TEST, "%d.", SBSA_ACS_MINOR_VER);
   val_print(ACS_PRINT_TEST, "%d\n", SBSA_ACS_SUBMINOR_VER);
 
-  if (g_sbsa_only_level)
-      val_print(ACS_PRINT_TEST, "\n Starting tests for only level %2d", g_sbsa_level);
-  else
-      val_print(ACS_PRINT_TEST, "\n Starting tests for level %2d", g_sbsa_level);
+  val_print(ACS_PRINT_TEST, SBSA_LEVEL_PRINT_FORMAT(g_sbsa_level, g_sbsa_only_level),
+                                   (g_sbsa_level > SBSA_MAX_LEVEL_SUPPORTED) ? 0 : g_sbsa_level);
 
-  val_print(ACS_PRINT_TEST, " (Print level is %2d)\n\n", g_print_level);
+  val_print(ACS_PRINT_TEST, "(Print level is %2d)\n\n", g_print_level);
 
   val_print(ACS_PRINT_TEST, " Creating Platform Information Tables\n", 0);
 

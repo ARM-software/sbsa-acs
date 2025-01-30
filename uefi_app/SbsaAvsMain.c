@@ -62,6 +62,10 @@ SHELL_FILE_HANDLE g_acs_log_file_handle;
    purpose to complete SBSA run on these systems */
 UINT32  g_el1physkip = FALSE;
 
+#define SBSA_LEVEL_PRINT_FORMAT(level, only) ((level > SBSA_MAX_LEVEL_SUPPORTED) ? \
+    ((only) != 0 ? "\n Starting tests for only level FR " : "\n Starting tests for level FR ") : \
+    ((only) != 0 ? "\n Starting tests for only level %2d " : "\n Starting tests for level %2d "))
+
 STATIC VOID FlushImage (VOID)
 {
   EFI_LOADED_IMAGE_PROTOCOL   *ImageInfo;
@@ -794,12 +798,10 @@ ShellAppMainsbsa (
   val_print(ACS_PRINT_TEST, "%d.", SBSA_ACS_MINOR_VER);
   val_print(ACS_PRINT_TEST, "%d\n", SBSA_ACS_SUBMINOR_VER);
 
-  if (g_sbsa_only_level)
-    val_print(ACS_PRINT_TEST, "\n Starting tests for only level %2d", g_sbsa_level);
-  else
-    val_print(ACS_PRINT_TEST, "\n Starting tests for level %2d", g_sbsa_level);
+  val_print(ACS_PRINT_TEST, SBSA_LEVEL_PRINT_FORMAT(g_sbsa_level, g_sbsa_only_level),
+                                   (g_sbsa_level > SBSA_MAX_LEVEL_SUPPORTED) ? 0 : g_sbsa_level);
 
-  val_print(ACS_PRINT_TEST, " (Print level is %2d)\n\n", g_print_level);
+  val_print(ACS_PRINT_TEST, "(Print level is %2d)\n\n", g_print_level);
 
   val_print(ACS_PRINT_TEST, " Creating Platform Information Tables\n", 0);
 

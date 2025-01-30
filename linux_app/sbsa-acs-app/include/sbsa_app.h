@@ -24,6 +24,9 @@
 #define SBSA_APP_VERSION_MINOR      2
 #define SBSA_APP_VERSION_SUBMINOR   1
 
+#define SBSA_MIN_LEVEL_SUPPORTED 3
+#define SBSA_MAX_LEVEL_SUPPORTED 7
+
 #include "sbsa_drv_intf.h"
 
 typedef unsigned long int addr_t;
