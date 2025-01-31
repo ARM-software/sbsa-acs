@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2023-2024, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2023-2025, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -68,6 +68,8 @@ payload()
   }
 
   for (node_index = 0; node_index < num_node; node_index++) {
+    eri_id = 0;
+    fhi_id = 0;
 
     /* Get ERI number for Node, If Not Skip the Node */
     status = val_ras_get_info(RAS_INFO_ERI_ID, node_index, &eri_id);
