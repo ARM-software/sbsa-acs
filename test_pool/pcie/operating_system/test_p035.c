@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2019-2024, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2019-2025, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -71,6 +71,7 @@ payload(void)
   uint32_t idx;
   uint32_t timeout;
   uint32_t status;
+  uint32_t device_id, vendor_id;
   addr_t config_space_addr;
   void *func_config_space;
   pcie_device_bdf_table *bdf_tbl_ptr;
@@ -152,13 +153,20 @@ payload(void)
           /* If test runs for atleast an endpoint */
           test_skip = 0;
 
-          /* If Vendor Id is 0xFF after max FLR period, wait
-           * for 1 ms and read again. Keep polling for 5 secs */
+          /* If Vendor Id is 0xFFFF after max FLR period, wait
+           * for 1 ms and read again. Keep polling for 5 secs
+           * Vendor Id will be 0x0001 if the device is not yet
+           * ready to respond to configuration read. Hence check
+           * for the vendor id to be 0x0001 to ensure device is
+           * initilaised and ready to respond */
           timeout = (5 * TIMEOUT_LARGE);
           while (timeout-- > 0)
           {
               val_pcie_read_cfg(bdf, 0, &reg_value);
-              if ((reg_value & TYPE01_VIDR_MASK) == TYPE01_VIDR_MASK)
+              vendor_id = reg_value & TYPE01_VIDR_MASK;
+              device_id = (reg_value >> TYPE01_DIDR_SHIFT) & TYPE01_DIDR_MASK;
+              if ((device_id == DIDR_RRS_MASK) &&
+                 ((vendor_id == TYPE01_VIDR_MASK) || (vendor_id == VIDR_RRS_MASK)))
               {
                   status = val_time_delay_ms(ONE_MILLISECOND);
                   continue;
@@ -167,9 +175,12 @@ payload(void)
                   break;
           }
 
-          /* Vendor Id must not be 0xFF after max timeout period */
+          /* Vendor Id must not be 0xFFFF or 0x0001 after max timeout period */
           val_pcie_read_cfg(bdf, 0, &reg_value);
-          if ((reg_value & TYPE01_VIDR_MASK) == TYPE01_VIDR_MASK)
+          vendor_id = reg_value & TYPE01_VIDR_MASK;
+          device_id = (reg_value >> TYPE01_DIDR_SHIFT) & TYPE01_DIDR_MASK;
+          if ((device_id == DIDR_RRS_MASK) &&
+             ((vendor_id == TYPE01_VIDR_MASK) || (vendor_id == VIDR_RRS_MASK)))
           {
               val_print(ACS_PRINT_ERR, "\n       BDF 0x%x not present", bdf);
               test_fails++;
