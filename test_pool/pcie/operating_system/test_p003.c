@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2024, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2025, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -50,7 +50,6 @@ payload(void)
 
   uint32_t data;
   uint32_t num_ecam;
-  uint64_t ecam_base;
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
   uint32_t bdf = 0;
   uint32_t bus, segment;
@@ -79,14 +78,6 @@ payload(void)
 
   if (num_ecam == 0) {
       val_print(ACS_PRINT_DEBUG, "\n       No ECAM in MCFG. Skipping test               ", 0);
-      val_set_status(index, RESULT_SKIP(TEST_NUM, 01));
-      return;
-  }
-
-  ecam_base = val_pcie_get_info(PCIE_INFO_MCFG_ECAM, 0);
-
-  if (ecam_base == 0) {
-      val_print(ACS_PRINT_DEBUG, "\n       ECAM Base in MCFG is 0. Skipping test        ", 0);
       val_set_status(index, RESULT_SKIP(TEST_NUM, 01));
       return;
   }
