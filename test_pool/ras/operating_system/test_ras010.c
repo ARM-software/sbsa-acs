@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2023-2024, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2023-2025, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -40,7 +40,7 @@ payload()
   /* get total number of RAS2 memory info blocks */
   num_of_mem_blocks = val_ras2_get_mem_info(RAS2_NUM_MEM_BLOCK, 0);
   if (num_of_mem_blocks == 0) {
-    val_print(ACS_PRINT_DEBUG, "\n       No RAS2 memory nodes found. Skipping...", 0);
+    val_print(ACS_PRINT_ERR, "\n       No RAS2 memory nodes found. Skipping...", 0);
     val_set_status(index, RESULT_SKIP(TEST_NUM, 01));
     return;
   }

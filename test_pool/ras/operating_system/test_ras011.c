@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2023-2024, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2023-2025, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -64,6 +64,7 @@ payload()
   uint32_t fail_cnt = 0, test_skip = 1;
   uint64_t num_node;
   uint64_t value;
+  uint64_t num_mc_node;
   uint64_t mc_status;
   uint64_t pe_status;
   uint32_t node_index;
@@ -80,6 +81,15 @@ payload()
   if (status || (num_node == 0)) {
     val_print(ACS_PRINT_DEBUG, "\n       RAS Nodes not found. Skipping...", 0);
     val_set_status(index, RESULT_FAIL(TEST_NUM, 01));
+    return;
+  }
+
+
+  /* Get number of MC nodes with RAS functionality */
+  status = val_ras_get_info(RAS_INFO_NUM_MC, 0, &num_mc_node);
+  if (status || (num_mc_node == 0)) {
+    val_print(ACS_PRINT_ERR, "\n       RAS MC nodes not found. Skipping...", 0);
+    val_set_status(index, RESULT_SKIP(TEST_NUM, 01));
     return;
   }
 
@@ -232,7 +242,7 @@ exception_return:
     val_set_status(index, RESULT_FAIL(TEST_NUM, 04));
     return;
   } else if (test_skip) {
-    val_set_status(index, RESULT_SKIP(TEST_NUM, 01));
+    val_set_status(index, RESULT_SKIP(TEST_NUM, 02));
     return;
   }
 

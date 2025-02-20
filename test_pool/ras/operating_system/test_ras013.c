@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2023-2024, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2023-2025, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -101,6 +101,8 @@ static void payload(void)
       val_set_status(index, RESULT_FAIL(TEST_NUM, 01));
       return;
   } else if (test_skip) {
+      val_print(ACS_PRINT_ERR, "\n       No Resource are Shared between two or more PE. "
+                               "Skipping... ", 0);
       val_set_status(index, RESULT_SKIP(TEST_NUM, 03));
       return;
     }
