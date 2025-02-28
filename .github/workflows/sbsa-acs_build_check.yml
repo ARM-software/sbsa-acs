@@ -22,7 +22,7 @@ jobs:
         run: |
           git clone --recursive https://github.com/tianocore/edk2
           cd edk2
-          git checkout 836942fbadb629050b866a8052e6af755bcdf623
+          git checkout edk2-stable202411
           cd ..
           git clone https://github.com/tianocore/edk2-libc edk2/edk2-libc
 
@@ -39,7 +39,7 @@ jobs:
       - name: Apply edk2 sbsa patch
         run: |
           cd edk2
-          git apply ShellPkg/Application/sbsa-acs/patches/edk2-sbsa.diff
+          git apply ShellPkg/Application/sbsa-acs/patches/edk2_sbsa.patch
 
       - name: Download Arm GCC cross-compiler
         run: |
