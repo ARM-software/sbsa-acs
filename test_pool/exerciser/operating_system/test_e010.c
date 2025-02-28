@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2024, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2024-2025, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -214,9 +214,10 @@ payload(void)
       /* Test will run*/
       test_skip = 0;
 
-      /* Search for MSI-X Capability */
-      if (val_pcie_find_capability(e_bdf, PCIE_CAP, CID_MSIX, &msi_cap_offset)) {
-        val_print(ACS_PRINT_ERR, "\n       No MSI-X Capability, Skipping for Bdf 0x%x", e_bdf);
+      /* Search for MSI-X/MSI Capability */
+      if ((val_pcie_find_capability(e_bdf, PCIE_CAP, CID_MSIX, &msi_cap_offset)) &&
+          (val_pcie_find_capability(e_bdf, PCIE_CAP, CID_MSI, &msi_cap_offset))) {
+        val_print(ACS_PRINT_DEBUG, "\n       No MSI/MSI-X Capability, Skipping for 0x%x", e_bdf);
         continue;
       }
 
