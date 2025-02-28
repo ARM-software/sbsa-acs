@@ -1,0 +1,21 @@
+diff --git a/ShellPkg/ShellPkg.dsc b/ShellPkg/ShellPkg.dsc
+index 7e985f8..ee72166 100644
+--- a/ShellPkg/ShellPkg.dsc
++++ b/ShellPkg/ShellPkg.dsc
+@@ -66,6 +66,8 @@
+   ReportStatusCodeLib|MdePkg/Library/BaseReportStatusCodeLibNull/BaseReportStatusCodeLibNull.inf
+ 
+   SafeIntLib|MdePkg/Library/BaseSafeIntLib/BaseSafeIntLib.inf
++  SbsaValLib|ShellPkg/Application/bsa-acs/val/SbsaValLib.inf
++  SbsaPalLib|ShellPkg/Application/bsa-acs/pal/uefi_acpi/SbsaPalLib.inf
+ 
+ [PcdsFixedAtBuild]
+   gEfiMdePkgTokenSpaceGuid.PcdDebugPropertyMask|0xFF
+@@ -93,6 +95,7 @@
+   ShellPkg/Library/UefiShellDebug1CommandsLib/UefiShellDebug1CommandsLib.inf
+   ShellPkg/Library/UefiShellNetwork1CommandsLib/UefiShellNetwork1CommandsLib.inf
+   ShellPkg/Library/UefiShellNetwork2CommandsLib/UefiShellNetwork2CommandsLib.inf
++  ShellPkg/Application/sbsa-acs/uefi_app/SbsaAvs.inf
+ 
+   ShellPkg/Application/Shell/Shell.inf {
+     <PcdsFixedAtBuild>
