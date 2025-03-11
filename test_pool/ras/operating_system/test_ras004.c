@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2023-2024, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2023-2025, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -47,7 +47,7 @@ payload()
     return;
   }
 
-  for (node_index = 0; node_index < (num_node - 1); node_index++) {
+  for (node_index = 0; node_index < num_node; node_index++) {
 
     /* Get Current Node Base Address */
     status = val_ras_get_info(RAS_INFO_BASE_ADDR, node_index, &base_addr);
@@ -73,7 +73,7 @@ payload()
       status = val_ras_get_info(RAS_INFO_BASE_ADDR, sec_node, &base_addr_sec);
       if (status) {
         /* Interface is System Register based, Skipping this node */
-        val_print(ACS_PRINT_DEBUG, "\n       Interface is SR, Skipping sec_node %d", node_index);
+        val_print(ACS_PRINT_DEBUG, "\n       Interface is SR, Skipping sec_node %d", sec_node);
         continue;
       }
 
@@ -102,6 +102,7 @@ payload()
     val_set_status(index, RESULT_FAIL(TEST_NUM, 01));
     return;
   } else if (test_skip) {
+    val_print(ACS_PRINT_ERR, "\n       No ERI found in RAS nodes ", 0);
     val_set_status(index, RESULT_SKIP(TEST_NUM, 02));
     return;
   }
