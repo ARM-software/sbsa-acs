@@ -105,7 +105,7 @@ static void payload(void)
     uint32_t node_count;
     uint32_t mc_node_index;
     uint32_t status;
-    uint32_t i;
+    uint32_t i, node_index, cs_com = 0;
     uint64_t num_mem_range;
     uint32_t pe_uid, pe_prox_domain;
     uint32_t remote_pe_uid, remote_pe_prox_domain;
@@ -123,6 +123,16 @@ static void payload(void)
     if (node_count == 0) {
         val_set_status(index, RESULT_FAIL(TEST_NUM, 1));
         val_print(ACS_PRINT_ERR, "\n       No PMU nodes found", 0);
+        return;
+    }
+
+    /* The test uses PMU CoreSight arch register map, skip if pmu node is not cs */
+    for (node_index = 0; node_index < node_count; node_index++) {
+        cs_com |= val_pmu_get_info(PMU_NODE_CS_COM, node_index);
+    }
+    if (cs_com != 0x1) {
+        val_set_status(index, RESULT_SKIP(TEST_NUM, 02));
+        val_print(ACS_PRINT_DEBUG, "\n       No CS PMU nodes found", 0);
         return;
     }
 

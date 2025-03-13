@@ -41,6 +41,7 @@ static void payload(void)
     uint32_t ret_status, status;
     uint64_t interface_acpiid;
     uint32_t num_traffic_support;
+    uint32_t cs_com = 0, node_index;
 
     if (g_sbsa_level < 7) {
         val_set_status(index, RESULT_SKIP(TEST_NUM, 1));
@@ -53,6 +54,16 @@ static void payload(void)
     if (pmu_node_count == 0) {
         val_set_status(index, RESULT_FAIL(TEST_NUM, 2));
         val_print(ACS_PRINT_ERR, "\n       No PMU nodes found", 0);
+        return;
+    }
+
+    /* The test uses PMU CoreSight arch register map, skip if pmu node is not cs */
+    for (node_index = 0; node_index < pmu_node_count; node_index++) {
+        cs_com |= val_pmu_get_info(PMU_NODE_CS_COM, node_index);
+    }
+    if (cs_com != 0x1) {
+        val_set_status(index, RESULT_SKIP(TEST_NUM, 02));
+        val_print(ACS_PRINT_DEBUG, "\n       No CS PMU nodes found", 0);
         return;
     }
 
