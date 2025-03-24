@@ -34,6 +34,10 @@ unsigned int g_print_mmio;
 unsigned int g_curr_module;
 unsigned int g_enable_module;
 
+#define SBSA_LEVEL_PRINT_FORMAT(level, only) ((level > SBSA_MAX_LEVEL_SUPPORTED) ? \
+    ((only) != 0 ? "\n Starting tests for only level FR " : "\n Starting tests for level FR ") : \
+    ((only) != 0 ? "\n Starting tests for only level %2d " : "\n Starting tests for level %2d "))
+
 int
 initialize_test_environment(unsigned int print_level)
 {
@@ -74,6 +78,7 @@ main (int argc, char **argv)
     {
       {"skip", required_argument, NULL, 'n'},
       {"help", no_argument, NULL, 'h'},
+      {"only", no_argument, NULL, 'o'},
       {"fr", no_argument, NULL, 'r'},
       {NULL, 0, NULL, 0}
     };
@@ -81,7 +86,7 @@ main (int argc, char **argv)
     g_skip_test_num = (unsigned int *) malloc(g_num_skip * sizeof(unsigned int));
 
     /* Process Command Line arguments */
-    while ((c = getopt_long(argc, argv, "hv:l:e:", long_opt, NULL)) != -1)
+    while ((c = getopt_long(argc, argv, "hrv:l:oe:", long_opt, NULL)) != -1)
     {
        switch (c)
        {
@@ -90,6 +95,9 @@ main (int argc, char **argv)
          break;
        case 'l':
          g_sbsa_level = strtol(optarg, &endptr, 10);
+         break;
+       case 'o':
+         g_sbsa_only_level = 1;
          break;
        case 'r':
          g_sbsa_level = 8;
@@ -125,7 +133,13 @@ main (int argc, char **argv)
             SBSA_APP_VERSION_MINOR, SBSA_APP_VERSION_SUBMINOR);
 
 
-    printf("\n Starting tests for level %2d (Print level is %2d)\n\n", g_sbsa_level, g_print_level);
+    printf(SBSA_LEVEL_PRINT_FORMAT(g_sbsa_level, g_sbsa_only_level),
+                                   (g_sbsa_level > SBSA_MAX_LEVEL_SUPPORTED) ? 0 : g_sbsa_level);
+
+    printf("(Print level is %2d)\n\n", g_print_level);
+
+    if (g_sbsa_only_level)
+        g_sbsa_only_level = g_sbsa_level;
 
     printf(" Gathering system information....\n");
     status = initialize_test_environment(g_print_level);
