@@ -74,6 +74,7 @@
 
   ../test_pool/gic/operating_system/test_g001.c
   ../test_pool/gic/operating_system/test_g002.c
+  ../test_pool/gic/operating_system/test_g003.c
 
   ../test_pool/watchdog/operating_system/test_w001.c
 
