@@ -866,6 +866,9 @@ ShellAppMainsbsa (
   /***         Starting SMMU tests                   ***/
   Status |= val_sbsa_smmu_execute_tests(g_sbsa_level, val_pe_get_num());
 
+  /***         Starting Timer tests               ***/
+  Status |= val_sbsa_timer_execute_tests(g_sbsa_level, val_pe_get_num());
+
   /***         Starting Watchdog tests               ***/
   Status |= val_sbsa_wd_execute_tests(g_sbsa_level, val_pe_get_num());
 

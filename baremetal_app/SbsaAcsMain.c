@@ -445,6 +445,10 @@ ShellAppMainsbsa(
   if (g_sbsa_level > 3)
     Status |= val_sbsa_smmu_execute_tests(g_sbsa_level, val_pe_get_num());
 
+  /***         Starting Timer tests                  ***/
+  if (g_sbsa_level > 7)
+    Status |= val_sbsa_timer_execute_tests(g_sbsa_level, val_pe_get_num());
+
   /***         Starting Watchdog tests               ***/
   if (g_sbsa_level > 5)
     Status |= val_sbsa_wd_execute_tests(g_sbsa_level, val_pe_get_num());
