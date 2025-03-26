@@ -45,8 +45,6 @@
   ../test_pool/pe/operating_system/test_c012.c
   ../test_pool/pe/operating_system/test_c013.c
   ../test_pool/pe/operating_system/test_c014.c
-  ../test_pool/pe/operating_system/test_c015.c
-  ../test_pool/pe/operating_system/test_c016.c
   ../test_pool/pe/operating_system/test_c017.c
   ../test_pool/pe/operating_system/test_c018.c
   ../test_pool/pe/operating_system/test_c019.c
@@ -164,9 +162,9 @@
   ../test_pool/mpam/operating_system/test_mpam001.c
   ../test_pool/mpam/operating_system/test_mpam002.c
   ../test_pool/mpam/operating_system/test_mpam003.c
-  ../test_pool/mpam/operating_system/test_mpam004.c
   ../test_pool/mpam/operating_system/test_mpam005.c
   ../test_pool/mpam/operating_system/test_mpam006.c
+  ../test_pool/mpam/operating_system/test_mpam007.c
 
   ../test_pool/pmu/operating_system/test_pmu001.c
   ../test_pool/pmu/operating_system/test_pmu002.c

@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2023-2024, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2023-2025, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -57,6 +57,23 @@ static void payload(void)
         val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 02));
         return;
     }
+
+    /* check support for MPAM virtulization support indicated by MPAMIDR_EL1.HAS_HCR bit */
+    data = VAL_EXTRACT_BITS(val_mpam_reg_read(MPAMIDR_EL1), 17, 17);
+    if (data == 0) {
+        val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 03));
+        return;
+    }
+
+    /* check support for minimum of 8 virtual partition IDs,
+       MPAMIDR_EL1.VPMR_MAX must be > 0 */
+    data = VAL_EXTRACT_BITS(val_mpam_reg_read(MPAMIDR_EL1), 18, 20);
+    if (data < 1) {
+        val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 04));
+        return;
+    }
+
+
 
     val_set_status(pe_index, RESULT_PASS(TEST_NUM, 01));
 }
