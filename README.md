@@ -20,7 +20,7 @@ A few tests are executed by running the SBSA ACS Linux application which in turn
 The tests can also be executed in a Bare-metal environment. The initialization of the Bare-metal environment is specific to the environment and is out of scope of this document.
 
 ## Release details
- - Code Quality: REL v7.2.1
+ - Code Quality: REL v7.2.2
  - The tests are written for version 7.2 of the SBSA specification.
  - For complete coverage of the SBSA rules, availability of an Exerciser is required for Exerciser tests to be run during verficiation at Pre-Silicon level.
  - For complete coverage, both SBSA and BSA ACS should be run.
@@ -316,6 +316,7 @@ The details of the hardware or Verification IP which enable these exerciser test
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 |   SBSA Spec Version   |   ACS Coverage Mapping   |   SBSA ACS Version   |        SBSA Tag ID         |   BSA ACS Version   |          BSA Tag ID         |    Pre-Si Support    |
 |-----------------------|:------------------------:|:--------------------:|:--------------------------:|:-------------------:|:---------------------------:|:--------------------:|
+|       SBSA v7.2       |    BSA ACS + SBSA ACS    |      v7.2.2          |   v25.03_REL7.2.2          |        v1.1.0       |       v25.03_REL1.1.0       |       Yes            |
 |       SBSA v7.2       |    BSA ACS + SBSA ACS    |      v7.2.1          |   v24.11_REL7.2.1          |        v1.0.9       |       v24.11_REL1.0.9       |       Yes            |
 |       SBSA v7.1       |    BSA ACS + SBSA ACS    |      v7.2.0 BETA-0   |   v24.03_REL7.2.0_BETA-0   |        v1.0.8       | v24.03_SBSA_REL7.2.0_BETA-0 |       Yes            |
 |       SBSA v7.1       |    BSA ACS + SBSA ACS    |      v7.1.5          |   v24.03_REL7.1.5          |        v1.0.8       |       v24.03_REL1.0.8       |       Yes            |
@@ -345,4 +346,4 @@ SBSA ACS is distributed under Apache v2.0 License.
 
 --------------
 
-*Copyright (c) 2018-2024 Arm Limited and Contributors. All rights reserved.*
+*Copyright (c) 2018-2025, Arm Limited and Contributors. All rights reserved.*
