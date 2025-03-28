@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2024, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2025, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -52,7 +52,11 @@ void payload(void)
     if (index == primary_pe_idx)
         val_print(ACS_PRINT_DEBUG, "\n       ID_AA64DFR0_EL1.PMSVer = %llx", data);
 
-    if (data < 2)
+    if (data == 0)
+        /* SPE Not Implemented Skip the test */
+        val_set_status(index, RESULT_SKIP(TEST_NUM, 03));
+    if (data == 1)
+        /* SPE Implemented but SPEv1p1 not implemented. Fail the test*/
         val_set_status(index, RESULT_FAIL(TEST_NUM, 01));
     else
         val_set_status(index, RESULT_PASS(TEST_NUM, 01));
