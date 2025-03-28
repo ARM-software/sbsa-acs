@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2024, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2025, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,20 +20,18 @@
 #include  <Library/ShellCEntryLib.h>
 #include  <Library/ShellLib.h>
 #include  <Library/UefiBootServicesTableLib.h>
-#include  <Library/CacheMaintenanceLib.h>
-#include  <Protocol/LoadedImage.h>
 
 #include "val/sbsa/include/sbsa_val_interface.h"
 #include "val/common/include/val_interface.h"
 #include "val/sbsa/include/sbsa_acs_pe.h"
 #include "val/common/include/acs_pe.h"
 #include "val/common/include/acs_val.h"
+#include "val/common/include/acs_memory.h"
 
 #include "SbsaAvs.h"
 
-UINT32 g_pcie_p2p;
-UINT32 g_pcie_cache_present;
-
+UINT32  g_pcie_p2p;
+UINT32  g_pcie_cache_present;
 UINT32  g_sbsa_level;
 UINT32  g_sbsa_only_level = 0;
 UINT32  g_print_level;
@@ -55,7 +53,7 @@ UINT64  g_stack_pointer;
 UINT64  g_exception_ret_addr;
 UINT64  g_ret_addr;
 UINT32  g_wakeup_timeout;
-UINT32 g_sys_last_lvl_cache;
+UINT32  g_sys_last_lvl_cache;
 SHELL_FILE_HANDLE g_acs_log_file_handle;
 /* VE systems run acs at EL1 and in some systems crash is observed during acess
    of EL1 phy and virt timer, Below command line option is added only for debug
@@ -77,365 +75,185 @@ STATIC VOID FlushImage (VOID)
   }
 
   val_pe_cache_clean_range((UINT64)ImageInfo->ImageBase, (UINT64)ImageInfo->ImageSize);
-
 }
 
-EFI_STATUS
+UINT32
 createPeInfoTable (
 )
 {
+  UINT32 Status;
+  UINT64 *PeInfoTable;
 
-  EFI_STATUS Status;
-
-  UINT64   *PeInfoTable;
-
-/* allowing room for growth, at present each entry is 16 bytes, so we can support upto 511 PEs with 8192 bytes*/
-  Status = gBS->AllocatePool ( EfiBootServicesData,
-                               PE_INFO_TBL_SZ,
-                               (VOID **) &PeInfoTable );
-
-  if (EFI_ERROR(Status))
-  {
-    Print(L"Allocate Pool failed %x\n", Status);
-    return Status;
-  }
+  PeInfoTable = val_aligned_alloc(SIZE_4K, PE_INFO_TBL_SZ);
 
   Status = val_pe_create_info_table(PeInfoTable);
 
   return Status;
-
 }
 
-EFI_STATUS
+UINT32
 createGicInfoTable (
 )
 {
-  EFI_STATUS Status;
-  UINT64     *GicInfoTable;
+  UINT32 Status;
+  UINT64 *GicInfoTable;
 
-  Status = gBS->AllocatePool (EfiBootServicesData,
-                               GIC_INFO_TBL_SZ,
-                               (VOID **) &GicInfoTable);
-
-  if (EFI_ERROR(Status))
-  {
-    Print(L"Allocate Pool failed %x\n", Status);
-    return Status;
-  }
+  GicInfoTable = val_aligned_alloc(SIZE_4K, GIC_INFO_TBL_SZ);
 
   Status = val_gic_create_info_table(GicInfoTable);
-
-  return Status;
-
-}
-
-EFI_STATUS
-createTimerInfoTable(
-)
-{
-  UINT64   *TimerInfoTable;
-  EFI_STATUS Status;
-
-  Status = gBS->AllocatePool (EfiBootServicesData,
-                              TIMER_INFO_TBL_SZ,
-                              (VOID **) &TimerInfoTable);
-
-  if (EFI_ERROR(Status))
-  {
-    Print(L"Allocate Pool failed %x\n", Status);
-    return Status;
-  }
-  val_timer_create_info_table(TimerInfoTable);
-
-  return Status;
-}
-
-EFI_STATUS
-createWatchdogInfoTable(
-)
-{
-  UINT64   *WdInfoTable;
-  EFI_STATUS Status;
-
-  Status = gBS->AllocatePool (EfiBootServicesData,
-                              WD_INFO_TBL_SZ,
-                              (VOID **) &WdInfoTable);
-
-  if (EFI_ERROR(Status))
-  {
-    Print(L"Allocate Pool failed %x\n", Status);
-    return Status;
-  }
-  val_wd_create_info_table(WdInfoTable);
-
-  return Status;
-
-}
-
-
-EFI_STATUS
-createPcieVirtInfoTable(
-)
-{
-  UINT64   *PcieInfoTable;
-  UINT64   *IoVirtInfoTable;
-
-  EFI_STATUS Status;
-
-  Status = gBS->AllocatePool (EfiBootServicesData,
-                              PCIE_INFO_TBL_SZ,
-                              (VOID **) &PcieInfoTable);
-
-  if (EFI_ERROR(Status))
-  {
-    Print(L"Allocate Pool failed %x\n", Status);
-    return Status;
-  }
-  val_pcie_create_info_table(PcieInfoTable);
-
-  Status = gBS->AllocatePool (EfiBootServicesData,
-                              IOVIRT_INFO_TBL_SZ,
-                              (VOID **) &IoVirtInfoTable);
-
-  if (EFI_ERROR(Status))
-  {
-    Print(L"Allocate Pool failed %x\n", Status);
-    return Status;
-  }
-  val_iovirt_create_info_table(IoVirtInfoTable);
-
-  return Status;
-}
-
-EFI_STATUS
-createPeripheralInfoTable(
-)
-{
-  UINT64   *PeripheralInfoTable;
-  UINT64   *MemoryInfoTable;
-
-  EFI_STATUS Status;
-
-  Status = gBS->AllocatePool (EfiBootServicesData,
-                              PERIPHERAL_INFO_TBL_SZ,
-                              (VOID **) &PeripheralInfoTable);
-
-  if (EFI_ERROR(Status))
-  {
-    Print(L"Allocate Pool failed %x\n", Status);
-    return Status;
-  }
-  val_peripheral_create_info_table(PeripheralInfoTable);
-
-  Status = gBS->AllocatePool (EfiBootServicesData,
-                              MEM_INFO_TBL_SZ,
-                              (VOID **) &MemoryInfoTable);
-
-  if (EFI_ERROR(Status))
-  {
-    Print(L"Allocate Pool failed %x\n", Status);
-    return Status;
-  }
-
-  val_memory_create_info_table(MemoryInfoTable);
-
-  return Status;
-}
-
-EFI_STATUS
-createPmuInfoTable(
-)
-{
-  UINT64   *PmuInfoTable;
-  EFI_STATUS Status;
-
-  Status = gBS->AllocatePool (EfiBootServicesData,
-                              PMU_INFO_TBL_SZ,
-                              (VOID **) &PmuInfoTable);
-
-  if (EFI_ERROR(Status))
-  {
-    Print(L"Allocate Pool failed %x\n", Status);
-    return Status;
-  }
-  val_pmu_create_info_table(PmuInfoTable);
-
-  return Status;
-
-}
-
-EFI_STATUS
-createRasInfoTable(
-)
-{
-  UINT64   *RasInfoTable;
-  EFI_STATUS Status;
-
-  Status = gBS->AllocatePool(EfiBootServicesData,
-                             RAS_INFO_TBL_SZ,
-                             (VOID **) &RasInfoTable);
-
-  if (EFI_ERROR(Status))
-  {
-    Print(L"Allocate Pool failed %x\n", Status);
-    return Status;
-  }
-  val_ras_create_info_table(RasInfoTable);
-
-  return Status;
-
-}
-
-EFI_STATUS
-createCacheInfoTable(
-)
-{
-  UINT64   *CacheInfoTable;
-  EFI_STATUS Status;
-
-  Status = gBS->AllocatePool(EfiBootServicesData,
-                              CACHE_INFO_TBL_SZ,
-                              (VOID **) &CacheInfoTable);
-
-  if (EFI_ERROR(Status))
-  {
-    Print(L"Allocate Pool failed %x\n", Status);
-    return Status;
-  }
-  val_cache_create_info_table(CacheInfoTable);
-
-  return Status;
-}
-
-EFI_STATUS
-createMpamInfoTable(
-)
-{
-  UINT64      *MpamInfoTable;
-  EFI_STATUS  Status;
-
-  Status = gBS->AllocatePool(EfiBootServicesData,
-                              MPAM_INFO_TBL_SZ,
-                              (VOID **) &MpamInfoTable);
-
-  if (EFI_ERROR(Status))
-  {
-    Print(L"Allocate Pool failed %x\n", Status);
-    return Status;
-  }
-  val_mpam_create_info_table(MpamInfoTable);
-
-  return Status;
-}
-
-EFI_STATUS
-createHmatInfoTable(
-)
-{
-  UINT64      *HmatInfoTable;
-  EFI_STATUS  Status;
-
-  Status = gBS->AllocatePool(EfiBootServicesData,
-                              HMAT_INFO_TBL_SZ,
-                              (VOID **) &HmatInfoTable);
-
-  if (EFI_ERROR(Status))
-  {
-    Print(L"Allocate Pool failed %x\n", Status);
-    return Status;
-  }
-  val_hmat_create_info_table(HmatInfoTable);
-
-  return Status;
-}
-
-EFI_STATUS
-createSratInfoTable(
-)
-{
-  UINT64      *SratInfoTable;
-  EFI_STATUS  Status;
-
-  Status = gBS->AllocatePool(EfiBootServicesData,
-                              SRAT_INFO_TBL_SZ,
-                              (VOID **) &SratInfoTable);
-
-  if (EFI_ERROR(Status))
-  {
-    Print(L"Allocate Pool failed %x\n", Status);
-    return Status;
-  }
-  val_srat_create_info_table(SratInfoTable);
-
-  return Status;
-}
-
-EFI_STATUS
-createPccInfoTable(
-)
-{
-  UINT64      *PccInfoTable;
-  EFI_STATUS  Status;
-
-  Status = gBS->AllocatePool(EfiBootServicesData,
-                              PCC_INFO_TBL_SZ,
-                              (VOID **) &PccInfoTable);
-
-  if (EFI_ERROR(Status))
-  {
-    Print(L"Allocate Pool failed %x\n", Status);
-    return Status;
-  }
-  val_pcc_create_info_table(PccInfoTable);
-
-  return Status;
-}
-
-/**
-  @brief  This API allocates memory for info table and
-          calls create info table function passed as parameter.
-
-  @param  create_info_tbl_func  - function pointer to val_*_create_info_table
-  @param  info_table_size       - memory size to be allocated.
-
-  @return  None
-**/
-
-EFI_STATUS
-createInfoTable(
-  VOID(*create_info_tbl_func)(UINT64 *),
-  UINT64 info_table_size,
-  CHAR8 *table_name
-  )
-{
-  UINT64      *InfoTable;
-  EFI_STATUS  Status;
-
-  val_print(ACS_PRINT_DEBUG, "\n Allocating memory for ", 0);
-  val_print(ACS_PRINT_DEBUG, table_name, 0);
-  val_print(ACS_PRINT_DEBUG, " info table", 0);
-
-  Status = gBS->AllocatePool(EfiBootServicesData,
-                              info_table_size,
-                              (VOID **) &InfoTable);
-
-  if (EFI_ERROR(Status))
-  {
-    val_print(ACS_PRINT_ERR, "\n Allocate memory for ", 0);
-    val_print(ACS_PRINT_ERR, table_name, 0);
-    val_print(ACS_PRINT_ERR, " info table failed : %x", Status);
-    return Status;
-  }
-
-  (*create_info_tbl_func)(InfoTable);
 
   return Status;
 }
 
 VOID
+createTimerInfoTable(
+)
+{
+  UINT64 *TimerInfoTable;
+
+  TimerInfoTable = val_aligned_alloc(SIZE_4K, TIMER_INFO_TBL_SZ);
+
+  val_timer_create_info_table(TimerInfoTable);
+}
+
+VOID
+createWatchdogInfoTable(
+)
+{
+  UINT64 *WdInfoTable;
+
+  WdInfoTable = val_aligned_alloc(SIZE_4K, WD_INFO_TBL_SZ);
+
+  val_wd_create_info_table(WdInfoTable);
+}
+
+
+VOID
+createPcieVirtInfoTable(
+)
+{
+  UINT64 *PcieInfoTable;
+  UINT64 *IoVirtInfoTable;
+
+  PcieInfoTable = val_aligned_alloc(SIZE_4K, PCIE_INFO_TBL_SZ);
+
+  val_pcie_create_info_table(PcieInfoTable);
+
+  IoVirtInfoTable = val_aligned_alloc(SIZE_4K, IOVIRT_INFO_TBL_SZ);
+
+  val_iovirt_create_info_table(IoVirtInfoTable);
+}
+
+VOID
+createPeripheralInfoTable(
+)
+{
+  UINT64 *PeripheralInfoTable;
+  UINT64 *MemoryInfoTable;
+
+  PeripheralInfoTable = val_aligned_alloc(SIZE_4K, PERIPHERAL_INFO_TBL_SZ);
+
+  val_peripheral_create_info_table(PeripheralInfoTable);
+
+  MemoryInfoTable = val_aligned_alloc(SIZE_4K, MEM_INFO_TBL_SZ);
+
+  val_memory_create_info_table(MemoryInfoTable);
+}
+
+VOID
+createPmuInfoTable(
+)
+{
+  UINT64 *PmuInfoTable;
+
+  PmuInfoTable = val_aligned_alloc(SIZE_4K, PMU_INFO_TBL_SZ);
+
+  val_pmu_create_info_table(PmuInfoTable);
+}
+
+UINT32
+createRasInfoTable(
+)
+{
+  UINT32 status;
+  UINT64 *RasInfoTable;
+
+  RasInfoTable = val_aligned_alloc(SIZE_4K, RAS_INFO_TBL_SZ);
+
+  status = val_ras_create_info_table(RasInfoTable);
+
+  return status;
+}
+
+VOID
+createCacheInfoTable(
+)
+{
+  UINT64 *CacheInfoTable;
+
+  CacheInfoTable = val_aligned_alloc(SIZE_4K, CACHE_INFO_TBL_SZ);
+
+  val_cache_create_info_table(CacheInfoTable);
+}
+
+VOID
+createMpamInfoTable(
+)
+{
+  UINT64 *MpamInfoTable;
+
+  MpamInfoTable = val_aligned_alloc(SIZE_4K, MPAM_INFO_TBL_SZ);
+
+  val_mpam_create_info_table(MpamInfoTable);
+}
+
+VOID
+createHmatInfoTable(
+)
+{
+  UINT64 *HmatInfoTable;
+
+  HmatInfoTable = val_aligned_alloc(SIZE_4K, HMAT_INFO_TBL_SZ);
+
+  val_hmat_create_info_table(HmatInfoTable);
+}
+
+VOID
+createSratInfoTable(
+)
+{
+  UINT64 *SratInfoTable;
+
+  SratInfoTable = val_aligned_alloc(SIZE_4K, SRAT_INFO_TBL_SZ);
+
+  val_srat_create_info_table(SratInfoTable);
+}
+
+VOID
+createPccInfoTable(
+)
+{
+  UINT64 *PccInfoTable;
+
+  PccInfoTable = val_aligned_alloc(SIZE_4K, PCC_INFO_TBL_SZ);
+
+  val_pcc_create_info_table(PccInfoTable);
+}
+
+VOID
+createRas2InfoTable(
+)
+{
+  UINT64 *Ras2InfoTable;
+
+  Ras2InfoTable = val_aligned_alloc(SIZE_4K, RAS2_FEAT_INFO_TBL_SZ);
+
+  val_ras2_create_info_table(Ras2InfoTable);
+}
+
+VOID
 freeSbsaAvsMem()
 {
-
   val_pe_free_info_table();
   val_gic_free_info_table();
   val_timer_free_info_table();
@@ -816,30 +634,18 @@ ShellAppMainsbsa (
   createTimerInfoTable();
   createWatchdogInfoTable();
 
-  Status = createCacheInfoTable();
-  if (Status)
-    Print(L" Failed to create Cache info table\n");
+  createCacheInfoTable();
 
   /* required before calling createMpamInfoTable() */
-  Status = createPccInfoTable();
-  if (Status)
-    Print(L" Failed to create PCC info table\n");
+  createPccInfoTable();
 
-  Status = createMpamInfoTable();
-  if (Status)
-    Print(L" Failed to create Mpam info table\n");
+  createMpamInfoTable();
 
-  Status = createHmatInfoTable();
-  if (Status)
-    Print(L" Failed to create HMAT info table\n");
+  createHmatInfoTable();
 
-  Status = createSratInfoTable();
-  if (Status)
-    Print(L" Failed to create SRAT info table\n");
+  createSratInfoTable();
 
-  Status = createInfoTable(val_ras2_create_info_table, RAS2_FEAT_INFO_TBL_SZ, "RAS2");
-  if (Status)
-    Print(L" Failed to create RAS2 feature info table\n");
+  createRas2InfoTable();
 
   createPcieVirtInfoTable();
   createPeripheralInfoTable();

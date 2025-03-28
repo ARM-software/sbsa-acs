@@ -36,7 +36,7 @@ static void payload(void)
 
     /* ID_AA64ISAR1_EL1.BF16[47:44] = 0b0001 indicate FEAT_BF16 support
     and 0b0010 indicates FEAT_EBF16 (which implements BF16 extension)*/
-    
+
     data = VAL_EXTRACT_BITS(val_pe_reg_read(ID_AA64ISAR1_EL1), 44, 47);
 
     if ((data == 1) || (data == 2))
