@@ -78,3 +78,10 @@ v24.03_REL7.2.0_BETA-0
 * Self Hosted Debug ETE Related Tests added.
 * Added Baremetal Support for SBSA Future Requirement
 * Common misc API added
+
+v25.03_REL7.2.2
+
+* SBSA Errata Updates
+* PCIe bug fixes and enhancements
+* Partner Issue Enhancements and Fixes
+* Document updates
