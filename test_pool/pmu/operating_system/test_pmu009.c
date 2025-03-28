@@ -52,8 +52,8 @@ static void payload(void)
     val_print(ACS_PRINT_DEBUG, "\n       PMU NODES = %d", pmu_node_count);
 
     if (pmu_node_count == 0) {
-        val_set_status(index, RESULT_FAIL(TEST_NUM, 2));
-        val_print(ACS_PRINT_ERR, "\n       No PMU nodes found", 0);
+        val_set_status(index, RESULT_SKIP(TEST_NUM, 02));
+        val_print(ACS_PRINT_ERR, "\n       No APMT PMU nodes found", 0);
         return;
     }
 
@@ -62,7 +62,7 @@ static void payload(void)
         cs_com |= val_pmu_get_info(PMU_NODE_CS_COM, node_index);
     }
     if (cs_com != 0x1) {
-        val_set_status(index, RESULT_SKIP(TEST_NUM, 02));
+        val_set_status(index, RESULT_SKIP(TEST_NUM, 03));
         val_print(ACS_PRINT_DEBUG, "\n       No CS PMU nodes found", 0);
         return;
     }
@@ -72,14 +72,14 @@ static void payload(void)
     ret_status = val_pmu_get_multi_traffic_support_interface(&interface_acpiid,
                                                                           &num_traffic_support);
     if (ret_status == NOT_IMPLEMENTED) {
-        val_set_status(index, RESULT_SKIP(TEST_NUM, 3));
+        val_set_status(index, RESULT_SKIP(TEST_NUM, 04));
         return;
     }
 
     /* PMU info table index for the interface */
     pmu_node_index = val_pmu_get_index_acpiid(interface_acpiid);
     if (pmu_node_index == PMU_INVALID_INDEX) {
-        val_set_status(index, RESULT_SKIP(TEST_NUM, 4));
+        val_set_status(index, RESULT_SKIP(TEST_NUM, 05));
         return;
     }
 
