@@ -109,8 +109,10 @@ payload (void)
                     "       MSI vector irq %llx is not an LPI\n", mvec->vector.vector_irq_base);
                  val_set_status (index, RESULT_FAIL (TEST_NUM, mvec->vector.vector_irq_base));
                  status = 1;
+              }else {
+                val_print(ACS_PRINT_DEBUG,
+                    "       MSI vector irq %llx is an LPI\n", mvec->vector.vector_irq_base);
               }
-
               mvec = mvec->next;
           }
 
