@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2020, 2022-2024, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2020, 2022-2025, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -36,8 +36,9 @@ static void payload(void)
 
     /* Read ID_AA64ISAR1_EL1.SPECRES[43:40] = 0b0001 For CFP, DVP, CPP RCTX Instructions */
     data = VAL_EXTRACT_BITS(val_pe_reg_read(ID_AA64ISAR1_EL1), 40, 43);
+    val_print_primary_pe(ACS_PRINT_DEBUG, "\n       ID_AA64ISAR1_EL1.SPECRES = %llx", data, index);
 
-    if (data != 1)
+    if (data != 1 && data != 2)
         val_set_status(index, RESULT_FAIL(TEST_NUM, 01));
     else
         val_set_status(index, RESULT_PASS(TEST_NUM, 01));
