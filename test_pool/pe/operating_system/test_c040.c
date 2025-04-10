@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2023-2024, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2023-2025, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -34,11 +34,13 @@ static void payload(void)
         return;
     }
 
-    /* ID_AA64ISAR1_EL1.LS64[63:60] = 0b0010 indicates FEAT_LS64_V support  */
+    /* ID_AA64ISAR1_EL1.LS64[63:60] = 0b0010 or 0b0011 indicates FEAT_LS64_V support  */
     /* FEAT_LS64_V can be implemented only if FEAT_LS64 is implemented */
+    /* FEAT_LS64_V must be implemented if FEAT_LS64_ACCDATA is supported */
     data = VAL_EXTRACT_BITS(val_pe_reg_read(ID_AA64ISAR1_EL1), 60, 63);
+    val_print_primary_pe(ACS_PRINT_DEBUG, "\n       ID_AA64ISAR1_EL1.LS64 = %llx", data, index);
 
-    if (data == 2)
+    if (data == 2 || data == 3)
         val_set_status(index, RESULT_PASS(TEST_NUM, 01));
     else
         val_set_status(index, RESULT_FAIL(TEST_NUM, 01));
