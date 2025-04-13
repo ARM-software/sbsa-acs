@@ -27,6 +27,10 @@
 #define TEST_RULE  "S_PCIe_02"
 
 static void *branch_to_test;
+static uint32_t bdf;
+static uint32_t tbl_index;
+static pcie_device_bdf_table *bdf_tbl_ptr;
+
 
 static
 void
@@ -39,7 +43,7 @@ esr(uint64_t interrupt_type, void *context)
   /* Update the ELR to return to test specified address */
   val_pe_update_elr(context, (uint64_t)branch_to_test);
 
-  val_print(ACS_PRINT_INFO, "\n       Received exception of type: %d", interrupt_type);
+  val_print(ACS_PRINT_INFO, "\n       Received exception of type in test 861: %d", interrupt_type);
   val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 01));
 }
 
@@ -49,6 +53,7 @@ static uint32_t test_sequence_1B(uint8_t *addr)
   uint32_t read_value, old_value;
   uint32_t pe_index = val_pe_get_index_mpid(val_pe_get_mpid());
 
+  val_print(ACS_PRINT_INFO, "\n       testing 1B test sequence", 0);
   for (int idx = 0; idx < 8; idx++) {
       old_value = val_mmio_read8((addr_t)addr);
       val_mmio_write8((addr_t)addr, write_val);
@@ -72,7 +77,8 @@ uint32_t test_sequence_2B(uint16_t *addr)
   uint32_t write_val = 0xABCD;
   uint32_t read_value, old_value;
   uint32_t pe_index = val_pe_get_index_mpid(val_pe_get_mpid());
-
+ 
+  val_print(ACS_PRINT_INFO, "\n       testing 2B test sequence", 0);
   for (int idx = 0; idx < 4; idx++) {
       old_value = val_mmio_read16((addr_t)addr);
       val_mmio_write16((addr_t)addr, write_val);
@@ -95,16 +101,12 @@ static
 void
 payload(void)
 {
-
-  uint32_t bdf;
   uint32_t pe_index;
-  uint32_t tbl_index;
   uint32_t bar_data;
   uint32_t test_fails;
   uint32_t test_skip = 1;
   uint64_t bar_base = 0;
   uint32_t status;
-  pcie_device_bdf_table *bdf_tbl_ptr;
 
   pe_index = val_pe_get_index_mpid(val_pe_get_mpid());
   bdf_tbl_ptr = val_pcie_bdf_table_ptr();
@@ -119,7 +121,7 @@ payload(void)
       return;
   }
 
-  branch_to_test = &&exception_return;
+  branch_to_test = &&exception_return861;
 
   bar_data = 0;
   tbl_index = 0;
@@ -127,6 +129,7 @@ payload(void)
 
   while (tbl_index < bdf_tbl_ptr->num_entries)
   {
+      val_print(ACS_PRINT_DEBUG, "\n       tbl_index - 0x%x", tbl_index);
       bdf = bdf_tbl_ptr->device[tbl_index++].bdf;
 
       val_print(ACS_PRINT_DEBUG, "\n       BDF - 0x%x", bdf);
@@ -134,12 +137,17 @@ payload(void)
        * For Function with Type 1 config space header, obtain
        * base address of the its own BAR address.
        */
-      if ((val_pcie_function_header_type(bdf) == TYPE1_HEADER))
-          val_pcie_get_mmio_bar(bdf, &bar_base);
-
+      if (val_pcie_function_header_type(bdf) == TYPE0_HEADER) {
+          val_print(ACS_PRINT_DEBUG, "\n  Skipping not a RP, BDF - 0x%x", bdf);
+          continue;
+      }
+         
+      val_pcie_get_mmio_bar(bdf, &bar_base);
       /* Skip this function if it doesn't have mmio BAR */
-      if (!bar_base)
+      if (!bar_base) {
+         val_print(ACS_PRINT_DEBUG, "\n  Skipping as no MMIO BAR, RP BDF - 0x%x", bdf);
          continue;
+      }
 
       /* If test runs for atleast an endpoint */
       test_skip = 0;
@@ -155,11 +163,10 @@ payload(void)
           val_print(ACS_PRINT_ERR, "\n       Failed check for Bdf 0x%x", bdf);
           test_fails++;
       }
-
+      val_print(ACS_PRINT_ERR, "\n       Doing write of bar base Bdf 0x%x", bdf);
       val_mmio_write(bar_base, bar_data);
 
-exception_return:
-
+exception_return861:
       if (IS_TEST_FAIL(val_get_status(pe_index))) {
         val_print(ACS_PRINT_ERR, "\n       Failed. Exception on Memory Access For Bdf 0x%x", bdf);
         val_pcie_clear_urd(bdf);
