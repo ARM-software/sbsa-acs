@@ -28,6 +28,7 @@
 
 static void *branch_to_test;
 static uint32_t bdf;
+static uint32_t tbl_index;
 
 static
 void
@@ -97,7 +98,6 @@ void
 payload(void)
 {
   uint32_t pe_index;
-  uint32_t tbl_index;
   uint32_t bar_data;
   uint32_t test_fails;
   uint32_t test_skip = 1;
