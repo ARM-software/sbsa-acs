@@ -27,6 +27,7 @@
 #define TEST_RULE  "S_PCIe_02"
 
 static void *branch_to_test;
+static uint32_t bdf;
 
 static
 void
@@ -95,8 +96,6 @@ static
 void
 payload(void)
 {
-
-  uint32_t bdf;
   uint32_t pe_index;
   uint32_t tbl_index;
   uint32_t bar_data;
