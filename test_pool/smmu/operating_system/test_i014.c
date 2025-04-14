@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2023-2024, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2023-2025, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,6 +16,7 @@
  **/
 
 #include "val/common/include/acs_val.h"
+#include "val/common/include/acs_mmu.h"
 #include "val/sbsa/include/sbsa_val_interface.h"
 
 #include "val/sbsa/include/sbsa_acs_iovirt.h"
@@ -73,6 +74,8 @@ payload()
           pmcg_smmu_base = val_iovirt_get_pmcg_info(PMCG_NODE_SMMU_BASE, i);
           if (smmu_base ==  pmcg_smmu_base) {
               pmcg_base = val_iovirt_get_pmcg_info(PMCG_CTRL_BASE, i);
+              val_mmu_update_entry(pmcg_base, 0x1000);
+              val_print(ACS_PRINT_INFO, " PMCG node mapped \n", 0);
               /*Check if SMMU_PMCG_CFGR.NCTR > 4*/
               num_pmcg_count = VAL_EXTRACT_BITS(val_mmio_read(pmcg_base + SMMU_PMCG_CFGR), 0, 5);
               /*No of counters in a group is SMMU_PMCG_CFGR.NCTR + 1*/
