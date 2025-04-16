@@ -704,17 +704,17 @@ ShellAppMainsbsa (
   Status |= val_sbsa_ete_execute_tests(g_sbsa_level, val_pe_get_num());
 
 print_test_status:
-  val_print(ACS_PRINT_TEST, "\n     -------------------------------------------------------\n", 0);
-  val_print(ACS_PRINT_TEST, "     Total Tests run  = %4d;", g_acs_tests_total);
-  val_print(ACS_PRINT_TEST, "  Tests Passed  = %4d", g_acs_tests_pass);
-  val_print(ACS_PRINT_TEST, "  Tests Failed = %4d\n", g_acs_tests_fail);
-  val_print(ACS_PRINT_TEST, "     ---------------------------------------------------------\n", 0);
+  val_print(ACS_PRINT_ERR, "\n     ---------------------------------------------------------\n", 0);
+  val_print(ACS_PRINT_ERR, "     Total Tests run  = %4d;", g_acs_tests_total);
+  val_print(ACS_PRINT_ERR, "  Tests Passed  = %4d", g_acs_tests_pass);
+  val_print(ACS_PRINT_ERR, "  Tests Failed = %4d\n", g_acs_tests_fail);
+  val_print(ACS_PRINT_ERR, "     ---------------------------------------------------------\n", 0);
 
   freeSbsaAvsMem();
 
-  val_print(ACS_PRINT_TEST, "\n      **  For complete SBSA test coverage, it is ", 0);
-  val_print(ACS_PRINT_TEST, "\n            necessary to also run the BSA test    **\n\n", 0);
-  val_print(ACS_PRINT_TEST, "\n      *** SBSA tests complete. Reset the system. ***\n\n", 0);
+  val_print(ACS_PRINT_ERR, "\n      **  For complete SBSA test coverage, it is ", 0);
+  val_print(ACS_PRINT_ERR, "\n            necessary to also run the BSA test    **\n\n", 0);
+  val_print(ACS_PRINT_ERR, "\n      *** SBSA tests complete. Reset the system. ***\n\n", 0);
 
   if(g_acs_log_file_handle) {
     ShellCloseFile(&g_acs_log_file_handle);
