@@ -1,5 +1,5 @@
 /** @file
-* Copyright (c) 2024, Arm Limited or its affiliates. All rights reserved.
+* Copyright (c) 2024-2025, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -61,10 +61,10 @@ static void payload(void)
     }
 
     /* ID_AA64DFR0_EL1.ExtTrcBuff, bits [59:56] non-zero value indicate FEAT_TRBE_EXT support */
-    data = VAL_EXTRACT_BITS(dfr0_value, 46, 49);
+    data = VAL_EXTRACT_BITS(dfr0_value, 56, 59);
     if (data == 0) {
         val_print_primary_pe(ACS_PRINT_ERR, "\n       FEAT_TRBE_EXT not supported", 0, index);
-        val_set_status(index, RESULT_FAIL(TEST_NUM, 03));
+        val_set_status(index, RESULT_SKIP(TEST_NUM, 02));
         return;
     }
 
@@ -99,13 +99,13 @@ static void payload(void)
         (traced_timestamp_2 == ACS_STATUS_FAIL) ||
         (traced_timestamp_3 == ACS_STATUS_FAIL)) {
         val_print_primary_pe(ACS_PRINT_ERR, "\n       Trace Generation Failed", 0, index);
-        val_set_status(index, RESULT_FAIL(TEST_NUM, 04));
+        val_set_status(index, RESULT_FAIL(TEST_NUM, 03));
         return;
     }
 
     if ((traced_timestamp_1 == 0) || (traced_timestamp_2 == 0) || (traced_timestamp_3 == 0)) {
         val_print_primary_pe(ACS_PRINT_ERR, "\n       Traced Timestamp is 0", 0, index);
-        val_set_status(index, RESULT_FAIL(TEST_NUM, 05));
+        val_set_status(index, RESULT_FAIL(TEST_NUM, 04));
         return;
     }
 
@@ -115,7 +115,7 @@ static void payload(void)
         return;
     }
 
-    val_set_status(index, RESULT_FAIL(TEST_NUM, 06));
+    val_set_status(index, RESULT_FAIL(TEST_NUM, 05));
 }
 
 uint32_t ete004_entry(uint32_t num_pe)
