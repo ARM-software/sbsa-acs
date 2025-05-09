@@ -26,21 +26,11 @@
 #define TEST_DESC  "Check Cmd Reg memory space enable     "
 #define TEST_RULE  "RE_REG_1, IE_REG_1, IE_REG_3"
 
-static void *branch_to_test;
-
 static
 void
 esr(uint64_t interrupt_type, void *context)
 {
-  uint32_t pe_index;
-
-  pe_index = val_pe_get_index_mpid(val_pe_get_mpid());
-
-  /* Update the ELR to return to test specified address */
-  val_pe_update_elr(context, (uint64_t)branch_to_test);
-
-  val_print(ACS_PRINT_DEBUG, "\n       Received exception of type: %d", interrupt_type);
-  val_set_status(pe_index, RESULT_PASS(TEST_NUM, 01));
+    val_print(ACS_PRINT_DEBUG, "\n       Received exception of type: %d", interrupt_type);
 }
 
 static
@@ -74,8 +64,6 @@ payload(void)
       val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 01));
       return;
   }
-
-  branch_to_test = &&exception_return;
 
   bar_data = 0;
   tbl_index = 0;
@@ -138,19 +126,28 @@ payload(void)
 
       /*
        * Read memory mapped BAR to cause unsupported request
-       * response. Based on platform configuration, this may
-       * even cause an sync/async exception.
+       * response. Poll the PCIe device status register with a timeout
+       * to verify that the endpoint generated an unsupported request.
+       * Based on platform configuration, an unsupported request may
+       * cause an sync/async exception, so an exception handler is
+       * installed, but it does not affect the outcome of the test.
        */
       bar_data = (*(volatile addr_t *)bar_base);
       timeout = TIMEOUT_SMALL;
-      while (--timeout > 0);
+      while (--timeout > 0)
+      {
+          if (val_pcie_is_urd(bdf))
+          {
+              val_set_status(pe_index, RESULT_PASS(TEST_NUM, 01));
+              break;
+          }
+      }
 
-exception_return:
       /*
        * Check if either of UR response or abort isn't received.
        */
       val_print(ACS_PRINT_DEBUG, "       bar_data %x ", bar_data);
-      if (!(IS_TEST_PASS(val_get_status(pe_index)) || (bar_data == PCIE_UNKNOWN_RESPONSE)))
+      if (IS_TEST_FAIL(val_get_status(pe_index)))
       {
           val_print(ACS_PRINT_ERR, "\n       BDF %x MSE functionality failure", bdf);
           test_fails++;
@@ -163,7 +160,8 @@ exception_return:
       bar_data = 0;
   }
 
-  if (test_skip == 1) {
+  if (test_skip == 1)
+  {
       val_print(ACS_PRINT_DEBUG,
                "\n       Found no RCiEP/ RCEC/ iEP type device with MMIO Bar. Skipping test.", 0);
       val_set_status(pe_index, RESULT_SKIP(TEST_NUM, 01));
