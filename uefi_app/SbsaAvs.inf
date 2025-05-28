@@ -19,7 +19,7 @@
 [Defines]
   INF_VERSION                    = 0x00010006
   BASE_NAME                      = Sbsa
-  FILE_GUID                      = a912f198-7f0e-4803-b908-b757b806ec83
+  FILE_GUID                      = 3606caff-b7f2-4b05-a343-ac83de27940c
   MODULE_TYPE                    = UEFI_APPLICATION
   VERSION_STRING                 = 0.1
   ENTRY_POINT                    = ShellCEntryLib
